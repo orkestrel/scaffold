@@ -8,19 +8,37 @@ import type {
 	CompilerOptions,
 	ContentArtifact,
 	Dependency,
+	Environment,
 	Finding,
 	Group,
 	HostArtifact,
 	HydratedArtifact,
+	ManifestScript,
 	Mirror,
 	Override,
+	Ownership,
 	Plan,
 	Question,
 	Scaffolding,
 	Snapshot,
 } from '@src/core'
+import { VERB_OPTIONS, VERBS } from '../src/bin/constants.js'
 import {
+	APP_BROWSER_DEV_DEPENDENCIES,
+	APP_DEV_DEPENDENCIES,
+	APP_SERVER_DEV_DEPENDENCIES,
+	BASE_DEV_DEPENDENCIES,
+	BROWSE_DEV_DEPENDENCIES,
+	DECLARATION_DEV_DEPENDENCIES,
+	FRAMEWORK_MATRIX,
+	SHOWCASE_DEV_DEPENDENCIES,
+	SOURCE_BROWSER_DEV_DEPENDENCIES,
+	STYLES_DEV_DEPENDENCIES,
 	artifactToHex,
+	blueprintToConfigArtifacts,
+	blueprintToSourceArtifacts,
+	blueprintToTestArtifacts,
+	createBlueprint,
 	bytesToHex,
 	compareVersions,
 	computeBytes,
@@ -67,8 +85,11 @@ import {
 	parseGroups,
 	parseSnapshot,
 	planToSummary,
+	PRINT_WIDTH,
+	RELEASE_PROOF_COMMAND,
 	selectGroups,
 	selectHostPaths,
+	TAB_WIDTH,
 } from '@src/core'
 
 /**
@@ -197,6 +218,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		conformance: false,
 		service: false,
 		vendors: [],
+		studies: false,
 		global: false,
 		showcase: false,
 		journey: false,
@@ -911,4 +933,1300 @@ export const RANGE_CASES: readonly TestRangeCase[] = [
 	{ range: '>=1.2.3', latest: '>=1.2.3', satisfied: false },
 	{ range: '^1.2', latest: '1.2', satisfied: false },
 	{ range: '^01.2.3', latest: '01.2.3', satisfied: false },
+]
+
+/**
+ * Holds a manifest with every dependency section, for the insertion proofs.
+ */
+export const INSERTION_MANIFEST = `{
+	"name": "@orkestrel/sample",
+	"dependencies": {
+		"@orkestrel/emitter": "^0.0.5"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "^7.59.3",
+		"@orkestrel/contract": "^0.0.18",
+		"typescript": "^6.0.3"
+	},
+	"peerDependencies": {
+		"@orkestrel/browser": ">=0.0.1"
+	}
+}
+`
+
+/**
+ * Holds a manifest whose scripts section the writable script proofs read.
+ */
+export const SCRIPT_MANIFEST = `{
+	"name": "@orkestrel/sample",
+	"description": "Kept exactly as written, punctuation and all.",
+	"scripts": {
+		"test": "vitest run",
+		"prepublishOnly": "npm test"
+	},
+	"dependencies": {
+		"@orkestrel/emitter": "^0.0.5"
+	}
+}
+`
+
+/**
+ * Holds the scripts section of the script manifest, byte for byte.
+ */
+export const SCRIPT_SECTION = `"scripts": {
+		"test": "vitest run",
+		"prepublishOnly": "npm test"
+	}`
+
+/**
+ * Holds the distribution proof script a region carries beside the release command.
+ */
+export const SCRIPT_PROOF: ManifestScript = {
+	name: 'test:distribution',
+	command: 'vitest run --project distribution',
+	accepted: [],
+}
+
+/**
+ * Holds the writable script region the release command and the distribution proof form.
+ */
+export const SCRIPT_REGION: readonly ManifestScript[] = [
+	{
+		name: 'prepublishOnly',
+		command: `npm test && ${RELEASE_PROOF_COMMAND}`,
+		accepted: ['npm test'],
+	},
+	SCRIPT_PROOF,
+]
+
+/**
+ * Names the package-owned guides entry the workspace runs.
+ *
+ * The package-owned entry is driven as the process a workspace runs. The synthetic
+ * guides project collects its observation at a separate path, so it never replaces
+ * the entry's Guide behavior.
+ */
+export const ENTRY_PATH = 'tests/guides.test.ts'
+
+/**
+ * Names the path the synthetic guides project collects its observation at.
+ */
+export const ENTRY_OBSERVATION_PATH = 'tests/fixture.test.ts'
+
+/**
+ * Holds the manifest of the entry workspace, which declares the guides script.
+ */
+export const ENTRY_MANIFEST = [
+	'{',
+	'\t"name": "@sample/widget",',
+	'\t"private": true,',
+	'\t"type": "module",',
+	'\t"scripts": {',
+	'\t\t"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
+	'\t}',
+	'}',
+	'',
+].join('\n')
+
+/**
+ * Holds the README of the entry workspace, whose pitch equals the guide tagline.
+ */
+export const ENTRY_README = [
+	'# Widget',
+	'',
+	'> A widget toolkit the sample workspace publishes.',
+	'',
+].join('\n')
+
+/**
+ * Holds a README whose pitch differs from the guide tagline.
+ *
+ * The pair the entry reports and never writes: the README pitch against the
+ * guide tagline. Ruling 6 keeps the README authored by hand.
+ */
+export const ENTRY_PITCH = [
+	'# Widget',
+	'',
+	'> A widget kit the sample workspace publishes.',
+	'',
+].join('\n')
+
+/**
+ * Holds the guide index that names the widget guide.
+ */
+export const ENTRY_INDEX = [
+	'# Guides',
+	'',
+	'## By concept',
+	'',
+	'| Concept | Spec | Source | Tests |',
+	'| --- | --- | --- | --- |',
+	'| Widget | [`widget.md`](widget.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
+	'',
+].join('\n')
+
+/**
+ * Holds the source barrel of the entry workspace.
+ */
+export const ENTRY_BARREL = ["export * from './widget.js'", ''].join('\n')
+
+/**
+ * Holds the widget guide whose summaries and example disagree with the source.
+ *
+ * Surface and Methods cells and a titled fence, each planted against
+ * the source beneath. Every other byte of this file is what a write must leave.
+ */
+export const ENTRY_GUIDE = [
+	'# Widget',
+	'',
+	'> A widget toolkit the sample workspace publishes.',
+	'',
+	'## Surface',
+	'',
+	'| Name | Kind | Summary |',
+	'| --- | --- | --- |',
+	'| `shape` | function | Shapes a widget from its parts. |',
+	'| `Widget` | interface | One widget the workspace renders. |',
+	'',
+	'## Methods',
+	'',
+	'#### `Widget`',
+	'',
+	'| Method | Summary |',
+	'| --- | --- |',
+	'| `paint` | Paints the widget onto the surface. |',
+	'',
+	'## Examples',
+	'',
+	'### Shape a widget',
+	'',
+	'```ts',
+	"shape('round')",
+	'```',
+	'',
+	'## Tests',
+	'',
+	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
+	'',
+].join('\n')
+
+/**
+ * Holds the widget guide a write toward the guide must produce.
+ *
+ * What `--to guide` owes: the planted cells carrying the source text and
+ * every other byte of `ENTRY_GUIDE` unmoved. A sampled reading cannot see a row
+ * the table re-render drops, a heading it disturbs, or padding it re-aligns,
+ * which is the class the claim exists to catch, so the write is compared whole.
+ */
+export const ENTRY_GUIDE_WRITTEN = [
+	'# Widget',
+	'',
+	'> A widget toolkit the sample workspace publishes.',
+	'',
+	'## Surface',
+	'',
+	'| Name | Kind | Summary |',
+	'| --- | --- | --- |',
+	'| `shape` | function | Shapes a widget from the parts it is given. |',
+	'| `Widget` | interface | One widget the workspace renders. |',
+	'',
+	'## Methods',
+	'',
+	'#### `Widget`',
+	'',
+	'| Method | Summary |',
+	'| --- | --- |',
+	'| `paint` | Paints the widget onto the frame. |',
+	'',
+	'## Examples',
+	'',
+	'### Shape a widget',
+	'',
+	'```ts',
+	"shape('square')",
+	'```',
+	'',
+	'## Tests',
+	'',
+	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
+	'',
+].join('\n')
+
+/**
+ * Holds the widget source the guide is compared against.
+ */
+export const ENTRY_SOURCE = [
+	'/**',
+	' * Shapes a widget from the parts it is given.',
+	' *',
+	' * @param parts - The parts to shape.',
+	' * @returns The shaped widget.',
+	' *',
+	' * @example Shape a widget',
+	' * ```ts',
+	" * shape('square')",
+	' * ```',
+	' */',
+	'export function shape(parts: string): string {',
+	'\treturn parts',
+	'}',
+	'',
+	'/** One widget the workspace renders. */',
+	'export interface Widget {',
+	'\t/** Paints the widget onto the frame. */',
+	'\tpaint(): void',
+	'}',
+	'',
+].join('\n')
+
+/**
+ * Holds the guide of the reported workspace.
+ *
+ * The reported workspace: every summary and example already agrees, the guide
+ * documents one export carrying no doc block, and the pitch differs. Neither
+ * disagreement has a side a write can take.
+ */
+export const ENTRY_REPORTED_GUIDE = [
+	'# Widget',
+	'',
+	'> A widget toolkit the sample workspace publishes.',
+	'',
+	'## Surface',
+	'',
+	'| Name | Kind | Summary |',
+	'| --- | --- | --- |',
+	'| `shape` | function | Shapes a widget from the parts it is given. |',
+	'| `measure` | function | Measures a widget against the frame it fills. |',
+	'| `Widget` | interface | One widget the workspace renders. |',
+	'',
+	'## Methods',
+	'',
+	'#### `Widget`',
+	'',
+	'| Method | Summary |',
+	'| --- | --- |',
+	'| `paint` | Paints the widget onto the frame. |',
+	'',
+	'## Tests',
+	'',
+	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
+	'',
+].join('\n')
+
+/**
+ * Holds an export that carries no doc block.
+ */
+export const ENTRY_UNDOCUMENTED = [
+	'',
+	'export function measure(parts: string): number {',
+	'\treturn parts.length',
+	'}',
+	'',
+].join('\n')
+
+/**
+ * Maps each file of the entry workspace to its text.
+ */
+export const ENTRY_FILES: Readonly<Record<string, string>> = Object.freeze({
+	'package.json': ENTRY_MANIFEST,
+	'README.md': ENTRY_README,
+	'guides/README.md': ENTRY_INDEX,
+	'guides/widget.md': ENTRY_GUIDE,
+	'src/core/index.ts': ENTRY_BARREL,
+	'src/core/widget.ts': ENTRY_SOURCE,
+})
+
+/**
+ * Holds the Vitest configuration that collects the synthetic guides project.
+ */
+export const ENTRY_VITE = [
+	"import { defineConfig } from 'vitest/config'",
+	'',
+	'export default defineConfig({',
+	'\ttest: {',
+	'\t\tprojects: [',
+	'\t\t\t{',
+	"\t\t\t\ttest: { name: { label: 'guides', color: 'green' }, include: ['tests/fixture.test.ts'], environment: 'node' },",
+	'\t\t\t},',
+	'\t\t],',
+	'\t},',
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Holds the configuration that collects the authored entry instead of the observation.
+ */
+export const ENTRY_AUTHORED_VITE = ENTRY_VITE.replace(ENTRY_OBSERVATION_PATH, ENTRY_PATH)
+
+/**
+ * Holds an authored guides project that registers its own worker callback.
+ */
+export const ENTRY_AUTHORED_TEST = [
+	"import { GuideCommand } from '@orkestrel/guide/server'",
+	"import { readInventory } from '@orkestrel/test/server'",
+	"import { createVitest } from 'vitest/node'",
+	'',
+	'await new GuideCommand({',
+	"\troot: new URL('../', import.meta.url),",
+	"\tpatterns: ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md'],",
+	"\tmodules: { '@sample/widget': 'src/core' },",
+	"\tlanguages: ['ts'],",
+	"\tlanguage: 'ts',",
+	'\treader: readInventory,',
+	'\trunner: createVitest,',
+	'}).execute(async ({ report }) => {',
+	"\tconst { expect, it } = await import('vitest')",
+	'',
+	"\tit('runs the authored worker callback', () => {",
+	'\t\texpect(report.input).toEqual([])',
+	'\t})',
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Holds a guides project whose one case passes.
+ */
+export const ENTRY_PASSING_TEST = [
+	"import { expect, it } from 'vitest'",
+	'',
+	"it('runs the generated guides project', () => {",
+	'\texpect(true).toBe(true)',
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Holds a guides project that reads source bytes written before Vitest starts.
+ */
+export const ENTRY_FRESH_TEST = [
+	"import { readFileSync } from 'node:fs'",
+	"import { resolve } from 'node:path'",
+	"import { expect, it } from 'vitest'",
+	'',
+	"const source = readFileSync(resolve('src/core/widget.ts'), 'utf8')",
+	'',
+	"it('reads source bytes written before Vitest starts', () => {",
+	"\texpect(source).toContain(' * Shapes a widget from its parts.')",
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Holds a guides project whose one case fails.
+ */
+export const ENTRY_FAILING_TEST = [
+	"import { expect, it } from 'vitest'",
+	'',
+	"it('propagates a guides-project failure', () => {",
+	"\texpect('failed').toBe('passed')",
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Holds a guides project that records its startup on disk.
+ */
+export const ENTRY_START_TEST = [
+	"import { writeFileSync } from 'node:fs'",
+	"import { expect, it } from 'vitest'",
+	'',
+	"writeFileSync('vitest-started', 'started\\n', 'utf8')",
+	'',
+	"it('records project startup', () => {",
+	'\texpect(true).toBe(true)',
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Holds a guides project that passes while reporting an unhandled error.
+ */
+export const ENTRY_UNHANDLED_TEST = [
+	"import { expect, it } from 'vitest'",
+	'',
+	"Promise.reject(new Error('unhandled guides error'))",
+	'',
+	"it('passes while the project reports an unhandled error', () => {",
+	'\texpect(true).toBe(true)',
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Maps the files of the reported workspace, where the pitch and the source disagree.
+ */
+export const ENTRY_REPORTED: Readonly<Record<string, string>> = Object.freeze({
+	...ENTRY_FILES,
+	'README.md': ENTRY_PITCH,
+	'guides/widget.md': ENTRY_REPORTED_GUIDE,
+	'src/core/widget.ts': `${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`,
+})
+
+/**
+ * Holds a manifest that declares no name.
+ *
+ * A manifest declaring no `name`, so native own-guide selection finds no package
+ * guide: the standing drift still prints, and no pitch line ever joins it.
+ */
+export const ENTRY_NAMELESS_MANIFEST = [
+	'{',
+	'\t"private": true,',
+	'\t"type": "module",',
+	'\t"scripts": {',
+	'\t\t"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
+	'\t}',
+	'}',
+	'',
+].join('\n')
+
+/**
+ * Maps the files of the reported workspace under a manifest that declares no name.
+ */
+export const ENTRY_NAMELESS: Readonly<Record<string, string>> = Object.freeze({
+	...ENTRY_REPORTED,
+	'package.json': ENTRY_NAMELESS_MANIFEST,
+})
+
+/**
+ * Holds a guide index that names a guide under a spec other than the workspace's own.
+ *
+ * The index the whole run reads from, naming a guide under a spec other than
+ * this workspace's own: the manifest still names `widget`, but no row's `spec`
+ * is `guides/widget.md`, so native own-guide selection finds nothing and the
+ * pitch block never runs even though the manifest names one.
+ */
+export const ENTRY_UNOWNED_INDEX = [
+	'# Guides',
+	'',
+	'## By concept',
+	'',
+	'| Concept | Spec | Source | Tests |',
+	'| --- | --- | --- | --- |',
+	'| Widget | [`component.md`](component.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
+	'',
+].join('\n')
+
+/**
+ * Maps the files of a workspace whose index names no guide of its own.
+ */
+export const ENTRY_UNOWNED: Readonly<Record<string, string>> = Object.freeze({
+	'package.json': ENTRY_MANIFEST,
+	'README.md': ENTRY_PITCH,
+	'guides/README.md': ENTRY_UNOWNED_INDEX,
+	'guides/component.md': ENTRY_REPORTED_GUIDE,
+	'src/core/index.ts': ENTRY_BARREL,
+	'src/core/widget.ts': `${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`,
+})
+
+/**
+ * Holds the guide index of the overlapping workspace.
+ *
+ * The overlapping workspace: a parent row over `src/core` and a child row over
+ * `src/core/panels`, each documenting one declaration of the same source file.
+ * A module scope selects every file beneath it, so each row reaches
+ * `src/core/panels/panel.ts`, and a run that seeds its texts per row from the
+ * frozen inventory writes that file once per row and keeps the later rewrite
+ * alone.
+ */
+export const ENTRY_OVERLAP_INDEX = [
+	'# Guides',
+	'',
+	'## By concept',
+	'',
+	'| Concept | Spec | Source | Tests |',
+	'| --- | --- | --- | --- |',
+	'| Widget | [`widget.md`](widget.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
+	'| Panel | [`panel.md`](panel.md) | [`src/core/panels`](../src/core/panels) | [`tests/src/core/panels`](../tests/src/core/panels) |',
+	'',
+].join('\n')
+
+/**
+ * Holds the guide of the parent row over `src/core`.
+ */
+export const ENTRY_OVERLAP_PARENT = [
+	'# Widget',
+	'',
+	'> A widget toolkit the sample workspace publishes.',
+	'',
+	'## Surface',
+	'',
+	'| Name | Kind | Summary |',
+	'| --- | --- | --- |',
+	'| `frame` | function | Frames a widget for the panel. |',
+	'',
+	'## Tests',
+	'',
+	'- [`tests/src/core/panels/panel.test.ts`](../tests/src/core/panels/panel.test.ts)',
+	'',
+].join('\n')
+
+/**
+ * Holds the guide of the child row over `src/core/panels`.
+ *
+ * A third row duplicating the parent's `frame` declaration with the parent's
+ * cell text byte-identical: after the parent row's rewrite, the child row's
+ * rewrite of that same block is a no-op, which is the shape that exercises
+ * the written-count no-op limb.
+ */
+export const ENTRY_OVERLAP_CHILD = [
+	'# Panel',
+	'',
+	'> A panel the widget toolkit renders into.',
+	'',
+	'## Surface',
+	'',
+	'| Name | Kind | Summary |',
+	'| --- | --- | --- |',
+	'| `paint` | function | Paints the panel onto the frame. |',
+	'| `frame` | function | Frames a widget for the panel. |',
+	'',
+	'## Tests',
+	'',
+	'- [`tests/src/core/panels/panel.test.ts`](../tests/src/core/panels/panel.test.ts)',
+	'',
+].join('\n')
+
+/**
+ * Holds the panel source both overlapping rows document.
+ */
+export const ENTRY_OVERLAP_SOURCE = [
+	'/**',
+	' * Frames a widget for the panel it sits in.',
+	' *',
+	' * @param widget - The widget to frame.',
+	' * @returns The framed widget.',
+	' */',
+	'export function frame(widget: string): string {',
+	'\treturn widget',
+	'}',
+	'',
+	'/**',
+	' * Paints the panel onto the frame it was given.',
+	' *',
+	' * @param panel - The panel to paint.',
+	' * @returns The painted panel.',
+	' */',
+	'export function paint(panel: string): string {',
+	'\treturn panel',
+	'}',
+	'',
+].join('\n')
+
+/**
+ * Holds the panel source after both overlapping rows have written.
+ */
+export const ENTRY_OVERLAP_WRITTEN = [
+	'/**',
+	' * Frames a widget for the panel.',
+	' *',
+	' * @param widget - The widget to frame.',
+	' * @returns The framed widget.',
+	' */',
+	'export function frame(widget: string): string {',
+	'\treturn widget',
+	'}',
+	'',
+	'/**',
+	' * Paints the panel onto the frame.',
+	' *',
+	' * @param panel - The panel to paint.',
+	' * @returns The painted panel.',
+	' */',
+	'export function paint(panel: string): string {',
+	'\treturn panel',
+	'}',
+	'',
+].join('\n')
+
+/**
+ * Maps the files of the overlapping workspace.
+ */
+export const ENTRY_OVERLAP: Readonly<Record<string, string>> = Object.freeze({
+	'package.json': ENTRY_MANIFEST,
+	'README.md': ENTRY_README,
+	'guides/README.md': ENTRY_OVERLAP_INDEX,
+	'guides/widget.md': ENTRY_OVERLAP_PARENT,
+	'guides/panel.md': ENTRY_OVERLAP_CHILD,
+	'src/core/index.ts': ["export * from './panels/index.js'", ''].join('\n'),
+	'src/core/panels/index.ts': ["export * from './panel.js'", ''].join('\n'),
+	'src/core/panels/panel.ts': ENTRY_OVERLAP_SOURCE,
+})
+
+/**
+ * Maps the files of a workspace that carries no guide index.
+ *
+ * The index the whole run reads from, absent.
+ */
+export const ENTRY_UNINDEXED: Readonly<Record<string, string>> = Object.freeze(
+	Object.fromEntries(Object.entries(ENTRY_FILES).filter(([path]) => path !== 'guides/README.md')),
+)
+
+/**
+ * Maps the files of a workspace whose index row names a guide it does not carry.
+ *
+ * An index row naming a guide the workspace does not carry.
+ */
+export const ENTRY_UNCARRIED: Readonly<Record<string, string>> = Object.freeze({
+	...ENTRY_FILES,
+	'guides/README.md': [
+		ENTRY_INDEX.trimEnd(),
+		'| Panel | [`panel.md`](panel.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
+		'',
+	].join('\n'),
+})
+
+/**
+ * Holds the time in milliseconds one entry run may take.
+ *
+ * Two child runs of the guides entry take about 4.2 s on an idle host, which leaves the 5 s
+ * default no margin under load.
+ */
+export const ENTRY_RUN_TIMEOUT = 15_000
+
+/**
+ * Holds the columns one tab prints as in the vendored formatter configuration.
+ *
+ * The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
+ * `TAB_WIDTH` columns and a line is printed to fit `PRINT_WIDTH` of them. The
+ * emitted text conforms to those bytes, never the reverse, so every width here is
+ * measured against the same constants the emitters measure against, which
+ * `tests/src/core/helpers.test.ts` asserts against the vendored file itself.
+ */
+export const TAB_COLUMNS = ' '.repeat(TAB_WIDTH)
+
+/**
+ * Matches an import of a stylesheet, the one unassigned import the vendored rule exempts.
+ *
+ * The specifiers the vendored `import/no-unassigned-import` rule exempts.
+ */
+export const STYLE_IMPORT =
+	/^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
+
+/**
+ * Holds the ambient module declarations that let a typecheck reach an emitted browser configuration.
+ *
+ * These are the specifiers an emitted browser configuration names that this
+ * repository does not install, because scaffold generates a Vue application
+ * without being one. Declaring their Vite-facing shapes lets the typecheck reach
+ * the emitted configuration itself; the controls below prove a clean run cannot
+ * be a typecheck that resolved nothing.
+ */
+export const BROWSER_PLUGIN_DECLARATIONS = `declare module '@vitejs/plugin-vue' {
+	import type { PluginOption } from 'vite'
+	const plugin: (...options: never[]) => PluginOption
+	export default plugin
+}
+
+declare module 'vite-plugin-singlefile' {
+	import type { PluginOption } from 'vite'
+	export function viteSingleFile(options?: unknown): PluginOption
+}
+`
+
+/**
+ * Lists the environment selections the compiler accepts for one axis.
+ */
+export const ENVIRONMENT_SELECTIONS: ReadonlyArray<readonly Environment[]> = [
+	[],
+	['core'],
+	['browser'],
+	['server'],
+	['core', 'browser'],
+	['core', 'server'],
+	['browser', 'server'],
+	['core', 'browser', 'server'],
+]
+
+/**
+ * Counts, per emitted module path, the blueprints of the selection matrix that emit it.
+ *
+ * The population the sweeps below walk, stated as the relation it actually
+ * is: one entry per (blueprint, module path) pair the selection matrix emits,
+ * projected onto the path as the number of blueprints that emit it. The
+ * union of those paths is a weaker claim and does not stand in for this one. One
+ * maximal blueprint emits every path `MODULE_EMITTERS` names by itself, so under a
+ * union assertion every blueprint but that one could emit nothing and nothing
+ * would move; the counts move for any selection that stops emitting anything.
+ * The control beside the first sweep runs that exact narrowing.
+ */
+export const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
+	'app/browser/index.ts': 64,
+	'app/browser/main.ts': 64,
+	'app/core/index.ts': 64,
+	'app/server/index.ts': 64,
+	'app/server/main.ts': 64,
+	'configs/app/vite.browser.config.ts': 64,
+	'configs/app/vite.server.config.ts': 64,
+	'configs/app/vite.showcase.config.ts': 32,
+	'configs/browsers.ts': 96,
+	'configs/src/vite.bin.config.ts': 63,
+	'configs/src/vite.browser.config.ts': 64,
+	'configs/src/vite.core.config.ts': 64,
+	'configs/src/vite.server.config.ts': 64,
+	'src/bin/main.ts': 63,
+	'src/browser/index.ts': 64,
+	'src/core/index.ts': 64,
+	'src/server/index.ts': 64,
+	'tests/app/browser/index.test.ts': 64,
+	'tests/app/core/index.test.ts': 64,
+	'tests/app/server/index.test.ts': 64,
+	'tests/distribution.test.ts': 112,
+	'tests/integration.test.ts': 63,
+	'tests/setup.ts': 126,
+	'tests/setupBrowser.ts': 96,
+	'tests/setupGlobal.ts': 63,
+	'tests/setupGlobal.test.ts': 63,
+	'tests/setupServer.ts': 111,
+	'tests/src/bin/main.test.ts': 63,
+	'tests/src/browser/index.test.ts': 64,
+	'tests/src/core/index.test.ts': 64,
+	'tests/src/server/index.test.ts': 64,
+	'vite.config.ts': 126,
+})
+
+/**
+ * Lists the packages installed into the staged externalization workspace, each with the token it exports.
+ *
+ * The packages installed into the staged externalization workspace, each
+ * exporting one token the emitted bundle either keeps as an import or inlines.
+ * Only `sample-peer` is declared as a peer, so `sample-plain` is the control.
+ */
+export const PEER_FIXTURE_PACKAGES: ReadonlyArray<readonly [name: string, token: string]> =
+	Object.freeze([
+		['sample-peer', 'PEER_TOKEN'],
+		['sample-plain', 'PLAIN_TOKEN'],
+	])
+
+/**
+ * Lists each published face the externalization workspace builds, by factory and environment.
+ *
+ * Each published face the externalization workspace builds, named by the root
+ * factory that configures it and by the environment whose entry and bundle it
+ * owns.
+ */
+export const PUBLISHED_FACES: ReadonlyArray<readonly [factory: string, environment: string]> =
+	Object.freeze([
+		['srcBrowser', 'browser'],
+		['srcServer', 'server'],
+	])
+
+/**
+ * Names the declarations lifted from the emitted distribution proof to classify an exports map.
+ *
+ * The declarations the emitted distribution proof classifies an installed exports
+ * map with. The proof packs and installs during suite setup;
+ * these are lifted out of the real emitted text instead and driven directly. A name
+ * the proof stops declaring fails the lift rather than thinning the drive.
+ */
+export const CLASSIFIER_DECLARATIONS: readonly string[] = [
+	'MODULE_EXTENSIONS',
+	'ADDON_EXTENSION',
+	'DECLARATION_EXTENSIONS',
+	'BROWSER_OUTPUT',
+	'RUNTIME_CONDITIONS',
+	'BUNDLER_CONDITIONS',
+	'DECLARATION_CONDITIONS',
+	'isRecord',
+	'isList',
+	'isPackageTarget',
+	'readJson',
+	'resolvePackageTarget',
+	'resolveTarget',
+	'resolvesBrowser',
+	'matchesFile',
+	'targetToDeclaration',
+	'resolveDeclaration',
+	'readPackageType',
+	'resolvesCommonJS',
+	'declaresCommonJS',
+	'collectTargets',
+	'isModule',
+	'isDeclaration',
+	'readDeclaration',
+	'selectEntries',
+	'selectUntypable',
+]
+
+/**
+ * Pairs each classification the emitted proof performs with the answer it owes.
+ *
+ * One classification the emitted proof performs, written as the driver evaluates it
+ * and paired with the answer it owes. Each export shape here is one Node accepts:
+ * an array is a fallback list, a condition value may be an array, and a subpath may
+ * answer `require` alone.
+ */
+export const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> = [
+	[`classifier.collectTargets(['./dist/src/core/index.js'])`, ['./dist/src/core/index.js']],
+	[`classifier.collectTargets(['./a.js', { require: './b.cjs' }])`, ['./a.js', './b.cjs']],
+	[
+		`classifier.collectTargets({ import: { types: './x.d.ts', default: './x.js' } })`,
+		['./x.d.ts', './x.js'],
+	],
+	[`classifier.resolveTarget(['./a.js', './b.js'], ['import'])`, './a.js'],
+	[
+		`classifier.resolveTarget([{ types: './x.d.ts', default: './x.js' }], ['types', 'import'])`,
+		'./x.d.ts',
+	],
+	[`classifier.isModule('./dist/src/core/index.js')`, true],
+	[`classifier.isModule('./dist/src/core/index.mjs')`, true],
+	[`classifier.isModule('./dist/src/core/index.cjs')`, true],
+	[`classifier.isModule('./dist/src/core/addon.node')`, true],
+	[`classifier.isModule('./dist/src/core/feature')`, true],
+	[`classifier.isModule('./dist/bundle.js/feature')`, true],
+	[`classifier.isModule('./dist/src/core/module.wasm')`, false],
+	[`classifier.isModule('./dist/src/styles/main.css')`, false],
+	[`classifier.isModule('./package.json')`, false],
+	[`classifier.isModule('./dist/src/core/index.d.ts')`, false],
+	[`classifier.isModule('./dist/src/core/index.d.cts')`, false],
+]
+
+/**
+ * Holds the setup seed a target is born with, transcribed from a run that printed it.
+ *
+ * The setup seeds a target is born with, transcribed from a run that printed them
+ * rather than derived from the templates the pin reads. `audit` decides whether a
+ * setup module is filled by comparing its text against the seed the installed
+ * release plans at that path, and it holds no earlier seed, so a moved byte here
+ * moves that reading on every target materialized before the move. Transcribing
+ * the bytes makes such a move a deliberate edit rather than a silent one.
+ */
+export const PLANNED_SETUP_SEED = ''
+
+/**
+ * Holds the global setup seed a target is born with, transcribed from a run that printed it.
+ */
+export const PLANNED_GLOBAL_SEED = 'export function setup(): void {}\n'
+
+/**
+ * Builds a blueprint for every selection the compiler accepts, in both structural states it branches on.
+ *
+ * Every selection the compiler accepts, in both structural states it branches on.
+ * A shape is emitted for each non-empty `src` x `app` pair drawn from `SELECTIONS`
+ * twice: once with no structural fact set, and once with every one of them set, so
+ * no conditional span is measured in one state alone.
+ *
+ * @returns Each blueprint, with no structural fact set and then with every one set.
+ */
+export function buildSelections(): readonly Blueprint[] {
+	return ENVIRONMENT_SELECTIONS.flatMap((src) =>
+		ENVIRONMENT_SELECTIONS.flatMap((app) =>
+			src.length === 0 && app.length === 0
+				? []
+				: [
+						createBlueprint('sample', { src, app }),
+						createBlueprint('sample', {
+							src,
+							app,
+							bin: true,
+							integration: true,
+							global: true,
+							showcase: true,
+						}),
+					],
+		),
+	)
+}
+
+/**
+ * Builds the TypeScript modules `scaffold new` writes for a blueprint.
+ *
+ * Every TypeScript module `scaffold new` writes for a selection: the root config,
+ * each scoped config wrapper, each barrel and runtime entry, and each test module.
+ *
+ * @param blueprint - The selection to emit.
+ * @returns Each emitted module path mapped to its text.
+ */
+export function buildModules(blueprint: Blueprint): ReadonlyMap<string, string> {
+	return new Map(
+		[
+			...blueprintToConfigArtifacts(blueprint),
+			...blueprintToSourceArtifacts(blueprint),
+			...blueprintToTestArtifacts(blueprint),
+		].flatMap((artifact): Array<[string, string]> =>
+			artifact.origin === 'host' || !artifact.path.endsWith('.ts')
+				? []
+				: [[artifact.path, artifact.content]],
+		),
+	)
+}
+
+/**
+ * Collects the configuration wrappers a blueprint writes, keyed by path.
+ *
+ * A wrapper is a `*.config.ts` file beneath `configs/`. The root configuration and the files the
+ * host supplies are not wrappers.
+ *
+ * @param blueprint - The selection to emit.
+ * @returns Each emitted wrapper's text, keyed by its path.
+ */
+export function collectWrappers(blueprint: Blueprint): Readonly<Record<string, string>> {
+	return Object.fromEntries(
+		blueprintToConfigArtifacts(blueprint).flatMap((artifact): Array<[string, string]> =>
+			artifact.origin === 'host' ||
+			!artifact.path.endsWith('.config.ts') ||
+			!artifact.path.startsWith('configs/')
+				? []
+				: [[artifact.path, artifact.content]],
+		),
+	)
+}
+
+/**
+ * Counts, for every emitted module path, the blueprints that emit it.
+ *
+ * The emitter relation over one corpus, for a walk that reads nothing else. Each
+ * sweep counts its own pairs while it reads content, so this is the shape both
+ * halves compare in rather than a second way of deriving it.
+ *
+ * @param blueprints - The corpus to walk.
+ * @returns The number of emitting blueprints per path.
+ */
+export function countEmitters(blueprints: readonly Blueprint[]): Readonly<Record<string, number>> {
+	const paths = blueprints.flatMap((blueprint) => [...buildModules(blueprint).keys()])
+	return Object.fromEntries(
+		[...Map.groupBy(paths, (path) => path)].map(([path, emitters]): [string, number] => [
+			path,
+			emitters.length,
+		]),
+	)
+}
+
+/**
+ * Measures a line in the columns the vendored formatter prints it in.
+ *
+ * @param line - The line to measure.
+ * @returns The line length with each tab counted as its columns.
+ */
+export function measureWidth(line: string): number {
+	return line.replaceAll('\t', TAB_COLUMNS).length
+}
+
+/**
+ * Builds one `resolveBrowser` call expression for the driver to evaluate.
+ *
+ * One `resolveBrowser` call, written as the driver evaluates it. The platform is
+ * fixed so the answer is a property of the fixture rather than of this host.
+ *
+ * @param pinned - The pinned browser, or undefined for none.
+ * @param environment - The environment the call reads.
+ * @param root - The managed browsers directory.
+ * @returns The call source.
+ */
+export function buildResolveCall(
+	pinned: string | undefined,
+	environment: Readonly<Record<string, string>>,
+	root: string,
+): string {
+	const target = pinned === undefined ? 'undefined' : JSON.stringify(pinned)
+	const settings = JSON.stringify(environment)
+	return `resolver.resolveBrowser(${target}, 'linux', ${settings}, ${JSON.stringify(root)})`
+}
+
+/**
+ * Extracts the identifiers one import clause binds.
+ *
+ * The identifiers one import clause binds, aliases resolved to the bound name.
+ *
+ * @param clause - The import clause between `import` and `from`.
+ * @returns Each bound name, aliases resolved to the bound name.
+ */
+export function extractBindings(clause: string): readonly string[] {
+	const inner = clause.replace(/^type\s+/u, '').trim()
+	const named = /^\{(?<names>[^}]*)\}$/u.exec(inner)
+	if (named?.groups?.names !== undefined) {
+		return named.groups.names
+			.split(',')
+			.map((part) => part.trim())
+			.filter((part) => part.length > 0)
+			.map((part) => part.split(/\s+as\s+/u).at(-1) ?? part)
+	}
+	const namespace = /^\*\s+as\s+(?<name>[A-Za-z_$][\w$]*)$/u.exec(inner)
+	if (namespace?.groups?.name !== undefined) return [namespace.groups.name]
+	return inner.length === 0 ? [] : [inner]
+}
+
+/**
+ * Extracts every import statement in a module, whole.
+ *
+ * Every import statement in a module, whole. The vendored formatter breaks an
+ * import whose bindings pass the print width across lines, so a rule that reads
+ * one line reads a fragment of the statement and every binding below the first
+ * line is invisible to it. An import clause carries no quote, which is what lets
+ * the span reach its specifier across as many lines as the formatter used and
+ * stop there.
+ *
+ * @param content - The module text.
+ * @returns Each import statement, across as many lines as the formatter used.
+ */
+export function extractImports(content: string): readonly string[] {
+	return content.match(/^import\s+(?:[^']*?\s+from\s+)?'[^']*'/gmu) ?? []
+}
+
+/**
+ * Finds the imported names a module never mentions outside its import statements.
+ *
+ * What the vendored `no-unused-vars` rule reports on an import: a bound name the
+ * module never mentions outside its import statements.
+ *
+ * @param content - The module text.
+ * @returns Each unused binding.
+ */
+export function findStrays(content: string): readonly string[] {
+	const statements = extractImports(content)
+	const body = statements.reduce((text, statement) => text.replace(statement, ''), content)
+	const tokens = new Set(body.split(/[^\w$]+/u))
+	return statements.flatMap((statement) => {
+		const clause = /^import\s+(?<clause>[^']*?)\s+from\s+'[^']*'$/u.exec(statement)?.groups?.clause
+		return clause === undefined
+			? []
+			: extractBindings(clause).filter((binding) => !tokens.has(binding))
+	})
+}
+
+/**
+ * Finds the imports that bind nothing and name something other than a stylesheet.
+ *
+ * What the vendored `import/no-unassigned-import` rule reports: an import that
+ * binds nothing and names something other than a stylesheet.
+ *
+ * @param content - The module text.
+ * @returns Each offending import line.
+ */
+export function findUnassigned(content: string): readonly string[] {
+	return content
+		.split('\n')
+		.filter((line) => /^import\s+'[^']+'/u.test(line) && !STYLE_IMPORT.test(line))
+}
+
+/**
+ * Finds the lines the vendored formatter would have printed narrower.
+ *
+ * A line the vendored formatter would have printed narrower. The one excess it
+ * leaves is a string literal the formatter has already given a line of its own:
+ * no break shortens a literal, so a workspace name long enough to pass the width
+ * on its own line stays there. Every other over-width line is a line the formatter
+ * would have broken, which is what `format:check` refuses.
+ *
+ * @param content - The module text.
+ * @returns Each line wider than the print width that the formatter could have broken.
+ */
+export function findWide(content: string): readonly string[] {
+	return content
+		.split('\n')
+		.filter((line) => measureWidth(line) > PRINT_WIDTH && !/^\t*'[^']*',?$/u.test(line))
+}
+
+/**
+ * Changes one byte of a seed, or adds one to a seed holding none.
+ *
+ * One byte of a seed changed: the trailing byte becomes a space, and a seed
+ * holding no bytes gains one, because a byte that is not there cannot be replaced.
+ * Every planned seed is ASCII, so a byte and a code unit are the same thing here.
+ *
+ * @param seed - The seed text.
+ * @returns The seed with its trailing byte replaced by a space.
+ */
+export function mutateSeed(seed: string): string {
+	return `${seed.slice(0, -1)} `
+}
+
+/**
+ * Plants the sealed declaration back into emitted or template text.
+ *
+ * The sealed declaration planted back into a copy of emitted or template text: the
+ * override taken away, which is the shape this rule replaced. Every root
+ * configuration declares `policy`, so the plant lands in each one the sweep walks and
+ * an empty finding is a finding rather than a module the parser skipped.
+ *
+ * @param content - The module text.
+ * @returns The text with the policy override taken away.
+ */
+export function sealParameter(content: string): string {
+	return content.replace(
+		'export function policy(override?: UserConfig): UserConfig {',
+		'export function policy(): UserConfig {',
+	)
+}
+
+/**
+ * Holds one value that a setup hook allocates and a later case or teardown hook reads.
+ *
+ * @remarks
+ * A suite that allocates in `beforeAll` and clears in `afterAll` needs state that outlives one
+ * call, so the state lives in this holder's `#` field instead of in a reassigned binding. The
+ * holder holds one value at a time: it refuses a second value rather than replacing the first, so
+ * it never becomes a cell that carries the latest value of a loop.
+ */
+export class TestHolder<TValue> {
+	#value: TValue | undefined
+
+	/** The held value. Thrown when the holder holds none. */
+	get value(): TValue {
+		if (this.#value === undefined) throw new Error('The holder holds no value')
+		return this.#value
+	}
+
+	/**
+	 * Holds a value.
+	 *
+	 * @param value - The value to hold.
+	 * @returns The value that was passed in.
+	 * @throws Thrown when the holder already holds a value.
+	 */
+	hold(value: TValue): TValue {
+		if (this.#value !== undefined) throw new Error('The holder already holds a value')
+		this.#value = value
+		return value
+	}
+
+	/**
+	 * Gives up the held value.
+	 *
+	 * @returns The value that was held, or `undefined` when the holder held none.
+	 */
+	clear(): TValue | undefined {
+		const value = this.#value
+		this.#value = undefined
+		return value
+	}
+}
+
+/**
+ * Holds a setup module a maintainer wrote into.
+ *
+ * A setup module a maintainer wrote into. What separates it from what scaffold
+ * seeds at that path is that its text is not the seed's.
+ */
+export const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
+
+/**
+ * Holds a hook-only setup module.
+ *
+ * A hook-only module has no exported behavior for a sibling proof to cover.
+ */
+export const HOOK_SETUP_TEXT = [
+	"import { afterEach } from 'vitest'",
+	'',
+	'afterEach(() => {',
+	'\tSAMPLE_REGISTRY.clear()',
+	'})',
+	'',
+].join('\n')
+
+/**
+ * Lists the fleet packages the upstream fixtures answer for.
+ */
+export const FLEET_NAMES: readonly string[] = Object.freeze([
+	'@orkestrel/emitter',
+	'@orkestrel/guide',
+	'@orkestrel/probe',
+	'@orkestrel/scaffold',
+	'@orkestrel/test',
+])
+
+/**
+ * Builds the advisory question raised over one filled setup module no proof covers.
+ *
+ * The advisory audit raises over one filled setup module no proof covers.
+ * Several fixtures carry such a module to reach another subject, and each of
+ * them has to state this question exactly rather than loosen its assertion. The
+ * proof is derived from the module the same way the question derives it, so a
+ * fixture naming a module other than `tests/setup.ts` states the remedy that
+ * module actually wants.
+ *
+ * @param target - The audited target path.
+ * @param module - The setup module the question names.
+ * @returns The question, non-blocking, stating the proof the module wants.
+ */
+export function buildSetupQuestion(target: string, module: string): Question {
+	const proof = `${module.slice(0, -'.ts'.length)}.test.ts`
+	return {
+		field: 'setup',
+		message: `The target at ${target} carries a test setup module that no proof covers: ${module}. Add ${proof} to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+		blocking: false,
+	}
+}
+
+/**
+ * Matches a toolchain floor, a caret over a whole `major.minor.patch` version.
+ *
+ * A floor is a caret over a whole `major.minor.patch` version: the newest the
+ * registry served when the floor was last raised. A bare `^6` loses the minor
+ * and patch an offline generation would otherwise propagate as `6.0.0`, a `~`
+ * pins the wrong axis, a bare version pins one release, and a prerelease is not
+ * a floor anyone runs. Fleet rows answer to `ORKESTREL_RANGE_PATTERN` instead,
+ * because a `0.x` caret means something different.
+ */
+export const TOOLCHAIN_RANGE_PATTERN = /^\^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
+
+/**
+ * Labels every shared dependency table a generated workspace can receive.
+ *
+ * Every shared table a generated workspace can receive, labelled so a failure
+ * names the table it came from rather than the row alone.
+ */
+export const DEPENDENCY_TABLES = [
+	['base', BASE_DEV_DEPENDENCIES],
+	['declaration', DECLARATION_DEV_DEPENDENCIES],
+	['browse', BROWSE_DEV_DEPENDENCIES],
+	['source browser', SOURCE_BROWSER_DEV_DEPENDENCIES],
+	['app', APP_DEV_DEPENDENCIES],
+	['app browser', APP_BROWSER_DEV_DEPENDENCIES],
+	['vue', FRAMEWORK_MATRIX.vue.dependencies],
+	['app server', APP_SERVER_DEV_DEPENDENCIES],
+	['showcase', SHOWCASE_DEV_DEPENDENCIES],
+	['styles', STYLES_DEV_DEPENDENCIES],
+] as const
+
+/**
+ * Lists the ownership tiers a planned artifact can carry.
+ */
+export const OWNERSHIPS: readonly Ownership[] = ['content', 'presence', 'birth']
+
+/**
+ * Holds the text a planned artifact is born with.
+ */
+export const PLANNED_TEXT = '# Sample\n'
+
+/**
+ * Holds the hexadecimal bytes of the planned text, which a matching observation carries.
+ */
+export const MATCHING_HEX = contentToHex(PLANNED_TEXT)
+
+/**
+ * Holds the hexadecimal bytes of an edited text, which a differing observation carries.
+ */
+export const DIFFERING_HEX = contentToHex('# Edited\n')
+
+/**
+ * Lists every option token some verb documents, once, in verb order.
+ *
+ * Every option token some verb documents, once, in verb order.
+ */
+export const DOCUMENTED_OPTIONS: readonly string[] = [
+	...new Set(VERBS.flatMap((verb) => VERB_OPTIONS[verb])),
+]
+
+/**
+ * Lists the negative control for every membership claim about documented options.
+ *
+ * The negative control for every membership claim below, drawn from outside the
+ * population those claims cover: one word the executable has never accepted, and
+ * the flags the retired surface carried. An instrument that answers
+ * "documented" or "accepted" for these has measured nothing.
+ */
+export const UNDOCUMENTED_OPTIONS: readonly string[] = ['--surfaces <list>', '--apply', '--prune']
+
+/**
+ * Lists the paths a materialization of the compiled plan writes first.
+ */
+export const MATERIALIZED_PATHS = [
+	'package.json',
+	'AGENTS.md',
+	'.claude/agents/orkestrel.md',
+	'.claude/rules/names.md',
+	'guides/guide.md',
+	'scripts/codex.sh',
 ]

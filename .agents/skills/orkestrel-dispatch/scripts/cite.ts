@@ -24,15 +24,20 @@ interface Resolution {
 	readonly reason: string | undefined
 }
 
+interface Citation {
+	readonly citation: string
+	readonly file: string
+	readonly line: number
+	readonly end: number | undefined
+}
+
 function indexBasenames(root: string): ReadonlyMap<string, readonly string[]> {
-	const index = new Map<string, string[]>()
-	for (const file of listFiles(root)) {
-		const name = basename(file.path)
-		const paths = index.get(name) ?? []
-		paths.push(normalizeSlashes(relative(root, file.path)))
-		index.set(name, paths)
-	}
-	return index
+	return new Map(
+		[...Map.groupBy(listFiles(root), (file) => basename(file.path))].map(([name, files]) => [
+			name,
+			files.map((file) => normalizeSlashes(relative(root, file.path))),
+		]),
+	)
 }
 
 function countLines(path: string): number {
@@ -43,15 +48,25 @@ function countLines(path: string): number {
 	return lines.at(-1) === '' ? lines.length - 1 : lines.length
 }
 
+function resolveDirect(root: string, file: string): string | undefined {
+	const direct = resolve(root, normalizeSlashes(file))
+	return existsSync(direct) && statSync(direct).isFile() ? direct : undefined
+}
+
+// A bare filename that no root-relative file matches is the one citation the basename index serves.
+function needsIndex(root: string, file: string): boolean {
+	return resolveDirect(root, file) === undefined && !/[/\\]/u.test(file)
+}
+
 function resolveFile(
 	root: string,
 	file: string,
-	index: () => ReadonlyMap<string, readonly string[]>,
+	index: ReadonlyMap<string, readonly string[]> | undefined,
 ): Resolution {
-	const direct = resolve(root, normalizeSlashes(file))
-	if (existsSync(direct) && statSync(direct).isFile()) return { path: direct, reason: undefined }
+	const direct = resolveDirect(root, file)
+	if (direct !== undefined) return { path: direct, reason: undefined }
 	if (/[/\\]/u.test(file)) return { path: undefined, reason: 'file does not exist' }
-	const candidates = index().get(basename(file)) ?? []
+	const candidates = index?.get(basename(file)) ?? []
 	const only = candidates.length === 1 ? candidates[0] : undefined
 	if (only !== undefined) return { path: resolve(root, only), reason: undefined }
 	if (candidates.length === 0) return { path: undefined, reason: 'file does not exist' }
@@ -62,10 +77,9 @@ function judgeLines(
 	path: string,
 	line: number,
 	end: number | undefined,
-	counts: Map<string, number>,
+	counts: ReadonlyMap<string, number>,
 ): string | undefined {
 	const total = counts.get(path) ?? countLines(path)
-	counts.set(path, total)
 	if (line < 1 || line > total) return `line ${line} is outside 1-${total}`
 	if (end !== undefined && (end < line || end > total))
 		return `range end ${end} is outside ${line}-${total}`
@@ -86,23 +100,39 @@ function main(argv: readonly string[]): number {
 		console.error('usage: cite.ts PATH [--root DIR] [--json]')
 		return 64
 	}
-	let index: ReadonlyMap<string, readonly string[]> | undefined
-	const counts = new Map<string, number>()
-	const unresolved: Unresolved[] = []
-	let citations = 0
-	for (const match of readFileSync(path, 'utf8').matchAll(CITATION)) {
-		const file = match[1]
-		const line = Number(match[2])
-		const end = match[3] === undefined ? undefined : Number(match[3])
-		if (file === undefined) continue
-		citations += 1
-		const resolved = resolveFile(root, file, () => (index ??= indexBasenames(root)))
+	const named = [...readFileSync(path, 'utf8').matchAll(CITATION)].flatMap((match): Citation[] =>
+		match[1] === undefined
+			? []
+			: [
+					{
+						citation: match[0],
+						file: match[1],
+						line: Number(match[2]),
+						end: match[3] === undefined ? undefined : Number(match[3]),
+					},
+				],
+	)
+	const citations = named.length
+	// The basename index walks the root, so it is built once and only when a citation needs it.
+	const index = named.some(({ file }) => needsIndex(root, file)) ? indexBasenames(root) : undefined
+	const resolutions = named.map((entry) => ({
+		entry,
+		resolved: resolveFile(root, entry.file, index),
+	}))
+	// Each resolved file is counted once, however many citations name it.
+	const counts = new Map(
+		[...new Set(resolutions.flatMap(({ resolved }) => resolved.path ?? []))].map((file) => [
+			file,
+			countLines(file),
+		]),
+	)
+	const unresolved = resolutions.flatMap(({ entry, resolved }): Unresolved[] => {
 		const reason =
 			resolved.path === undefined
 				? (resolved.reason ?? 'file does not exist')
-				: judgeLines(resolved.path, line, end, counts)
-		if (reason !== undefined) unresolved.push({ citation: match[0], reason })
-	}
+				: judgeLines(resolved.path, entry.line, entry.end, counts)
+		return reason === undefined ? [] : [{ citation: entry.citation, reason }]
+	})
 	if (argv.includes('--json')) {
 		console.log(JSON.stringify({ path, root, citations, unresolved }))
 	} else {

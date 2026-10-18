@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { isString } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/bench.ts'
+import { runSkillScript, BENCH_SCRIPT } from '../../../../setupServer.js'
 
 describe('bench.ts', () => {
 	it('refuses a call that names no bench or gives a flag with no value', () => {
-		expect(runSkillScript(SCRIPT, []).status).toBe(64)
-		expect(runSkillScript(SCRIPT, ['--cursor', '--resolve', '--cap']).status).toBe(64)
-		expect(runSkillScript(SCRIPT, ['--codex', '--model']).status).toBe(64)
+		expect(runSkillScript(BENCH_SCRIPT, []).status).toBe(64)
+		expect(runSkillScript(BENCH_SCRIPT, ['--cursor', '--resolve', '--cap']).status).toBe(64)
+		expect(runSkillScript(BENCH_SCRIPT, ['--codex', '--model']).status).toBe(64)
 	})
 
 	// The Cursor entry is read from LOCALAPPDATA inside the script's win32 branch alone, so the
@@ -19,7 +17,7 @@ describe('bench.ts', () => {
 		() => {
 			const scratch = createScratch({ prefix: 'orkestrel-bench-' })
 			try {
-				const absent = runSkillScript(SCRIPT, ['--cursor', '--resolve'], {
+				const absent = runSkillScript(BENCH_SCRIPT, ['--cursor', '--resolve'], {
 					cwd: scratch.path,
 					env: { LOCALAPPDATA: scratch.path },
 				})
@@ -29,7 +27,7 @@ describe('bench.ts', () => {
 					isString(absent.json?.error) && absent.json.error.includes('is not a directory'),
 				).toBe(true)
 				scratch.write('cursor-agent/versions', 'not a directory')
-				const file = runSkillScript(SCRIPT, ['--cursor', '--resolve'], {
+				const file = runSkillScript(BENCH_SCRIPT, ['--cursor', '--resolve'], {
 					cwd: scratch.path,
 					env: { LOCALAPPDATA: scratch.path },
 				})
@@ -39,7 +37,7 @@ describe('bench.ts', () => {
 				)
 				scratch.remove('cursor-agent/versions')
 				scratch.ensure('cursor-agent/versions/2026.01.01-abcdef0')
-				const bare = runSkillScript(SCRIPT, ['--cursor', '--resolve'], {
+				const bare = runSkillScript(BENCH_SCRIPT, ['--cursor', '--resolve'], {
 					cwd: scratch.path,
 					env: { LOCALAPPDATA: scratch.path },
 				})
@@ -49,7 +47,7 @@ describe('bench.ts', () => {
 				).toBe(true)
 				scratch.write('cursor-agent/versions/2026.01.01-abcdef0/node.exe', '')
 				scratch.write('cursor-agent/versions/2026.01.01-abcdef0/index.js', '')
-				const mute = runSkillScript(SCRIPT, ['--cursor', '--resolve'], {
+				const mute = runSkillScript(BENCH_SCRIPT, ['--cursor', '--resolve'], {
 					cwd: scratch.path,
 					env: { LOCALAPPDATA: scratch.path },
 				})

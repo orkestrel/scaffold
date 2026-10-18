@@ -38,6 +38,7 @@ import {
 	CATALOG_OPENING_MARKER,
 	cloneValue,
 	computeBytes,
+	computeTotal,
 	contentToHex,
 	inferGroup,
 	insertManifestDependencies,
@@ -314,18 +315,22 @@ export class Materializer implements MaterializerInterface {
 		const drifted = new Map<string, Drift>(
 			derived.findings.map((finding) => [finding.path, finding.drift]),
 		)
-		const writes: Artifact[] = []
-		const skipped: string[] = []
-		const preconditions: WritePrecondition[] = []
-		for (const artifact of hydrated.artifacts) {
-			const drift = drifted.get(artifact.path)
-			if (drift !== 'missing' && drift !== 'stale') {
-				skipped.push(artifact.path)
-				continue
-			}
-			preconditions.push(this.#bind(directory, artifact.path, drift === 'missing'))
-			writes.push(artifact)
-		}
+		// Only a missing or a stale path is written; the rest are skipped. A missing destination
+		// is bound as absent, a stale one as present.
+		const judged = hydrated.artifacts.map((artifact) => ({
+			artifact,
+			drift: drifted.get(artifact.path),
+		}))
+		const skipped = judged.flatMap(({ artifact, drift }) =>
+			drift === 'missing' || drift === 'stale' ? [] : [artifact.path],
+		)
+		const selected = judged.flatMap(({ artifact, drift }) =>
+			drift === 'missing' || drift === 'stale' ? [{ artifact, missing: drift === 'missing' }] : [],
+		)
+		const preconditions = selected.map(({ artifact, missing }) =>
+			this.#bind(directory, artifact.path, missing),
+		)
+		const writes = selected.map(({ artifact }) => artifact)
 		return this.#apply(directory, writes, [], skipped, preconditions)
 	}
 
@@ -351,20 +356,20 @@ export class Materializer implements MaterializerInterface {
 		const writes: Artifact[] = []
 		const skipped: string[] = []
 		const preconditions: WritePrecondition[] = []
-		let remaining = MAX_TOTAL_ARTIFACT_BYTES
+		const spent: number[] = []
 		for (const fetched of accepted) {
 			const hex =
 				fetched.lookup === 'found'
 					? contentToHex(fetched.content)
 					: fetched.observed === undefined
-						? this.#reference(fetched.path, remaining)
+						? this.#reference(fetched.path, MAX_TOTAL_ARTIFACT_BYTES - computeTotal(spent))
 						: undefined
 			if (hex === undefined || fetched.observed === hex) {
 				skipped.push(fetched.path)
 				continue
 			}
-			remaining -= hex.length / 2
-			if (remaining < 0) {
+			spent.push(hex.length / 2)
+			if (computeTotal(spent) > MAX_TOTAL_ARTIFACT_BYTES) {
 				throw this.#error('TARGET', 'The guide mirrors exceed the total artifact byte limit.')
 			}
 			const current = readFileHex(directory, fetched.path)
@@ -515,18 +520,13 @@ export class Materializer implements MaterializerInterface {
 		const derived = this.#derive(accepted, directory)
 		this.#reconfirmCandidates(derived.findings, preview.findings, directory)
 		const tracked = new Set(state.tracked)
-		const removals: string[] = []
-		const skipped: string[] = []
-		for (const finding of derived.findings) {
-			if (finding.drift !== 'foreign') continue
-			if (!tracked.has(finding.path) || matchesProtectedPath(finding.path)) {
-				skipped.push(finding.path)
-				continue
-			}
-			removals.push(finding.path)
-		}
-		const preconditions: WritePrecondition[] = []
-		for (const path of removals) preconditions.push(this.#bind(directory, path, false))
+		// A foreign path is deleted only when git tracks it and it is not protected; the rest are skipped.
+		const foreign = derived.findings
+			.filter((finding) => finding.drift === 'foreign')
+			.map((finding) => finding.path)
+		const skipped = foreign.filter((path) => !tracked.has(path) || matchesProtectedPath(path))
+		const removals = foreign.filter((path) => tracked.has(path) && !matchesProtectedPath(path))
+		const preconditions = removals.map((path) => this.#bind(directory, path, false))
 		return this.#purge(directory, removals, skipped, preconditions)
 	}
 
@@ -644,27 +644,33 @@ export class Materializer implements MaterializerInterface {
 	// another verb owns the bytes of stay presence-owned, because a byte claim this
 	// verb cannot keep is one the audit beside it would immediately fail.
 	#hydrate(plan: Plan): Plan {
-		const artifacts: Artifact[] = []
-		let remaining = MAX_TOTAL_ARTIFACT_BYTES
+		// Each artifact leaves one group of artifacts and the bytes that group retains, because the
+		// next expansion reads what the earlier ones left of the total.
+		const groups: Array<readonly Artifact[]> = []
+		const spent: number[] = []
 		for (const artifact of plan.artifacts) {
 			if (artifact.origin !== 'host') {
-				remaining -= computeBytes(artifact.content)
-				artifacts.push(artifact)
+				spent.push(computeBytes(artifact.content))
+				groups.push([artifact])
 				continue
 			}
-			const expanded = this.#expand(artifact, remaining)
-			for (const one of expanded) {
-				remaining -= one.origin === 'host' ? (one.hex?.length ?? 0) / 2 : computeBytes(one.content)
-			}
-			artifacts.push(...expanded)
+			const expanded = this.#expand(artifact, MAX_TOTAL_ARTIFACT_BYTES - computeTotal(spent))
+			spent.push(
+				computeTotal(
+					expanded.map((one) =>
+						one.origin === 'host' ? (one.hex?.length ?? 0) / 2 : computeBytes(one.content),
+					),
+				),
+			)
+			groups.push(expanded)
 		}
-		if (remaining < 0) {
+		if (computeTotal(spent) > MAX_TOTAL_ARTIFACT_BYTES) {
 			throw this.#error('TARGET', 'The hydrated plan retains more bytes than one plan may.', {
 				host: this.#root,
 				limit: MAX_TOTAL_ARTIFACT_BYTES,
 			})
 		}
-		return { blueprint: plan.blueprint, groups: plan.groups, artifacts }
+		return { blueprint: plan.blueprint, groups: plan.groups, artifacts: groups.flat() }
 	}
 
 	// Hydrate once, extend the target snapshot beneath the vendored directories
@@ -673,22 +679,24 @@ export class Materializer implements MaterializerInterface {
 	// plan it already needs for writes, while the public audit lets this method own
 	// the hydration itself.
 	#derive(plan: Plan, target: string, hydrated = this.#hydrate(plan)): Audit {
-		const paths = new Set(hydrated.artifacts.map((artifact) => artifact.path))
-		for (const root of this.#roots(plan)) {
-			const directory = resolveContainedPath(target, root)
-			if (directory === undefined) {
-				throw this.#error('TARGET', `The owned root at ${root} leaves its target.`, {
-					target,
-					path: root,
-				})
-			}
-			for (const name of listFiles(directory)) paths.add(`${root}/${name}`)
-		}
-		for (const path of listCanonPaths(target, plan.groups)) paths.add(path)
+		const paths = new Set([
+			...hydrated.artifacts.map((artifact) => artifact.path),
+			...this.#roots(plan).flatMap((root) => {
+				const directory = resolveContainedPath(target, root)
+				if (directory === undefined) {
+					throw this.#error('TARGET', `The owned root at ${root} leaves its target.`, {
+						target,
+						path: root,
+					})
+				}
+				return listFiles(directory).map((name) => `${root}/${name}`)
+			}),
+			...listCanonPaths(target, plan.groups),
+		])
 		const questions: Question[] = []
 		if (plan.groups.includes('guides')) {
 			const directory = resolveContainedPath(target, 'guides')
-			let remaining = MAX_TOTAL_ARTIFACT_BYTES
+			const spent: number[] = []
 			for (const file of directory === undefined ? [] : listFiles(directory)) {
 				const path = `guides/${file}`
 				if (
@@ -698,9 +706,9 @@ export class Materializer implements MaterializerInterface {
 					path === nameToGuide(plan.blueprint.name)
 				)
 					continue
-				const hosted = this.#reference(path, remaining)
+				const hosted = this.#reference(path, MAX_TOTAL_ARTIFACT_BYTES - computeTotal(spent))
 				if (hosted === undefined) continue
-				remaining -= hosted.length / 2
+				spent.push(hosted.length / 2)
 				const present = readFileHex(target, path)
 				if (present !== undefined && present !== hosted) {
 					questions.push({
@@ -737,20 +745,19 @@ export class Materializer implements MaterializerInterface {
 	// this plan expands. A manifest states the directory shape; a raw host is
 	// inspected directly. Files and host roots outside the plan never enter the set.
 	#roots(plan: Plan): readonly string[] {
-		const roots = new Set<string>()
-		for (const artifact of plan.artifacts) {
-			if (artifact.origin !== 'host') continue
-			const source = artifact.source ?? artifact.path
-			if (this.#manifest?.roots.includes(source) === true) {
-				roots.add(artifact.path)
-				continue
-			}
-			if (this.#manifest !== undefined) continue
-			const root = this.#root
-			const directory = root === undefined ? undefined : resolveContainedPath(root, source)
-			if (directory !== undefined && isPhysicalDirectory(directory)) roots.add(artifact.path)
-		}
-		return [...roots]
+		return [
+			...new Set(
+				plan.artifacts.flatMap((artifact): readonly string[] => {
+					if (artifact.origin !== 'host') return []
+					const source = artifact.source ?? artifact.path
+					if (this.#manifest?.roots.includes(source) === true) return [artifact.path]
+					if (this.#manifest !== undefined) return []
+					const root = this.#root
+					const directory = root === undefined ? undefined : resolveContainedPath(root, source)
+					return directory !== undefined && isPhysicalDirectory(directory) ? [artifact.path] : []
+				}),
+			),
+		]
 	}
 
 	// One host artifact against the vendored root, through the manifest when the
@@ -770,15 +777,15 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		const expanded: Artifact[] = []
-		let budget = remaining
+		const spent: number[] = []
 		for (const entry of matched) {
 			const path = this.#remap(artifact, entry.destination)
 			if (isRetainedPath(path)) {
 				expanded.push(this.#presence(artifact, path, entry.destination))
 				continue
 			}
-			const hex = this.#read(entry, budget)
-			budget -= hex.length / 2
+			const hex = this.#read(entry, remaining - computeTotal(spent))
+			spent.push(hex.length / 2)
 			expanded.push(this.#hydrated(artifact, path, entry.destination, hex))
 		}
 		return expanded
@@ -813,7 +820,7 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		const expanded: Artifact[] = []
-		let budget = remaining
+		const spent: number[] = []
 		for (const name of listFiles(full)) {
 			const path = `${artifact.path}/${name}`
 			const destination = `${source}/${name}`
@@ -821,8 +828,8 @@ export class Materializer implements MaterializerInterface {
 				expanded.push(this.#presence(artifact, path, destination))
 				continue
 			}
-			const hex = this.#readRoot(destination, budget)
-			budget -= hex.length / 2
+			const hex = this.#readRoot(destination, remaining - computeTotal(spent))
+			spent.push(hex.length / 2)
 			expanded.push(this.#hydrated(artifact, path, destination, hex))
 		}
 		return expanded
@@ -834,19 +841,18 @@ export class Materializer implements MaterializerInterface {
 	#empty(plan: Plan): readonly string[] {
 		const manifest = this.#manifest
 		if (manifest === undefined) return []
-		const directories = new Set<string>()
-		for (const artifact of plan.artifacts) {
-			if (artifact.origin !== 'host') continue
+		const directories = plan.artifacts.flatMap((artifact): readonly string[] => {
+			if (artifact.origin !== 'host') return []
 			const source = artifact.source ?? artifact.path
-			for (const root of manifest.roots) {
-				if (root !== source && !root.startsWith(`${source}/`)) continue
+			return manifest.roots.flatMap((root): readonly string[] => {
+				if (root !== source && !root.startsWith(`${source}/`)) return []
 				const filled = manifest.entries.some(
 					(entry) => entry.destination === root || entry.destination.startsWith(`${root}/`),
 				)
-				if (!filled) directories.add(this.#remap(artifact, root))
-			}
-		}
-		return [...directories].sort()
+				return filled ? [] : [this.#remap(artifact, root)]
+			})
+		})
+		return [...new Set(directories)].sort()
 	}
 
 	// Move one manifest destination from the artifact's source prefix onto its
@@ -1125,11 +1131,11 @@ export class Materializer implements MaterializerInterface {
 	#fill(writes: readonly Artifact[]): string | undefined {
 		const value = this.#value
 		if (value === undefined) return undefined
-		const destinations = new Set<string>()
-		for (const artifact of writes) {
-			if (artifact.origin !== 'host') continue
-			destinations.add(artifact.source ?? artifact.path)
-		}
+		const destinations = new Set(
+			writes.flatMap((artifact) =>
+				artifact.origin === 'host' ? [artifact.source ?? artifact.path] : [],
+			),
+		)
 		if (destinations.size === 0) return undefined
 		const opened = attempt(() => mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-fill-')))
 		if (!opened.success) {
@@ -1228,8 +1234,11 @@ export class Materializer implements MaterializerInterface {
 		// they cannot disagree. A name absent from every layer sits in a cycle and
 		// carries no layer cell rather than a guessed one.
 		const layers = catalogToLayers(entries)
-		const placed = new Map<string, number>()
-		for (const [index, layer] of layers.entries()) for (const name of layer) placed.set(name, index)
+		const placed = new Map(
+			layers.flatMap((layer, index) =>
+				layer.map((name): readonly [string, number] => [name, index]),
+			),
+		)
 		const rows: string[][] = entries.map((entry) => {
 			if (entry.lookup !== 'found') {
 				return [`\`${entry.name}\``, this.#cell(entry.note), '', '', '']
@@ -1250,11 +1259,9 @@ export class Materializer implements MaterializerInterface {
 			]
 		})
 		const headers = ['Package', 'Version', 'Layer', 'Runtime dependencies', 'Peer dependencies']
-		const widths = headers.map((header, column) => {
-			let width = Math.max(3, header.length)
-			for (const row of rows) width = Math.max(width, row[column]?.length ?? 0)
-			return width
-		})
+		const widths = headers.map((header, column) =>
+			Math.max(3, header.length, ...rows.map((row) => row[column]?.length ?? 0)),
+		)
 		const table = [headers, widths.map((width) => '-'.repeat(width)), ...rows]
 			.map(
 				(row) =>

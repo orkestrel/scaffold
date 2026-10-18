@@ -1,7 +1,6 @@
 import type { Audit } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
-import { executeSync } from '@orkestrel/process/server'
 import { resolve } from 'node:path'
 import {
 	blueprintToDevDependencies,
@@ -10,12 +9,9 @@ import {
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	createBlueprint,
-	MAX_MANIFEST_BYTES,
-	MAX_PATH_LENGTH,
 	ScaffoldError,
 } from '@src/core'
-import { MAX_INVENTORY_PATHS } from '@src/server'
-import { requireValue } from '@orkestrel/test'
+import { captureError, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 
 import {
@@ -40,7 +36,7 @@ import {
 	auditToExit,
 	auditToSummary,
 	catalogToNames,
-	collectGitRecords,
+	collectScriptChain,
 	dependenciesToFloors,
 	dependenciesToFleet,
 	entriesToReleases,
@@ -52,14 +48,13 @@ import {
 	manifestToWritableScripts,
 	mergeResults,
 	optionToName,
-	readGitRecords,
-	refuseGitRecords,
 	releasesToExit,
 	releasesToPins,
 	releasesToQuestions,
 	renderUsage,
 	resultToTally,
 	sanitizeLine,
+	scanScriptTokens,
 	scriptToInvocations,
 	selectionToEnvironments,
 	selectionToExtensions,
@@ -72,6 +67,7 @@ import {
 	verbToSyntax,
 	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
+import { DOCUMENTED_OPTIONS, UNDOCUMENTED_OPTIONS } from '../../setup.js'
 import {
 	AUDIT_EXIT_CASES,
 	buildOptionArgv,
@@ -79,7 +75,6 @@ import {
 	COMMAND_CASES,
 	SCRATCH_PREFIX,
 	USAGE_CASES,
-	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 
 describe('selected showcase declaration projection', () => {
@@ -229,15 +224,6 @@ describe('target extension markers', () => {
 	})
 })
 
-// Every option token some verb documents, once, in verb order.
-const DOCUMENTED: readonly string[] = [...new Set(VERBS.flatMap((verb) => VERB_OPTIONS[verb]))]
-
-// The negative control for every membership claim below, drawn from outside the
-// population those claims cover: one word the executable has never accepted, and
-// the flags the retired surface carried. An instrument that answers
-// "documented" or "accepted" for these has measured nothing.
-const UNDOCUMENTED: readonly string[] = ['--surfaces <list>', '--apply', '--prune']
-
 describe('optionToName', () => {
 	it('reads the bare name out of a token carrying a value placeholder', () => {
 		expect(optionToName('--from <path>')).toBe('from')
@@ -249,13 +235,13 @@ describe('optionToName', () => {
 	})
 
 	it('names an option the parser accepts, for every documented token', () => {
-		for (const option of DOCUMENTED) {
+		for (const option of DOCUMENTED_OPTIONS) {
 			expect(Object.keys(COMMAND_OPTIONS)).toContain(optionToName(option))
 		}
 	})
 
 	it('names an option the parser refuses, for a token from outside the set', () => {
-		for (const option of UNDOCUMENTED) {
+		for (const option of UNDOCUMENTED_OPTIONS) {
 			expect(Object.keys(COMMAND_OPTIONS)).not.toContain(optionToName(option))
 		}
 	})
@@ -296,7 +282,7 @@ describe('verbToSyntax', () => {
 	it('omits every option its verb does not take', () => {
 		for (const verb of VERBS) {
 			const syntax = verbToSyntax(verb)
-			const absent = DOCUMENTED.filter((option) => !VERB_OPTIONS[verb].includes(option))
+			const absent = DOCUMENTED_OPTIONS.filter((option) => !VERB_OPTIONS[verb].includes(option))
 			for (const option of absent) expect(syntax).not.toContain(`[${option}]`)
 		}
 	})
@@ -330,7 +316,7 @@ describe('renderUsage', () => {
 
 	it('documents every option some verb takes', () => {
 		const usage = renderUsage().join('\n')
-		for (const option of DOCUMENTED) {
+		for (const option of DOCUMENTED_OPTIONS) {
 			expect(Object.keys(OPTION_SUMMARY)).toContain(option)
 			expect(usage).toContain(option)
 		}
@@ -338,7 +324,7 @@ describe('renderUsage', () => {
 
 	it('documents nothing the executable does not accept', () => {
 		const usage = renderUsage().join('\n')
-		for (const option of UNDOCUMENTED) expect(usage).not.toContain(option)
+		for (const option of UNDOCUMENTED_OPTIONS) expect(usage).not.toContain(option)
 	})
 
 	it('aligns the glossary on the widest token', () => {
@@ -417,12 +403,7 @@ describe('argvToCommand', () => {
 
 	for (const usageCase of USAGE_CASES) {
 		it(`refuses ${usageCase.label}`, () => {
-			let raised: unknown
-			try {
-				argvToCommand(usageCase.argv)
-			} catch (error) {
-				raised = error
-			}
+			const raised = captureError(() => argvToCommand(usageCase.argv))
 			expect(isUsageError(raised)).toBe(true)
 			expect(raised instanceof Error ? raised.message : '').toContain(usageCase.mention)
 			expect(raised instanceof UsageError ? raised.code : '').toBe(USAGE_CODE)
@@ -439,7 +420,7 @@ describe('argvToCommand', () => {
 
 	it('refuses every option it does not document, on every verb', () => {
 		for (const verb of VERBS) {
-			for (const option of UNDOCUMENTED) {
+			for (const option of UNDOCUMENTED_OPTIONS) {
 				expect(() => argvToCommand(buildOptionArgv(verb, option))).toThrow(UsageError)
 			}
 		}
@@ -1031,6 +1012,69 @@ describe('releasesToPins', () => {
 	})
 })
 
+describe('scanScriptTokens', () => {
+	it('splits words on whitespace and keeps each operator as its own token', () => {
+		expect(scanScriptTokens('a  b\tc')?.map((token) => token.value)).toStrictEqual(['a', 'b', 'c'])
+		expect(scanScriptTokens('a&&b||c;d|e&f(g)')?.map((token) => token.value)).toStrictEqual([
+			'a',
+			'&&',
+			'b',
+			'||',
+			'c',
+			';',
+			'd',
+			'|',
+			'e',
+			'&',
+			'f',
+			'(',
+			'g',
+			')',
+		])
+		expect(scanScriptTokens(';;&&&')?.map((token) => token.value)).toStrictEqual([
+			';',
+			';',
+			'&&',
+			'&',
+		])
+		expect(scanScriptTokens('')).toStrictEqual([])
+		expect(scanScriptTokens(' \n ')).toStrictEqual([])
+	})
+
+	it('drops quotes and escapes from a value and joins adjacent segments into one word', () => {
+		expect(scanScriptTokens('a"b c"\'d e\'\\ f')?.map((token) => token.value)).toStrictEqual([
+			'ab cd e f',
+		])
+		expect(scanScriptTokens('"a\\"b" \'a\\b\' ""')?.map((token) => token.value)).toStrictEqual([
+			'a"b',
+			'a\\b',
+			'',
+		])
+		expect(scanScriptTokens('"a && b"')?.map((token) => token.value)).toStrictEqual(['a && b'])
+	})
+
+	it('marks a word unresolved only when an expansion character is neither escaped nor single-quoted', () => {
+		const scripts: ReadonlyArray<readonly [script: string, resolved: readonly boolean[]]> = [
+			['$A `b` 100%', [false, false, false]],
+			['"$A" "x`y`"', [false, false]],
+			["'$A' '`b`' '%'", [true, true, true]],
+			['\\$A "\\$A" "\\`"', [true, true, true]],
+			['plain "quoted" \'single\' && ;', [true, true, true, true, true]],
+		]
+		for (const [script, resolved] of scripts) {
+			expect(scanScriptTokens(script)?.map((token) => token.resolved)).toStrictEqual(resolved)
+		}
+	})
+
+	it('answers undefined for a quote never closed and for a trailing backslash', () => {
+		expect(scanScriptTokens('a "b')).toBeUndefined()
+		expect(scanScriptTokens("a 'b")).toBeUndefined()
+		expect(scanScriptTokens('a "b\\"')).toBeUndefined()
+		expect(scanScriptTokens('a \\')).toBeUndefined()
+		expect(scanScriptTokens('a b\\')).toBeUndefined()
+	})
+})
+
 describe('scriptToInvocations', () => {
 	it('reaches a planned wrapper only through its Vitest run command', () => {
 		const wrappers = new Map([['configs/src/vite.print.config.ts', 'src:print']])
@@ -1298,211 +1342,86 @@ describe('catalogToNames', () => {
 	})
 })
 
-describe('readGitRecords', () => {
-	it('answers the records git wrote for this repository', async () => {
-		const records = await readGitRecords(WORKSPACE_ROOT, ['ls-files', '-z'])
-		expect(records).toContain('package.json')
-		expect(records.every((record) => record.length > 0)).toBe(true)
-	})
-
-	it('reads complete tracked and dirty inventories beyond the manifest byte limit', async () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			const repository = workspace.ensure('repository')
-			const paths = Array.from(
-				{ length: Math.floor(MAX_INVENTORY_PATHS / 5) },
-				(_, index) => `tracked/${String(index).padStart(5, '0')}-${'inventory'.repeat(6)}.txt`,
-			)
-			const encoder = new TextEncoder()
-			let bytes = 0
-			let boundary: string | undefined
-			for (const path of paths) {
-				bytes += encoder.encode(`${path}\0`).byteLength
-				if (boundary === undefined && bytes > MAX_MANIFEST_BYTES) boundary = path
-			}
-			expect(bytes).toBeGreaterThan(MAX_MANIFEST_BYTES)
-			expect(boundary).toBeDefined()
-
-			const initialized = executeSync(
-				{ file: 'git', arguments: ['-C', repository, 'init', '--quiet'] },
-				{ strict: false },
-			)
-			expect(initialized.failed).toBe(false)
-			const hashed = executeSync(
-				{ file: 'git', arguments: ['-C', repository, 'hash-object', '-w', '--stdin'] },
-				{ input: 'inventory fixture\n', strict: false },
-			)
-			expect(hashed.failed).toBe(false)
-			const digest = hashed.stdout.trim()
-			const indexed = executeSync(
-				{ file: 'git', arguments: ['-C', repository, 'update-index', '-z', '--index-info'] },
-				{
-					input: paths.map((path) => `100644 ${digest}\t${path}\0`).join(''),
-					strict: false,
-				},
-			)
-			expect(indexed.failed).toBe(false)
-
-			const tracked = await readGitRecords(repository, ['ls-files', '-z'])
-			expect(tracked).toStrictEqual(paths)
-			expect(tracked).toContain(boundary)
-			const dirty = await readGitRecords(repository, [
-				'status',
-				'--porcelain=v1',
-				'--untracked-files=all',
-				'-z',
-			])
-			expect(dirty).toStrictEqual(paths.map((path) => `AD ${path}`))
-			expect(dirty).toContain(`AD ${boundary}`)
-		} finally {
-			workspace.destroy()
-		}
-	})
-
-	it('preserves a leading BOM in the first tracked filename', async () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			const repository = workspace.ensure('repository')
-			const path = '\uFEFFleading.txt'
-			const initialized = executeSync(
-				{ file: 'git', arguments: ['-C', repository, 'init', '--quiet'] },
-				{ strict: false },
-			)
-			expect(initialized.failed).toBe(false)
-			const hashed = executeSync(
-				{ file: 'git', arguments: ['-C', repository, 'hash-object', '-w', '--stdin'] },
-				{ input: 'bom fixture\n', strict: false },
-			)
-			expect(hashed.failed).toBe(false)
-			const indexed = executeSync(
-				{ file: 'git', arguments: ['-C', repository, 'update-index', '-z', '--index-info'] },
-				{ input: `100644 ${hashed.stdout.trim()}\t${path}\0`, strict: false },
-			)
-			expect(indexed.failed).toBe(false)
-
-			await expect(readGitRecords(repository, ['ls-files', '-z'])).resolves.toStrictEqual([path])
-		} finally {
-			workspace.destroy()
-		}
-	})
-
-	it('refuses a directory that is not a git repository', async () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			await expect(readGitRecords(workspace.path, ['ls-files', '-z'])).rejects.toThrow(
-				ScaffoldError,
-			)
-		} finally {
-			workspace.destroy()
-		}
-	})
-
-	it('reports a failed git query without diagnosing the repository', async () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			const initialized = executeSync(
-				{ file: 'git', arguments: ['-C', workspace.path, 'init', '--quiet'] },
-				{ strict: false },
-			)
-			expect(initialized.failed).toBe(false)
-			await expect(
-				readGitRecords(workspace.path, ['unknown-scaffold-query']),
-			).rejects.toMatchObject({
-				code: 'TARGET',
-				message: expect.stringContaining('git query'),
-			})
-		} finally {
-			workspace.destroy()
-		}
-	})
-
-	it('refuses a successful git query whose final record has no NUL terminator', async () => {
-		await expect(
-			readGitRecords(WORKSPACE_ROOT, ['rev-parse', '--show-toplevel']),
-		).rejects.toMatchObject({
-			code: 'TARGET',
-			message: expect.stringContaining('incomplete record'),
-		})
-	})
-})
-
-describe('collectGitRecords', () => {
-	it('collects ordered records across UTF-8 and NUL boundaries and ignores empty records', () => {
-		const records: string[] = []
-		const pending = ['']
-		const decoder = new TextDecoder()
-		const controller = new AbortController()
-		const encoder = new TextEncoder()
-		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('alpha\0br'))
-		const remainder = encoder.encode('ûlée\0\0omega')
-		collectGitRecords(records, pending, decoder, controller, 'target', remainder.subarray(0, 1))
-		collectGitRecords(records, pending, decoder, controller, 'target', remainder.subarray(1))
-		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('\0'))
-
-		expect(records).toStrictEqual(['alpha', 'brûlée', 'omega'])
-		expect(pending).toStrictEqual([''])
-		expect(controller.signal.aborted).toBe(false)
-	})
-
-	it('refuses the record beyond the inventory boundary and ignores later input', () => {
-		const records = Array.from({ length: MAX_INVENTORY_PATHS - 1 }, () => 'kept')
-		const pending = ['']
-		const decoder = new TextDecoder()
-		const controller = new AbortController()
-		const encoder = new TextEncoder()
-		collectGitRecords(
-			records,
-			pending,
-			decoder,
-			controller,
-			'target',
-			encoder.encode('last\0overflow\0'),
+describe('collectScriptChain', () => {
+	it('walks a gate through every script it runs and collects their projects', () => {
+		const chain = collectScriptChain(
+			'test',
+			{
+				test: 'npm run test:src && npm run test:app',
+				'test:src': 'vitest run --project src:core',
+				'test:app': 'npm run test:app:core',
+				'test:app:core': 'vitest run --project app:core',
+			},
+			new Map(),
 		)
-		const reason = controller.signal.reason
-		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('ignored'))
 
-		expect(records).toHaveLength(MAX_INVENTORY_PATHS)
-		expect(records.at(-1)).toBe('last')
-		expect(pending).toStrictEqual([''])
-		expect(reason).toMatchObject({ code: 'TARGET' })
-		expect(controller.signal.reason).toBe(reason)
+		expect([...chain.visited]).toStrictEqual(['test', 'test:src', 'test:app', 'test:app:core'])
+		expect([...chain.projects]).toStrictEqual(['src:core', 'app:core'])
+		expect([...chain.unreadable]).toStrictEqual([])
 	})
 
-	it('accepts the unfinished-path boundary and refuses the next character', () => {
-		const records: string[] = []
-		const pending = ['']
-		const decoder = new TextDecoder()
-		const controller = new AbortController()
-		const encoder = new TextEncoder()
-		collectGitRecords(
-			records,
-			pending,
-			decoder,
-			controller,
-			'target',
-			encoder.encode('p'.repeat(MAX_PATH_LENGTH + 3)),
+	it('ends where a cycle closes and still reads every script once', () => {
+		const chain = collectScriptChain(
+			'a',
+			{ a: 'npm run b', b: 'npm run a && vitest run --project p:x' },
+			new Map(),
 		)
-		expect(controller.signal.aborted).toBe(false)
-		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('p'))
 
-		expect(records).toStrictEqual([])
-		expect(pending[0]).toHaveLength(MAX_PATH_LENGTH + 4)
-		expect(controller.signal.reason).toMatchObject({ code: 'TARGET' })
+		expect([...chain.visited]).toStrictEqual(['a', 'b'])
+		expect([...chain.projects]).toStrictEqual(['p:x'])
 	})
-})
 
-describe('refuseGitRecords', () => {
-	it('retains its initial target refusal', () => {
-		const controller = new AbortController()
-		refuseGitRecords(controller, 'target', 'initial refusal')
-		const reason = controller.signal.reason
-		refuseGitRecords(controller, 'target', 'later refusal')
+	it('names a script whose command cannot be read and follows nothing from it', () => {
+		const chain = collectScriptChain(
+			'test',
+			{
+				test: 'npm run first && npm run second',
+				first: 'vitest run --project  && npm run hidden',
+				second: 'vitest run --project src:core',
+				hidden: 'vitest run --project src:server',
+			},
+			new Map(),
+		)
 
-		expect(reason).toMatchObject({
-			code: 'TARGET',
-			message: 'initial refusal',
-			context: { target: 'target' },
-		})
-		expect(controller.signal.reason).toBe(reason)
+		expect([...chain.unreadable]).toStrictEqual(['first'])
+		expect([...chain.visited]).toStrictEqual(['test', 'first', 'second'])
+		expect([...chain.projects]).toStrictEqual(['src:core'])
+	})
+
+	it('visits a script the manifest does not declare as a string and reads nothing from it', () => {
+		const chain = collectScriptChain('test', { test: 'npm run broken', broken: 42 }, new Map())
+
+		expect([...chain.visited]).toStrictEqual(['test', 'broken'])
+		expect([...chain.projects]).toStrictEqual([])
+		expect([...chain.unreadable]).toStrictEqual([])
+	})
+
+	it('answers only the gate for a gate the manifest does not declare', () => {
+		const chain = collectScriptChain('absent', {}, new Map())
+
+		expect([...chain.visited]).toStrictEqual(['absent'])
+		expect([...chain.projects]).toStrictEqual([])
+		expect([...chain.unreadable]).toStrictEqual([])
+	})
+
+	it('omits the projects of a script the gate never reaches', () => {
+		const chain = collectScriptChain(
+			'test',
+			{ test: 'vitest run --project a', other: 'vitest run --project b' },
+			new Map(),
+		)
+
+		expect([...chain.projects]).toStrictEqual(['a'])
+		expect(chain.visited.has('other')).toBe(false)
+	})
+
+	it('reads a planned wrapper configuration as the face project it runs', () => {
+		const chain = collectScriptChain(
+			'test',
+			{ test: 'vitest run --config configs/src/vite.core.config.ts' },
+			new Map([['configs/src/vite.core.config.ts', 'src:core']]),
+		)
+
+		expect([...chain.projects]).toStrictEqual(['src:core'])
 	})
 })

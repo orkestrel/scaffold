@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, globSync, readdirSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import {
 	CANON_PATHS,
 	blueprintToConfigArtifacts,
@@ -30,156 +30,30 @@ import {
 	buildSkillRun,
 	buildEnvironment,
 	createUpstreamServer,
+	CLAIM_DRIVER,
+	CLAIM_ELISION,
+	CLAIM_EXAMPLE,
+	CLAIM_LINE,
+	CLAIM_PREFIX,
+	countClaims,
 	createDistributionScratch,
+	DECLARATION_CASES,
 	installGeneratedWorkspace,
 	GENERATED_VUE_SETUP_FILES,
 	installPackedScaffold,
+	locateClaimOpening,
 	NPM_LAUNCHER,
+	NPM_REGISTRY,
+	parseClaimVerdict,
 	provisionNpm,
 	readManifestVersion,
 	readNpmFloor,
 	readNpmVersion,
 	parseVitestReport,
+	RELEASE_MODE,
 	spawnNpm,
+	WORKSPACE_ROOT,
 } from './setupServer.js'
-
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-// Every npm call in this file takes the launcher's shell, for the reason `TestNpmLauncher`
-// states: without it the registry probe is false on every Windows host, so the install case
-// never runs there — in `prepublishOnly` included — and the failure reads as "no registry"
-// instead of "this proof cannot launch npm". Every argument this file hands npm is a literal
-// or a path this file built, so the shell has nothing to escape.
-const registry =
-	spawnSync(
-		NPM_LAUNCHER.command,
-		['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'],
-		{
-			cwd: root,
-			stdio: 'ignore',
-			timeout: 5_000,
-			windowsHide: true,
-			shell: NPM_LAUNCHER.shell,
-		},
-	).status === 0
-const release = import.meta.env.MODE === 'release'
-// The npm this host resolves. It decides which provisioning branch this file can drive: a
-// host at or above the declared floor has nothing to provision, and a host beneath it
-// provisions from the registry. Every case in this file needs npm, so the reading sits beside
-// the registry probe rather than inside one case.
-const ambient = readNpmVersion()
-
-// The declarations a consumer installs. Each is read, because an example
-// is shipped by whichever declaration prints it and a reader hovers over either.
-// Each carries controls of its own, and none of them is in either built
-// declaration, so every one lies outside the population the instrument covers.
-// One control per outcome the rule below can reach, because the instrument has
-// one way to report and says nothing as undriven, glossed, or elided. A false claim must be scored
-// a mismatch, which is the proof the comparison can fail at all. A claim the
-// rule excludes must be named in the set that excluded it — undriven, glossed,
-// or elided — which is the proof the rule reports what it cannot reach instead
-// of dropping it. The false controls in the excluded spellings are the ones
-// the previous instrument dropped silently: it named the statement kind alone,
-// so a corrected example rewritten with a gloss or an elision left every list
-// where it was.
-const DECLARATIONS = [
-	{
-		types: 'dist/src/core/index.d.ts',
-		module: 'dist/src/core/index.js',
-		controls: [
-			// The claim this package shipped before the correction below it, with the
-			// value its example only declared. It is false for every blueprint that
-			// compiles, and it is the class the previous instrument could not reach.
-			[
-				"const blueprint = createBlueprint('router', { src: ['core'] })",
-				"new Compiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true",
-			].join('\n'),
-			// A statement rather than an expression, which the rule excludes.
-			"if (isGroup('manifest')) inferGroup('AGENTS.md') // 'docs'",
-		],
-	},
-	{
-		types: 'dist/src/server/index.d.ts',
-		module: 'dist/src/server/index.js',
-		controls: [
-			"isBranch('main') // false",
-			"isBranch('main') // false — a branch name is not a branch",
-			"listFiles('./dist/host') // ['definitely-not-a-file', …]",
-		],
-	},
-] as const
-
-// A claim is a line inside a fenced `ts` example whose trailing comment states a
-// verdict. That is the population, and every line in it lands in exactly one of
-// these sets. It is driven when the verdict parses as a literal and the
-// expression the comment sits on closes its own brackets and is an expression
-// rather than a statement. Otherwise it is elided, glossed, or undriven, and
-// each of those is asserted as the exact list of lines it holds.
-const EXAMPLE = /```ts\n(?<body>[\s\S]*?)```/gu
-const CLAIM = /^(?<expression>\S.*?) \/\/ (?<verdict>.+)$/u
-const PREFIX = /^\s*\*( |$)/u
-const OPENER = /^[A-Za-z_$([]/u
-const KEYWORDS = [
-	'await',
-	'case',
-	'catch',
-	'class',
-	'const',
-	'declare',
-	'do',
-	'else',
-	'export',
-	'finally',
-	'for',
-	'function',
-	'if',
-	'import',
-	'let',
-	'return',
-	'switch',
-	'throw',
-	'try',
-	'var',
-	'while',
-]
-// A verdict this instrument declines to read as a literal. An elided value shows
-// a prefix of a shape rather than the whole of one, so there is nothing to
-// compare a run against and the line is named rather than scored.
-const ELISION = '…'
-const ABSENT = '\u0000undefined'
-
-// The child that answers for the claims. It compiles each example block on its
-// own, so a block this instrument mis-sliced reports its own refusal instead of
-// taking the run down, and it records each claim where the example puts it, so a
-// verdict that depends on the lines above it is read after they have run.
-const DRIVER = [
-	"import { readFileSync } from 'node:fs'",
-	"const payload = JSON.parse(readFileSync(0, 'utf8'))",
-	'const module = await import(payload.module)',
-	'const names = Object.keys(module).filter((name) => /^[A-Za-z_$][\\w$]*$/u.test(name))',
-	"const preamble = 'const { ' + names.join(', ') + ' } = module'",
-	'const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor',
-	'const outcomes = {}',
-	'const record = (id, value) => {',
-	"	outcomes[id] = { driven: true, encoded: value === undefined ? '\\u0000undefined' : String(JSON.stringify(value)) }",
-	'}',
-	'for (const block of payload.blocks) {',
-	'	let run',
-	'	try {',
-	"		run = new AsyncFunction('module', 'record', preamble + '\\n' + block.source)",
-	'	} catch (error) {',
-	'		for (const id of block.claims) outcomes[id] = { driven: false, reason: String(error) }',
-	'		continue',
-	'	}',
-	'	try {',
-	'		await run(module, record)',
-	'	} catch (error) {',
-	'		for (const id of block.claims) {',
-	'			if (outcomes[id] === undefined) outcomes[id] = { driven: false, reason: String(error) }',
-	'		}',
-	'	}',
-	'}',
-	'process.stdout.write(JSON.stringify(outcomes))',
-].join('\n')
 
 describe('installed package consumer', () => {
 	it('runs the complete selection through a packed CLI adopter and repairs its wrapper', async () => {
@@ -239,7 +113,7 @@ describe('installed package consumer', () => {
 			// Install the release being proved instead of the registry version the emitted range names.
 			const emitted = manifest.devDependencies['@orkestrel/scaffold']
 			expect(emitted).toBe(
-				`^${readManifestVersion(readFileSync(join(root, 'package.json'), 'utf8'))}`,
+				`^${readManifestVersion(readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf8'))}`,
 			)
 			const specifier = `file:${relative(target, archive).replaceAll('\\', '/')}`
 			workspace.write(
@@ -621,7 +495,7 @@ describe('installed package consumer', () => {
 				staged.some((path) => destination === path || destination.startsWith(`${path}/`)),
 			).toBe(true)
 		}
-		expect(listFiles(resolve(root, 'dist/host'))).toEqual(
+		expect(listFiles(resolve(WORKSPACE_ROOT, 'dist/host'))).toEqual(
 			[...expanded.map((path) => pathToStorage(path)), 'manifest.json'].sort(),
 		)
 	})
@@ -629,126 +503,121 @@ describe('installed package consumer', () => {
 	it('answers every example its shipped declarations print exactly as printed', async () => {
 		const workspace = createDistributionScratch('scaffold-e4-examples-')
 		try {
-			const driven: string[] = []
-			const undriven: string[] = []
-			const elided: string[] = []
-			const glossed: string[] = []
-			const mismatched: string[] = []
-			const printing: string[] = []
-			let shaped = 0
-			for (const declaration of DECLARATIONS) {
-				const text = readFileSync(resolve(root, declaration.types), 'utf8')
-				const bodies = [
+			// Each awaited declaration appends the readings its driver run answered.
+			const readings: Array<{
+				readonly types: string
+				readonly printed: number
+				readonly tally: number
+				readonly driven: readonly string[]
+				readonly undriven: readonly string[]
+				readonly elided: readonly string[]
+				readonly glossed: readonly string[]
+				readonly mismatched: readonly string[]
+			}> = []
+			for (const declaration of DECLARATION_CASES) {
+				const text = readFileSync(resolve(WORKSPACE_ROOT, declaration.types), 'utf8')
+				const extracted = [
 					...text
 						.replaceAll('\r\n', '\n')
 						.split('\n')
-						.map((line) => line.replace(PREFIX, ''))
+						.map((line) => line.replace(CLAIM_PREFIX, ''))
 						.join('\n')
-						.matchAll(EXAMPLE),
+						.matchAll(CLAIM_EXAMPLE),
 				].map((match) => match.groups?.body ?? '')
 				// The controls are appended to the population the driver runs, never to
 				// the population extracted from the declaration, so what they prove is a
 				// property of the instrument rather than of what the package shipped.
-				// Every body appended past this index is a control, so the tally below reads
-				// what the declaration printed alone: a rule that narrowed to the controls
-				// still leaves the declaration at zero.
-				const fenced = bodies.length
-				bodies.push(...declaration.controls)
-				let printed = 0
-				const claims: Array<{ readonly text: string; readonly encoded: string }> = []
-				const blocks: Array<{ readonly source: string; readonly claims: readonly number[] }> = []
-				for (const [ordinal, body] of bodies.entries()) {
+				// The count is taken before the controls join, so it reads what the declaration
+				// printed alone: a rule that narrowed to the controls still leaves the
+				// declaration at zero.
+				const printed = countClaims(extracted)
+				const bodies = [...extracted, ...declaration.controls]
+				const scans = bodies.map((body) => {
 					const lines = body.split('\n')
-					const spans: Array<{
-						readonly start: number
-						readonly end: number
-						readonly id: number
-					}> = []
-					for (const [index, line] of lines.entries()) {
-						const match = CLAIM.exec(line.trim())
-						const expression = match?.groups?.expression
-						const verdict = match?.groups?.verdict
-						if (expression === undefined || verdict === undefined) continue
-						shaped += 1
-						if (ordinal < fenced) printed += 1
-						const stated = `${declaration.types}: ${expression} // ${verdict}`
-						if (verdict.includes(ELISION)) {
-							elided.push(stated)
-							continue
-						}
-						let encoded: string | undefined
-						if (verdict === 'undefined') encoded = ABSENT
-						else {
-							try {
-								encoded = JSON.stringify(
-									JSON.parse(
-										/^(true|false|-?\d+(\.\d+)?)$/u.test(verdict)
-											? verdict
-											: verdict.replaceAll("'", '"'),
-									),
-								)
-							} catch {
-								encoded = undefined
+					const found = lines.flatMap(
+						(
+							line,
+							index,
+						): ReadonlyArray<{
+							readonly bucket: 'elided' | 'glossed' | 'undriven' | 'claim'
+							readonly stated: string
+							readonly claim:
+								| {
+										readonly text: string
+										readonly encoded: string
+										readonly start: number
+										readonly end: number
+								  }
+								| undefined
+						}> => {
+							const match = CLAIM_LINE.exec(line.trim())
+							const expression = match?.groups?.expression
+							const verdict = match?.groups?.verdict
+							if (expression === undefined || verdict === undefined) return []
+							const stated = `${declaration.types}: ${expression} // ${verdict}`
+							if (verdict.includes(CLAIM_ELISION)) {
+								return [{ bucket: 'elided', stated, claim: undefined }]
 							}
-						}
-						if (encoded === undefined) {
-							glossed.push(stated)
-							continue
-						}
-						// The statement the comment sits on is the shortest run of lines
-						// ending at the claim's own line that closes every bracket it opens,
-						// so a claim printed across several lines is driven as the one
-						// expression it is.
-						let opening: number | undefined
-						for (let start = index; start >= 0; start -= 1) {
-							const joined = [...lines.slice(start, index), expression].join('\n').trim()
-							let depth = 0
-							let quote = ''
-							let escaped = false
-							let balanced = true
-							for (const character of joined) {
-								if (escaped) escaped = false
-								else if (character === '\\') escaped = true
-								else if (quote !== '') quote = character === quote ? '' : quote
-								else if (character === "'" || character === '"' || character === '`') {
-									quote = character
-								} else if ('(['.includes(character) || character === '{') depth += 1
-								else if (')]'.includes(character) || character === '}') depth -= 1
-								if (depth < 0) balanced = false
-								if (!balanced) break
+							const encoded = parseClaimVerdict(verdict)
+							if (encoded === undefined) {
+								return [{ bucket: 'glossed', stated, claim: undefined }]
 							}
-							if (!balanced || depth !== 0 || quote !== '') continue
-							if (!OPENER.test(joined)) break
-							if (KEYWORDS.includes(/^[A-Za-z_$][\w$]*/u.exec(joined)?.[0] ?? '')) break
-							opening = start
-							break
-						}
-						if (opening === undefined) {
-							undriven.push(`${declaration.types}: ${expression}`)
-							continue
-						}
-						// Recorded only once it has a span, so the claim list holds exactly the
-						// claims the driver is asked to answer and an unanswered id below is a
-						// claim the block reached past rather than one this list already names.
-						const id = claims.length
-						claims.push({ text: expression, encoded })
-						spans.push({ start: opening, end: index, id })
+							// The statement the comment sits on is the shortest run of lines
+							// ending at the claim's own line that closes every bracket it opens,
+							// so a claim printed across several lines is driven as the one
+							// expression it is.
+							const opening = locateClaimOpening(lines, index, expression)
+							return opening === undefined
+								? [
+										{
+											bucket: 'undriven',
+											stated: `${declaration.types}: ${expression}`,
+											claim: undefined,
+										},
+									]
+								: [
+										{
+											bucket: 'claim',
+											stated,
+											claim: { text: expression, encoded, start: opening, end: index },
+										},
+									]
+						},
+					)
+					return {
+						lines,
+						found,
+						claims: found.flatMap(({ claim }) => (claim === undefined ? [] : [claim])),
 					}
-					if (spans.length === 0) continue
-					const source: string[] = []
-					for (const [index, line] of lines.entries()) {
+				})
+				// A claim is numbered by its place in the declaration's whole list, so the list holds
+				// exactly the claims the driver is asked to answer and an unanswered id below is a
+				// claim the block reached past rather than one this list already names.
+				const claims = scans.flatMap((scan) => scan.claims)
+				// Each awaited transform appends the block the driver compiles on its own.
+				const blocks: Array<{ readonly source: string; readonly claims: readonly number[] }> = []
+				for (const [position, scan] of scans.entries()) {
+					if (scan.claims.length === 0) continue
+					const before = scans
+						.slice(0, position)
+						.reduce((total, own) => total + own.claims.length, 0)
+					const spans = scan.claims.map((claim, order) => ({
+						start: claim.start,
+						end: claim.end,
+						id: before + order,
+					}))
+					const source = scan.lines.flatMap((line, index) => {
 						const span = spans.find((candidate) => candidate.start === index)
 						if (span !== undefined) {
-							const opening = lines.slice(span.start, span.end)
-							const expression = CLAIM.exec(lines[span.end]?.trim() ?? '')?.groups?.expression ?? ''
-							source.push(`record(${String(span.id)}, (${[...opening, expression].join('\n')}))`)
-							continue
+							const opening = scan.lines.slice(span.start, span.end)
+							const expression =
+								CLAIM_LINE.exec(scan.lines[span.end]?.trim() ?? '')?.groups?.expression ?? ''
+							return [`record(${String(span.id)}, (${[...opening, expression].join('\n')}))`]
 						}
 						if (spans.some((candidate) => index > candidate.start && index <= candidate.end))
-							continue
-						if (/^\s*(import|declare|export)\b/u.test(line)) continue
-						source.push(line)
-					}
+							return []
+						return /^\s*(import|declare|export)\b/u.test(line) ? [] : [line]
+					})
 					// An example is TypeScript, so the transformer this workspace already
 					// declares erases its types rather than a pattern in this file guessing at
 					// them. The name it is transformed under carries the extension, which is
@@ -761,50 +630,81 @@ describe('installed package consumer', () => {
 						claims: spans.map((span) => span.id),
 					})
 				}
-				if (printed > 0) printing.push(declaration.types)
-				const answered = spawnSync(process.execPath, ['--input-type=module', '--eval', DRIVER], {
-					cwd: workspace.path,
-					encoding: 'utf8',
-					input: JSON.stringify({
-						module: pathToFileURL(resolve(root, declaration.module)).href,
-						blocks,
-					}),
-					timeout: 120_000,
-					windowsHide: true,
-				})
+				const answered = spawnSync(
+					process.execPath,
+					['--input-type=module', '--eval', CLAIM_DRIVER],
+					{
+						cwd: workspace.path,
+						encoding: 'utf8',
+						input: JSON.stringify({
+							module: pathToFileURL(resolve(WORKSPACE_ROOT, declaration.module)).href,
+							blocks,
+						}),
+						timeout: 120_000,
+						windowsHide: true,
+					},
+				)
 				expect(answered.stderr).toBe('')
 				expect(answered.status).toBe(0)
 				const outcomes: unknown = JSON.parse(answered.stdout)
 				if (!isRecord(outcomes)) {
 					throw new Error(`${declaration.types} produced no outcomes`)
 				}
-				for (const [index, claim] of claims.entries()) {
+				// The driver answers for every claim in a block it ran, so a claim with
+				// no outcome at all is one the block reached past rather than one the
+				// module contradicted. It is undriven for the same reason a statement
+				// is, and naming it in that set is what keeps the sets a partition.
+				const answers = claims.map((claim, index) => {
 					const outcome: unknown = Object.getOwnPropertyDescriptor(outcomes, String(index))?.value
-					// The driver answers for every claim in a block it ran, so a claim with
-					// no outcome at all is one the block reached past rather than one the
-					// module contradicted. It is undriven for the same reason a statement
-					// is, and naming it in that set is what keeps the sets a partition.
-					if (!isRecord(outcome)) {
-						undriven.push(`${declaration.types}: ${claim.text}`)
-						continue
-					}
-					const encoded: unknown = Object.getOwnPropertyDescriptor(outcome, 'encoded')?.value
-					if (!isString(encoded)) {
-						undriven.push(`${declaration.types}: ${claim.text}`)
-						continue
-					}
-					driven.push(`${declaration.types}: ${claim.text}`)
-					if (encoded !== claim.encoded) {
-						mismatched.push(`${claim.text} // ${claim.encoded} answered ${encoded}`)
-					}
-				}
+					const encoded: unknown = isRecord(outcome)
+						? Object.getOwnPropertyDescriptor(outcome, 'encoded')?.value
+						: undefined
+					return { claim, encoded }
+				})
+				const answeredClaims = answers.flatMap(({ claim, encoded }) =>
+					isString(encoded) ? [{ claim, encoded }] : [],
+				)
+				readings.push({
+					types: declaration.types,
+					printed,
+					tally: countClaims(bodies),
+					driven: answeredClaims.map(({ claim }) => `${declaration.types}: ${claim.text}`),
+					undriven: [
+						...scans.flatMap(({ found }) =>
+							found.filter(({ bucket }) => bucket === 'undriven').map(({ stated }) => stated),
+						),
+						...answers
+							.filter(({ encoded }) => !isString(encoded))
+							.map(({ claim }) => `${declaration.types}: ${claim.text}`),
+					],
+					elided: scans.flatMap(({ found }) =>
+						found.filter(({ bucket }) => bucket === 'elided').map(({ stated }) => stated),
+					),
+					glossed: scans.flatMap(({ found }) =>
+						found.filter(({ bucket }) => bucket === 'glossed').map(({ stated }) => stated),
+					),
+					mismatched: answeredClaims
+						.filter(({ claim, encoded }) => encoded !== claim.encoded)
+						.map(({ claim, encoded }) => `${claim.text} // ${claim.encoded} answered ${encoded}`),
+				})
 			}
+			const driven = readings.flatMap((reading) => reading.driven)
+			const undriven = readings.flatMap((reading) => reading.undriven)
+			const elided = readings.flatMap((reading) => reading.elided)
+			const glossed = readings.flatMap((reading) => reading.glossed)
+			const mismatched = readings.flatMap((reading) => reading.mismatched)
+			const printing = readings
+				.filter((reading) => reading.printed > 0)
+				.map((reading) => reading.types)
+			const tallies = readings.map((reading) => reading.tally)
 
 			// The sets partition the population rather than sampling it, so no
 			// claim-shaped line can leave the rule without arriving in a list below.
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves from one list to another and both move.
-			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
+			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(
+				tallies.reduce((total, tally) => total + tally, 0),
+			)
 			// Named rather than tallied, because the population grows whenever a shipped
 			// declaration documents another example and a number pinned to it goes stale on
 			// the next one. What stays fixed is the declaration list, so this asserts that
@@ -815,7 +715,7 @@ describe('installed package consumer', () => {
 			// narrows over what a declaration prints without silencing it moves nothing in that set.
 			// The driven-count floors that follow are what catch a partial narrowing, by
 			// pinning each declaration's driven claims above a bound.
-			expect(printing).toStrictEqual(DECLARATIONS.map((declaration) => declaration.types))
+			expect(printing).toStrictEqual(DECLARATION_CASES.map((declaration) => declaration.types))
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
@@ -903,9 +803,11 @@ describe('installed package consumer', () => {
 	it('drives the built compiler from outside the checkout without a network install', () => {
 		const workspace = createScratch({ prefix: 'scaffold-e4-driver-' })
 		const target = join(workspace.path, 'generated')
-		const core = pathToFileURL(resolve(root, 'dist/src/core/index.js')).href
-		const server = pathToFileURL(resolve(root, 'dist/src/server/index.js')).href
-		const missing = pathToFileURL(resolve(root, 'dist/outside-integration-control.js')).href
+		const core = pathToFileURL(resolve(WORKSPACE_ROOT, 'dist/src/core/index.js')).href
+		const server = pathToFileURL(resolve(WORKSPACE_ROOT, 'dist/src/server/index.js')).href
+		const missing = pathToFileURL(
+			resolve(WORKSPACE_ROOT, 'dist/outside-integration-control.js'),
+		).href
 		try {
 			const control = spawnSync(
 				process.execPath,
@@ -922,7 +824,7 @@ describe('installed package consumer', () => {
 				'const plan = compiler.compile(blueprint).plan',
 				"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
 				'compiler.destroy()',
-				`const materializer = new server.Materializer({ host: ${JSON.stringify(resolve(root, 'dist/host'))} })`,
+				`const materializer = new server.Materializer({ host: ${JSON.stringify(resolve(WORKSPACE_ROOT, 'dist/host'))} })`,
 				`const result = materializer.materialize(plan, ${JSON.stringify(target)})`,
 				'materializer.destroy()',
 				'process.stdout.write(String(result.written.length))',
@@ -1045,13 +947,16 @@ describe('installed package consumer', () => {
 			compiler.destroy()
 			if (plan === undefined) throw new Error('The generated proof blueprint was blocked')
 			const generated = join(workspace.path, 'generated')
-			const materializer = new Materializer({ host: root })
+			const materializer = new Materializer({ host: resolve(WORKSPACE_ROOT) })
 			materializer.materialize(plan, generated)
 			materializer.destroy()
 			workspace.ensure('generated/node_modules')
-			for (const name of readdirSync(resolve(root, 'node_modules'))) {
+			for (const name of readdirSync(resolve(WORKSPACE_ROOT, 'node_modules'))) {
 				if (name.startsWith('.') && name !== '.bin') continue
-				workspace.link(`generated/node_modules/${name}`, resolve(root, 'node_modules', name))
+				workspace.link(
+					`generated/node_modules/${name}`,
+					resolve(WORKSPACE_ROOT, 'node_modules', name),
+				)
 			}
 
 			// The generated manifest runs the proof with the command the release row names, so the
@@ -1080,7 +985,8 @@ describe('installed package consumer', () => {
 			// The controls are the rival runs `buildReleaseScenarios` lists after the release and
 			// ordinary runs: each fails a release run without reaching the proof's registry gate.
 			const scenarios = buildReleaseScenarios(command, ordinary, configuration, source)
-			const readings = new Map<string, unknown>()
+			// Each awaited scenario appends its label and what its run reported.
+			const logged: Array<readonly [string, unknown]> = []
 			for (const scenario of scenarios) {
 				for (const [path, content] of Object.entries(scenario.files)) {
 					workspace.write(`generated/${path}`, content)
@@ -1098,21 +1004,25 @@ describe('installed package consumer', () => {
 				workspace.write(`generated/${DISTRIBUTION_TEST_PATH}`, source)
 				const text = workspace.read(`generated/${report}`)
 				const files = text === undefined ? undefined : parseVitestReport(text)
-				readings.set(scenario.label, {
-					// A run the timeout or a signal ended never reached the proof's verdict, and a run
-					// that never asked the fixture answers something other than its refusal.
-					expired: run.expired,
-					signal: run.signal,
-					pinged: refusal.paths.filter((path) => path === '/-/ping').length - pinged,
-					code: run.code,
-					files: files?.map((entry) => ({
-						proof: resolve(entry.name) === proof,
-						status: entry.status,
-						message: entry.message,
-						statuses: [...new Set(entry.cases.map((item) => item.status))].sort(),
-					})),
-				})
+				logged.push([
+					scenario.label,
+					{
+						// A run the timeout or a signal ended never reached the proof's verdict, and a run
+						// that never asked the fixture answers something other than its refusal.
+						expired: run.expired,
+						signal: run.signal,
+						pinged: refusal.paths.filter((path) => path === '/-/ping').length - pinged,
+						code: run.code,
+						files: files?.map((entry) => ({
+							proof: resolve(entry.name) === proof,
+							status: entry.status,
+							message: entry.message,
+							statuses: [...new Set(entry.cases.map((item) => item.status))].sort(),
+						})),
+					},
+				])
 			}
+			const readings = new Map(logged)
 			// Release fails during suite setup after collection, so Vitest marks its cases skipped.
 			// The ordinary run executes the registry-independent cases and skips the rest.
 			const failed = {
@@ -1292,10 +1202,10 @@ describe('installed package consumer', () => {
 		}
 	})
 
-	it.skipIf(!registry && !release)(
+	it.skipIf(!NPM_REGISTRY.reachable && !RELEASE_MODE)(
 		'installs the packed scaffold and passes one generated core/server workspace through prepublish [requires a reachable npm registry]',
 		() => {
-			if (!registry) {
+			if (!NPM_REGISTRY.reachable) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
 			const workspace = createDistributionScratch('scaffold-e4-install-')
@@ -1392,10 +1302,10 @@ describe('installed package consumer', () => {
 	// vendored set against a workspace carrying none. What it does not reach is a browser-carrying
 	// workspace's gate chain, which vendors `configs/browsers.ts` and registers Playwright projects
 	// this blueprint never materializes.
-	it.skipIf(!registry && !release)(
+	it.skipIf(!NPM_REGISTRY.reachable && !RELEASE_MODE)(
 		'installs the packed scaffold and passes one generated app-only workspace through its gates [requires a reachable npm registry]',
 		() => {
-			if (!registry) {
+			if (!NPM_REGISTRY.reachable) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
 			const workspace = createDistributionScratch('scaffold-e4-app-install-')
@@ -1451,10 +1361,10 @@ describe('installed package consumer', () => {
 		1_200_000,
 	)
 
-	it.skipIf(!registry && !release)(
+	it.skipIf(!NPM_REGISTRY.reachable && !RELEASE_MODE)(
 		'renders a Vue SFC through the generated browser setup project [requires a reachable npm registry]',
 		() => {
-			if (!registry) {
+			if (!NPM_REGISTRY.reachable) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
 			const workspace = createDistributionScratch('scaffold-vue-setup-install-')
@@ -1527,10 +1437,10 @@ describe('installed package consumer', () => {
 	// Node refuses to strip types for a file under `node_modules`, so a target runs the built twin
 	// of a skill script rather than its canon. The twin resolves its template from its own location,
 	// which only the installed copy can prove.
-	it.skipIf(!registry && !release)(
+	it.skipIf(!NPM_REGISTRY.reachable && !RELEASE_MODE)(
 		'runs the built twin of a skill script from the installed package [requires a reachable npm registry]',
 		() => {
-			if (!registry) {
+			if (!NPM_REGISTRY.reachable) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
 			const workspace = createDistributionScratch('scaffold-skill-twin-')
@@ -1594,7 +1504,7 @@ describe('installed package consumer', () => {
 	// npm from the registry, so it belongs beside the install proof that consumes the same
 	// helper. It runs only where the ambient npm is beneath the declared floor, which is
 	// the one host state that has anything to provision.
-	it.skipIf(compareVersions(ambient, MINIMUM_NPM_VERSION) >= 0)(
+	it.skipIf(compareVersions(readNpmVersion(), MINIMUM_NPM_VERSION) >= 0)(
 		'provisions the floor and resolves that copy when the ambient npm is beneath it [inapplicable where the ambient npm already satisfies the floor, which leaves nothing to provision]',
 		() => {
 			const workspace = createDistributionScratch('scaffold-e4-provision-')
@@ -1610,7 +1520,7 @@ describe('installed package consumer', () => {
 				)
 				expect(installed).toMatchObject({ version: admitted.version })
 				expect(compareVersions(admitted.version, MINIMUM_NPM_VERSION)).toBeGreaterThanOrEqual(0)
-				expect(admitted.version).not.toBe(ambient)
+				expect(admitted.version).not.toBe(readNpmVersion())
 				// The environment is what carries the selection into a nested `npm run`, so the
 				// provisioned directory must be the first entry `PATH` offers.
 				expect(requireValue(readVariable(admitted.environment, 'PATH')).split(delimiter)[0]).toBe(

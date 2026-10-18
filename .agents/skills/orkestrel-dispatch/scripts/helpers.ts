@@ -69,12 +69,10 @@ export function readMissingFlags(
  * @returns The values in order, empty when the flag never appears.
  */
 export function readOptions(argv: readonly string[], name: string): readonly string[] {
-	const values: string[] = []
-	argv.forEach((argument, index) => {
+	return argv.flatMap((argument, index) => {
 		const value = argv[index + 1]
-		if (argument === name && value !== undefined && !value.startsWith('--')) values.push(value)
+		return argument === name && value !== undefined && !value.startsWith('--') ? [value] : []
 	})
-	return values
 }
 
 /**
@@ -87,12 +85,9 @@ export function readOptions(argv: readonly string[], name: string): readonly str
 export function readList(argv: readonly string[], name: string): readonly string[] {
 	const index = argv.indexOf(name)
 	if (index === -1) return []
-	const values: string[] = []
-	for (const argument of argv.slice(index + 1)) {
-		if (argument.startsWith('--')) break
-		values.push(argument)
-	}
-	return values
+	const rest = argv.slice(index + 1)
+	const end = rest.findIndex((argument) => argument.startsWith('--'))
+	return end === -1 ? rest : rest.slice(0, end)
 }
 
 /**

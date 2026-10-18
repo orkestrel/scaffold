@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-publish/scripts/pins.ts'
+import { runSkillScript, PINS_SCRIPT } from '../../../../setupServer.js'
 
 describe('pins.ts', () => {
 	it('bounds a version literal and a single-comparator range version by digits and dots', () => {
@@ -14,20 +12,26 @@ describe('pins.ts', () => {
 				['"~0.0.7"', '"0.0.770"', '"^0.0.16"', '"^0.0.160"', '"~0.0.16"', '"0.0.7"'].join('\n'),
 			)
 			scratch.write('tests/b.ts', '// nothing\n')
-			const run = runSkillScript(SCRIPT, ['--version', '0.0.7', '--range', '^0.0.16', '--json'], {
-				cwd: scratch.path,
-			})
+			const run = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '0.0.7', '--range', '^0.0.16', '--json'],
+				{
+					cwd: scratch.path,
+				},
+			)
 			expect(run.status).toBe(3)
 			const hits = run.json?.hits
 			if (!isArray(hits)) throw new Error('The summary carries no hits')
 			expect(hits.map((hit) => (isRecord(hit) ? hit.line : undefined))).toEqual([1, 3, 5, 6])
 			expect(run.json?.skipped).toEqual([])
-			const text = runSkillScript(SCRIPT, ['--version', '0.0.7', '--paths', 'src'], {
+			const text = runSkillScript(PINS_SCRIPT, ['--version', '0.0.7', '--paths', 'src'], {
 				cwd: scratch.path,
 			})
 			expect(text.status).toBe(3)
 			expect(text.stdout).toContain('pins: 2 hit(s) for 0.0.7 under src')
-			expect(runSkillScript(SCRIPT, ['--version', '9.9.9'], { cwd: scratch.path }).status).toBe(0)
+			expect(
+				runSkillScript(PINS_SCRIPT, ['--version', '9.9.9'], { cwd: scratch.path }).status,
+			).toBe(0)
 		} finally {
 			scratch.destroy()
 		}
@@ -38,16 +42,18 @@ describe('pins.ts', () => {
 		try {
 			scratch.write('src/a.ts', '"0.0.7"\n')
 			const skipped = runSkillScript(
-				SCRIPT,
+				PINS_SCRIPT,
 				['--version', '0.0.7', '--paths', 'src,nowhere', '--json'],
 				{ cwd: scratch.path },
 			)
 			expect(skipped.status).toBe(3)
 			expect(skipped.json?.skipped).toEqual(['nowhere'])
 			expect(skipped.stderr).toContain('nowhere is not a directory; skipped')
-			expect(runSkillScript(SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
-			expect(runSkillScript(SCRIPT, ['--version'], { cwd: scratch.path }).status).toBe(64)
-			expect(runSkillScript(SCRIPT, ['--range', '--json'], { cwd: scratch.path }).status).toBe(64)
+			expect(runSkillScript(PINS_SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
+			expect(runSkillScript(PINS_SCRIPT, ['--version'], { cwd: scratch.path }).status).toBe(64)
+			expect(runSkillScript(PINS_SCRIPT, ['--range', '--json'], { cwd: scratch.path }).status).toBe(
+				64,
+			)
 		} finally {
 			scratch.destroy()
 		}
@@ -66,7 +72,9 @@ describe('pins.ts', () => {
 				].join('\n'),
 			)
 			scratch.write('src/near.ts', ['"18.3.0"', '"8.3.01"', '"8.3.0.1"', '"^8.3.1"'].join('\n'))
-			const run = runSkillScript(SCRIPT, ['--range', '^8.3.0', '--json'], { cwd: scratch.path })
+			const run = runSkillScript(PINS_SCRIPT, ['--range', '^8.3.0', '--json'], {
+				cwd: scratch.path,
+			})
 			expect(run.status).toBe(3)
 			const hits = run.json?.hits
 			if (!isArray(hits)) throw new Error('The summary carries no hits')
@@ -84,7 +92,7 @@ describe('pins.ts', () => {
 				'^8.3.0',
 				'^8.3.0',
 			])
-			const near = runSkillScript(SCRIPT, ['--range', '^8.3.0', '--paths', 'src'], {
+			const near = runSkillScript(PINS_SCRIPT, ['--range', '^8.3.0', '--paths', 'src'], {
 				cwd: scratch.path,
 			})
 			expect(near.status).toBe(0)
@@ -101,7 +109,7 @@ describe('pins.ts', () => {
 				'src/a.ts',
 				['"range": ">=1.2.0 <2.0.0"', '"floor": "1.2.0"', '"range": ">=1.2.0 <2.0.00"'].join('\n'),
 			)
-			const run = runSkillScript(SCRIPT, ['--range', '>=1.2.0 <2.0.0', '--json'], {
+			const run = runSkillScript(PINS_SCRIPT, ['--range', '>=1.2.0 <2.0.0', '--json'], {
 				cwd: scratch.path,
 			})
 			expect(run.status).toBe(3)
@@ -120,7 +128,7 @@ describe('pins.ts', () => {
 				'src/a.ts',
 				['"range": "8.x"', '"range": "^8.x"', '"range": ">=8.x"'].join('\n'),
 			)
-			const run = runSkillScript(SCRIPT, ['--range', '8.x', '--json'], { cwd: scratch.path })
+			const run = runSkillScript(PINS_SCRIPT, ['--range', '8.x', '--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			const hits = run.json?.hits
 			if (!isArray(hits)) throw new Error('The summary carries no hits')
@@ -134,15 +142,19 @@ describe('pins.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-pins-once-' })
 		try {
 			scratch.write('src/a.ts', ['"^8.3.0"', '"0.0.7"'].join('\n'))
-			const run = runSkillScript(SCRIPT, ['--version', '8.3.0', '--range', '^8.3.0', '--json'], {
-				cwd: scratch.path,
-			})
+			const run = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '8.3.0', '--range', '^8.3.0', '--json'],
+				{
+					cwd: scratch.path,
+				},
+			)
 			expect(run.status).toBe(3)
 			expect(run.json?.literals).toEqual(['8.3.0', '^8.3.0'])
 			const hits = run.json?.hits
 			if (!isArray(hits)) throw new Error('The summary carries no hits')
 			expect(hits).toEqual([{ path: 'src/a.ts', line: 1, literal: '8.3.0', text: '"^8.3.0"' }])
-			const text = runSkillScript(SCRIPT, ['--version', '8.3.0', '--range', '^8.3.0'], {
+			const text = runSkillScript(PINS_SCRIPT, ['--version', '8.3.0', '--range', '^8.3.0'], {
 				cwd: scratch.path,
 			})
 			expect(text.status).toBe(3)

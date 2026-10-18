@@ -15,6 +15,7 @@ import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { captureScaffoldCode, SCRATCH_PREFIX } from '../../setupServer.js'
+import { captureError } from '@orkestrel/test'
 import { createScratch, supportsMode } from '@orkestrel/test/server'
 
 describe('WriteTransaction construction', () => {
@@ -323,17 +324,14 @@ for (;;) {
 			)
 			try {
 				Atomics.wait(state, 0, 0, 10_000)
-				let observed = false
-				for (let attempt = 0; attempt < 4_096 && !observed; attempt += 1) {
+				const observations: boolean[] = []
+				for (const attempt of Array.from({ length: 4_096 }).keys()) {
+					// One reading is recorded per earlier attempt, so the loop never skips one.
+					expect(observations).toHaveLength(attempt)
 					const transaction = new WriteTransaction(target, ['a'])
 					Atomics.store(state, 0, 2)
 					Atomics.notify(state, 0)
-					let refusal: unknown
-					try {
-						transaction.establish('a')
-					} catch (error) {
-						refusal = error
-					}
+					const refusal = captureError(() => transaction.establish('a'))
 					if (Atomics.wait(state, 0, 2, 10_000) === 'timed-out') {
 						Atomics.store(state, 0, 1)
 						Atomics.notify(state, 0)
@@ -346,14 +344,16 @@ for (;;) {
 					renameSync(holding, segment)
 					transaction.discard()
 					expect(existsSync(segment)).toBe(false)
-					observed = refusal !== undefined
+					const observed = refusal !== undefined
+					observations.push(observed)
 					expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe(
 						observed ? 'WRITE' : undefined,
 					)
 					Atomics.store(state, 0, 1)
 					Atomics.notify(state, 0)
+					if (observed) break
 				}
-				expect(observed).toBe(true)
+				expect(observations.at(-1)).toBe(true)
 			} finally {
 				Atomics.store(state, 0, 4)
 				Atomics.notify(state, 0)
@@ -432,24 +432,22 @@ for (;;) {
 			const control = workspace.ensure('control')
 			const child = join(control, 'child')
 			chmodSync(control, 0o477)
-			let controlRefusal: unknown
-			try {
-				mkdirSync(child)
-			} catch (error) {
-				controlRefusal = error
-			} finally {
-				chmodSync(control, 0o700)
-			}
+			const controlRefusal = captureError(() => {
+				try {
+					mkdirSync(child)
+				} finally {
+					chmodSync(control, 0o700)
+				}
+			})
 			const transaction = new WriteTransaction(target, ['a/b'])
 			const previous = process.umask(0o300)
-			let refusal: unknown
-			try {
-				transaction.establish('a/b')
-			} catch (error) {
-				refusal = error
-			} finally {
-				process.umask(previous)
-			}
+			const refusal = captureError(() => {
+				try {
+					transaction.establish('a/b')
+				} finally {
+					process.umask(previous)
+				}
+			})
 			try {
 				const enforced = controlRefusal !== undefined
 				const accessError = expect.objectContaining({ code: 'EACCES' })

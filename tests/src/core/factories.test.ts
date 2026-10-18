@@ -1,5 +1,6 @@
 import type { Dependency } from '@src/core'
 import { describe, expect, it } from 'vitest'
+import { captureError } from '@orkestrel/test'
 import {
 	createBlueprint,
 	DEFAULT_ENGINES,
@@ -38,6 +39,7 @@ describe('createBlueprint defaults', () => {
 		expect(blueprint.integration).toBe(false)
 		expect(blueprint.conformance).toBe(false)
 		expect(blueprint.service).toBe(false)
+		expect(blueprint.studies).toBe(false)
 		expect(blueprint.global).toBe(false)
 		expect(blueprint.showcase).toBe(false)
 		expect(blueprint.journey).toBe(false)
@@ -60,6 +62,7 @@ describe('createBlueprint supplied fields', () => {
 		expect(blueprint.version).toBe('1.2.3')
 		expect(blueprint.src).toStrictEqual(['core', 'server'])
 		expect(blueprint.bin).toBe(true)
+		expect(createBlueprint('router', { studies: true }).studies).toBe(true)
 	})
 
 	it('omits the description key entirely rather than setting it undefined', () => {
@@ -98,22 +101,12 @@ describe('createBlueprint refusal', () => {
 		const keywords = Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, (_value, index) =>
 			String(index),
 		)
-		let refusal: unknown
-		try {
-			createBlueprint('router', { keywords })
-		} catch (error) {
-			refusal = error
-		}
+		const refusal = captureError(() => createBlueprint('router', { keywords }))
 		expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe('INVALID')
 	})
 
 	it('throws INVALID when the name is empty', () => {
-		let refusal: unknown
-		try {
-			createBlueprint('')
-		} catch (error) {
-			refusal = error
-		}
+		const refusal = captureError(() => createBlueprint(''))
 		expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe('INVALID')
 	})
 })

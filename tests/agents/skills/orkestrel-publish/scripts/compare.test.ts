@@ -3,9 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import { runNpm } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/helpers.ts'
-import { runSkillScript } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-publish/scripts/compare.ts'
+import { runSkillScript, COMPARE_SCRIPT } from '../../../../setupServer.js'
 
 describe('compare.ts', () => {
 	it('rules the material difference between a rebuilt dist and a packed tarball', () => {
@@ -22,7 +20,9 @@ describe('compare.ts', () => {
 			expect(packed.status).toBe(0)
 			const tarball = join(scratch.path, 'fixture-pkg-1.0.0.tgz')
 			expect(existsSync(tarball)).toBe(true)
-			const same = runSkillScript(SCRIPT, ['--tarball', tarball, '--json'], { cwd: scratch.path })
+			const same = runSkillScript(COMPARE_SCRIPT, ['--tarball', tarball, '--json'], {
+				cwd: scratch.path,
+			})
 			expect(same.status).toBe(0)
 			expect(same.json).toMatchObject({
 				compared: 2,
@@ -32,11 +32,15 @@ describe('compare.ts', () => {
 				material: false,
 			})
 			scratch.write('dist/index.js', 'export  const a = 1\n\n')
-			expect(runSkillScript(SCRIPT, ['--tarball', tarball], { cwd: scratch.path }).status).toBe(0)
+			expect(
+				runSkillScript(COMPARE_SCRIPT, ['--tarball', tarball], { cwd: scratch.path }).status,
+			).toBe(0)
 			scratch.write('dist/index.js', 'export const a = 2\n')
 			scratch.write('dist/extra.js', '')
 			scratch.remove('dist/nested/data.bin')
-			const moved = runSkillScript(SCRIPT, ['--tarball', tarball, '--json'], { cwd: scratch.path })
+			const moved = runSkillScript(COMPARE_SCRIPT, ['--tarball', tarball, '--json'], {
+				cwd: scratch.path,
+			})
 			expect(moved.status).toBe(3)
 			expect(moved.json).toMatchObject({
 				added: ['extra.js'],
@@ -55,19 +59,22 @@ describe('compare.ts', () => {
 			scratch.write('package.json', JSON.stringify({ name: '@fixture/pkg', version: '1.0.0' }))
 			scratch.write('dist/index.js', '')
 			scratch.write('bad.tgz', 'garbage')
-			expect(runSkillScript(SCRIPT, ['--tarball', 'bad.tgz'], { cwd: scratch.path }).status).toBe(2)
 			expect(
-				runSkillScript(SCRIPT, ['--tarball', 'absent.tgz'], { cwd: scratch.path }).status,
+				runSkillScript(COMPARE_SCRIPT, ['--tarball', 'bad.tgz'], { cwd: scratch.path }).status,
 			).toBe(2)
-			expect(runSkillScript(SCRIPT, ['--tarball'], { cwd: scratch.path }).status).toBe(64)
 			expect(
-				runSkillScript(SCRIPT, ['--tarball', 'bad.tgz', '--dist', 'nowhere'], { cwd: scratch.path })
-					.status,
+				runSkillScript(COMPARE_SCRIPT, ['--tarball', 'absent.tgz'], { cwd: scratch.path }).status,
+			).toBe(2)
+			expect(runSkillScript(COMPARE_SCRIPT, ['--tarball'], { cwd: scratch.path }).status).toBe(64)
+			expect(
+				runSkillScript(COMPARE_SCRIPT, ['--tarball', 'bad.tgz', '--dist', 'nowhere'], {
+					cwd: scratch.path,
+				}).status,
 			).toBe(64)
 			scratch.write('package.json', '{ this is not json')
-			expect(runSkillScript(SCRIPT, ['--tarball', 'bad.tgz'], { cwd: scratch.path }).status).toBe(
-				64,
-			)
+			expect(
+				runSkillScript(COMPARE_SCRIPT, ['--tarball', 'bad.tgz'], { cwd: scratch.path }).status,
+			).toBe(64)
 		} finally {
 			scratch.destroy()
 		}

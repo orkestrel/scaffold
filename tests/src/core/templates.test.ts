@@ -1,12 +1,10 @@
-import type { Blueprint, Environment } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { execute } from '@orkestrel/process/server'
-import { requireValue } from '@orkestrel/test'
+import { captureError, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
 import { build, loadConfigFromFile } from 'vite'
@@ -15,540 +13,49 @@ import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToManifest,
-	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
 	CONFIG_TEMPLATES,
 	createBlueprint,
 	Compiler,
 	MAX_NAME_LENGTH,
-	PRINT_WIDTH,
-	TAB_WIDTH,
 } from '@src/core'
-import { BROWSER_RESOLVER_EXPORTS } from '../../setup.js'
+import {
+	BROWSER_RESOLVER_EXPORTS,
+	buildModules,
+	buildResolveCall,
+	buildSelections,
+	CLASSIFIER_CASES,
+	countEmitters,
+	findStrays,
+	findUnassigned,
+	findWide,
+	MODULE_EMITTERS,
+	mutateSeed,
+	PEER_FIXTURE_PACKAGES,
+	PLANNED_GLOBAL_SEED,
+	PLANNED_SETUP_SEED,
+	PUBLISHED_FACES,
+	sealParameter,
+	TestHolder,
+} from '../../setup.js'
 import {
 	driveClassifier,
-	readStatements,
 	GENERATED_INSTANCE_CASES,
+	readStatements,
 	spawnNpm,
+	buildBrowsersRoot,
+	buildDistributionClassification,
+	buildDistributionClassifier,
+	buildDistributionProof,
+	checkTypes,
+	driveModule,
+	ensureTmpRoot,
+	extractDeclarations,
+	findRefusals,
+	stageResolver,
+	stageRootConfig,
 } from '../../setupServer.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-
-// The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
-// `TAB_WIDTH` columns and a line is printed to fit `PRINT_WIDTH` of them. The
-// emitted text conforms to those bytes, never the reverse, so every width here is
-// measured against the same constants the emitters measure against, which
-// `tests/src/core/helpers.test.ts` asserts against the vendored file itself.
-const TAB_COLUMNS = ' '.repeat(TAB_WIDTH)
-// The specifiers the vendored `import/no-unassigned-import` rule exempts.
-const STYLE_IMPORT = /^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
-// These are the specifiers an emitted browser configuration names that this
-// repository does not install, because scaffold generates a Vue application
-// without being one. Declaring their Vite-facing shapes lets the typecheck reach
-// the emitted configuration itself; the controls below prove a clean run cannot
-// be a typecheck that resolved nothing.
-const BROWSER_PLUGIN_DECLARATIONS = `declare module '@vitejs/plugin-vue' {
-	import type { PluginOption } from 'vite'
-	const plugin: (...options: never[]) => PluginOption
-	export default plugin
-}
-
-declare module 'vite-plugin-singlefile' {
-	import type { PluginOption } from 'vite'
-	export function viteSingleFile(options?: unknown): PluginOption
-}
-`
-const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
-	[],
-	['core'],
-	['browser'],
-	['server'],
-	['core', 'browser'],
-	['core', 'server'],
-	['browser', 'server'],
-	['core', 'browser', 'server'],
-]
-// The population the sweeps below walk, stated as the relation it actually
-// is: one entry per (blueprint, module path) pair the selection matrix emits,
-// projected onto the path as the number of blueprints that emit it. The
-// union of those paths is a weaker claim and does not stand in for this one. One
-// maximal blueprint emits every path `MODULE_EMITTERS` names by itself, so under a
-// union assertion every blueprint but that one could emit nothing and nothing
-// would move; the counts move for any selection that stops emitting anything.
-// The control beside the first sweep runs that exact narrowing.
-const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
-	'app/browser/index.ts': 64,
-	'app/browser/main.ts': 64,
-	'app/core/index.ts': 64,
-	'app/server/index.ts': 64,
-	'app/server/main.ts': 64,
-	'configs/app/vite.browser.config.ts': 64,
-	'configs/app/vite.server.config.ts': 64,
-	'configs/app/vite.showcase.config.ts': 32,
-	'configs/browsers.ts': 96,
-	'configs/src/vite.bin.config.ts': 63,
-	'configs/src/vite.browser.config.ts': 64,
-	'configs/src/vite.core.config.ts': 64,
-	'configs/src/vite.server.config.ts': 64,
-	'src/bin/main.ts': 63,
-	'src/browser/index.ts': 64,
-	'src/core/index.ts': 64,
-	'src/server/index.ts': 64,
-	'tests/app/browser/index.test.ts': 64,
-	'tests/app/core/index.test.ts': 64,
-	'tests/app/server/index.test.ts': 64,
-	'tests/distribution.test.ts': 112,
-	'tests/integration.test.ts': 63,
-	'tests/setup.ts': 126,
-	'tests/setupBrowser.ts': 96,
-	'tests/setupGlobal.ts': 63,
-	'tests/setupGlobal.test.ts': 63,
-	'tests/setupServer.ts': 111,
-	'tests/src/bin/main.test.ts': 63,
-	'tests/src/browser/index.test.ts': 64,
-	'tests/src/core/index.test.ts': 64,
-	'tests/src/server/index.test.ts': 64,
-	'vite.config.ts': 126,
-})
-
-// The packages installed into the staged externalization workspace, each
-// exporting one token the emitted bundle either keeps as an import or inlines.
-// Only `sample-peer` is declared as a peer, so `sample-plain` is the control.
-const PEER_FIXTURE_PACKAGES: ReadonlyArray<readonly [name: string, token: string]> = Object.freeze([
-	['sample-peer', 'PEER_TOKEN'],
-	['sample-plain', 'PLAIN_TOKEN'],
-])
-// Each published face the externalization workspace builds, named by the root
-// factory that configures it and by the environment whose entry and bundle it
-// owns.
-const PUBLISHED_FACES: ReadonlyArray<readonly [factory: string, environment: string]> =
-	Object.freeze([
-		['srcBrowser', 'browser'],
-		['srcServer', 'server'],
-	])
-
-// Every selection the compiler accepts, in both structural states it branches on.
-// A shape is emitted for each non-empty `src` x `app` pair drawn from `SELECTIONS`
-// twice: once with no structural fact set, and once with every one of them set, so
-// no conditional span is measured in one state alone.
-function buildSelections(): readonly Blueprint[] {
-	const blueprints: Blueprint[] = []
-	for (const src of SELECTIONS) {
-		for (const app of SELECTIONS) {
-			if (src.length === 0 && app.length === 0) continue
-			blueprints.push(createBlueprint('sample', { src, app }))
-			blueprints.push(
-				createBlueprint('sample', {
-					src,
-					app,
-					bin: true,
-					integration: true,
-					global: true,
-					showcase: true,
-				}),
-			)
-		}
-	}
-	return blueprints
-}
-
-// Every TypeScript module `scaffold new` writes for a selection: the root config,
-// each scoped config wrapper, each barrel and runtime entry, and each test module.
-function buildModules(blueprint: Blueprint): ReadonlyMap<string, string> {
-	const modules = new Map<string, string>()
-	for (const artifact of [
-		...blueprintToConfigArtifacts(blueprint),
-		...blueprintToSourceArtifacts(blueprint),
-		...blueprintToTestArtifacts(blueprint),
-	]) {
-		if (artifact.origin === 'host' || !artifact.path.endsWith('.ts')) continue
-		modules.set(artifact.path, artifact.content)
-	}
-	return modules
-}
-
-// The emitter relation over one corpus, for a walk that reads nothing else. Each
-// sweep counts its own pairs while it reads content, so this is the shape both
-// halves compare in rather than a second way of deriving it.
-function countEmitters(blueprints: readonly Blueprint[]): Readonly<Record<string, number>> {
-	const counts = new Map<string, number>()
-	for (const blueprint of blueprints) {
-		for (const path of buildModules(blueprint).keys()) counts.set(path, (counts.get(path) ?? 0) + 1)
-	}
-	return Object.fromEntries(counts)
-}
-
-function measureWidth(line: string): number {
-	return line.replaceAll('\t', TAB_COLUMNS).length
-}
-
-// The persistent directory every scratch allocation below lands inside, created
-// once per test because `createScratch` throws when its `parent` is missing.
-function ensureTmpRoot(): string {
-	mkdirSync(resolve('tmp'), { recursive: true })
-	return resolve('tmp')
-}
-
-// The emitted root configuration and the files a typecheck of it has to resolve:
-// the emitted browser resolver a browser selection also writes, the vendored
-// boundary helpers, copied from this checkout because a generated workspace
-// receives those exact bytes, and the plugin declaration above. Everything else
-// the configuration names is installed here.
-function stageRootConfig(blueprint: Blueprint, workspace: ScratchInterface, prefix: string): void {
-	for (const artifact of blueprintToConfigArtifacts(blueprint)) {
-		if (artifact.origin === 'host') continue
-		if (
-			artifact.path !== 'vite.config.ts' &&
-			artifact.path !== 'tsconfig.json' &&
-			artifact.path !== 'configs/app/vite.journey.config.ts' &&
-			artifact.path !== 'configs/browsers.ts'
-		) {
-			continue
-		}
-		workspace.write(`${prefix}/${artifact.path}`, artifact.content)
-	}
-	workspace.write(
-		`${prefix}/configs/helpers.ts`,
-		readFileSync(resolve('configs/helpers.ts'), 'utf8'),
-	)
-	workspace.write(`${prefix}/package.json`, blueprintToManifest(blueprint))
-	workspace.write(`${prefix}/plugins.d.ts`, BROWSER_PLUGIN_DECLARATIONS)
-}
-
-// The `check` script a generated workspace vendors, run over one staged
-// directory. `tsc` reports through its exit code, so its diagnostics are returned
-// either way and the caller reads the text rather than a thrown process error.
-function checkTypes(root: string): string {
-	try {
-		execFileSync(
-			process.execPath,
-			[
-				resolve('node_modules/typescript/bin/tsc'),
-				'--noEmit',
-				'--project',
-				join(root, 'tsconfig.json'),
-			],
-			{ stdio: 'pipe', encoding: 'utf8' },
-		)
-		return ''
-	} catch (error) {
-		const output = error instanceof Error && 'stdout' in error ? error.stdout : undefined
-		return isString(output) && output.length > 0 ? output : String(error)
-	}
-}
-
-// The emitted browser resolver, written where a real Node process can load it.
-// The file sits inside this checkout so its own `playwright` import resolves
-// through the workspace's `node_modules`, which is what makes the loaded module
-// the real one rather than a re-derivation of it.
-function stageResolver(workspace: ScratchInterface): string {
-	workspace.write('browsers.ts', CONFIG_TEMPLATES.browsers)
-	return join(workspace.path, 'browsers.ts')
-}
-
-// One or more expressions evaluated against a loaded emitted module, in a real Node
-// process that strips the module's types and runs it. The caller names the binding
-// its own expressions read. This driver serializes an `undefined` answer as `null`.
-function driveModule(file: string, binding: string, calls: readonly string[]): readonly unknown[] {
-	const script = [
-		`const ${binding} = await import(${JSON.stringify(pathToFileURL(file).href)})`,
-		`console.log(JSON.stringify([${calls.join(', ')}]))`,
-	].join('\n')
-	const output = execFileSync(
-		process.execPath,
-		['--experimental-strip-types', '--input-type=module', '--eval', script],
-		{ stdio: 'pipe', encoding: 'utf8' },
-	)
-	const answers: unknown = JSON.parse(output)
-	if (!isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
-	return answers
-}
-
-// The declarations the emitted distribution proof classifies an installed exports
-// map with. The proof packs and installs during suite setup;
-// these are lifted out of the real emitted text instead and driven directly. A name
-// the proof stops declaring fails the lift rather than thinning the drive.
-const CLASSIFIER_DECLARATIONS: readonly string[] = [
-	'MODULE_EXTENSIONS',
-	'ADDON_EXTENSION',
-	'DECLARATION_EXTENSIONS',
-	'BROWSER_OUTPUT',
-	'RUNTIME_CONDITIONS',
-	'BUNDLER_CONDITIONS',
-	'DECLARATION_CONDITIONS',
-	'isRecord',
-	'isList',
-	'isPackageTarget',
-	'readJson',
-	'resolvePackageTarget',
-	'resolveTarget',
-	'resolvesBrowser',
-	'matchesFile',
-	'targetToDeclaration',
-	'resolveDeclaration',
-	'readPackageType',
-	'resolvesCommonJS',
-	'declaresCommonJS',
-	'collectTargets',
-	'isModule',
-	'isDeclaration',
-	'readDeclaration',
-	'selectEntries',
-	'selectUntypable',
-]
-
-// One classification the emitted proof performs, written as the driver evaluates it
-// and paired with the answer it owes. Each export shape here is one Node accepts:
-// an array is a fallback list, a condition value may be an array, and a subpath may
-// answer `require` alone.
-const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> = [
-	[`classifier.collectTargets(['./dist/src/core/index.js'])`, ['./dist/src/core/index.js']],
-	[`classifier.collectTargets(['./a.js', { require: './b.cjs' }])`, ['./a.js', './b.cjs']],
-	[
-		`classifier.collectTargets({ import: { types: './x.d.ts', default: './x.js' } })`,
-		['./x.d.ts', './x.js'],
-	],
-	[`classifier.resolveTarget(['./a.js', './b.js'], ['import'])`, './a.js'],
-	[
-		`classifier.resolveTarget([{ types: './x.d.ts', default: './x.js' }], ['types', 'import'])`,
-		'./x.d.ts',
-	],
-	[`classifier.isModule('./dist/src/core/index.js')`, true],
-	[`classifier.isModule('./dist/src/core/index.mjs')`, true],
-	[`classifier.isModule('./dist/src/core/index.cjs')`, true],
-	[`classifier.isModule('./dist/src/core/addon.node')`, true],
-	[`classifier.isModule('./dist/src/core/feature')`, true],
-	[`classifier.isModule('./dist/bundle.js/feature')`, true],
-	[`classifier.isModule('./dist/src/core/module.wasm')`, false],
-	[`classifier.isModule('./dist/src/styles/main.css')`, false],
-	[`classifier.isModule('./package.json')`, false],
-	[`classifier.isModule('./dist/src/core/index.d.ts')`, false],
-	[`classifier.isModule('./dist/src/core/index.d.cts')`, false],
-]
-
-// The emitted distribution proof, whose text every lift below reads.
-function buildDistributionProof(): string {
-	const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
-		({ path }) => path === 'tests/distribution.test.ts',
-	)
-	return requireValue(proof?.content)
-}
-
-// The generated distribution proof lifted into one module for a direct classifier
-// drive.
-function buildDistributionClassifier(): string {
-	return extractDeclarations(buildDistributionProof(), CLASSIFIER_DECLARATIONS)
-}
-
-// The statements that classify one installed exports map, lifted from the emitted
-// `buildStage` body. Packing and installing are outside this drive; the staged
-// manifest and installed root are its real inputs, and every pushed record is the
-// emitted statement's own value.
-function buildDistributionClassification(): string {
-	const content = buildDistributionProof()
-	const carried = ['entries', 'targets', 'subpaths', 'undeclared', 'excluded']
-	const stage = readStatements(content, 'proof.ts').find(
-		(statement) =>
-			statement.syntax === 'FunctionDeclaration' &&
-			statement.declarations.some(({ name }) => name === 'buildStage'),
-	)
-	if (stage === undefined) throw new Error('The emitted proof declares no buildStage body')
-	const declarations = stage.body.filter(
-		(statement) =>
-			statement.syntax === 'VariableDeclaration' &&
-			statement.declarations.some(({ name }) => carried.includes(name)),
-	)
-	const walk = stage.body.find(({ syntax }) => syntax === 'ForOfStatement')
-	const declared = declarations.flatMap(({ declarations: bindings }) =>
-		bindings.map(({ name }) => name),
-	)
-	const missing = carried.filter((name) => !declared.includes(name))
-	if (missing.length > 0 || walk === undefined) {
-		throw new Error('The emitted buildStage carries no complete classification walk')
-	}
-	return `${extractDeclarations(content, CLASSIFIER_DECLARATIONS)}
-export function classifyStage(
-	manifest: Readonly<Record<string, unknown>>,
-	installed: string,
-	name: string,
-): unknown {
-${declarations.map(({ text }) => text).join('\n')}
-${walk.text}
-	return { entries, targets, subpaths, undeclared, excluded }
-}
-`
-}
-
-// One module carrying the named top-level declarations of another, in source order
-// so a constant still precedes the function reading it, and exporting each name.
-// The parser reads the names and the extents, so a formatter that rewrapped a
-// declaration moves nothing here and a renamed declaration fails loudly. The lifted
-// module also carries the proof's own `node:` imports, because a lifted declaration
-// reaches the real filesystem through them; every other import the proof declares
-// belongs to the suite around those declarations rather than to the declarations
-// themselves.
-function extractDeclarations(content: string, names: readonly string[]): string {
-	const statements = readStatements(content, 'proof.ts')
-	const imports = statements
-		.filter(
-			({ syntax, specifier }) =>
-				syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
-		)
-		.map(({ text }) => text)
-	const lifted = new Map<string, string>()
-	for (const statement of statements) {
-		for (const { name } of statement.declarations) {
-			if (names.includes(name)) lifted.set(name, statement.text)
-		}
-	}
-	const missing = names.filter((name) => !lifted.has(name))
-	if (missing.length > 0) {
-		throw new Error(`The emitted proof declares no ${missing.join(', ')}`)
-	}
-	return `${imports.join('\n')}\n\n${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
-}
-
-// One `resolveBrowser` call, written as the driver evaluates it. The platform is
-// fixed so the answer is a property of the fixture rather than of this host.
-function buildResolveCall(
-	pinned: string | undefined,
-	environment: Readonly<Record<string, string>>,
-	root: string,
-): string {
-	const target = pinned === undefined ? 'undefined' : JSON.stringify(pinned)
-	const settings = JSON.stringify(environment)
-	return `resolver.resolveBrowser(${target}, 'linux', ${settings}, ${JSON.stringify(root)})`
-}
-
-// One managed Playwright browsers directory, built from the entries named. Each
-// entry is a real executable file, because the resolver reads the filesystem and
-// a described layout would prove nothing about what it finds. `chmodSync` sets a
-// permission bit `ScratchInterface` does not expose, so it stays on `node:fs`.
-function buildBrowsersRoot(workspace: ScratchInterface, entries: readonly string[]): string {
-	for (const entry of entries) {
-		const target = `browsers/${entry}`
-		workspace.write(target, '')
-		chmodSync(join(workspace.path, target), 0o755)
-	}
-	return workspace.ensure('browsers')
-}
-
-// The identifiers one import clause binds, aliases resolved to the bound name.
-function extractBindings(clause: string): readonly string[] {
-	const inner = clause.replace(/^type\s+/u, '').trim()
-	const named = /^\{(?<names>[^}]*)\}$/u.exec(inner)
-	if (named?.groups?.names !== undefined) {
-		return named.groups.names
-			.split(',')
-			.map((part) => part.trim())
-			.filter((part) => part.length > 0)
-			.map((part) => part.split(/\s+as\s+/u).at(-1) ?? part)
-	}
-	const namespace = /^\*\s+as\s+(?<name>[A-Za-z_$][\w$]*)$/u.exec(inner)
-	if (namespace?.groups?.name !== undefined) return [namespace.groups.name]
-	return inner.length === 0 ? [] : [inner]
-}
-
-// Every import statement in a module, whole. The vendored formatter breaks an
-// import whose bindings pass the print width across lines, so a rule that reads
-// one line reads a fragment of the statement and every binding below the first
-// line is invisible to it. An import clause carries no quote, which is what lets
-// the span reach its specifier across as many lines as the formatter used and
-// stop there.
-function extractImports(content: string): readonly string[] {
-	return content.match(/^import\s+(?:[^']*?\s+from\s+)?'[^']*'/gmu) ?? []
-}
-
-// What the vendored `no-unused-vars` rule reports on an import: a bound name the
-// module never mentions outside its import statements.
-function findStrays(content: string): readonly string[] {
-	const statements = extractImports(content)
-	let body = content
-	for (const statement of statements) body = body.replace(statement, '')
-	const tokens = new Set(body.split(/[^\w$]+/u))
-	const strays: string[] = []
-	for (const statement of statements) {
-		const match = /^import\s+(?<clause>[^']*?)\s+from\s+'[^']*'$/u.exec(statement)
-		if (match?.groups?.clause === undefined) continue
-		for (const binding of extractBindings(match.groups.clause)) {
-			if (!tokens.has(binding)) strays.push(binding)
-		}
-	}
-	return strays
-}
-
-// What the vendored `import/no-unassigned-import` rule reports: an import that
-// binds nothing and names something other than a stylesheet.
-function findUnassigned(content: string): readonly string[] {
-	return content
-		.split('\n')
-		.filter((line) => /^import\s+'[^']+'/u.test(line) && !STYLE_IMPORT.test(line))
-}
-
-// A line the vendored formatter would have printed narrower. The one excess it
-// leaves is a string literal the formatter has already given a line of its own:
-// no break shortens a literal, so a workspace name long enough to pass the width
-// on its own line stays there. Every other over-width line is a line the formatter
-// would have broken, which is what `format:check` refuses.
-function findWide(content: string): readonly string[] {
-	return content
-		.split('\n')
-		.filter((line) => measureWidth(line) > PRINT_WIDTH && !/^\t*'[^']*',?$/u.test(line))
-}
-
-// Declarations whose parameters differ from the factory or merge signature, read off
-// the parser rather than off the text: the question is what a declaration carries,
-// and a pattern reports on one spelling of it. Membership is a value-exported
-// top-level declaration whose return type is `UserConfig`, which is what Vitest calls
-// as a project row. The emitted `resolveWorkspacePath` declares parameters under a
-// return type of `string`, so the same rule leaves it outside the population. The
-// merge's own signature is the one exemption, and it is asserted through this same
-// reader beside the sweep rather than taken on trust.
-function findRefusals(content: string): readonly string[] {
-	const refused: string[] = []
-	for (const statement of readStatements(content, 'vite.config.ts')) {
-		if (statement.exported !== 'value') continue
-		for (const declaration of statement.declarations) {
-			if (declaration.returns !== 'UserConfig') continue
-			const parameters = declaration.parameters.join(', ')
-			const required =
-				declaration.name === 'mergeOverride'
-					? 'base: UserConfig, override?: UserConfig'
-					: declaration.name === 'appShowcase'
-						? 'mode: string, override?: UserConfig'
-						: 'override?: UserConfig'
-			if (parameters === required) continue
-			refused.push(`${declaration.name}(${parameters})`)
-		}
-	}
-	return refused
-}
-
-// The setup seeds a target is born with, transcribed from a run that printed them
-// rather than derived from the templates the pin reads. `audit` decides whether a
-// setup module is filled by comparing its text against the seed the installed
-// release plans at that path, and it holds no earlier seed, so a moved byte here
-// moves that reading on every target materialized before the move. Transcribing
-// the bytes makes such a move a deliberate edit rather than a silent one.
-const PLANNED_SETUP_SEED = ''
-const PLANNED_GLOBAL_SEED = 'export function setup(): void {}\n'
-
-// One byte of a seed changed: the trailing byte becomes a space, and a seed
-// holding no bytes gains one, because a byte that is not there cannot be replaced.
-// Every planned seed is ASCII, so a byte and a code unit are the same thing here.
-function mutateSeed(seed: string): string {
-	return `${seed.slice(0, -1)} `
-}
-
-// The sealed declaration planted back into a copy of emitted or template text: the
-// override taken away, which is the shape this rule replaced. Every root
-// configuration declares `policy`, so the plant lands in each one the sweep walks and
-// an empty finding is a finding rather than a module the parser skipped.
-function sealParameter(content: string): string {
-	return content.replace(
-		'export function policy(override?: UserConfig): UserConfig {',
-		'export function policy(): UserConfig {',
-	)
-}
 
 describe('pointer documents', () => {
 	// The pointer replaces the vendored copies of the canon, so its whole job is
@@ -607,12 +114,7 @@ describe('configuration templates', () => {
 
 	it('uses the dependency fill boundary with missing placeholders closed', () => {
 		for (const template of [CONFIG_TEMPLATES.root.tsconfig, ARTIFACT_TEMPLATES.docs.readme]) {
-			let caught: unknown
-			try {
-				fillTemplate(template, {})
-			} catch (error) {
-				caught = error
-			}
+			const caught = captureError(() => fillTemplate(template, {}))
 			expect(isTemplateError(caught)).toBe(true)
 			if (!isTemplateError(caught)) throw new Error('Expected the template fill to fail closed')
 			expect(caught.code).toBe('MISSING')
@@ -767,28 +269,31 @@ describe('configuration templates', () => {
 					vendors: ['ollama', 'postgres'],
 				}),
 			]
-			const expected = new Map<string, string>()
-			for (const [index, blueprint] of blueprints.entries()) {
-				const compiler = new Compiler()
-				const plan = compiler.compile(blueprint).plan
-				compiler.destroy()
-				if (plan === undefined) throw new Error('The format corpus blueprint was blocked')
-				for (const artifact of plan.artifacts) {
-					if (artifact.origin === 'host') continue
-					expect(artifact.content).not.toMatch(/\{\{[^{}]+\}\}/u)
-					const target = `corpus/${String(index)}/${artifact.path}`
-					workspace.write(target, artifact.content)
-					expected.set(target, artifact.content)
-				}
-			}
-			for (const length of [46, 47]) {
-				const blueprint = createBlueprint('a'.repeat(length), { src: ['core'], bin: true })
-				for (const artifact of blueprintToTestArtifacts(blueprint)) {
-					const target = `corpus/bin-boundary-${length}/${artifact.path}`
-					workspace.write(target, artifact.content)
-					expected.set(target, artifact.content)
-				}
-			}
+			// Each written target is paired with the bytes the formatter must leave unchanged.
+			const expected = new Map([
+				...blueprints.flatMap((blueprint, index) => {
+					const compiler = new Compiler()
+					const plan = compiler.compile(blueprint).plan
+					compiler.destroy()
+					if (plan === undefined) throw new Error('The format corpus blueprint was blocked')
+					return plan.artifacts.flatMap((artifact): Array<[string, string]> => {
+						if (artifact.origin === 'host') return []
+						expect(artifact.content).not.toMatch(/\{\{[^{}]+\}\}/u)
+						const target = `corpus/${String(index)}/${artifact.path}`
+						workspace.write(target, artifact.content)
+						return [[target, artifact.content]]
+					})
+				}),
+				...[46, 47].flatMap((length) =>
+					blueprintToTestArtifacts(
+						createBlueprint('a'.repeat(length), { src: ['core'], bin: true }),
+					).map((artifact): [string, string] => {
+						const target = `corpus/bin-boundary-${length}/${artifact.path}`
+						workspace.write(target, artifact.content)
+						return [target, artifact.content]
+					}),
+				),
+			])
 			execFileSync(
 				process.execPath,
 				[formatter, '--config', config, '--write', join(workspace.path, 'corpus')],
@@ -804,10 +309,12 @@ describe('configuration templates', () => {
 })
 
 describe('live browser factory names', () => {
-	let workspace: ScratchInterface | undefined
+	const held = new TestHolder<ScratchInterface>()
 
 	beforeAll(async () => {
-		workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-factories-' })
+		const workspace = held.hold(
+			createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-factories-' }),
+		)
 		const blueprint = createBlueprint('sample', {
 			src: ['core', 'browser'],
 			app: ['browser'],
@@ -860,12 +367,12 @@ describe('live browser factory names', () => {
 		if (installed.failed) throw new Error(installed.stdout + installed.stderr)
 	}, 120_000)
 
-	afterAll(() => workspace?.destroy())
+	afterAll(() => held.clear()?.destroy())
 
 	it.each(GENERATED_INSTANCE_CASES)(
 		'reports $label in root and wrapper listings',
 		async ({ label, expression, prefix }) => {
-			const scratch = requireValue(workspace)
+			const scratch = held.value
 			const imports =
 				"import { srcBrowser, srcVue, appBrowser, appVue, appJourney, sheetProject, setupBrowser, integration, mergeOverride } from './vite.config.ts'\n"
 			scratch.write(
@@ -1375,17 +882,15 @@ describe('emitted workspaces under their own gates', () => {
 			findStrays("import {\n\tused,\n\talso,\n} from 'x'\nexport const value = used + also\n"),
 		).toStrictEqual([])
 
-		const inspected = new Map<string, number>()
-		const strays: string[] = []
-		for (const blueprint of buildSelections()) {
-			for (const [path, content] of buildModules(blueprint)) {
-				inspected.set(path, (inspected.get(path) ?? 0) + 1)
-				for (const binding of findStrays(content)) {
-					strays.push(`${blueprint.src.join('+')}/${blueprint.app.join('+')} ${path} ${binding}`)
-				}
-			}
-		}
-		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
+		const selections = buildSelections()
+		const strays = selections.flatMap((blueprint) =>
+			[...buildModules(blueprint)].flatMap(([path, content]) =>
+				findStrays(content).map(
+					(binding) => `${blueprint.src.join('+')}/${blueprint.app.join('+')} ${path} ${binding}`,
+				),
+			),
+		)
+		expect(countEmitters(selections)).toStrictEqual(MODULE_EMITTERS)
 		expect(strays).toStrictEqual([])
 	})
 
@@ -1434,18 +939,18 @@ describe('emitted workspaces under their own gates', () => {
 		])
 		expect(findRefusals(browser)).toStrictEqual([])
 
-		const inspected = new Map<string, number>()
-		const refused: string[] = []
-		const blind: string[] = []
-		for (const blueprint of buildSelections()) {
-			for (const [path, content] of buildModules(blueprint)) {
-				inspected.set(path, (inspected.get(path) ?? 0) + 1)
-				for (const name of findRefusals(content)) refused.push(`${path} ${name}`)
-				if (path !== 'vite.config.ts') continue
-				if (findRefusals(sealParameter(content)).length === 0) blind.push(path)
-			}
-		}
-		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
+		const selections = buildSelections()
+		const modules = selections.flatMap((blueprint) => [...buildModules(blueprint)])
+		const refused = modules.flatMap(([path, content]) =>
+			findRefusals(content).map((name) => `${path} ${name}`),
+		)
+		const blind = modules
+			.filter(
+				([path, content]) =>
+					path === 'vite.config.ts' && findRefusals(sealParameter(content)).length === 0,
+			)
+			.map(([path]) => path)
+		expect(countEmitters(selections)).toStrictEqual(MODULE_EMITTERS)
 		expect(blind).toStrictEqual([])
 		expect(refused).toStrictEqual([])
 	})
@@ -1454,17 +959,13 @@ describe('emitted workspaces under their own gates', () => {
 		expect(findUnassigned("import './index.js'\n")).toStrictEqual(["import './index.js'"])
 		expect(findUnassigned("import './index.scss'\n")).toStrictEqual([])
 
-		const inspected = new Map<string, number>()
-		const unassigned: string[] = []
-		for (const blueprint of buildSelections()) {
-			for (const [path, content] of buildModules(blueprint)) {
-				inspected.set(path, (inspected.get(path) ?? 0) + 1)
-				for (const line of findUnassigned(content)) {
-					unassigned.push(`${path} ${line}`)
-				}
-			}
-		}
-		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
+		const selections = buildSelections()
+		const unassigned = selections.flatMap((blueprint) =>
+			[...buildModules(blueprint)].flatMap(([path, content]) =>
+				findUnassigned(content).map((line) => `${path} ${line}`),
+			),
+		)
+		expect(countEmitters(selections)).toStrictEqual(MODULE_EMITTERS)
 		expect(unassigned).toStrictEqual([])
 		const application = buildModules(
 			createBlueprint('sample', { app: ['core', 'browser', 'server'] }),
@@ -1621,28 +1122,28 @@ describe('emitted workspaces under their own gates', () => {
 		expect(findWide(`\t\t\t${'a'.repeat(88)} = '_'`)).toStrictEqual([])
 		expect(findWide(`\t\t\t\t'${'a'.repeat(120)}',`)).toStrictEqual([])
 
-		const inspected = new Map<string, number>()
-		const wide: string[] = []
-		for (const blueprint of buildSelections()) {
-			for (const [path, content] of buildModules(blueprint)) {
-				inspected.set(path, (inspected.get(path) ?? 0) + 1)
-				for (const line of findWide(content)) wide.push(`${path} ${line.trim()}`)
-			}
-		}
-		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
+		const selections = buildSelections()
+		expect(countEmitters(selections)).toStrictEqual(MODULE_EMITTERS)
 		// The workspace name reaches the emitted declaration rewrite, so its width is
 		// swept over every length the gate admits rather than at one sample: the
 		// joined call fits up to a point this matrix crosses, and one name on either
 		// side of that point is the only place the branch can be observed.
-		for (let length = 1; length <= MAX_NAME_LENGTH; length += 1) {
-			const blueprint = createBlueprint('a'.repeat(length), {
-				src: ['core', 'server'],
-				bin: true,
-			})
-			for (const [path, content] of buildModules(blueprint)) {
-				for (const line of findWide(content)) wide.push(`${length} ${path} ${line.trim()}`)
-			}
-		}
+		const wide = [
+			...selections.flatMap((blueprint) =>
+				[...buildModules(blueprint)].flatMap(([path, content]) =>
+					findWide(content).map((line) => `${path} ${line.trim()}`),
+				),
+			),
+			...Array.from({ length: MAX_NAME_LENGTH }, (_, offset) => offset + 1).flatMap((length) =>
+				[
+					...buildModules(
+						createBlueprint('a'.repeat(length), { src: ['core', 'server'], bin: true }),
+					),
+				].flatMap(([path, content]) =>
+					findWide(content).map((line) => `${length} ${path} ${line.trim()}`),
+				),
+			),
+		]
 		expect(wide).toStrictEqual([])
 	})
 })

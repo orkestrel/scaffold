@@ -396,6 +396,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		conformance: isBoolean,
 		service: isBoolean,
 		vendors: andOf(isCollection, arrayOf(isString)),
+		studies: isBoolean,
 		global: isBoolean,
 		showcase: isBoolean,
 		journey: isBoolean,

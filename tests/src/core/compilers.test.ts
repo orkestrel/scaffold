@@ -1,11 +1,10 @@
-import type { Axis, ManifestScript } from '@src/core'
-import type { ScratchInterface } from '@orkestrel/test/server'
+import type { Axis } from '@src/core'
 import type { PluginOption, UserConfig } from 'vite'
 import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, symlinkSync } from 'node:fs'
-import { dirname, join, posix, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { posix, resolve } from 'node:path'
 import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
@@ -34,11 +33,14 @@ import {
 	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
 	FRAMEWORK_MATRIX,
+	HOST_PATHS,
 	insertManifestDependencies,
+	insertManifestSection,
 	isCanonPath,
 	manifestToDependencies,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
+	replaceManifestOverride,
 	replaceManifestRanges,
 	replaceManifestOverrides,
 	replaceManifestScripts,
@@ -47,8 +49,47 @@ import {
 import { mergeConfig } from 'vite'
 import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js'
 import { mergeOverride, srcServer } from '../../../vite.config.js'
-import { buildBlueprint } from '../../setup.js'
-import { buildEnvironment, readStatements, TEMPLATE_PROJECT_CONFIG } from '../../setupServer.js'
+import {
+	buildBlueprint,
+	collectWrappers,
+	ENTRY_AUTHORED_TEST,
+	ENTRY_AUTHORED_VITE,
+	ENTRY_FAILING_TEST,
+	ENTRY_FILES,
+	ENTRY_FRESH_TEST,
+	ENTRY_GUIDE,
+	ENTRY_GUIDE_WRITTEN,
+	ENTRY_INDEX,
+	ENTRY_NAMELESS,
+	ENTRY_OBSERVATION_PATH,
+	ENTRY_OVERLAP,
+	ENTRY_OVERLAP_WRITTEN,
+	ENTRY_PATH,
+	ENTRY_PITCH,
+	ENTRY_README,
+	ENTRY_REPORTED,
+	ENTRY_RUN_TIMEOUT,
+	ENTRY_SOURCE,
+	ENTRY_START_TEST,
+	ENTRY_UNCARRIED,
+	ENTRY_UNDOCUMENTED,
+	ENTRY_UNHANDLED_TEST,
+	ENTRY_UNINDEXED,
+	ENTRY_UNOWNED,
+	INSERTION_MANIFEST,
+	SCRIPT_MANIFEST,
+	SCRIPT_PROOF,
+	SCRIPT_REGION,
+	SCRIPT_SECTION,
+} from '../../setup.js'
+import {
+	buildEntryWorkspace,
+	buildEnvironment,
+	linkPackage,
+	readStatements,
+	runEntry,
+	TEMPLATE_PROJECT_CONFIG,
+} from '../../setupServer.js'
 
 describe('generated defect regressions', () => {
 	it('leaves unselected workspaces outside the showcase override policy', () => {
@@ -281,6 +322,7 @@ describe('blueprintToProjects', () => {
 			skills: true,
 			conformance: true,
 			service: true,
+			studies: true,
 			integration: true,
 			showcase: true,
 			journey: true,
@@ -309,6 +351,7 @@ describe('blueprintToProjects', () => {
 			'skills',
 			'conformance',
 			'service',
+			'studies',
 			'distribution',
 			'integration',
 			'probe',
@@ -318,6 +361,36 @@ describe('blueprintToProjects', () => {
 		expect(root).toContain("'./configs/src/vite.print.config.ts'")
 		expect(root).not.toContain("name: { label: 'src:styles',")
 		expect(root).not.toContain("name: { label: 'src:print',")
+	})
+
+	it('plans the studies project only with its fact, between service and distribution', () => {
+		expect(blueprintToProjects(buildBlueprint())).toStrictEqual([
+			'src:core',
+			'policy',
+			'config',
+			'distribution',
+			'probe',
+		])
+		expect(blueprintToProjects(buildBlueprint({ studies: true }))).toStrictEqual([
+			'src:core',
+			'policy',
+			'config',
+			'studies',
+			'distribution',
+			'probe',
+		])
+		expect(blueprintToProjects(buildBlueprint({ service: true, studies: true }))).toStrictEqual([
+			'src:core',
+			'policy',
+			'config',
+			'service',
+			'studies',
+			'distribution',
+			'probe',
+		])
+		expect(
+			blueprintToProjects(buildBlueprint({ src: [], app: ['core'], studies: true })),
+		).toContain('studies')
 	})
 
 	it('selects themes and browser setup without a base styles face', () => {
@@ -421,7 +494,7 @@ describe('application modes', () => {
 			)
 			expect(proof).toMatchObject({ ownership: 'birth', environment: 'browser' })
 			for (const family of ['Journey', 'Refusal', 'Matrix', 'Capture']) {
-				expect(proof?.content).toContain(`proven.add('${family}')`)
+				expect(proof?.content).toContain(`proven.push('${family}')`)
 			}
 			expect(proof?.content).toContain('createPortfolio({')
 			expect(proof?.content).toContain('expandCaptures(states, VARIANTS)')
@@ -796,21 +869,29 @@ describe('sheet planning', () => {
 			const root = blueprintToRootVite(blueprint)
 			const types = blueprintToRootTsconfig(blueprint)
 			const guide = blueprintToGuideArtifacts(blueprint)[0]?.content
-			const expected: string[] = []
-			if (blueprint.themes && !blueprint.styles) expected.push('src/styles/_tokens.scss')
+			const expected = [
+				...(blueprint.themes && !blueprint.styles ? ['src/styles/_tokens.scss'] : []),
+				...faces.flatMap((face) =>
+					[
+						'index.scss',
+						'_tokens.scss',
+						'_mixins.scss',
+						'elements/_index.scss',
+						'components/_index.scss',
+						'utilities/_index.scss',
+						'sheet.ts',
+						'index.ts',
+					].map((file) => `src/${face}/${file}`),
+				),
+				...(blueprint.themes
+					? [
+							'src/styles/themes/index.scss',
+							'src/styles/themes/_default.scss',
+							'src/styles/themes/sheet.ts',
+						]
+					: []),
+			]
 			for (const face of faces) {
-				for (const file of [
-					'index.scss',
-					'_tokens.scss',
-					'_mixins.scss',
-					'elements/_index.scss',
-					'components/_index.scss',
-					'utilities/_index.scss',
-					'sheet.ts',
-					'index.ts',
-				]) {
-					expected.push(`src/${face}/${file}`)
-				}
 				expect(configs).toContainEqual(
 					expect.objectContaining({
 						path: `configs/src/tsconfig.${face}.json`,
@@ -823,13 +904,6 @@ describe('sheet planning', () => {
 					`tsc --noEmit -p configs/src/tsconfig.${face}.json`,
 				)
 				expect(scripts['check:src']).toContain(`npm run check:src:${face}`)
-			}
-			if (blueprint.themes) {
-				expected.push(
-					'src/styles/themes/index.scss',
-					'src/styles/themes/_default.scss',
-					'src/styles/themes/sheet.ts',
-				)
 			}
 			expect(source.find(({ path }) => path === 'src/styles/themes/index.scss')?.content).toBe(
 				blueprint.themes ? "@use '../tokens';\n@use 'default';\n" : undefined,
@@ -1083,22 +1157,6 @@ describe('replaceManifestRanges', () => {
 	})
 })
 
-const INSERTION_MANIFEST = `{
-	"name": "@orkestrel/sample",
-	"dependencies": {
-		"@orkestrel/emitter": "^0.0.5"
-	},
-	"devDependencies": {
-		"@microsoft/api-extractor": "^7.59.3",
-		"@orkestrel/contract": "^0.0.18",
-		"typescript": "^6.0.3"
-	},
-	"peerDependencies": {
-		"@orkestrel/browser": ">=0.0.1"
-	}
-}
-`
-
 describe('insertManifestDependencies', () => {
 	it('declares each addition in its named section at its key-order position, copying the indentation', () => {
 		const inserted = insertManifestDependencies(INSERTION_MANIFEST, {
@@ -1237,38 +1295,118 @@ describe('insertManifestDependencies', () => {
 	})
 })
 
-const SCRIPT_MANIFEST = `{
-	"name": "@orkestrel/sample",
-	"description": "Kept exactly as written, punctuation and all.",
-	"scripts": {
-		"test": "vitest run",
-		"prepublishOnly": "npm test"
-	},
-	"dependencies": {
-		"@orkestrel/emitter": "^0.0.5"
-	}
-}
-`
+describe('insertManifestSection', () => {
+	it('inserts into an empty section on the line its opening brace sits on', () => {
+		expect(
+			insertManifestSection(
+				'{"dependencies":{}}',
+				'dependencies',
+				[{ name: 'vite', range: '^8' }],
+				true,
+			),
+		).toBe('{"dependencies":{"vite": "^8"}}')
+	})
 
-const SCRIPT_SECTION = `"scripts": {
-		"test": "vitest run",
-		"prepublishOnly": "npm test"
-	}`
+	it('places each addition among the declared keys in sorted order with their indentation', () => {
+		expect(
+			insertManifestSection(
+				'{\n\t"dependencies": {\n\t\t"b": "^1"\n\t}\n}\n',
+				'dependencies',
+				[
+					{ name: 'c', range: '^3' },
+					{ name: 'a', range: '^1' },
+				],
+				true,
+			),
+		).toBe('{\n\t"dependencies": {\n\t\t"a": "^1",\n\t\t"b": "^1",\n\t\t"c": "^3"\n\t}\n}\n')
+	})
 
-const SCRIPT_PROOF: ManifestScript = {
-	name: 'test:distribution',
-	command: 'vitest run --project distribution',
-	accepted: [],
-}
+	it('creates an absent section last in the manifest object, or beside its sibling', () => {
+		expect(
+			insertManifestSection(
+				'{\n\t"name": "x"\n}\n',
+				'devDependencies',
+				[{ name: 'typescript', range: '^6' }],
+				false,
+			),
+		).toBe('{\n\t"name": "x",\n\t"devDependencies": {\n\t\t"typescript": "^6"\n\t}\n}\n')
+		expect(
+			insertManifestSection(
+				'{"name":"x","dependencies":{"a":"^1"}}',
+				'devDependencies',
+				[{ name: 'typescript', range: '^6' }],
+				false,
+			),
+		).toBe('{"name":"x","dependencies":{"a":"^1"},"devDependencies": {"typescript": "^6"}}')
+	})
 
-const SCRIPT_REGION: readonly ManifestScript[] = [
-	{
-		name: 'prepublishOnly',
-		command: `npm test && ${RELEASE_PROOF_COMMAND}`,
-		accepted: ['npm test'],
-	},
-	SCRIPT_PROOF,
-]
+	it('refuses a section the text does not declare as an object, and a presence it cannot find', () => {
+		const additions = [{ name: 'a', range: '^1' }]
+		expect(
+			insertManifestSection('{"dependencies": 1}', 'dependencies', additions, true),
+		).toBeUndefined()
+		expect(insertManifestSection('{"name":"x"}', 'dependencies', additions, true)).toBeUndefined()
+		expect(insertManifestSection('{"name":"x', 'dependencies', additions, false)).toBeUndefined()
+	})
+
+	it('reads a section key only at the top level of the manifest object', () => {
+		expect(
+			insertManifestSection(
+				'{"nested": {"dependencies": {"z": "^9"}}, "dependencies": {"b": "^1"}}',
+				'dependencies',
+				[{ name: 'a', range: '^1' }],
+				true,
+			),
+		).toBe('{"nested": {"dependencies": {"z": "^9"}}, "dependencies": {"a": "^1","b": "^1"}}')
+	})
+})
+
+describe('replaceManifestOverride', () => {
+	it('inserts an absent leaf with its absent ancestors', () => {
+		expect(replaceManifestOverride('{}', ['overrides', 'plugin@1.0.0', 'child'], '2.0.0')).toBe(
+			'{"overrides":{"plugin@1.0.0":{"child":"2.0.0"}}}',
+		)
+		expect(replaceManifestOverride('{"name":"x"}', ['overrides', 'p@1', 'child'], '2')).toBe(
+			'{"name":"x","overrides":{"p@1":{"child":"2"}}}',
+		)
+		expect(
+			replaceManifestOverride(
+				'{"overrides":{"p@1":{"other":"1"}}}',
+				['overrides', 'p@1', 'child'],
+				'2',
+			),
+		).toBe('{"overrides":{"p@1":{"other":"1","child":"2"}}}')
+	})
+
+	it('replaces a leaf that differs and keeps the spelling of one that already holds the range', () => {
+		const path = ['overrides', 'p@1', 'child']
+		expect(
+			replaceManifestOverride('{"overrides":{"p@1":{"child":"1","other":"x"}}}', path, '2'),
+		).toBe('{"overrides":{"p@1":{"child":"2","other":"x"}}}')
+		const spelled = '{"overrides":{"p@1":{"child":"\\u0032"}}}'
+		expect(replaceManifestOverride(spelled, path, '2')).toBe(spelled)
+	})
+
+	it('refuses a malformed ancestor, a non-string leaf, and a duplicated selected key', () => {
+		const path = ['overrides', 'p@1', 'child']
+		expect(replaceManifestOverride('{"overrides":{"p@1":"str"}}', path, '2')).toBeUndefined()
+		expect(replaceManifestOverride('{"overrides":{"p@1":{"child":1}}}', path, '2')).toBeUndefined()
+		expect(
+			replaceManifestOverride('{"overrides":{"p@1":{"child":"1","child":"2"}}}', path, '3'),
+		).toBeUndefined()
+		expect(replaceManifestOverride('{"overrides":{"p@1":{"child":"1"', path, '2')).toBeUndefined()
+	})
+
+	it('keeps every byte outside the edited path', () => {
+		expect(
+			replaceManifestOverride(
+				'{\n\t"name": "x",\n\t"overrides": {}\n}\n',
+				['overrides', 'p@1', 'child'],
+				'2',
+			),
+		).toBe('{\n\t"name": "x",\n\t"overrides": {"p@1":{"child":"2"}}\n}\n')
+	})
+})
 
 describe('blueprintToWritableScripts', () => {
 	it('owns selected showcase and framework journey scripts while retaining authored commands', () => {
@@ -1358,6 +1496,30 @@ describe('blueprintToWritableScripts', () => {
 		}
 	})
 
+	it('accepts the publish chains a workspace held before it planned studies', () => {
+		const gates = 'npm run format:check && npm run lint:check && npm run check && npm run build'
+		const studied = blueprintToWritableScripts(buildBlueprint({ studies: true }))
+		const prepublish = studied.find(({ name }) => name === 'prepublishOnly')
+		expect(prepublish?.command).toBe(
+			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`,
+		)
+		expect(prepublish?.accepted).toEqual([
+			`${gates} && npm test && npm run test:studies`,
+			`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`,
+			`${gates} && npm test`,
+		])
+		expect(studied.find(({ name }) => name === 'test:studies')?.command).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project studies',
+		)
+
+		// Without the fact the list is the one a workspace without studies always had.
+		const plain = blueprintToWritableScripts(buildBlueprint())
+		expect(plain.find(({ name }) => name === 'prepublishOnly')?.accepted).toEqual([
+			`${gates} && npm test`,
+		])
+		expect(plain.map(({ name }) => name)).not.toContain('test:studies')
+	})
+
 	it('names direct project and workbench scripts for a private application', () => {
 		expect(
 			blueprintToWritableScripts(buildBlueprint({ src: [], app: ['core'] })).map(
@@ -1409,6 +1571,32 @@ describe('replaceManifestScripts', () => {
 				'test:distribution': distribution?.command,
 				prepublishOnly: prepublish?.command,
 			},
+		})
+	})
+
+	it('upgrades each publish chain a workspace held before it planned studies', () => {
+		const gates = 'npm run format:check && npm run lint:check && npm run check && npm run build'
+		const region = blueprintToWritableScripts(buildBlueprint({ studies: true }))
+		const planned = `${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`
+		const earlier = [
+			`${gates} && npm test`,
+			`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`,
+			`${gates} && npm test && npm run test:studies`,
+		]
+		for (const chain of earlier) {
+			const manifest = JSON.stringify({ scripts: { prepublishOnly: chain } }, null, '\t')
+			const written = replaceManifestScripts(manifest, region)
+			expect(JSON.parse(written ?? '')).toMatchObject({ scripts: { prepublishOnly: planned } })
+		}
+
+		// A chain the package customized is retained, so the upgrade is not a blanket overwrite.
+		const customized = JSON.stringify(
+			{ scripts: { prepublishOnly: `${gates} && npm test && npm run verify` } },
+			null,
+			'\t',
+		)
+		expect(JSON.parse(replaceManifestScripts(customized, region) ?? '')).toMatchObject({
+			scripts: { prepublishOnly: `${gates} && npm test && npm run verify` },
 		})
 	})
 
@@ -1832,6 +2020,49 @@ describe('blueprintToScripts config projects', () => {
 		expect(absent.test).not.toContain('test:conformance')
 	})
 
+	// The study proof spawns processes, so a publishing workspace isolates it in the publish gate
+	// beside the packed-package proof, and a private workspace, which has no publish gate, runs it
+	// from `test` ahead of the live-service proof.
+	it('isolates the study proof in the publish gate of a publishing workspace', () => {
+		const gates = 'npm run format:check && npm run lint:check && npm run check && npm run build'
+		const studied = blueprintToScripts(buildBlueprint({ studies: true }))
+		expect(studied['test:studies']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project studies',
+		)
+		expect(studied.test).not.toContain('test:studies')
+		expect(studied.prepublishOnly).toBe(
+			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`,
+		)
+
+		const served = blueprintToScripts(buildBlueprint({ studies: true, service: true }))
+		expect(served.prepublishOnly).toBe(
+			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND} && npm run test:service`,
+		)
+
+		const absent = blueprintToScripts(buildBlueprint())
+		expect(absent['test:studies']).toBeUndefined()
+		expect(absent.prepublishOnly).toBe(`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`)
+	})
+
+	it('runs the study proof from the test gate of a private workspace, before the live-service proof', () => {
+		const studied = blueprintToScripts(buildBlueprint({ src: [], app: ['core'], studies: true }))
+		expect(studied).not.toHaveProperty('prepublishOnly')
+		expect(studied.test).toBe(
+			'npm run test:app && npm run test:policy && npm run test:config && npm run test:studies',
+		)
+
+		const served = blueprintToScripts(
+			buildBlueprint({ src: [], app: ['core'], studies: true, service: true }),
+		)
+		expect(served.test).toBe(
+			'npm run test:app && npm run test:policy && npm run test:config && npm run test:studies && npm run test:service',
+		)
+
+		const absent = blueprintToScripts(buildBlueprint({ src: [], app: ['core'] }))
+		expect(absent['test:studies']).toBeUndefined()
+		expect(absent.test).not.toContain('test:studies')
+	})
+
 	it('registers and gates the planned guides proof', () => {
 		const blueprint = buildBlueprint({ guides: true })
 		const configuration = blueprintToRootVite(blueprint)
@@ -2027,7 +2258,7 @@ describe('blueprintToScripts config projects', () => {
 		// what it answers.
 		expect(content).toContain("module: ['types', 'node', 'import'],")
 		expect(content).toContain("commonjs: ['types', 'node', 'require'],")
-		expect(content).toContain('const declaration = readDeclaration(entry, installed)')
+		expect(content).toContain('const declaration = readDeclaration(mapping, installed)')
 		// The workspace that publishes no browser face carries neither the launcher
 		// nor its imports, so its own `lint:check` sees no binding it never uses.
 		const [core] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
@@ -2056,9 +2287,13 @@ describe('blueprintToScripts config projects', () => {
 
 		expect(content).toContain("const MODULE_EXTENSIONS = ['.js', '.mjs', '.cjs']")
 		expect(content).toContain('return dot === -1 || MODULE_EXTENSIONS.includes(name.slice(dot))')
-		expect(content).toContain('subpaths.push(subpath)')
-		expect(content).toContain('if (files.some(isModule)) undeclared.push(subpath)')
-		expect(content).toContain('else excluded.push(subpath)')
+		expect(content).toContain('const subpaths = readings.map(({ subpath }) => subpath)')
+		expect(content).toContain(
+			'.filter(({ entry, files }) => entry === undefined && files.some(isModule))',
+		)
+		expect(content).toContain(
+			'.filter(({ entry, files }) => entry === undefined && !files.some(isModule))',
+		)
 		expect(content).toContain('expect(stage.undeclared).toStrictEqual([])')
 		expect(content).toContain(
 			'expect(partitioned.sort()).toStrictEqual([...stage.subpaths].sort())',
@@ -2080,24 +2315,23 @@ describe('blueprintToScripts config projects', () => {
 	// later meets whichever variant was written: the guard reddens on it, and the
 	// browser branch drives it. Every selection carries exactly one of them.
 	it('writes a core-only proof that reddens on a browser face it cannot drive', () => {
-		const guarded: string[] = []
-		const driven: string[] = []
-		const selections: string[] = []
-		for (let mask = 1; mask < 2 ** ENVIRONMENTS.length; mask += 1) {
+		const readings = Array.from({ length: 2 ** ENVIRONMENTS.length - 1 }, (_slot, offset) => {
+			const mask = offset + 1
 			const src = ENVIRONMENTS.filter((_, index) => (mask & (1 << index)) !== 0)
 			const [artifact] = blueprintToTestArtifacts(buildBlueprint({ src })).filter(
 				({ path }) => path === 'tests/distribution.test.ts',
 			)
-			const content = artifact?.content ?? ''
-			const selection = src.join('+')
-			selections.push(selection)
-			if (content.includes('publishes no browser face this proof cannot drive')) {
-				guarded.push(selection)
-			}
-			if (content.includes('publishes what it declares to a real browser')) {
-				driven.push(selection)
-			}
-		}
+			return { selection: src.join('+'), content: artifact?.content ?? '' }
+		})
+		const selections = readings.map(({ selection }) => selection)
+		const guarded = readings
+			.filter(({ content }) =>
+				content.includes('publishes no browser face this proof cannot drive'),
+			)
+			.map(({ selection }) => selection)
+		const driven = readings
+			.filter(({ content }) => content.includes('publishes what it declares to a real browser'))
+			.map(({ selection }) => selection)
 
 		expect(guarded).toStrictEqual(['core', 'server', 'core+server'])
 		expect(driven).toStrictEqual([
@@ -2659,19 +2893,23 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(bin).toContain("Vitest's five-second default")
 	})
 
-	it('keeps only packing and live-service proofs on expensive-project budgets', () => {
+	it('keeps only packing, study, and live-service proofs on expensive-project budgets', () => {
 		const integration = CONFIG_TEMPLATES.factories.integration.module
 		const distribution = CONFIG_TEMPLATES.factories.distribution
 		const service = CONFIG_TEMPLATES.factories.service
+		const studies = CONFIG_TEMPLATES.factories.studies
 
 		expect(integration).not.toContain('testTimeout')
 		expect(integration).not.toContain('hookTimeout')
 		expect(integration).not.toContain('fileParallelism')
-		for (const isolated of [distribution, service]) {
+		for (const isolated of [distribution, service, studies]) {
 			expect(isolated).toContain('testTimeout: 120_000,')
 			expect(isolated).toContain('hookTimeout: 120_000,')
 			expect(isolated).toContain('fileParallelism: false,')
+			expect(isolated).toContain('sequence: { groupOrder: 1 },')
 		}
+		expect(studies).not.toContain('pool:')
+		expect(studies).not.toContain('isolate:')
 	})
 
 	// Scaffold generates the configuration every target runs on, and it runs on its
@@ -2705,30 +2943,31 @@ describe('blueprintToRootVite fixed proofs', () => {
 			'configs/src/tsconfig.bin.json',
 			'configs/agents/tsconfig.skills.json',
 		])
-		const current = new Map<string, string>()
-		const generated = new Map<string, string>()
-		for (const artifact of artifacts) {
+		const compared = artifacts.map((artifact) => {
 			if (artifact.origin === 'host') throw new Error('Expected configuration content')
-			current.set(artifact.path, readFileSync(resolve(artifact.path), 'utf8'))
-			generated.set(
-				artifact.path,
-				artifact.path === 'vite.config.ts'
-					? artifact.content
-							.replace(
-								"include: ['tests/src/core/**/*.test.ts'],",
-								"include: ['tests/src/core/**/*.test.ts'],\n\t\t\texclude: ['tests/src/core/templates.test.ts'],",
-							)
-							.replace(
-								'export function distribution(',
-								TEMPLATE_PROJECT_CONFIG + 'export function distribution(',
-							)
-							.replace('\t\t\tskills,\n', '\t\t\tskills,\n\t\t\ttemplates,\n')
-					: artifact.content,
-			)
-		}
+			return {
+				path: artifact.path,
+				current: readFileSync(resolve(artifact.path), 'utf8'),
+				generated:
+					artifact.path === 'vite.config.ts'
+						? artifact.content
+								.replace(
+									"include: ['tests/src/core/**/*.test.ts'],",
+									"include: ['tests/src/core/**/*.test.ts'],\n\t\t\texclude: ['tests/src/core/templates.test.ts'],",
+								)
+								.replace(
+									'export function distribution(',
+									TEMPLATE_PROJECT_CONFIG + 'export function distribution(',
+								)
+								.replace('\t\t\tskills,\n', '\t\t\tskills,\n\t\t\ttemplates,\n')
+						: artifact.content,
+			}
+		})
 		// Compared as one relation rather than file by file, so a failure names the
 		// path that drifted beside the bytes that moved.
-		expect(Object.fromEntries(current)).toStrictEqual(Object.fromEntries(generated))
+		expect(Object.fromEntries(compared.map(({ path, current }) => [path, current]))).toStrictEqual(
+			Object.fromEntries(compared.map(({ path, generated }) => [path, generated])),
+		)
 
 		// The control: the same repository compiled from a blueprint missing facts
 		// this checkout declares emits a root configuration this checkout does not hold, so the
@@ -2811,6 +3050,57 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(
 			blueprintToTestArtifacts(buildBlueprint({ vendors: ['ollama'] })).map(({ path }) => path),
 		).not.toContain('tests/setupService.ts')
+	})
+
+	// The study project follows the test files beneath `tests/studies`. Its harness module,
+	// `tests/setupStudy.ts`, is imported by those tests and is no project's setup file, so
+	// the registration names `tests/setup.ts` alone and the plan carries no study module.
+	it('registers the study project only when its fact is set, with no planned harness module', () => {
+		const bare = blueprintToRootVite(buildBlueprint())
+		expect(bare).not.toContain("name: { label: 'studies',")
+		expect(bare).not.toContain('export function studies(')
+
+		const studied = blueprintToRootVite(buildBlueprint({ studies: true }))
+		expect(studied).toContain(
+			'// Authored study proofs run installed packages through bounded subprocesses and protocol fixtures,\n// so this project is isolated in its own gate script, test:studies.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
+		)
+		expect(studied).toContain("name: { label: 'studies', color: 'red' },")
+		expect(studied).toContain("include: ['tests/studies/**/*.test.ts'],")
+		expect(studied).toContain(
+			"setupFiles: ['./tests/setup.ts'],\n\t\t\tenvironment: 'node',\n\t\t\tbrowser: { enabled: false },\n\t\t\ttestTimeout: 120_000,\n\t\t\thookTimeout: 120_000,\n\t\t\tfileParallelism: false,\n\t\t\tsequence: { groupOrder: 1 },\n",
+		)
+		expect(studied).not.toContain('setupStudy')
+		expect(studied).toContain('projects: [srcCore, policy, config, studies, distribution, probe]')
+
+		const both = blueprintToRootVite(buildBlueprint({ service: true, studies: true }))
+		expect(both).toContain(
+			'projects: [srcCore, policy, config, service, studies, distribution, probe]',
+		)
+		expect(both.indexOf('export function service(')).toBeLessThan(
+			both.indexOf('export function studies('),
+		)
+		expect(both.indexOf('export function studies(')).toBeLessThan(
+			both.indexOf('export function distribution('),
+		)
+
+		const compiler = new Compiler()
+		try {
+			const plan = compiler.compile(
+				createBlueprint('desk', {
+					src: ['core', 'server'],
+					bin: true,
+					service: true,
+					studies: true,
+				}),
+			).plan
+			const paths = plan?.artifacts.map(({ path }) => path) ?? []
+			// The plan must hold the neighbouring harness module, or an empty list proves nothing.
+			expect(paths).toContain('tests/setupService.ts')
+			expect(paths.filter((path) => path.includes('setupStudy'))).toEqual([])
+		} finally {
+			compiler.destroy()
+		}
+		expect(HOST_PATHS.filter((path) => path.includes('setupStudy'))).toEqual([])
 	})
 
 	// A generated workspace runs the `lint:check` and `format:check` it was given on
@@ -2996,18 +3286,8 @@ import { appShowcase } from '../../vite.config.ts'
 
 export default defineConfig(({ mode }) => appShowcase(mode))
 `
-		const showcaseWrappers: Record<string, string> = {}
-		for (const artifact of blueprintToConfigArtifacts(showcased)) {
-			if (artifact.origin === 'host' || !artifact.path.endsWith('.config.ts')) continue
-			if (!artifact.path.startsWith('configs/')) continue
-			showcaseWrappers[artifact.path] = artifact.content
-		}
-		const plainWrappers: Record<string, string> = {}
-		for (const artifact of blueprintToConfigArtifacts(plain)) {
-			if (artifact.origin === 'host' || !artifact.path.endsWith('.config.ts')) continue
-			if (!artifact.path.startsWith('configs/')) continue
-			plainWrappers[artifact.path] = artifact.content
-		}
+		const showcaseWrappers = collectWrappers(showcased)
+		const plainWrappers = collectWrappers(plain)
 
 		expect(showcaseWrappers).toStrictEqual({
 			'configs/src/vite.core.config.ts': wrapperCore,
@@ -3026,53 +3306,67 @@ export default defineConfig(({ mode }) => appShowcase(mode))
 		}
 
 		const merge = `export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
-	if (override !== undefined && 'command' in override && 'mode' in override) {
-		if (typeof override.mode !== 'string') {
-			throw new Error('The project invocation carries no string mode')
-		}
-		override = { mode: override.mode }
+	if (
+		override !== undefined &&
+		'command' in override &&
+		'mode' in override &&
+		typeof override.mode !== 'string'
+	) {
+		throw new Error('The project invocation carries no string mode')
 	}
-	const merged: UserConfig = override === undefined ? { ...base } : mergeConfig(base, override)
+	const effective: UserConfig | undefined =
+		override !== undefined && 'command' in override && typeof override.mode === 'string'
+			? { mode: override.mode }
+			: override
+	const merged: UserConfig = effective === undefined ? { ...base } : mergeConfig(base, effective)
 	const name = merged.test?.name
 	const label = typeof name === 'string' ? name : name?.label
 	const browser = merged.test?.browser
-	if (label !== undefined && browser?.instances !== undefined) {
-		merged.test = {
-			...merged.test,
-			browser: {
-				...browser,
-				instances: browser.instances.map((instance) => ({
-					...instance,
-					name: instance.name ?? \`\${label} (\${instance.browser})\`,
-				})),
-			},
-		}
+	const named: UserConfig =
+		label !== undefined && browser?.instances !== undefined
+			? {
+					...merged,
+					test: {
+						...merged.test,
+						browser: {
+							...browser,
+							instances: browser.instances.map((instance) => ({
+								...instance,
+								name: instance.name ?? \`\${label} (\${instance.browser})\`,
+							})),
+						},
+					},
+				}
+			: merged
+	if (named.plugins === undefined || effective === undefined) return named
+	const candidates = effective.plugins ?? []
+	const bases = base.plugins ?? []
+	// A base plugin takes the first candidate of its own name that no earlier base plugin took, and
+	// candidates of other names never compete for it, so its pick is the candidate whose rank among
+	// its name equals the number of earlier base plugins sharing that name.
+	const chosen = bases.map((plugin, position) =>
+		isNamedPlugin(plugin)
+			? candidates
+					.flatMap((candidate, index) =>
+						isNamedPlugin(candidate) && candidate.name === plugin.name ? [index] : [],
+					)
+					.at(
+						bases
+							.slice(0, position)
+							.filter((earlier) => isNamedPlugin(earlier) && earlier.name === plugin.name).length,
+					)
+			: undefined,
+	)
+	return {
+		...named,
+		plugins: [
+			...bases.map((plugin, position) => {
+				const index = chosen[position]
+				return index === undefined ? plugin : (candidates[index] ?? plugin)
+			}),
+			...candidates.filter((_, index) => !chosen.includes(index)),
+		],
 	}
-	if (merged.plugins === undefined || override === undefined) return merged
-	const candidates = override.plugins ?? []
-	const taken = new Set<number>()
-	const selected: PluginOption[] = []
-	for (const plugin of base.plugins ?? []) {
-		if (!isNamedPlugin(plugin)) {
-			selected.push(plugin)
-			continue
-		}
-		const index = candidates.findIndex(
-			(candidate, position) =>
-				!taken.has(position) && isNamedPlugin(candidate) && candidate.name === plugin.name,
-		)
-		const replacement = candidates[index]
-		if (replacement === undefined) {
-			selected.push(plugin)
-		} else {
-			selected.push(replacement)
-			taken.add(index)
-		}
-	}
-	for (const [index, plugin] of candidates.entries()) {
-		if (!taken.has(index)) selected.push(plugin)
-	}
-	return { ...merged, plugins: selected }
 }
 
 function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
@@ -3201,12 +3495,7 @@ export function appShowcase(mode: string, override?: UserConfig): UserConfig {
 		// identically, so that pin's red comes from renaming a binding inside the emitted
 		// merge and watching this case fail.
 		const unselected = buildBlueprint({ src: ['core'], app: ['core'] })
-		const unselectedWrappers: Record<string, string> = {}
-		for (const artifact of blueprintToConfigArtifacts(unselected)) {
-			if (artifact.origin === 'host' || !artifact.path.endsWith('.config.ts')) continue
-			if (!artifact.path.startsWith('configs/')) continue
-			unselectedWrappers[artifact.path] = artifact.content
-		}
+		const unselectedWrappers = collectWrappers(unselected)
 		expect(unselectedWrappers).not.toStrictEqual(showcaseWrappers)
 		expect(unselectedWrappers).not.toStrictEqual(plainWrappers)
 		expect(blueprintToRootVite(unselected)).not.toContain(factoryBrowser)
@@ -3713,549 +4002,6 @@ describe('content artifact compilers', () => {
 	})
 })
 
-// The package-owned entry is driven as the process a workspace runs. The synthetic
-// guides project collects its observation at a separate path, so it never replaces
-// the entry's Guide behavior.
-const ENTRY_PATH = 'tests/guides.test.ts'
-const ENTRY_OBSERVATION_PATH = 'tests/fixture.test.ts'
-
-const ENTRY_MANIFEST = [
-	'{',
-	'\t"name": "@sample/widget",',
-	'\t"private": true,',
-	'\t"type": "module",',
-	'\t"scripts": {',
-	'\t\t"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
-	'\t}',
-	'}',
-	'',
-].join('\n')
-
-const ENTRY_README = [
-	'# Widget',
-	'',
-	'> A widget toolkit the sample workspace publishes.',
-	'',
-].join('\n')
-
-// The pair the entry reports and never writes: the README pitch against the
-// guide tagline. Ruling 6 keeps the README authored by hand.
-const ENTRY_PITCH = ['# Widget', '', '> A widget kit the sample workspace publishes.', ''].join(
-	'\n',
-)
-
-const ENTRY_INDEX = [
-	'# Guides',
-	'',
-	'## By concept',
-	'',
-	'| Concept | Spec | Source | Tests |',
-	'| --- | --- | --- | --- |',
-	'| Widget | [`widget.md`](widget.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
-	'',
-].join('\n')
-
-const ENTRY_BARREL = ["export * from './widget.js'", ''].join('\n')
-
-// Surface and Methods cells and a titled fence, each planted against
-// the source beneath. Every other byte of this file is what a write must leave.
-const ENTRY_GUIDE = [
-	'# Widget',
-	'',
-	'> A widget toolkit the sample workspace publishes.',
-	'',
-	'## Surface',
-	'',
-	'| Name | Kind | Summary |',
-	'| --- | --- | --- |',
-	'| `shape` | function | Shapes a widget from its parts. |',
-	'| `Widget` | interface | One widget the workspace renders. |',
-	'',
-	'## Methods',
-	'',
-	'#### `Widget`',
-	'',
-	'| Method | Summary |',
-	'| --- | --- |',
-	'| `paint` | Paints the widget onto the surface. |',
-	'',
-	'## Examples',
-	'',
-	'### Shape a widget',
-	'',
-	'```ts',
-	"shape('round')",
-	'```',
-	'',
-	'## Tests',
-	'',
-	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
-	'',
-].join('\n')
-
-// What `--to guide` owes: the planted cells carrying the source text and
-// every other byte of `ENTRY_GUIDE` unmoved. A sampled reading cannot see a row
-// the table re-render drops, a heading it disturbs, or padding it re-aligns,
-// which is the class the claim exists to catch, so the write is compared whole.
-const ENTRY_GUIDE_WRITTEN = [
-	'# Widget',
-	'',
-	'> A widget toolkit the sample workspace publishes.',
-	'',
-	'## Surface',
-	'',
-	'| Name | Kind | Summary |',
-	'| --- | --- | --- |',
-	'| `shape` | function | Shapes a widget from the parts it is given. |',
-	'| `Widget` | interface | One widget the workspace renders. |',
-	'',
-	'## Methods',
-	'',
-	'#### `Widget`',
-	'',
-	'| Method | Summary |',
-	'| --- | --- |',
-	'| `paint` | Paints the widget onto the frame. |',
-	'',
-	'## Examples',
-	'',
-	'### Shape a widget',
-	'',
-	'```ts',
-	"shape('square')",
-	'```',
-	'',
-	'## Tests',
-	'',
-	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
-	'',
-].join('\n')
-
-const ENTRY_SOURCE = [
-	'/**',
-	' * Shapes a widget from the parts it is given.',
-	' *',
-	' * @param parts - The parts to shape.',
-	' * @returns The shaped widget.',
-	' *',
-	' * @example Shape a widget',
-	' * ```ts',
-	" * shape('square')",
-	' * ```',
-	' */',
-	'export function shape(parts: string): string {',
-	'\treturn parts',
-	'}',
-	'',
-	'/** One widget the workspace renders. */',
-	'export interface Widget {',
-	'\t/** Paints the widget onto the frame. */',
-	'\tpaint(): void',
-	'}',
-	'',
-].join('\n')
-
-// The reported workspace: every summary and example already agrees, the guide
-// documents one export carrying no doc block, and the pitch differs. Neither
-// disagreement has a side a write can take.
-const ENTRY_REPORTED_GUIDE = [
-	'# Widget',
-	'',
-	'> A widget toolkit the sample workspace publishes.',
-	'',
-	'## Surface',
-	'',
-	'| Name | Kind | Summary |',
-	'| --- | --- | --- |',
-	'| `shape` | function | Shapes a widget from the parts it is given. |',
-	'| `measure` | function | Measures a widget against the frame it fills. |',
-	'| `Widget` | interface | One widget the workspace renders. |',
-	'',
-	'## Methods',
-	'',
-	'#### `Widget`',
-	'',
-	'| Method | Summary |',
-	'| --- | --- |',
-	'| `paint` | Paints the widget onto the frame. |',
-	'',
-	'## Tests',
-	'',
-	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
-	'',
-].join('\n')
-
-const ENTRY_UNDOCUMENTED = [
-	'',
-	'export function measure(parts: string): number {',
-	'\treturn parts.length',
-	'}',
-	'',
-].join('\n')
-
-const ENTRY_FILES: Readonly<Record<string, string>> = Object.freeze({
-	'package.json': ENTRY_MANIFEST,
-	'README.md': ENTRY_README,
-	'guides/README.md': ENTRY_INDEX,
-	'guides/widget.md': ENTRY_GUIDE,
-	'src/core/index.ts': ENTRY_BARREL,
-	'src/core/widget.ts': ENTRY_SOURCE,
-})
-
-const ENTRY_VITE = [
-	"import { defineConfig } from 'vitest/config'",
-	'',
-	'export default defineConfig({',
-	'\ttest: {',
-	'\t\tprojects: [',
-	'\t\t\t{',
-	"\t\t\t\ttest: { name: { label: 'guides', color: 'green' }, include: ['tests/fixture.test.ts'], environment: 'node' },",
-	'\t\t\t},',
-	'\t\t],',
-	'\t},',
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_AUTHORED_VITE = ENTRY_VITE.replace(ENTRY_OBSERVATION_PATH, ENTRY_PATH)
-
-const ENTRY_AUTHORED_TEST = [
-	"import { GuideCommand } from '@orkestrel/guide/server'",
-	"import { readInventory } from '@orkestrel/test/server'",
-	"import { createVitest } from 'vitest/node'",
-	'',
-	'await new GuideCommand({',
-	"\troot: new URL('../', import.meta.url),",
-	"\tpatterns: ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md'],",
-	"\tmodules: { '@sample/widget': 'src/core' },",
-	"\tlanguages: ['ts'],",
-	"\tlanguage: 'ts',",
-	'\treader: readInventory,',
-	'\trunner: createVitest,',
-	'}).execute(async ({ report }) => {',
-	"\tconst { expect, it } = await import('vitest')",
-	'',
-	"\tit('runs the authored worker callback', () => {",
-	'\t\texpect(report.input).toEqual([])',
-	'\t})',
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_PASSING_TEST = [
-	"import { expect, it } from 'vitest'",
-	'',
-	"it('runs the generated guides project', () => {",
-	'\texpect(true).toBe(true)',
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_FRESH_TEST = [
-	"import { readFileSync } from 'node:fs'",
-	"import { resolve } from 'node:path'",
-	"import { expect, it } from 'vitest'",
-	'',
-	"const source = readFileSync(resolve('src/core/widget.ts'), 'utf8')",
-	'',
-	"it('reads source bytes written before Vitest starts', () => {",
-	"\texpect(source).toContain(' * Shapes a widget from its parts.')",
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_FAILING_TEST = [
-	"import { expect, it } from 'vitest'",
-	'',
-	"it('propagates a guides-project failure', () => {",
-	"\texpect('failed').toBe('passed')",
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_START_TEST = [
-	"import { writeFileSync } from 'node:fs'",
-	"import { expect, it } from 'vitest'",
-	'',
-	"writeFileSync('vitest-started', 'started\\n', 'utf8')",
-	'',
-	"it('records project startup', () => {",
-	'\texpect(true).toBe(true)',
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_UNHANDLED_TEST = [
-	"import { expect, it } from 'vitest'",
-	'',
-	"Promise.reject(new Error('unhandled guides error'))",
-	'',
-	"it('passes while the project reports an unhandled error', () => {",
-	'\texpect(true).toBe(true)',
-	'})',
-	'',
-].join('\n')
-
-const ENTRY_REPORTED: Readonly<Record<string, string>> = Object.freeze({
-	...ENTRY_FILES,
-	'README.md': ENTRY_PITCH,
-	'guides/widget.md': ENTRY_REPORTED_GUIDE,
-	'src/core/widget.ts': `${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`,
-})
-
-// A manifest declaring no `name`, so native own-guide selection finds no package
-// guide: the standing drift still prints, and no pitch line ever joins it.
-const ENTRY_NAMELESS_MANIFEST = [
-	'{',
-	'\t"private": true,',
-	'\t"type": "module",',
-	'\t"scripts": {',
-	'\t\t"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
-	'\t}',
-	'}',
-	'',
-].join('\n')
-
-const ENTRY_NAMELESS: Readonly<Record<string, string>> = Object.freeze({
-	...ENTRY_REPORTED,
-	'package.json': ENTRY_NAMELESS_MANIFEST,
-})
-
-// The index the whole run reads from, naming a guide under a spec other than
-// this workspace's own: the manifest still names `widget`, but no row's `spec`
-// is `guides/widget.md`, so native own-guide selection finds nothing and the
-// pitch block never runs even though the manifest names one.
-const ENTRY_UNOWNED_INDEX = [
-	'# Guides',
-	'',
-	'## By concept',
-	'',
-	'| Concept | Spec | Source | Tests |',
-	'| --- | --- | --- | --- |',
-	'| Widget | [`component.md`](component.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
-	'',
-].join('\n')
-
-const ENTRY_UNOWNED: Readonly<Record<string, string>> = Object.freeze({
-	'package.json': ENTRY_MANIFEST,
-	'README.md': ENTRY_PITCH,
-	'guides/README.md': ENTRY_UNOWNED_INDEX,
-	'guides/component.md': ENTRY_REPORTED_GUIDE,
-	'src/core/index.ts': ENTRY_BARREL,
-	'src/core/widget.ts': `${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`,
-})
-
-// The overlapping workspace: a parent row over `src/core` and a child row over
-// `src/core/panels`, each documenting one declaration of the same source file.
-// A module scope selects every file beneath it, so each row reaches
-// `src/core/panels/panel.ts`, and a run that seeds its texts per row from the
-// frozen inventory writes that file once per row and keeps the later rewrite
-// alone.
-const ENTRY_OVERLAP_INDEX = [
-	'# Guides',
-	'',
-	'## By concept',
-	'',
-	'| Concept | Spec | Source | Tests |',
-	'| --- | --- | --- | --- |',
-	'| Widget | [`widget.md`](widget.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
-	'| Panel | [`panel.md`](panel.md) | [`src/core/panels`](../src/core/panels) | [`tests/src/core/panels`](../tests/src/core/panels) |',
-	'',
-].join('\n')
-
-const ENTRY_OVERLAP_PARENT = [
-	'# Widget',
-	'',
-	'> A widget toolkit the sample workspace publishes.',
-	'',
-	'## Surface',
-	'',
-	'| Name | Kind | Summary |',
-	'| --- | --- | --- |',
-	'| `frame` | function | Frames a widget for the panel. |',
-	'',
-	'## Tests',
-	'',
-	'- [`tests/src/core/panels/panel.test.ts`](../tests/src/core/panels/panel.test.ts)',
-	'',
-].join('\n')
-
-// A third row duplicating the parent's `frame` declaration with the parent's
-// cell text byte-identical: after the parent row's rewrite, the child row's
-// rewrite of that same block is a no-op, which is the shape that exercises
-// the written-count no-op limb.
-const ENTRY_OVERLAP_CHILD = [
-	'# Panel',
-	'',
-	'> A panel the widget toolkit renders into.',
-	'',
-	'## Surface',
-	'',
-	'| Name | Kind | Summary |',
-	'| --- | --- | --- |',
-	'| `paint` | function | Paints the panel onto the frame. |',
-	'| `frame` | function | Frames a widget for the panel. |',
-	'',
-	'## Tests',
-	'',
-	'- [`tests/src/core/panels/panel.test.ts`](../tests/src/core/panels/panel.test.ts)',
-	'',
-].join('\n')
-
-const ENTRY_OVERLAP_SOURCE = [
-	'/**',
-	' * Frames a widget for the panel it sits in.',
-	' *',
-	' * @param widget - The widget to frame.',
-	' * @returns The framed widget.',
-	' */',
-	'export function frame(widget: string): string {',
-	'\treturn widget',
-	'}',
-	'',
-	'/**',
-	' * Paints the panel onto the frame it was given.',
-	' *',
-	' * @param panel - The panel to paint.',
-	' * @returns The painted panel.',
-	' */',
-	'export function paint(panel: string): string {',
-	'\treturn panel',
-	'}',
-	'',
-].join('\n')
-
-const ENTRY_OVERLAP_WRITTEN = [
-	'/**',
-	' * Frames a widget for the panel.',
-	' *',
-	' * @param widget - The widget to frame.',
-	' * @returns The framed widget.',
-	' */',
-	'export function frame(widget: string): string {',
-	'\treturn widget',
-	'}',
-	'',
-	'/**',
-	' * Paints the panel onto the frame.',
-	' *',
-	' * @param panel - The panel to paint.',
-	' * @returns The painted panel.',
-	' */',
-	'export function paint(panel: string): string {',
-	'\treturn panel',
-	'}',
-	'',
-].join('\n')
-
-const ENTRY_OVERLAP: Readonly<Record<string, string>> = Object.freeze({
-	'package.json': ENTRY_MANIFEST,
-	'README.md': ENTRY_README,
-	'guides/README.md': ENTRY_OVERLAP_INDEX,
-	'guides/widget.md': ENTRY_OVERLAP_PARENT,
-	'guides/panel.md': ENTRY_OVERLAP_CHILD,
-	'src/core/index.ts': ["export * from './panels/index.js'", ''].join('\n'),
-	'src/core/panels/index.ts': ["export * from './panel.js'", ''].join('\n'),
-	'src/core/panels/panel.ts': ENTRY_OVERLAP_SOURCE,
-})
-
-// The index the whole run reads from, absent.
-const ENTRY_UNINDEXED: Readonly<Record<string, string>> = Object.freeze(
-	Object.fromEntries(Object.entries(ENTRY_FILES).filter(([path]) => path !== 'guides/README.md')),
-)
-
-// An index row naming a guide the workspace does not carry.
-const ENTRY_UNCARRIED: Readonly<Record<string, string>> = Object.freeze({
-	...ENTRY_FILES,
-	'guides/README.md': [
-		ENTRY_INDEX.trimEnd(),
-		'| Panel | [`panel.md`](panel.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
-		'',
-	].join('\n'),
-})
-
-/**
- * Links an installed package into the fixture workspace without installing.
- *
- * @param scratch - The fixture workspace to receive the package.
- * @param name - The installed package name to link.
- * @returns Nothing.
- */
-function linkPackage(scratch: ScratchInterface, name: string): void {
-	const destination = join(scratch.path, 'node_modules', ...name.split('/'))
-	mkdirSync(dirname(destination), { recursive: true })
-	symlinkSync(resolve('node_modules', ...name.split('/')), destination, 'junction')
-}
-
-/**
- * Builds a workspace carrying the entry, its readers, and the planted disagreements.
- *
- * @param files - The workspace files to write, keyed root-relative.
- * @param test - The guides-project module to run.
- * @returns The allocated scratch workspace.
- */
-function buildEntryWorkspace(
-	files: Readonly<Record<string, string>>,
-	test = ENTRY_PASSING_TEST,
-): ScratchInterface {
-	const scratch = createScratch({ prefix: 'scaffold guides ' })
-	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
-	scratch.write(ENTRY_PATH, readFileSync(resolve(ENTRY_PATH), 'utf8'))
-	scratch.write('vite.config.ts', ENTRY_VITE)
-	scratch.write(ENTRY_OBSERVATION_PATH, test)
-	linkPackage(scratch, '@orkestrel/contract')
-	linkPackage(scratch, '@orkestrel/guide')
-	linkPackage(scratch, '@orkestrel/test')
-	linkPackage(scratch, 'vite')
-	linkPackage(scratch, 'vitest')
-	return scratch
-}
-
-/**
- * Runs the entry through npm and reads what the process reported.
- *
- * @param scratch - The workspace to run in.
- * @param args - The arguments forwarded to `test:guides`.
- * @param vitest - The optional `VITEST` value supplied to the child process.
- * @returns The exit status, the lines the run printed without the trailing blank, and its error stream.
- */
-function runEntry(
-	scratch: ScratchInterface,
-	args: readonly string[],
-	vitest?: string,
-): { readonly status: number | null; readonly lines: readonly string[]; readonly stderr: string } {
-	const adjacent = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')
-	const npm = process.env.npm_execpath ?? (existsSync(adjacent) ? adjacent : undefined)
-	if (npm === undefined) throw new Error('The npm CLI module is unavailable.')
-	const forwarded = args.length === 0 ? [] : ['--', ...args]
-	const env = { ...process.env }
-	if (vitest === undefined) delete env.VITEST
-	else env.VITEST = vitest
-	const run = spawnSync(
-		process.execPath,
-		[npm, '--loglevel=error', 'run', 'test:guides', ...forwarded],
-		{
-			cwd: scratch.path,
-			encoding: 'utf8',
-			env,
-			windowsHide: true,
-		},
-	)
-	return {
-		status: run.status,
-		lines: run.stdout
-			.split(/\r\n|\n/)
-			.filter(
-				(line) =>
-					line.startsWith('guides/') ||
-					line.startsWith('wrote ') ||
-					line.startsWith('next: ') ||
-					line.startsWith('usage: '),
-			),
-		stderr: run.stderr,
-	}
-}
-
 describe('blueprintToRootTsconfig own specifiers', () => {
 	// The generated root program resolves the workspace's own published names to
 	// source. Left to the package's own `exports` map they resolve to `dist/`, which
@@ -4308,10 +4054,6 @@ describe('blueprintToRootTsconfig own specifiers', () => {
 		expect(srcToExports([])).toStrictEqual({})
 	})
 })
-
-// Two child runs of the guides entry take about 4.2 s on an idle host, which leaves the 5 s
-// default no margin under load.
-const ENTRY_RUN_TIMEOUT = 15_000
 
 describe('the guides entry', () => {
 	it('keeps the package-owned entry free of named local command functions', () => {

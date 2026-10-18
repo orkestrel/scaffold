@@ -92,11 +92,13 @@ import {
 } from '@src/server'
 import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE, PACKAGE_NAME } from './constants.js'
 import { isUsageError, UsageError } from './errors.js'
+import { GitQuery } from './GitQuery.js'
 import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
 	catalogToNames,
+	collectScriptChain,
 	dependenciesToFloors,
 	dependenciesToFleet,
 	entriesToReleases,
@@ -106,7 +108,6 @@ import {
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
 	mergeResults,
-	readGitRecords,
 	releasesToExit,
 	releasesToPins,
 	releasesToQuestions,
@@ -445,7 +446,23 @@ export class CLI implements CLIInterface {
 					? host
 					: readHostFloor(host)
 		const materializer = new Materializer({ host: floor })
-		let outcome: CatalogResult
+		const outcome = await this.#assemble(command, target, floor, materializer, previous)
+		if (command.json === true) this.#report(outcome)
+		else this.#recount(outcome)
+		return outcome.membership === undefined || outcome.provenance.guides === 'floor'
+			? EXIT_DRIFT
+			: EXIT_CLEAN
+	}
+
+	// The outcome one `catalog` run reports. The materializer is released whether
+	// the run completes or refuses.
+	async #assemble(
+		command: CatalogCommand,
+		target: string,
+		floor: string | Host,
+		materializer: MaterializerInterface,
+		previous: readonly string[],
+	): Promise<CatalogResult> {
 		try {
 			const fetched = await this.#fetch(target, command.all === true, floor)
 			const guides: Baseline | undefined =
@@ -455,52 +472,46 @@ export class CLI implements CLIInterface {
 						? 'floor'
 						: 'live'
 			if (fetched.entries === undefined) {
-				outcome = {
+				return {
 					...materializer.mirror(fetched.mirrors, target),
 					mirrors: fetched.mirrors,
 					provenance: { ...(guides === undefined ? {} : { guides }) },
 					...(fetched.note === undefined ? {} : { note: fetched.note }),
 				}
-			} else {
-				const entries = fetched.entries
-				const declarations = manifestToDependencies(this.#manifest(target))
-				const writable: DependencyPinSet = {
-					runtime: dependenciesToFleet(declarations.runtime),
-					development: dependenciesToFleet(declarations.development),
-				}
-				const releases = entriesToReleases(
-					[...writable.runtime, ...writable.development],
-					fetched.entries,
-				)
-				const pins = releasesToPins(releases, writable)
-				const refusal = fetchToRefusal(fetched.entries, fetched.mirrors)
-				if (refusal !== undefined) throw refusal
-				const result = mergeResults(
-					this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-					materializer.declare({ pins, scripts: [] }, target),
-				)
-				outcome = {
-					...result,
-					membership: {
-						entries,
-						dropped: previous.filter((name) => !entries.some((entry) => entry.name === name)),
-						releases,
-					},
-					mirrors: fetched.mirrors,
-					provenance: {
-						versions: 'live',
-						...(guides === undefined ? {} : { guides }),
-					},
-				}
+			}
+			const entries = fetched.entries
+			const declarations = manifestToDependencies(this.#manifest(target))
+			const writable: DependencyPinSet = {
+				runtime: dependenciesToFleet(declarations.runtime),
+				development: dependenciesToFleet(declarations.development),
+			}
+			const releases = entriesToReleases(
+				[...writable.runtime, ...writable.development],
+				fetched.entries,
+			)
+			const pins = releasesToPins(releases, writable)
+			const refusal = fetchToRefusal(fetched.entries, fetched.mirrors)
+			if (refusal !== undefined) throw refusal
+			const result = mergeResults(
+				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
+				materializer.declare({ pins, scripts: [] }, target),
+			)
+			return {
+				...result,
+				membership: {
+					entries,
+					dropped: previous.filter((name) => !entries.some((entry) => entry.name === name)),
+					releases,
+				},
+				mirrors: fetched.mirrors,
+				provenance: {
+					versions: 'live',
+					...(guides === undefined ? {} : { guides }),
+				},
 			}
 		} finally {
 			materializer.destroy()
 		}
-		if (command.json === true) this.#report(outcome)
-		else this.#recount(outcome)
-		return outcome.membership === undefined || outcome.provenance.guides === 'floor'
-			? EXIT_DRIFT
-			: EXIT_CLEAN
 	}
 
 	// `overwrite` — everything repair and catalog do, plus the steps only this
@@ -672,15 +683,32 @@ export class CLI implements CLIInterface {
 		blueprint: Blueprint,
 	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
 		const previous = catalogToNames(target)
-		let releases: readonly Release[] = []
-		let provenance: Provenance = { ...(host === undefined ? {} : { host }) }
 		try {
 			const versions = await this.#versions(declared.pins, false, blueprint)
-			releases = versions.releases
-			provenance = {
-				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
-				...(host === undefined ? {} : { host }),
-			}
+			return await this.#confirm(
+				materializer,
+				target,
+				declared,
+				{ baseline: host, forced: hostForced },
+				versions,
+				previous,
+			)
+		} catch (error) {
+			return this.#unfinished(target, [], { ...(host === undefined ? {} : { host }) }, error)
+		}
+	}
+
+	// The membership read and the writes that follow the version read. A step that
+	// fails here is reported with the releases and the provenance known by then.
+	async #confirm(
+		materializer: MaterializerInterface,
+		target: string,
+		declared: ManifestRegionSet,
+		host: { readonly baseline: Baseline | undefined; readonly forced: boolean },
+		versions: VersionResolution,
+		previous: readonly string[],
+	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
+		try {
 			const refused = versionsToRefusal(versions)
 			if (refused !== undefined) throw refused
 			const fetched = await this.#fetch(target, false)
@@ -698,52 +726,76 @@ export class CLI implements CLIInterface {
 					: fetched.mirrors.some((mirror) => mirror.lookup === 'failed')
 						? 'floor'
 						: 'live'
-			provenance = {
+			const provenance: Provenance = {
 				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
 				...(guides === undefined ? {} : { guides }),
-				...(host === undefined ? {} : { host }),
+				...(host.baseline === undefined ? {} : { host: host.baseline }),
 			}
-			const written = mergeResults(
-				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare({ ...declared, pins: versions.pins }, target),
-			)
-			const floors: string[] = []
-			if (hostForced) floors.push('host')
-			if (versions.forced) floors.push('versions')
-			if (guides === 'floor') floors.push('guides')
-			return {
-				...written,
-				membership: {
-					entries,
-					dropped: previous.filter((name) => !entries.some((entry) => entry.name === name)),
-					releases: entriesToReleases(
-						[
-							...dependenciesToFleet(declared.pins.runtime),
-							...dependenciesToFleet(declared.pins.development),
-						],
+			const landed = attempt(() => {
+				const written = mergeResults(
+					this.#publish(materializer, target, entries, fetched.mirrors),
+					materializer.declare({ ...declared, pins: versions.pins }, target),
+				)
+				const floors: string[] = []
+				if (host.forced) floors.push('host')
+				if (versions.forced) floors.push('versions')
+				if (guides === 'floor') floors.push('guides')
+				return {
+					...written,
+					membership: {
 						entries,
-					),
-				},
-				mirrors: fetched.mirrors,
-				releases,
-				provenance,
-				...(floors.length === 0
-					? {}
-					: {
-							note: `The ${floors.join(', ')} step used the distributed floor after its upstream read did not complete.`,
-						}),
-			}
+						dropped: previous.filter((name) => !entries.some((entry) => entry.name === name)),
+						releases: entriesToReleases(
+							[
+								...dependenciesToFleet(declared.pins.runtime),
+								...dependenciesToFleet(declared.pins.development),
+							],
+							entries,
+						),
+					},
+					mirrors: fetched.mirrors,
+					releases: versions.releases,
+					provenance,
+					...(floors.length === 0
+						? {}
+						: {
+								note: `The ${floors.join(', ')} step used the distributed floor after its upstream read did not complete.`,
+							}),
+				}
+			})
+			return landed.success
+				? landed.value
+				: this.#unfinished(target, versions.releases, provenance, landed.error)
 		} catch (error) {
-			return {
+			return this.#unfinished(
 				target,
-				written: [],
-				skipped: [],
-				removed: [],
-				mirrors: [],
-				releases,
-				provenance,
-				note: `The catalog step did not complete: ${errorToEnvelope(error).error.message}`,
-			}
+				versions.releases,
+				{
+					...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+					...(host.baseline === undefined ? {} : { host: host.baseline }),
+				},
+				error,
+			)
+		}
+	}
+
+	// The result of a catalog step that did not complete: nothing landed, and the
+	// note names the fault.
+	#unfinished(
+		target: string,
+		releases: readonly Release[],
+		provenance: Provenance,
+		error: unknown,
+	): Omit<OverwriteResult, 'audit' | 'additions'> {
+		return {
+			target,
+			written: [],
+			skipped: [],
+			removed: [],
+			mirrors: [],
+			releases,
+			provenance,
+			note: `The catalog step did not complete: ${errorToEnvelope(error).error.message}`,
 		}
 	}
 
@@ -959,14 +1011,17 @@ export class CLI implements CLIInterface {
 		]
 		const upstream = new Upstream(this.#upstream)
 		try {
-			let entries: readonly CatalogEntry[] | undefined
-			let note: string | undefined
-			try {
-				entries = await upstream.catalog()
-			} catch (error) {
-				if (floor === undefined) throw error
-				note = `The catalog membership read did not complete; performed a guide-only refresh: ${errorToEnvelope(error).error.message}`
-			}
+			const listed: { readonly entries?: readonly CatalogEntry[]; readonly note?: string } =
+				await upstream.catalog().then(
+					(entries) => ({ entries }),
+					(error: unknown) => {
+						if (floor === undefined) throw error
+						return {
+							note: `The catalog membership read did not complete; performed a guide-only refresh: ${errorToEnvelope(error).error.message}`,
+						}
+					},
+				)
+			const { entries, note } = listed
 			const population = all
 				? entries === undefined
 					? catalogToNames(floor ?? target)
@@ -1066,7 +1121,9 @@ export class CLI implements CLIInterface {
 	// packages, environment directories, and exact structural files. Vendors stay
 	// unknown because their birth-owned script is not a declaration of its list.
 	// The live-service project does not wait on that list: it follows its own
-	// readiness module, which the root configuration names by path.
+	// readiness module, which the root configuration names by path. The study
+	// project follows the exact-case test files beneath `tests/studies`, the
+	// population its include collects.
 	#derive(target: string): Blueprint {
 		const manifest = this.#manifest(target)
 		const declared = manifestToName(manifest)
@@ -1084,18 +1141,30 @@ export class CLI implements CLIInterface {
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
 		const skills = resolveContainedPath(target, SKILLS_CONFIG_PATH)
-		const setup = new Set<SetupRuntime>()
-		if (tests !== undefined) {
-			for (const path of listFiles(tests)) {
-				if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.test.ts')) continue
-				const proof = resolveContainedPath(tests, path)
-				if (proof !== undefined && isExactCaseFile(proof)) {
-					setup.add(
-						path === 'setupBrowser.test.ts' || path === 'setupStyles.test.ts' ? 'browser' : 'node',
-					)
-				}
+		const files = tests === undefined ? [] : listFiles(tests)
+		const studies = files.some((path) => {
+			if (tests === undefined || !path.startsWith('studies/') || !path.endsWith('.test.ts')) {
+				return false
 			}
-		}
+			const study = resolveContainedPath(tests, path)
+			return study !== undefined && isExactCaseFile(study)
+		})
+		const setup = new Set<SetupRuntime>(
+			files.flatMap((path): readonly SetupRuntime[] => {
+				if (
+					tests === undefined ||
+					path.includes('/') ||
+					!path.startsWith('setup') ||
+					!path.endsWith('.test.ts')
+				) {
+					return []
+				}
+				const proof = resolveContainedPath(tests, path)
+				return proof !== undefined && isExactCaseFile(proof)
+					? [path === 'setupBrowser.test.ts' || path === 'setupStyles.test.ts' ? 'browser' : 'node']
+					: []
+			}),
+		)
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
 			...targetToFacts(target),
 			extensions: targetToExtensions(target),
@@ -1108,6 +1177,7 @@ export class CLI implements CLIInterface {
 			integration: integration !== undefined && isExactCaseFile(integration),
 			conformance: conformance !== undefined && isExactCaseFile(conformance),
 			service: service !== undefined && isExactCaseFile(service),
+			studies,
 			global: global !== undefined && isExactCaseFile(global),
 			journey: journey !== undefined && isExactCaseFile(journey),
 			skills: skills !== undefined && isExactCaseFile(skills),
@@ -1147,19 +1217,15 @@ export class CLI implements CLIInterface {
 		const publishes = !isRecord(parsed) || parsed.private !== true
 		const gates = publishes ? ['test', 'prepublishOnly'] : ['test']
 		const gateNames = gates.join(' or ')
-		const absent = new Set<string>()
-		let unresolved = false
-		for (const script of Object.values(scripts)) {
-			if (!isString(script) || !script.includes('vitest')) continue
-			const invoked = scriptToInvocations(script)
-			if (invoked === undefined) {
-				unresolved = true
-				continue
-			}
-			for (const project of invoked.projects) {
-				if (!planned.has(project)) absent.add(project)
-			}
-		}
+		const readings = Object.values(scripts)
+			.filter((script): script is string => isString(script) && script.includes('vitest'))
+			.map((script) => scriptToInvocations(script))
+		const unresolved = readings.some((invocations) => invocations === undefined)
+		const absent = new Set(
+			readings
+				.flatMap((invocations) => invocations?.projects ?? [])
+				.filter((project) => !planned.has(project)),
+		)
 		const projects = [...absent].sort()
 		if (unresolved) {
 			return {
@@ -1185,17 +1251,15 @@ export class CLI implements CLIInterface {
 					resolveContainedPath(target, artifact.path),
 				),
 			)
-			const configurations: string[] = []
-			for (const [name, script] of Object.entries(scripts)) {
-				if (!name.startsWith('test:') || !isString(script) || !script.includes('vitest')) continue
-				const invoked = scriptToInvocations(script)
-				if (invoked === undefined) continue
-				for (const config of invoked.configs) {
+			const configurations = Object.entries(scripts).flatMap(([name, script]) => {
+				if (!name.startsWith('test:') || !isString(script) || !script.includes('vitest')) return []
+				return (scriptToInvocations(script)?.configs ?? []).flatMap((config) => {
 					const path = resolveContainedPath(target, config)
-					if (path !== undefined && (paths.has(path) || isExactCaseFile(path))) continue
-					configurations.push(`${name} --config ${config}`)
-				}
-			}
+					return path !== undefined && (paths.has(path) || isExactCaseFile(path))
+						? []
+						: [`${name} --config ${config}`]
+				})
+			})
 			if (configurations.length > 0) {
 				return {
 					field: 'projects',
@@ -1206,20 +1270,21 @@ export class CLI implements CLIInterface {
 			}
 		}
 		const expected = blueprintToScripts(blueprint)
-		const expectedLines = new Map<string, string>()
-		for (const [name, script] of Object.entries(expected)) {
-			if (!name.startsWith('test:')) continue
-			const invoked = scriptToInvocations(script)
-			if (invoked === undefined) continue
-			for (const project of invoked.projects) {
-				if (project === 'probe') continue
-				const direct = `test:${project}`
-				const command = expected[direct]
-				if (command !== undefined) {
-					expectedLines.set(project, `"${direct}": ${JSON.stringify(command)},`)
-				}
-			}
-		}
+		// A later project of one name replaces an earlier line for it, at the earlier position.
+		const expectedLines = new Map(
+			Object.entries(expected).flatMap(([name, script]) => {
+				if (!name.startsWith('test:')) return []
+				return (scriptToInvocations(script)?.projects ?? []).flatMap(
+					(project): ReadonlyArray<readonly [string, string]> => {
+						const direct = `test:${project}`
+						const command = expected[direct]
+						return project === 'probe' || command === undefined
+							? []
+							: [[project, `"${direct}": ${JSON.stringify(command)},`]]
+					},
+				)
+			}),
+		)
 
 		const faces = new Set([
 			...blueprintToSheets(blueprint).map((name) => `src:${name}`),
@@ -1227,37 +1292,21 @@ export class CLI implements CLIInterface {
 				axes.map((axis) => `${axis}:${name}`),
 			),
 		])
-		const wrappers = new Map<string, string>()
-		for (const artifact of blueprintToConfigArtifacts(blueprint)) {
-			const match = /^configs\/(src|app)\/vite\.([^.]+)\.config\.ts$/u.exec(artifact.path)
-			if (match === null) continue
-			const project = `${match[1]}:${match[2]}`
-			if (faces.has(project)) wrappers.set(artifact.path, project)
-		}
-		const reachable = new Set<string>()
-		const chains = new Map<string, Set<string>>()
-		for (const gate of gates) {
-			const visited = new Set<string>()
-			chains.set(gate, visited)
-			const pending = [gate]
-			while (pending.length > 0) {
-				const name = pending.shift()
-				if (name === undefined || visited.has(name)) continue
-				visited.add(name)
-				const script = scripts[name]
-				if (!isString(script)) continue
-				const invoked = scriptToInvocations(script, wrappers)
-				if (invoked === undefined) {
-					unresolved = true
-					continue
-				}
-				for (const project of invoked.projects) reachable.add(project)
-				for (const called of invoked.scripts) {
-					if (!visited.has(called)) pending.push(called)
-				}
-			}
-		}
-		if (unresolved) {
+		const wrappers = new Map(
+			blueprintToConfigArtifacts(blueprint).flatMap(
+				(artifact): ReadonlyArray<readonly [string, string]> => {
+					const match = /^configs\/(src|app)\/vite\.([^.]+)\.config\.ts$/u.exec(artifact.path)
+					const project = match === null ? undefined : `${match[1]}:${match[2]}`
+					return project !== undefined && faces.has(project) ? [[artifact.path, project]] : []
+				},
+			),
+		)
+		const chains = new Map(
+			gates.map((gate) => [gate, collectScriptChain(gate, scripts, wrappers)] as const),
+		)
+		const reachable = new Set([...chains.values()].flatMap((chain) => [...chain.projects]))
+		const unreadable = new Set([...chains.values()].flatMap((chain) => [...chain.unreadable]))
+		if (unreadable.size > 0) {
 			return {
 				field: 'projects',
 				message: `The manifest at ${target} contains a ${gateNames} chain that cannot be resolved statically. ${writing ? 'The configs group is blocked. Replace it with literal npm run script names before selecting configs, or exclude configs from --groups.' : 'Replace it with literal npm run script names before relying on the planned configuration.'}`,
@@ -1273,7 +1322,7 @@ export class CLI implements CLIInterface {
 			if (
 				!writing &&
 				expected['test:journey'] !== undefined &&
-				!chains.get('test')?.has('test:journey')
+				!chains.get('test')?.visited.has('test:journey')
 			) {
 				return {
 					field: 'projects',
@@ -1648,9 +1697,9 @@ export class CLI implements CLIInterface {
 	// what git tracks and refuses a tree carrying uncommitted work, so a target
 	// that is not a repository has no recovery mechanism and is refused here.
 	async #worktree(target: string): Promise<Worktree> {
-		const tracked = await readGitRecords(target, ['ls-files', '-z'])
+		const tracked = await new GitQuery(target, ['ls-files', '-z']).read()
 		const dirty = (
-			await readGitRecords(target, ['status', '--porcelain=v1', '--untracked-files=all', '-z'])
+			await new GitQuery(target, ['status', '--porcelain=v1', '--untracked-files=all', '-z']).read()
 		).map((record) => (record.length > 3 && record[2] === ' ' ? record.slice(3) : record))
 		const state = { tracked, dirty }
 		if (!isWorktree(state)) {

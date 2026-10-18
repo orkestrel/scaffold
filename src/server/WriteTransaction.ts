@@ -23,6 +23,7 @@ import {
 	computeDigest,
 	computeFileDigest,
 	isPhysicalFile,
+	listAncestors,
 	matchesAnchor,
 	matchesExpectation,
 	matchesMissingPath,
@@ -150,21 +151,23 @@ export class WriteTransaction {
 			throw new ScaffoldError('INVALID', 'The write paths repeat a destination.', { target, paths })
 		}
 		this.#target = resolve(target)
-		const expectations = new Map<string, WriteExpectation>()
-		for (const path of paths) {
-			const destination = this.#resolve(this.#target, path)
-			const expectation = readExpectation(destination)
-			if (expectation === undefined) {
-				throw new ScaffoldError(
-					'TARGET',
-					`The destination at ${path} is a shape this package will not write over.`,
-					{ target: this.#target, path },
-				)
-			}
-			expectations.set(path, expectation)
-		}
-		this.#expectations = expectations
-		const destinations = new Set([...expectations.values()].map((expectation) => expectation.path))
+		this.#expectations = new Map(
+			paths.map((path): readonly [string, WriteExpectation] => {
+				const destination = this.#resolve(this.#target, path)
+				const expectation = readExpectation(destination)
+				if (expectation === undefined) {
+					throw new ScaffoldError(
+						'TARGET',
+						`The destination at ${path} is a shape this package will not write over.`,
+						{ target: this.#target, path },
+					)
+				}
+				return [path, expectation]
+			}),
+		)
+		const destinations = new Set(
+			[...this.#expectations.values()].map((expectation) => expectation.path),
+		)
 		for (const precondition of preconditions ?? []) {
 			if (!destinations.has(precondition.path)) {
 				throw new ScaffoldError(
@@ -395,10 +398,12 @@ export class WriteTransaction {
 		const applied = attempt(() => {
 			this.#preflight()
 			for (const path of this.#staged) {
-				this.#promote(path, promoted)
+				this.#promote(path)
+				promoted.push(path)
 			}
 			for (const path of this.#taken) {
-				this.#take(path, taken)
+				this.#take(path)
+				taken.push(path)
 			}
 		})
 		this.#open = false
@@ -462,8 +467,8 @@ export class WriteTransaction {
 			})
 		}
 		const base = resolve(root)
-		let ancestor = dirname(destination)
-		for (let depth = 0; depth <= MAX_PATH_DEPTH; depth += 1) {
+		// The ceiling bounds the climb from the destination's directory to the root.
+		for (const ancestor of listAncestors(destination, MAX_PATH_DEPTH + 2).slice(1)) {
 			const state = readExpectation(ancestor)
 			if (state === undefined || state.shape === 'file') {
 				throw new ScaffoldError('WRITE', `The path ${path} passes through a link or a file.`, {
@@ -473,9 +478,6 @@ export class WriteTransaction {
 				})
 			}
 			if (ancestor === base) return destination
-			const parent = dirname(ancestor)
-			if (parent === ancestor) break
-			ancestor = parent
 		}
 		throw new ScaffoldError('INVALID', `The path ${path} does not resolve beneath its root.`, {
 			root,
@@ -488,10 +490,43 @@ export class WriteTransaction {
 	// swapped between steps is caught rather than written into.
 	#establish(path: string): WriteDirectoryResult {
 		const destination = resolve(path)
+		const { anchor: located, missing } = this.#locate(destination)
+		const created: WriteAnchor[] = []
+		for (const segment of [...missing].reverse()) {
+			const anchor = created.at(-1) ?? located
+			if (!matchesAnchor(anchor)) {
+				throw new ScaffoldError('WRITE', `The directory at ${anchor.path} changed while writing.`, {
+					path: destination,
+					ancestor: anchor.path,
+				})
+			}
+			mkdirSync(segment)
+			// The segment is recorded as it stands, so a rollback removes it even when its anchor
+			// cannot be read; readAnchor answers rather than throws, so one push covers both.
+			const established = readAnchor(segment)
+			this.#created.push(established ?? segment)
+			if (established === undefined) {
+				throw new ScaffoldError('WRITE', `The directory at ${segment} changed while writing.`, {
+					path: destination,
+				})
+			}
+			created.push(established)
+		}
+		return { anchor: created.at(-1) ?? located, created }
+	}
+
+	// Climb from a directory path to its deepest existing ancestor, collecting the
+	// absent segments below it. The climb reads the destination and each ancestor
+	// the ceiling admits, plus the one past it, whose anchor ends the last step.
+	#locate(destination: string): {
+		readonly anchor: WriteAnchor
+		readonly missing: readonly string[]
+	} {
 		const missing: string[] = []
-		let current = destination
-		let anchor = readAnchor(current)
-		for (let depth = 0; anchor === undefined && depth <= MAX_PATH_DEPTH; depth += 1) {
+		for (const [depth, current] of listAncestors(destination, MAX_PATH_DEPTH + 2).entries()) {
+			const anchor = readAnchor(current)
+			if (anchor !== undefined) return { anchor, missing }
+			if (depth > MAX_PATH_DEPTH) break
 			const state = readExpectation(current)
 			if (state === undefined || state.shape !== 'absent') {
 				throw new ScaffoldError(
@@ -503,8 +538,7 @@ export class WriteTransaction {
 				)
 			}
 			missing.push(current)
-			const parent = dirname(current)
-			if (parent === current) {
+			if (dirname(current) === current) {
 				throw new ScaffoldError(
 					'WRITE',
 					`The directory at ${destination} has no existing ancestor.`,
@@ -513,40 +547,15 @@ export class WriteTransaction {
 					},
 				)
 			}
-			current = parent
-			anchor = readAnchor(current)
 		}
-		if (anchor === undefined) {
-			throw new ScaffoldError(
-				'WRITE',
-				`The directory at ${destination} is nested past the ceiling.`,
-				{
-					path: destination,
-					limit: MAX_PATH_DEPTH,
-				},
-			)
-		}
-		const created: WriteAnchor[] = []
-		for (const segment of [...missing].reverse()) {
-			if (!matchesAnchor(anchor)) {
-				throw new ScaffoldError('WRITE', `The directory at ${anchor.path} changed while writing.`, {
-					path: destination,
-					ancestor: anchor.path,
-				})
-			}
-			mkdirSync(segment)
-			this.#created.push(segment)
-			const established = readAnchor(segment)
-			if (established === undefined) {
-				throw new ScaffoldError('WRITE', `The directory at ${segment} changed while writing.`, {
-					path: destination,
-				})
-			}
-			anchor = established
-			this.#created[this.#created.length - 1] = established
-			created.push(established)
-		}
-		return { anchor, created }
+		throw new ScaffoldError(
+			'WRITE',
+			`The directory at ${destination} is nested past the ceiling.`,
+			{
+				path: destination,
+				limit: MAX_PATH_DEPTH,
+			},
+		)
 	}
 
 	// Every destination and every created directory, re-read once before the first
@@ -593,7 +602,7 @@ export class WriteTransaction {
 	// Preserve the destination's bytes under a second name, then replace the
 	// directory entry in one rename. The destination names the whole old file
 	// until that rename lands and the whole new file after it.
-	#promote(path: string, promoted: string[]): void {
+	#promote(path: string): void {
 		const expectation = this.#expectation(path)
 		if (!matchesExpectation(expectation)) {
 			throw new ScaffoldError('WRITE', `The destination at ${path} moved while writing.`, { path })
@@ -607,12 +616,11 @@ export class WriteTransaction {
 			linkSync(expectation.path, backup)
 		}
 		renameSync(staged, expectation.path)
-		promoted.push(path)
 	}
 
 	// Move the file out of the target rather than unlinking it, so a later failure
 	// in the same commit can put the exact bytes back.
-	#take(path: string, taken: string[]): void {
+	#take(path: string): void {
 		const expectation = this.#expectation(path)
 		if (!matchesExpectation(expectation)) {
 			throw new ScaffoldError('WRITE', `The destination at ${path} moved while writing.`, { path })
@@ -620,42 +628,43 @@ export class WriteTransaction {
 		const backup = this.#resolve(this.#backup, path)
 		mkdirSync(dirname(backup), { recursive: true })
 		renameSync(expectation.path, backup)
-		taken.push(path)
 	}
 
 	// Undo everything this transaction did, newest first, and report what it could
 	// not undo instead of throwing over the failure that started the rollback.
 	#recover(promoted: readonly string[], taken: readonly string[]): readonly unknown[] {
-		const residue: unknown[] = []
-		for (const path of [...taken].reverse()) {
-			const restored = attempt(() =>
-				renameSync(this.#resolve(this.#backup, path), this.#expectation(path).path),
-			)
-			if (!restored.success) residue.push(restored.error)
-		}
-		for (const path of [...promoted].reverse()) {
-			const expectation = this.#expectation(path)
-			const restored = attempt(() => {
-				if (expectation.shape === 'absent') {
-					rmSync(expectation.path, { force: true })
-					return
-				}
-				renameSync(this.#resolve(this.#backup, path), expectation.path)
-			})
-			if (!restored.success) residue.push(restored.error)
-		}
+		const restoring = [
+			...[...taken].reverse().flatMap((path): readonly unknown[] => {
+				const restored = attempt(() =>
+					renameSync(this.#resolve(this.#backup, path), this.#expectation(path).path),
+				)
+				return restored.success ? [] : [restored.error]
+			}),
+			...[...promoted].reverse().flatMap((path): readonly unknown[] => {
+				const expectation = this.#expectation(path)
+				const restored = attempt(() => {
+					if (expectation.shape === 'absent') {
+						rmSync(expectation.path, { force: true })
+						return
+					}
+					renameSync(this.#resolve(this.#backup, path), expectation.path)
+				})
+				return restored.success ? [] : [restored.error]
+			}),
+		]
 		// The private root holds every preserved copy, so it survives whenever a
 		// restore failed: deleting it there would destroy the only remaining bytes.
-		if (residue.length === 0) {
-			const cleared = attempt(() => rmSync(this.#root, { recursive: true, force: true }))
-			if (!cleared.success) residue.push(cleared.error)
-		}
-		for (const created of [...this.#created].reverse()) {
+		const cleared =
+			restoring.length === 0
+				? attempt(() => rmSync(this.#root, { recursive: true, force: true }))
+				: undefined
+		const clearing = cleared === undefined || cleared.success ? [] : [cleared.error]
+		const removing = [...this.#created].reverse().flatMap((created): readonly unknown[] => {
 			const path = isString(created) ? created : created.path
 			const removed = attempt(() => rmdirSync(path))
-			if (!removed.success && !matchesMissingPath(removed.error)) residue.push(removed.error)
-		}
-		return residue
+			return !removed.success && !matchesMissingPath(removed.error) ? [removed.error] : []
+		})
+		return [...restoring, ...clearing, ...removing]
 	}
 
 	// Establish the staged file's parents inside the private root and hand back the

@@ -85,16 +85,21 @@ async function main(argv: readonly string[]): Promise<number> {
 		writeFileSync(`${journal}.pid`, `${child.pid}\n`)
 		console.log(JSON.stringify({ pid: child.pid, journal, errors }))
 	}
-	let capped = false
-	const timer =
-		cap > 0
-			? setTimeout(() => {
-					capped = true
-					if (child.pid !== undefined) killTree(child.pid)
-				}, cap * 1000)
-			: undefined
+	// The signal aborts once the cap elapses, so whether it aborted is whether the cap ended the run.
+	// The timer cannot be cleared, so a cap that elapses after the child exited kills nothing: a
+	// reused pid is not this command's.
+	const deadline = cap > 0 ? AbortSignal.timeout(cap * 1000) : undefined
+	deadline?.addEventListener(
+		'abort',
+		() => {
+			if (child.pid !== undefined && child.exitCode === null && child.signalCode === null) {
+				killTree(child.pid)
+			}
+		},
+		{ once: true },
+	)
 	const exit = await waitForExit(child)
-	if (timer !== undefined) clearTimeout(timer)
+	const capped = deadline?.aborted === true
 	closeSync(journalFd)
 	closeSync(errorsFd)
 	const durationMs = Date.now() - started

@@ -41,6 +41,32 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - Return copies or readonly views; never leak a mutable internal reference.
 - Compute derived facts instead of persisting duplicate state.
 
+## Bindings
+
+- Declare every binding with `const`. Never declare `let` or `var` — at module scope, in a
+  function, in a loop head, or in a test.
+- Derive a value instead of accumulating it: write the expression that produces it (`some`,
+  `every`, `find`, `filter`, `map`, `reduce`, a conditional expression), or extract a
+  `{verb}{Noun}` helper that returns it. Never declare a binding and reassign it in a loop
+  or a branch.
+- Iterate with `for…of` over `entries()` or an iterable instead of an index counter.
+- A value produced inside `try` and needed after it comes from a helper that returns it.
+- State that outlives one call is a `#` field on its owning class, never a reassigned binding.
+- Mutating a `const` record, array, `Map`, `Set` or recorder to carry a running value is a
+  reassigned binding, and the preceding rules bind it. A running value is a flag, a counter, a
+  sum, a latest value, a one-slot cell, or text built piece by piece.
+- Build a list from a list with `map`, `filter` or `flatMap`, and a lookup with `new Map(…)` or
+  `new Set(…)` over a derived list. A loop that awaits or yields between steps, or whose step
+  depends on earlier steps, appends each step's readonly result to a local list and derives
+  every aggregate from that list, never from a running value.
+- These are not running values: a traversal's worklist and its visited set; a registry of the
+  in-flight per-call entities, each added when its call starts and removed when it settles; a
+  memo whose keys are each written once; a list assembled by straight-line branches; and a write
+  a platform API requires.
+- State that the awaits or callbacks of one call must change lives in `#` fields of an entity
+  created for that call. A `#` field of a longer-lived entity that each call resets is a
+  reassigned binding.
+
 ## Errors and outcomes
 
 | Condition                            | Required strategy                           |

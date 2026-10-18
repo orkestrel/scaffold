@@ -38,20 +38,17 @@ function readsAsPath(token: string): boolean {
 }
 
 function extractPaths(content: string): readonly string[] {
-	const found = new Set<string>()
-	for (const match of content.matchAll(/`([^`\n]+)`/gu)) {
-		const token = (match[1] ?? '').replace(/\\/gu, '/').replace(/:\d+(?:[-–]\d+)?$/u, '')
-		if (readsAsPath(token)) found.add(token)
-	}
+	const found = new Set(
+		[...content.matchAll(/`([^`\n]+)`/gu)]
+			.map((match) => (match[1] ?? '').replace(/\\/gu, '/').replace(/:\d+(?:[-–]\d+)?$/u, ''))
+			.filter(readsAsPath),
+	)
 	return [...found].sort()
 }
 
-function resolveBriefPath(directory: string, unit: string): string {
-	const base = join(directory, `${unit}-brief.md`)
-	if (!existsSync(base)) return base
-	let n = 2
-	while (existsSync(join(directory, `${unit}-brief-${n}.md`))) n += 1
-	return join(directory, `${unit}-brief-${n}.md`)
+function resolveBriefPath(directory: string, unit: string, count = 1): string {
+	const path = join(directory, count === 1 ? `${unit}-brief.md` : `${unit}-brief-${count}.md`)
+	return existsSync(path) ? resolveBriefPath(directory, unit, count + 1) : path
 }
 
 function writeBrief(argv: readonly string[]): number {

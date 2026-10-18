@@ -3,9 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-scout/scripts/map.ts'
+import { runSkillScript, MAP_SCRIPT } from '../../../../setupServer.js'
 
 describe('map.ts', () => {
 	it('maps a tree, headings outside fences, exports, a census, and unresolved anchors in one call', () => {
@@ -21,7 +19,7 @@ describe('map.ts', () => {
 				'See `docs/a.md` § Real and `docs/a.md` § Missing, then § Nowhere.\n',
 			)
 			const run = runSkillScript(
-				SCRIPT,
+				MAP_SCRIPT,
 				[
 					'--tree',
 					'docs',
@@ -81,18 +79,20 @@ describe('map.ts', () => {
 			scratch.write('docs/a.md', '# Title\n')
 			scratch.write('notes.md', 'See `docs/a.md` and a.md again.\n')
 			scratch.write('other.md', 'nothing here\n')
-			const refs = runSkillScript(SCRIPT, ['--refs', 'docs/a.md', '--json'], { cwd: scratch.path })
+			const refs = runSkillScript(MAP_SCRIPT, ['--refs', 'docs/a.md', '--json'], {
+				cwd: scratch.path,
+			})
 			expect(refs.status).toBe(0)
 			const rows = refs.json?.refs
 			if (!isArray(rows)) throw new Error('The map carries no refs')
 			expect(rows.map((row) => (isRecord(row) ? row.path : ''))).toEqual(['notes.md'])
-			const written = runSkillScript(SCRIPT, ['--tree', 'docs', '--out', 'tmp/units/map.txt'], {
+			const written = runSkillScript(MAP_SCRIPT, ['--tree', 'docs', '--out', 'tmp/units/map.txt'], {
 				cwd: scratch.path,
 			})
 			expect(written.status).toBe(0)
 			expect(written.stdout).toContain('map: wrote tmp/units/map.txt')
 			expect(readFileSync(join(scratch.path, 'tmp/units/map.txt'), 'utf8')).toContain('## Tree')
-			const text = runSkillScript(SCRIPT, ['--headings', 'docs'], { cwd: scratch.path })
+			const text = runSkillScript(MAP_SCRIPT, ['--headings', 'docs'], { cwd: scratch.path })
 			expect(text.status).toBe(0)
 			expect(text.stdout).toContain('## Headings\ndocs/a.md:1\t# Title')
 		} finally {
@@ -116,7 +116,7 @@ describe('map.ts', () => {
 				"interface:\n  display_name: 'Scout'\n  default_prompt: 'Use $orkestrel-scout'\n",
 			)
 			const run = runSkillScript(
-				SCRIPT,
+				MAP_SCRIPT,
 				['--frontmatter', 'role.md', 'role.toml', 'openai.yaml', '--json'],
 				{ cwd: scratch.path },
 			)
@@ -150,12 +150,14 @@ describe('map.ts', () => {
 	it('refuses a call with no mode or a flag with no value', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-map-usage-' })
 		try {
-			expect(runSkillScript(SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
-			expect(runSkillScript(SCRIPT, ['--refs', '--json'], { cwd: scratch.path }).status).toBe(64)
-			expect(runSkillScript(SCRIPT, ['--tree', '.', '--out'], { cwd: scratch.path }).status).toBe(
+			expect(runSkillScript(MAP_SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
+			expect(runSkillScript(MAP_SCRIPT, ['--refs', '--json'], { cwd: scratch.path }).status).toBe(
 				64,
 			)
-			const census = runSkillScript(SCRIPT, ['--tree', '.', '--census', '--vn-drag-color'], {
+			expect(
+				runSkillScript(MAP_SCRIPT, ['--tree', '.', '--out'], { cwd: scratch.path }).status,
+			).toBe(64)
+			const census = runSkillScript(MAP_SCRIPT, ['--tree', '.', '--census', '--vn-drag-color'], {
 				cwd: scratch.path,
 			})
 			expect(census.status).toBe(64)

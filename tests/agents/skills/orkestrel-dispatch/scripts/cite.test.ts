@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/cite.ts'
+import { runSkillScript, CITE_SCRIPT } from '../../../../setupServer.js'
 
 describe('cite.ts', () => {
 	it('resolves direct, backslash, unique-basename, and dot-prefixed citations, and names each failure', () => {
@@ -22,7 +20,7 @@ describe('cite.ts', () => {
 					'`docs/a.md:4` (the phantom line after the trailing break), `empty.md:1`, and `wrongfolder\\unique.md:1`.',
 				].join('\n'),
 			)
-			const run = runSkillScript(SCRIPT, ['report.md', '--json'], { cwd: scratch.path })
+			const run = runSkillScript(CITE_SCRIPT, ['report.md', '--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.citations).toBe(10)
 			const unresolved = run.json?.unresolved
@@ -46,12 +44,14 @@ describe('cite.ts', () => {
 		try {
 			scratch.write('docs/a.md', 'one\n')
 			scratch.write('report.md', 'See `docs/a.md:1`.\n')
-			const run = runSkillScript(SCRIPT, ['report.md'], { cwd: scratch.path })
+			const run = runSkillScript(CITE_SCRIPT, ['report.md'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.stdout).toContain('cite: 1 citation(s) in report.md, 0 unresolved')
-			expect(runSkillScript(SCRIPT, ['absent.md'], { cwd: scratch.path }).status).toBe(64)
-			expect(runSkillScript(SCRIPT, ['report.md', '--root'], { cwd: scratch.path }).status).toBe(64)
-			expect(runSkillScript(SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
+			expect(runSkillScript(CITE_SCRIPT, ['absent.md'], { cwd: scratch.path }).status).toBe(64)
+			expect(
+				runSkillScript(CITE_SCRIPT, ['report.md', '--root'], { cwd: scratch.path }).status,
+			).toBe(64)
+			expect(runSkillScript(CITE_SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
 		} finally {
 			scratch.destroy()
 		}

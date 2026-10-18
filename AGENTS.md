@@ -27,6 +27,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - The browser surface is `src/browser`, `app/browser`, the journey, and the showcase; the styles surface is `src/styles` and its themes. An extension adds a face to a surface: the `vue` browser extension adds `src/vue` and `app/vue`, and a named styles extension adds `src/<name>`.
 - `src/vue` and each `src/<name>` may import `src/core` and `src/browser`. `app/vue` may import what `app/browser` may import, plus `app/browser` and `src/vue`. No extension face imports server code or another extension's face, with one exception: a styles extension that builds another styles extension's recreation for a utility library (`src/tailwindcss` building Bootstrap for Tailwind) may `@use` that extension's Sass partials, configured through their `_tokens.scss` switches, and imports none of its TypeScript.
 - Published source never imports private app code.
+- The root `studies/` directory holds consumer study code, the TypeScript adapters and JSON declarations the Study CLI runs. It sits outside the environment axes, is never built or shipped, and no `src` or `app` file imports it.
 - Enforce boundaries with the toolchain (Oxlint import restrictions, scoped TypeScript projects, Vite graphs). Add no second parser for TypeScript, Oxlint, Vue, HTML, CSS, or Vite.
 - `tsconfig.json`, `vite.config.ts`, and each `*/types.ts` are their sources of truth. Keep structural files even when empty.
 

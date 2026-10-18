@@ -3,6 +3,7 @@ import type {
 	CatalogEntry,
 	Dependency,
 	ManifestDependencySet,
+	ManifestToken,
 	Drift,
 	Environment,
 	Finding,
@@ -54,9 +55,8 @@ import { ARTIFACT_TEMPLATES } from './templates.js'
  * ```
  */
 export function bytesToHex(bytes: Uint8Array): string {
-	let hex = ''
-	for (const byte of bytes) hex += byte.toString(16).padStart(2, '0')
-	return hex
+	const digits = Array.from({ length: 256 }, (_, value) => value.toString(16).padStart(2, '0'))
+	return Array.from(bytes, (byte) => digits[byte] ?? '').join('')
 }
 
 /**
@@ -103,12 +103,33 @@ export function contentToHex(content: string): string {
  * ```
  */
 export function computeBytes(content: string): number {
-	let bytes = 0
-	for (const character of content) {
+	return content[Symbol.iterator]().reduce((bytes, character) => {
 		const code = character.codePointAt(0) ?? 0
-		bytes += code <= 0x7f ? 1 : code <= 0x7ff ? 2 : code <= 0xffff ? 3 : 4
-	}
-	return bytes
+		return bytes + (code <= 0x7f ? 1 : code <= 0x7ff ? 2 : code <= 0xffff ? 3 : 4)
+	}, 0)
+}
+
+/**
+ * Computes the sum of a list of numbers.
+ *
+ * @param values - The numbers to add.
+ * @returns The sum, and `0` for no numbers.
+ *
+ * @remarks
+ * The one place a running tally is derived from the amounts that make it up, so a
+ * byte budget is the allowance less what was spent rather than a counter that is
+ * reassigned as reads land.
+ *
+ * @example
+ * ```ts
+ * import { computeTotal } from '@orkestrel/scaffold'
+ *
+ * computeTotal([65536, 65536, 12]) // 131084
+ * computeTotal([]) // 0
+ * ```
+ */
+export function computeTotal(values: readonly number[]): number {
+	return values.reduce((total, value) => total + value, 0)
 }
 
 /**
@@ -136,10 +157,13 @@ export function computeBytes(content: string): number {
  * ```
  */
 export function computeHash(text: string): string {
-	let hash = 0xcbf29ce484222325n
-	for (let index = 0; index < text.length; index += 1) {
-		hash = BigInt.asUintN(64, (hash ^ BigInt(text.charCodeAt(index))) * 0x100000001b3n)
-	}
+	// The iterator yields code points; a surrogate pair folds as its two code units.
+	const hash = text[Symbol.iterator]().reduce((digest, character) => {
+		const first = BigInt.asUintN(64, (digest ^ BigInt(character.charCodeAt(0))) * 0x100000001b3n)
+		return character.length === 1
+			? first
+			: BigInt.asUintN(64, (first ^ BigInt(character.charCodeAt(1))) * 0x100000001b3n)
+	}, 0xcbf29ce484222325n)
 	return hash.toString(16).padStart(16, '0')
 }
 
@@ -336,28 +360,28 @@ export function inferGroup(path: string): Group {
  * ```
  */
 export function serializeTypeScriptString(value: string): string {
-	let serialized = "'"
-	for (let index = 0; index < value.length; index += 1) {
-		const code = value.charCodeAt(index)
-		const character = value.charAt(index)
-		if (character === "'") serialized += "\\'"
-		else if (character === '\\') serialized += '\\\\'
-		else if (character === '\b') serialized += '\\b'
-		else if (character === '\f') serialized += '\\f'
-		else if (character === '\n') serialized += '\\n'
-		else if (character === '\r') serialized += '\\r'
-		else if (character === '\t') serialized += '\\t'
-		else if (code === 0x2028) serialized += '\\u2028'
-		else if (code === 0x2029) serialized += '\\u2029'
-		else if (code < 0x20 || (code >= 0xd800 && code <= 0xdfff)) {
-			const next = value.charCodeAt(index + 1)
-			if (code >= 0xd800 && code <= 0xdbff && next >= 0xdc00 && next <= 0xdfff) {
-				serialized += `${character}${value.charAt(index + 1)}`
-				index += 1
-			} else serialized += `\\u${code.toString(16).padStart(4, '0')}`
-		} else serialized += character
+	const escapes: Readonly<Record<string, string>> = {
+		"'": "\\'",
+		'\\': '\\\\',
+		'\b': '\\b',
+		'\f': '\\f',
+		'\n': '\\n',
+		'\r': '\\r',
+		'\t': '\\t',
+		' ': '\\u2028',
+		' ': '\\u2029',
 	}
-	return `${serialized}'`
+	// The iterator yields code points, so a surrogate pair is one two-unit character
+	// that passes through and a lone surrogate is a one-unit character that escapes.
+	const serialized = Array.from(value, (character) => {
+		const escape = escapes[character]
+		if (escape !== undefined) return escape
+		const code = character.charCodeAt(0)
+		return character.length === 1 && (code < 0x20 || (code >= 0xd800 && code <= 0xdfff))
+			? `\\u${code.toString(16).padStart(4, '0')}`
+			: character
+	}).join('')
+	return `'${serialized}'`
 }
 
 /**
@@ -684,24 +708,39 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
 export function catalogToLayers(
 	entries: readonly CatalogEntry[],
 ): ReadonlyArray<readonly string[]> {
-	const published = new Set(
-		entries.filter((entry) => entry.lookup === 'found').map((entry) => entry.name),
+	const found = entries.filter((entry) => entry.lookup === 'found')
+	const published = new Set(found.map((entry) => entry.name))
+	// A later entry of one name replaces an earlier one at the earlier position, as a keyed
+	// write does, and an edge to a name that is not published constrains nothing.
+	const dependencies = new Map(
+		found.map((entry): readonly [string, readonly string[]] => [
+			entry.name,
+			[...entry.dependencies, ...entry.peers]
+				.map((dependency) => dependency.name)
+				.filter((name) => published.has(name)),
+		]),
 	)
-	const pending = new Map<string, Set<string>>()
-	for (const entry of entries) {
-		if (entry.lookup !== 'found') continue
-		const edges = [...entry.dependencies, ...entry.peers].map((dependency) => dependency.name)
-		pending.set(entry.name, new Set(edges.filter((name) => published.has(name))))
-	}
-	const layers: string[][] = []
-	while (pending.size > 0) {
-		const ready = [...pending].filter(([, edges]) => edges.size === 0).map(([name]) => name)
-		if (ready.length === 0) break
-		for (const name of ready) pending.delete(name)
-		for (const edges of pending.values()) for (const name of ready) edges.delete(name)
-		layers.push(ready.sort())
-	}
-	return layers
+	// Each round places every name whose edges are all placed, in name order. A round that places
+	// nothing leaves the state as it was, which ends the layers: a cycle never becomes ready.
+	// One round per found entry is enough, because a round that places anything places one name.
+	return found.reduce<{
+		readonly layers: ReadonlyArray<readonly string[]>
+		readonly placed: ReadonlySet<string>
+	}>(
+		(state) => {
+			const ready = [...dependencies]
+				.filter(
+					([name, edges]) =>
+						!state.placed.has(name) && edges.every((edge) => state.placed.has(edge)),
+				)
+				.map(([name]) => name)
+				.sort()
+			return ready.length === 0
+				? state
+				: { layers: [...state.layers, ready], placed: new Set([...state.placed, ...ready]) }
+		},
+		{ layers: [], placed: new Set() },
+	).layers
 }
 
 /**
@@ -725,14 +764,8 @@ export function catalogToLayers(
  * ```
  */
 export function planToSummary(plan: Plan): PlanSummary {
-	let host = 0
-	let template = 0
-	let computed = 0
-	for (const artifact of plan.artifacts) {
-		if (artifact.origin === 'host') host += 1
-		else if (artifact.origin === 'template') template += 1
-		else computed += 1
-	}
+	const host = plan.artifacts.filter((artifact) => artifact.origin === 'host').length
+	const template = plan.artifacts.filter((artifact) => artifact.origin === 'template').length
 	return {
 		name: plan.blueprint.name,
 		src: plan.blueprint.src,
@@ -740,7 +773,7 @@ export function planToSummary(plan: Plan): PlanSummary {
 		groups: plan.groups,
 		host,
 		template,
-		computed,
+		computed: plan.artifacts.length - host - template,
 	}
 }
 
@@ -832,8 +865,8 @@ export function compareVersions(left: string, right: string): number {
 		if (second !== undefined) return -1
 		return compareValues(left, right)
 	}
-	for (let index = 0; index < first.length; index += 1) {
-		const order = compareValues(first[index] ?? 0, second[index] ?? 0)
+	for (const [index, component] of first.entries()) {
+		const order = compareValues(component, second[index] ?? 0)
 		if (order !== 0) return order
 	}
 	return 0
@@ -984,23 +1017,24 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
 	}
 	const parsed = parseJSON(manifest)
 	if (!isRecord(parsed)) return { runtime: [], development: [], peer: [] }
-	const runtime: Dependency[] = []
-	const development: Dependency[] = []
-	const peer: Dependency[] = []
-	const sections = [
-		{ name: 'dependencies', dependencies: runtime },
-		{ name: 'devDependencies', dependencies: development },
-		{ name: 'peerDependencies', dependencies: peer },
-	]
-	for (const section of sections) {
-		const entries = parsed[section.name]
-		if (!isRecord(entries)) continue
-		for (const [name, range] of Object.entries(entries)) {
-			if (!DEPENDENCY_NAME_PATTERN.test(name) || name.length > MAX_DEPENDENCY_NAME_LENGTH) continue
-			if (!isString(range) || range.length === 0 || range.length > MAX_RANGE_LENGTH) continue
-			section.dependencies.push({ name, range })
-		}
-	}
+	const [runtime = [], development = [], peer = []] = [
+		'dependencies',
+		'devDependencies',
+		'peerDependencies',
+	].map((section): readonly Dependency[] => {
+		const entries = parsed[section]
+		return isRecord(entries)
+			? Object.entries(entries).flatMap(([name, range]): readonly Dependency[] =>
+					!DEPENDENCY_NAME_PATTERN.test(name) ||
+					name.length > MAX_DEPENDENCY_NAME_LENGTH ||
+					!isString(range) ||
+					range.length === 0 ||
+					range.length > MAX_RANGE_LENGTH
+						? []
+						: [{ name, range }],
+				)
+			: []
+	})
 	return {
 		runtime: limitEntries(runtime, MAX_COLLECTION_ITEMS),
 		development: limitEntries(development, MAX_COLLECTION_ITEMS),
@@ -1038,4 +1072,50 @@ export function renderSkillPointer(canonical: string, name: string): string | un
 	if (closing === -1) return undefined
 	const frontmatter = lines.slice(0, closing + 1).join('\n')
 	return `${frontmatter}\n${fillTemplate(ARTIFACT_TEMPLATES.orchestration.skill, { name })}`
+}
+
+/**
+ * Scans manifest text for its strings and object braces, in order.
+ *
+ * @param text - The manifest text to scan.
+ * @returns One token per quoted string and per `{` or `}` outside a string, or
+ * `undefined` when a string is never closed.
+ *
+ * @remarks
+ * Native JSON validation owns syntax; this scan only locates the byte ranges an
+ * in-place writer edits. A string is opaque, so a brace inside one is never read,
+ * and a backslash escapes the character after it. Depth counts objects alone and
+ * ignores arrays, exactly as the range writers count them, so a key nested inside
+ * another object never reads as a top-level one. A string that a colon follows
+ * carries `value`, the offset of the character after that colon and the
+ * whitespace beside it.
+ *
+ * @example
+ * ```ts
+ * import { scanManifestTokens } from '@orkestrel/scaffold'
+ *
+ * scanManifestTokens('{"a": "b"}')?.length // 4
+ * scanManifestTokens('{"a') // undefined
+ * ```
+ */
+export function scanManifestTokens(text: string): readonly ManifestToken[] | undefined {
+	const tokens: ManifestToken[] = []
+	for (const match of text.matchAll(
+		/(?<string>"(?:\\[\s\S]|[^"\\])*")(?<colon>\s*:\s*)?|[{}]|"/gu,
+	)) {
+		if (match[0] === '"') return undefined
+		const literal = match.groups?.string
+		const depth = (tokens.at(-1)?.depth ?? 0) + (match[0] === '{' ? 1 : match[0] === '}' ? -1 : 0)
+		tokens.push(
+			literal === undefined
+				? { text: match[0], index: match.index, depth, value: undefined }
+				: {
+						text: literal,
+						index: match.index,
+						depth,
+						value: match.groups?.colon === undefined ? undefined : match.index + match[0].length,
+					},
+		)
+	}
+	return tokens
 }

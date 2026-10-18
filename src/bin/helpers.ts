@@ -17,17 +17,18 @@ import type {
 import type {
 	CLICommand,
 	ErrorEnvelope,
+	ScriptChain,
 	ScriptInvocations,
+	ScriptStep,
+	ScriptToken,
 	TargetQuestion,
 	Verb,
 	VersionResolution,
 } from './types.js'
 import type { Host, MaterializeResult, UpstreamOptions } from '@src/server'
-import type { SessionInterface } from '@orkestrel/process'
 import { align, strip, stripControls, width } from '@orkestrel/console'
 import { attempt, isArray, isError, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
-import { createSession } from '@orkestrel/process/server'
 import {
 	AXES,
 	blueprintToDevDependencies,
@@ -44,7 +45,6 @@ import {
 	isScaffoldError,
 	isSheetName,
 	manifestToDependencies,
-	MAX_PATH_LENGTH,
 	parseExtension,
 	RESERVED_SHEET_NAMES,
 	ScaffoldError,
@@ -347,30 +347,45 @@ export function manifestToWritableDependencies(
 	blueprint: Blueprint,
 ): DependencyPinSet {
 	const declared = manifestToDependencies(manifest)
-	const runtime = [...dependenciesToFleet(declared.runtime)]
-	const development = [...dependenciesToFleet(declared.development)]
 	const parsed = parseJSON(manifest)
-	if (!isRecord(parsed)) return { runtime, development }
+	if (!isRecord(parsed)) {
+		return {
+			runtime: dependenciesToFleet(declared.runtime),
+			development: dependenciesToFleet(declared.development),
+		}
+	}
 	const runtimeRecord = isRecord(parsed.dependencies) ? parsed.dependencies : {}
 	const developmentRecord = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
-	for (const name of Object.keys(blueprintToDevDependencies(blueprint)).sort()) {
-		if (name.startsWith('@orkestrel/')) continue
-		const runtimeRange = runtimeRecord[name]
-		if (isString(runtimeRange)) {
-			runtime.push({ name, range: runtimeRange })
-			if (
-				!(
-					blueprint.showcase &&
-					blueprint.app.includes('browser') &&
-					Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name)
-				)
-			)
-				continue
-		}
-		const developmentRange = developmentRecord[name]
-		if (isString(developmentRange)) development.push({ name, range: developmentRange })
+	const rows = Object.keys(blueprintToDevDependencies(blueprint))
+		.sort()
+		.filter((name) => !name.startsWith('@orkestrel/'))
+		.map((name) => ({
+			name,
+			runtimeRange: runtimeRecord[name],
+			developmentRange: developmentRecord[name],
+			dual:
+				blueprint.showcase &&
+				blueprint.app.includes('browser') &&
+				Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name),
+		}))
+	return {
+		runtime: [
+			...dependenciesToFleet(declared.runtime),
+			...rows.flatMap(({ name, runtimeRange }) =>
+				isString(runtimeRange) ? [{ name, range: runtimeRange }] : [],
+			),
+		],
+		// A tool declared in both sections keeps its runtime row alone, unless a selected showcase
+		// declares it in both on purpose.
+		development: [
+			...dependenciesToFleet(declared.development),
+			...rows.flatMap(({ name, runtimeRange, developmentRange, dual }) =>
+				(isString(runtimeRange) && !dual) || !isString(developmentRange)
+					? []
+					: [{ name, range: developmentRange }],
+			),
+		],
 	}
-	return { runtime, development }
 }
 
 /**
@@ -497,12 +512,10 @@ export function manifestToWritableScripts(
 	const steps = declared.split('&&').map((step) => step.trim())
 	const expected = planned.split('&&').map((step) => step.trim())
 	if (steps.length >= expected.length) return writable
-	let cursor = 0
-	for (const step of steps) {
-		while (cursor < expected.length && expected[cursor] !== step) cursor += 1
-		if (cursor === expected.length) return writable
-		cursor += 1
-	}
+	// Each declared step must appear in the planned order, so every search resumes
+	// where the previous match stopped.
+	const resumed = expected.values()
+	if (!steps.every((step) => resumed.some((entry) => entry === step))) return writable
 	const supplied = new Set(writable.map(({ name }) => name))
 	for (const step of expected) {
 		if (steps.includes(step)) continue
@@ -532,16 +545,19 @@ export function dependenciesToFleet(dependencies: readonly Dependency[]): readon
 export function dependenciesToFloors(
 	dependencies: readonly Dependency[],
 ): readonly Release[] | undefined {
-	const releases: Release[] = []
-	for (const dependency of dependencies) {
-		const version =
+	const floors = dependencies.map((dependency) => ({
+		dependency,
+		version:
 			dependency.range.startsWith('^') || dependency.range.startsWith('~')
 				? dependency.range.slice(1)
-				: dependency.range
-		if (extractVersion(version) === undefined) return undefined
-		releases.push({ ...dependency, lookup: 'found', latest: version })
-	}
-	return releases
+				: dependency.range,
+	}))
+	if (floors.some(({ version }) => extractVersion(version) === undefined)) return undefined
+	return floors.map(({ dependency, version }): Release => ({
+		...dependency,
+		lookup: 'found',
+		latest: version,
+	}))
 }
 
 /**
@@ -571,9 +587,8 @@ export function releasesToQuestions(
 	releases: readonly Release[],
 	served: readonly Release[] = releases,
 ): readonly Question[] {
-	const questions: Question[] = []
-	for (const release of releases) {
-		if (release.name.startsWith('@orkestrel/')) continue
+	return releases.flatMap((release): readonly Question[] => {
+		if (release.name.startsWith('@orkestrel/')) return []
 		const declared = extractRangeMajor(release.range)
 		const current = release.lookup === 'found' ? release.latest : undefined
 		const resolved = current === undefined ? undefined : extractVersion(current)
@@ -582,33 +597,36 @@ export function releasesToQuestions(
 				? release.range.slice(1)
 				: release.range,
 		)
-		if (
-			declared !== undefined &&
+		const alternate = served.find((candidate) => candidate.name === release.name)
+		const published =
+			release.major ??
+			(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
+		return [
+			...(declared !== undefined &&
 			current !== undefined &&
 			resolved !== undefined &&
 			floor !== undefined &&
 			resolved[0] === declared &&
 			compareVersions(current, floor.join('.')) > 0
-		) {
-			questions.push({
-				field: 'dependencies',
-				message: `${release.name} declares the floor ${release.range}, while the registry serves ${current} within major ${String(declared)}.`,
-				blocking: false,
-			})
-		}
-		const alternate = served.find((candidate) => candidate.name === release.name)
-		const published =
-			release.major ??
-			(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
-		if (declared !== undefined && published !== undefined && declared < published) {
-			questions.push({
-				field: 'dependencies',
-				message: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
-				blocking: false,
-			})
-		}
-	}
-	return questions
+				? [
+						{
+							field: 'dependencies',
+							message: `${release.name} declares the floor ${release.range}, while the registry serves ${current} within major ${String(declared)}.`,
+							blocking: false,
+						},
+					]
+				: []),
+			...(declared !== undefined && published !== undefined && declared < published
+				? [
+						{
+							field: 'dependencies',
+							message: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
+							blocking: false,
+						},
+					]
+				: []),
+		]
+	})
 }
 
 /**
@@ -910,18 +928,16 @@ export function releasesToPins(
 		)
 	}
 	const dependencies = [...declared.runtime, ...declared.development]
-	const pins: Dependency[] = []
-	for (let index = 0; index < releases.length; index += 1) {
-		const release = releases[index]
+	const pins = releases.map((release, index): Dependency => {
 		const dependency = dependencies[index]
-		if (release === undefined || dependency === undefined) {
+		if (dependency === undefined) {
 			throw new ScaffoldError('FETCH', 'The release answer has no matching declaration.')
 		}
 		if (release.lookup !== 'found') {
 			throw new ScaffoldError('FETCH', `The registry named no release for ${release.name}.`)
 		}
-		pins.push({ name: dependency.name, range: `^${release.latest}` })
-	}
+		return { name: dependency.name, range: `^${release.latest}` }
+	})
 	if (pins.length !== dependencies.length) {
 		throw new ScaffoldError('FETCH', 'The release answer does not match the declaration set.')
 	}
@@ -929,6 +945,71 @@ export function releasesToPins(
 		runtime: pins.slice(0, declared.runtime.length),
 		development: pins.slice(declared.runtime.length),
 	}
+}
+
+/**
+ * Scans a shell command for the words and operators it splits into.
+ *
+ * @param script - The shell command text to split.
+ * @returns The words and the `&&`, `||`, `;`, `|`, `&`, `(`, and `)` operators in command order, or
+ * `undefined` when a quote is never closed or the command ends in a backslash.
+ *
+ * @remarks
+ * Quotes group a word without hiding it and a backslash outside single quotes escapes the next
+ * character, so the word value carries neither. A `$`, a backtick, or a `%` that no backslash
+ * escapes and no single quote encloses marks its word unresolved, because a shell expansion
+ * decides what the word names. Operators are always resolved.
+ *
+ * @example
+ * ```ts
+ * import { scanScriptTokens } from './helpers.js'
+ *
+ * scanScriptTokens('vitest run --project "src:core"')?.map((token) => token.value)
+ * // ['vitest', 'run', '--project', 'src:core']
+ * ```
+ */
+export function scanScriptTokens(script: string): readonly ScriptToken[] | undefined {
+	const matches = Array.from(
+		script.matchAll(
+			/(?<space>\s+)|(?<operator>&&|\|\||[;&|()])|(?<word>(?:[^\s;&|()"'\\]|\\[\s\S]|"(?:\\[\s\S]|[^"\\])*"|'[^']*')+)|[\s\S]/g,
+		),
+		({ groups }) => groups ?? {},
+	)
+	// Any character no group takes is a quote that never closes or a backslash that ends the command.
+	if (
+		matches.some(
+			({ space, operator, word }) =>
+				space === undefined && operator === undefined && word === undefined,
+		)
+	) {
+		return undefined
+	}
+	return matches.flatMap(({ space, operator, word }): readonly ScriptToken[] => {
+		if (space !== undefined) return []
+		if (operator !== undefined) return [{ value: operator, resolved: true }]
+		const parts = Array.from(
+			(word ?? '').matchAll(/\\([\s\S])|"((?:\\[\s\S]|[^"\\])*)"|'([^']*)'|([\s\S])/g),
+			([, escaped, double, single, plain]) => {
+				if (escaped !== undefined) return { text: escaped, resolved: true }
+				if (single !== undefined) return { text: single, resolved: true }
+				if (double !== undefined) {
+					return {
+						text: double.replaceAll(/\\([\s\S])/g, '$1'),
+						resolved: Array.from(double.matchAll(/\\[\s\S]|[$`%]/g)).every((found) =>
+							found[0].startsWith('\\'),
+						),
+					}
+				}
+				return { text: plain ?? '', resolved: plain === undefined || !'$`%'.includes(plain) }
+			},
+		)
+		return [
+			{
+				value: parts.map((part) => part.text).join(''),
+				resolved: parts.every((part) => part.resolved),
+			},
+		]
+	})
 }
 
 /**
@@ -958,81 +1039,20 @@ export function scriptToInvocations(
 	script: string,
 	wrappers: ReadonlyMap<string, string> = new Map(),
 ): ScriptInvocations | undefined {
-	const tokens: Array<{ value: string; resolved: boolean }> = []
-	let value = ''
-	let resolved = true
-	let started = false
-	let quote: string | undefined
-	for (let index = 0; index < script.length; index += 1) {
-		const character = script[index]
-		if (character === undefined) return undefined
-		if (quote === undefined) {
-			if (/\s/.test(character)) {
-				if (started) tokens.push({ value, resolved })
-				value = ''
-				resolved = true
-				started = false
-				continue
-			}
-			if (';&|()'.includes(character)) {
-				if (started) tokens.push({ value, resolved })
-				const paired = script[index + 1] === character && (character === '&' || character === '|')
-				tokens.push({ value: paired ? `${character}${character}` : character, resolved: true })
-				value = ''
-				resolved = true
-				started = false
-				if (paired) index += 1
-				continue
-			}
-			if (character === '"' || character === "'") {
-				quote = character
-				started = true
-				continue
-			}
-			if (character === '\\') {
-				const escaped = script[index + 1]
-				if (escaped === undefined) return undefined
-				value += escaped
-				started = true
-				index += 1
-				continue
-			}
-			if (character === '$' || character === '`' || character === '%') resolved = false
-			value += character
-			started = true
-			continue
-		}
-		if (character === quote) {
-			quote = undefined
-			continue
-		}
-		if (character === '\\' && quote === '"') {
-			const escaped = script[index + 1]
-			if (escaped === undefined) return undefined
-			value += escaped
-			index += 1
-			continue
-		}
-		if (quote === '"' && (character === '$' || character === '`' || character === '%')) {
-			resolved = false
-		}
-		value += character
-		started = true
-	}
-	if (quote !== undefined) return undefined
-	if (started) tokens.push({ value, resolved })
-
-	const projects: string[] = []
-	const configs: string[] = []
-	const scripts: string[] = []
+	const tokens = scanScriptTokens(script)
+	if (tokens === undefined) return undefined
 	const configurations = new Map([...wrappers].map(([path, project]) => [normalize(path), project]))
-	let testing = false
-	for (let index = 0; index < tokens.length; index += 1) {
-		const token = tokens[index]
-		if (token === undefined) return undefined
-		if (index === 0 || ['&&', '||', ';', '|', '&', '('].includes(tokens[index - 1]?.value ?? '')) {
-			testing = token.resolved && token.value === 'vitest' && tokens[index + 1]?.value === 'run'
-		}
+	// Each token that is read leaves one step, and the next token reads from the last step how far
+	// the tokens a flag or an npm run took as arguments reach and whether its command runs vitest.
+	const steps: ScriptStep[] = []
+	for (const [index, token] of tokens.entries()) {
+		const previous = steps.at(-1)
+		if (previous !== undefined && index <= previous.through) continue
+		// A command starts the list or follows a separator, and every later token inherits whether it runs `vitest run`.
+		const running =
+			index === 0 || ['&&', '||', ';', '|', '&', '('].includes(tokens[index - 1]?.value ?? '')
+				? token.resolved && token.value === 'vitest' && tokens[index + 1]?.value === 'run'
+				: (previous?.running ?? false)
 		if (token.value === 'npm' && tokens[index + 1]?.value === 'run') {
 			const name = tokens[index + 2]
 			if (
@@ -1042,8 +1062,7 @@ export function scriptToInvocations(
 				['&&', '||', ';', '|', '&', '(', ')'].includes(name.value)
 			)
 				return undefined
-			scripts.push(name.value)
-			index += 2
+			steps.push({ projects: [], configs: [], scripts: [name.value], through: index + 2, running })
 			continue
 		}
 		if (token.value === '--project' || token.value === '--config' || token.value === '-c') {
@@ -1055,26 +1074,90 @@ export function scriptToInvocations(
 				['&&', '||', ';', '|', '&', '(', ')'].includes(project.value)
 			)
 				return undefined
-			const names = token.value === '--project' ? projects : configs
-			names.push(project.value)
-			const face =
-				testing && names === configs ? configurations.get(normalize(project.value)) : undefined
-			if (face !== undefined) projects.push(face)
-			index += 1
+			const named = token.value === '--project'
+			const face = running && !named ? configurations.get(normalize(project.value)) : undefined
+			steps.push({
+				projects: [...(named ? [project.value] : []), ...(face === undefined ? [] : [face])],
+				configs: named ? [] : [project.value],
+				scripts: [],
+				through: index + 1,
+				running,
+			})
 			continue
 		}
 		if (token.value.startsWith('--project=') || token.value.startsWith('--config=')) {
 			const project = token.value.slice(token.value.indexOf('=') + 1)
 			if (!token.resolved || project.length === 0) return undefined
-			const names = token.value.startsWith('--project=') ? projects : configs
-			names.push(project)
-			const face = testing && names === configs ? configurations.get(normalize(project)) : undefined
-			if (face !== undefined) projects.push(face)
+			const named = token.value.startsWith('--project=')
+			const face = running && !named ? configurations.get(normalize(project)) : undefined
+			steps.push({
+				projects: [...(named ? [project] : []), ...(face === undefined ? [] : [face])],
+				configs: named ? [] : [project],
+				scripts: [],
+				through: index,
+				running,
+			})
 			continue
 		}
 		if (!token.resolved && /--project|--config/.test(token.value)) return undefined
+		steps.push({ projects: [], configs: [], scripts: [], through: index, running })
 	}
-	return { projects, configs, scripts }
+	return {
+		projects: steps.flatMap(({ projects }) => projects),
+		configs: steps.flatMap(({ configs }) => configs),
+		scripts: steps.flatMap(({ scripts }) => scripts),
+	}
+}
+
+/**
+ * Collects the scripts, Vitest projects, and unreadable scripts one gate reaches through `npm run`.
+ *
+ * @param gate - The script name the walk starts at.
+ * @param scripts - The manifest's scripts by name; a value that is not a string names no command.
+ * @param wrappers - Planned wrapper paths mapped to the face projects they run.
+ * @returns The script names the walk visited, the Vitest projects those scripts name, and the
+ * visited scripts whose command cannot be read literally.
+ *
+ * @remarks
+ * The walk is breadth first and reads each script once, so a cycle ends where it closes. A script
+ * the manifest does not declare as a string is visited and names nothing. The projects and the
+ * unreadable names derive from one log of the reads, never from sets the walk fills.
+ *
+ * @example
+ * ```ts
+ * import { collectScriptChain } from './helpers.js'
+ *
+ * collectScriptChain('test', { test: 'npm run test:src', 'test:src': 'vitest run --project src:core' }, new Map())
+ * // { visited: Set { 'test', 'test:src' }, projects: Set { 'src:core' }, unreadable: Set {} }
+ * ```
+ */
+export function collectScriptChain(
+	gate: string,
+	scripts: Readonly<Record<string, unknown>>,
+	wrappers: ReadonlyMap<string, string>,
+): ScriptChain {
+	const queue = [gate]
+	const visited = new Set<string>()
+	const reads: Array<{ readonly name: string; readonly invoked: ScriptInvocations | undefined }> =
+		[]
+	for (const name of queue) {
+		if (visited.has(name)) continue
+		visited.add(name)
+		const script = scripts[name]
+		if (!isString(script)) continue
+		const invoked = scriptToInvocations(script, wrappers)
+		reads.push({ name, invoked })
+		for (const called of invoked?.scripts ?? []) {
+			if (!visited.has(called)) queue.push(called)
+		}
+	}
+	return {
+		visited,
+		projects: new Set(reads.flatMap(({ invoked }) => invoked?.projects ?? [])),
+		unreadable: new Set(
+			reads.flatMap(({ name, invoked }) => (invoked === undefined ? [name] : [])),
+		),
+	}
 }
 
 /**
@@ -1133,43 +1216,47 @@ export function targetToFacts(target: string): Pick<Blueprint, 'styles' | 'theme
  * @throws `ScaffoldError` when sheet markers name an invalid or case-colliding face, or the directory cannot be read.
  */
 export function targetToExtensions(target: string): readonly Extension[] {
-	const extensions: Extension[] = []
-	for (const name of FRAMEWORKS) {
+	const browsers = FRAMEWORKS.flatMap((name): readonly Extension[] => {
 		const axes = AXES.filter((axis) => {
 			const path = resolveContainedPath(target, `${axis}/${name}`)
 			return path !== undefined && isPhysicalDirectory(path)
 		})
-		if (axes.length > 0) extensions.push({ surface: 'browser', name, axes })
-	}
+		return axes.length > 0 ? [{ surface: 'browser', name, axes }] : []
+	})
 	const source = resolveContainedPath(target, 'src')
-	if (source === undefined || !isPhysicalDirectory(source)) return extensions
+	if (source === undefined || !isPhysicalDirectory(source)) return browsers
 	const entries = readdirSync(source, { withFileTypes: true })
 	if (entries.length > MAX_INVENTORY_PATHS)
 		throw new ScaffoldError('TARGET', 'The source directory exceeds the inventory limit.')
-	const names: string[] = []
-	const seen = new Set<string>()
-	for (const entry of entries) {
-		if (!entry.isDirectory() || RESERVED_SHEET_NAMES.includes(entry.name)) continue
+	const faces = entries.filter((entry) => {
+		if (!entry.isDirectory() || RESERVED_SHEET_NAMES.includes(entry.name)) return false
 		const sheet = resolveContainedPath(target, `src/${entry.name}/index.scss`)
 		const marker = resolveContainedPath(target, `src/${entry.name}/${SHEET_ENTRY_NAME}`)
-		if (
-			sheet === undefined ||
-			marker === undefined ||
-			!isExactCaseFile(sheet) ||
-			!isExactCaseFile(marker)
+		return (
+			sheet !== undefined &&
+			marker !== undefined &&
+			isExactCaseFile(sheet) &&
+			isExactCaseFile(marker)
 		)
-			continue
-		const folded = entry.name.toLowerCase()
-		if (seen.has(folded))
-			throw new ScaffoldError('TARGET', `Case-colliding sheet face '${entry.name}'.`)
-		seen.add(folded)
-		names.push(entry.name)
+	})
+	// The first face whose folded name an earlier face already holds is the collision reported.
+	const colliding = faces.find(
+		(face, index) =>
+			faces.findIndex((other) => other.name.toLowerCase() === face.name.toLowerCase()) < index,
+	)
+	if (colliding !== undefined) {
+		throw new ScaffoldError('TARGET', `Case-colliding sheet face '${colliding.name}'.`)
 	}
-	for (const name of names.sort()) {
-		if (!isSheetName(name)) throw new ScaffoldError('TARGET', `Invalid sheet face '${name}'.`)
-		extensions.push({ surface: 'styles', name })
-	}
-	return extensions
+	return [
+		...browsers,
+		...faces
+			.map((face) => face.name)
+			.sort()
+			.map((name): Extension => {
+				if (!isSheetName(name)) throw new ScaffoldError('TARGET', `Invalid sheet face '${name}'.`)
+				return { surface: 'styles', name }
+			}),
+	]
 }
 
 /**
@@ -1186,25 +1273,20 @@ export function selectionToExtensions(
 	styles: boolean,
 ): readonly Extension[] {
 	if (selection === undefined) return []
-	const extensions: Extension[] = []
-	const seen = new Set<string>()
-	for (const entry of selection.split(',')) {
+	return selection.split(',').map((entry, index, entries): Extension => {
 		const extension = parseExtension(entry)
-		if (extension === undefined || seen.has(entry))
+		if (extension === undefined || entries.indexOf(entry) < index)
 			throw new UsageError(
 				`'--extend' refuses '${entry}': use distinct supported surface:name entries.`,
 			)
-		seen.add(entry)
 		if (extension.surface === 'browser') {
 			if (axes.length === 0)
 				throw new UsageError('A browser extension requires browser in --src or --app.')
-			extensions.push({ ...extension, axes })
-		} else {
-			if (!styles) throw new UsageError('A styles extension requires --styles.')
-			extensions.push(extension)
+			return { ...extension, axes }
 		}
-	}
-	return extensions
+		if (!styles) throw new UsageError('A styles extension requires --styles.')
+		return extension
+	})
 }
 
 /**
@@ -1233,172 +1315,14 @@ export function catalogToNames(target: string | Host): readonly string[] {
 			? undefined
 			: Buffer.from(hex, 'hex').toString('utf8')
 	if (text === undefined) return []
-	const names: string[] = []
-	for (const table of createMarkdown(text).filter(isTableNode)) {
-		for (const row of table.rows) {
-			const [cell] = row
-			if (cell === undefined) continue
-			const name = cell.map(flattenText).join('').trim()
-			if (DEPENDENCY_NAME_PATTERN.test(name)) names.push(name)
-		}
-	}
-	return names
-}
-
-/**
- * Collects the complete NUL-delimited records from one raw git output chunk.
- *
- * @param records - The complete records retained in arrival order.
- * @param pending - The mutable cell carrying the unfinished record between chunks.
- * @param decoder - The streaming UTF-8 decoder shared by the query.
- * @param controller - The query controller aborted on a bound refusal.
- * @param target - The repository the query addresses.
- * @param chunk - The next owned output bytes.
- * @returns Nothing.
- */
-export function collectGitRecords(
-	records: string[],
-	pending: string[],
-	decoder: TextDecoder,
-	controller: AbortController,
-	target: string,
-	chunk: Uint8Array,
-): void {
-	if (controller.signal.aborted) return
-	const parts = `${pending[0] ?? ''}${decoder.decode(chunk, { stream: true })}`.split('\0')
-	pending[0] = parts.pop() ?? ''
-	for (const record of parts) {
-		if (record.length === 0) continue
-		if (records.length >= MAX_INVENTORY_PATHS) {
-			refuseGitRecords(
-				controller,
-				target,
-				`The git query for target at ${target} exceeded the working-tree inventory limit.`,
-			)
-			return
-		}
-		records.push(record)
-	}
-	if ((pending[0] ?? '').length > MAX_PATH_LENGTH + 3) {
-		refuseGitRecords(
-			controller,
-			target,
-			`The git query for target at ${target} returned an unfinished record beyond the supported path limit.`,
+	return createMarkdown(text)
+		.filter(isTableNode)
+		.flatMap((table) =>
+			table.rows.flatMap(([cell]) => {
+				const name = cell?.map(flattenText).join('').trim()
+				return name !== undefined && DEPENDENCY_NAME_PATTERN.test(name) ? [name] : []
+			}),
 		)
-	}
-}
-
-/**
- * Aborts a git query with its first target refusal.
- *
- * @param controller - The query controller whose reason retains the refusal.
- * @param target - The repository the query addresses.
- * @param message - The refusal message.
- * @returns Nothing.
- */
-export function refuseGitRecords(
-	controller: AbortController,
-	target: string,
-	message: string,
-): void {
-	if (!controller.signal.aborted) {
-		controller.abort(new ScaffoldError('TARGET', message, { target }))
-	}
-}
-
-/**
- * Reads one git query as its NUL-separated records.
- *
- * @param target - The repository the query runs in.
- * @param args - The git arguments, without the program name.
- * @returns The non-empty records git wrote, in git's own order.
- * @throws `ScaffoldError('TARGET', …)` when the query fails or its output is
- * incomplete or outside the working-tree inventory bounds.
- *
- * @remarks
- * Git is asked rather than reimplemented, because the tracked set and the dirty
- * set are git's own answers and nothing else can give them. The raw session
- * streams complete NUL-delimited records without retaining the whole query as a
- * manifest-sized text buffer. Its initial hooks are installed before the eager
- * spawn, so no output or child fault can precede its observer.
- *
- * @example
- * ```ts
- * import { readGitRecords } from './helpers.js'
- *
- * await readGitRecords('./packages/router', ['ls-files', '-z']) // ['package.json', 'src/core/index.ts']
- * ```
- */
-export async function readGitRecords(
-	target: string,
-	args: readonly string[],
-): Promise<readonly string[]> {
-	const records: string[] = []
-	const pending = ['']
-	const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
-	const controller = new AbortController()
-	let session: SessionInterface | undefined
-	try {
-		session = createSession({
-			command: { file: 'git', arguments: ['-C', target, ...args] },
-			workspace: '.',
-			signal: controller.signal,
-			on: {
-				stdout: collectGitRecords.bind(undefined, records, pending, decoder, controller, target),
-				error: refuseGitRecords.bind(
-					undefined,
-					controller,
-					target,
-					`The git query for target at ${target} failed before it completed.`,
-				),
-			},
-			error: refuseGitRecords.bind(
-				undefined,
-				controller,
-				target,
-				`The git query for target at ${target} failed while reading its output.`,
-			),
-		})
-		const exit = await session.exit
-		pending[0] = `${pending[0] ?? ''}${decoder.decode()}`
-		if (controller.signal.aborted) throw controller.signal.reason
-		if (exit.signal !== null) {
-			throw new ScaffoldError(
-				'TARGET',
-				`The git query for target at ${target} ended from signal ${exit.signal}.`,
-				{ target, signal: exit.signal },
-			)
-		}
-		if (exit.code !== 0) {
-			throw new ScaffoldError(
-				'TARGET',
-				`The git query for target at ${target} failed with exit code ${String(exit.code)}.`,
-				{ target, code: exit.code },
-			)
-		}
-		if (!exit.drained) {
-			throw new ScaffoldError(
-				'TARGET',
-				`The git query for target at ${target} ended before its output drained.`,
-				{ target },
-			)
-		}
-		if ((pending[0] ?? '').length > 0) {
-			throw new ScaffoldError(
-				'TARGET',
-				`The git query for target at ${target} returned an incomplete record.`,
-				{ target },
-			)
-		}
-		return records
-	} catch (error) {
-		if (isScaffoldError(error)) throw error
-		throw new ScaffoldError('TARGET', `The git query for target at ${target} could not start.`, {
-			target,
-		})
-	} finally {
-		if (session !== undefined) await session.destroy()
-	}
 }
 
 /**

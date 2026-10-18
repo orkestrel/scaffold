@@ -3,13 +3,12 @@ import type { MaterializeResult } from '@src/server'
 import type {
 	AuditResult,
 	CatalogResult,
-	CLIOptions,
 	NewResult,
 	OverwriteResult,
 	RepairResult,
 } from '../../../src/bin/types.js'
-import { SCRATCH_PREFIX, type TestUpstreamReply } from '../../setupServer.js'
-import { afterAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { globSync } from 'node:fs'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
 	APP_DEV_DEPENDENCIES,
@@ -24,15 +23,13 @@ import {
 	CATALOG_CLOSING_MARKER,
 	CATALOG_OPENING_MARKER,
 	createBlueprint,
-	DECLARATION_DEV_DEPENDENCIES,
-	FRAMEWORK_MATRIX,
 	GROUPS,
 	isCanonPath,
 	RELEASE_PROOF_COMMAND,
 	renderSkillPointer,
 	replaceManifestScripts,
 	SKILLS_CONFIG_PATH,
-	SOURCE_BROWSER_DEV_DEPENDENCIES,
+	STUDIES_TEST_INCLUDE,
 	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { readFileHex, readHostFloor, stageHost } from '@src/server'
@@ -48,14 +45,17 @@ import {
 } from '../../../src/bin/constants.js'
 import { renderUsage } from '../../../src/bin/helpers.js'
 import { CLI } from '../../../src/bin/CLI.js'
+import { buildSetupQuestion, FILLED_SETUP_TEXT, FLEET_NAMES, HOOK_SETUP_TEXT } from '../../setup.js'
 import {
+	ALIGNED_MANIFEST_TEXT,
+	AUDIT_REGISTRY,
+	buildAlignedManifest,
 	buildCLIOptions,
 	buildFleetManifest,
 	buildHostManifest,
 	buildInstalledHostReplies,
 	buildOrganization,
 	buildPackument,
-	buildTargetManifest as buildTargetManifestFixture,
 	commitFiles,
 	createCatalogFleet,
 	createCheckout,
@@ -68,14 +68,16 @@ import {
 	FLEET_ARTIFACT_COUNT,
 	FLEET_BIRTH_COUNT,
 	FLEET_BIRTH_PATHS,
+	FLEET_MIRROR_REPLIES,
+	FLEET_RELEASE_REPLIES,
 	FLEET_UPSTREAM_PATHS,
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
 	omitDependencies,
 	REFUSED_MANIFEST_TEXT,
+	SCRATCH_PREFIX,
 	SKILL_CANON_FILES,
 	TARGET_DEV_DEPENDENCIES,
-	TARGET_MANIFEST_TEXT as TARGET_MANIFEST_FIXTURE,
 	trackFiles,
 	USAGE_CASES,
 } from '../../setupServer.js'
@@ -106,13 +108,22 @@ describe('surface creation and migration', () => {
 			] as const) {
 				for (const section of ['dependencies', 'devDependencies'] as const) {
 					for (const verb of ['repair', 'overwrite']) {
-						const manifest: {
+						const parsed: {
 							dependencies: Record<string, string>
 							devDependencies: Record<string, string>
 						} = JSON.parse(original)
-						manifest.dependencies[name] = range
-						manifest.devDependencies[name] = range
-						manifest[section][name] = '^2.2.0'
+						// Both sections declare the range, and the section under test declares the drifted one.
+						const manifest = {
+							...parsed,
+							dependencies: {
+								...parsed.dependencies,
+								[name]: section === 'dependencies' ? '^2.2.0' : range,
+							},
+							devDependencies: {
+								...parsed.devDependencies,
+								[name]: section === 'devDependencies' ? '^2.2.0' : range,
+							},
+						}
 						workspace.write('display/package.json', JSON.stringify(manifest))
 						const audited = createSink()
 						expect(await new CLI(audited.options).execute(['audit', ...args])).toBe(EXIT_DRIFT)
@@ -165,11 +176,11 @@ describe('surface creation and migration', () => {
 			for (const name of ['vite', 'vite-plugin-singlefile']) {
 				for (const section of ['dependencies', 'devDependencies'] as const) {
 					for (const value of [17, null, false, {}, []]) {
-						const manifest: {
+						const parsed: {
 							dependencies: Record<string, unknown>
 							devDependencies: Record<string, unknown>
 						} = JSON.parse(original)
-						manifest[section][name] = value
+						const manifest = { ...parsed, [section]: { ...parsed[section], [name]: value } }
 						const malformed = JSON.stringify(manifest)
 						workspace.write('display/package.json', malformed)
 						workspace.write('display/vite.config.ts', 'untouched configuration')
@@ -260,12 +271,14 @@ describe('surface creation and migration', () => {
 					devDependencies: Record<string, string>
 					overrides: Record<string, unknown>
 				} = JSON.parse(original)
-				delete parsed.devDependencies['vite-plugin-singlefile']
-				parsed.dependencies['vite-plugin-singlefile'] = '^2.2.0'
-				parsed.devDependencies.vite = '^6.0.0'
-				parsed.devDependencies['unrelated-exact'] = '1.2.3'
-				parsed.overrides = { unrelated: { child: 'keep' } }
-				workspace.write('display/package.json', JSON.stringify(parsed, undefined, '\t'))
+				const { 'vite-plugin-singlefile': _moved, ...development } = parsed.devDependencies
+				const drifted = {
+					...parsed,
+					dependencies: { ...parsed.dependencies, 'vite-plugin-singlefile': '^2.2.0' },
+					devDependencies: { ...development, vite: '^6.0.0', 'unrelated-exact': '1.2.3' },
+					overrides: { unrelated: { child: 'keep' } },
+				}
+				workspace.write('display/package.json', JSON.stringify(drifted, undefined, '\t'))
 				const sink = createSink()
 				expect(
 					await new CLI(buildCLIOptions(sink, server.base)).execute([
@@ -589,214 +602,23 @@ describe('surface creation and migration', () => {
 	})
 })
 
-// A setup module a maintainer wrote into. What separates it from what scaffold
-// seeds at that path is that its text is not the seed's.
-const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
-// A hook-only module has no exported behavior for a sibling proof to cover.
-const HOOK_SETUP_TEXT = [
-	"import { afterEach } from 'vitest'",
-	'',
-	'afterEach(() => {',
-	'\tSAMPLE_REGISTRY.clear()',
-	'})',
-	'',
-].join('\n')
-const FLEET_NAMES: readonly string[] = Object.freeze([
-	'@orkestrel/emitter',
-	'@orkestrel/guide',
-	'@orkestrel/probe',
-	'@orkestrel/scaffold',
-	'@orkestrel/test',
-])
-const TARGET_MANIFEST_TEXT = TARGET_MANIFEST_FIXTURE.replace('~8.2.0', '~8.3.4')
-
-const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
-	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
-	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
-	[FLEET_UPSTREAM_PATHS.packages.probe]: {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
-	},
-	[FLEET_UPSTREAM_PATHS.packages.scaffold]: {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
-	},
-	[FLEET_UPSTREAM_PATHS.packages.test]: {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
-	},
-	'/@microsoft%2Fapi-extractor': {
-		status: 200,
-		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
-	},
-	'/@types%2Fnode': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
-	},
-	'/oxfmt': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),
-	},
-	'/oxlint': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.oxlint?.slice(1) ?? ''),
-	},
-	'/typescript': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
-	},
-	'/vite': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
-	},
-	'/vitest': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
-	},
-})
-
-const FLEET_MIRROR_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
-	[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 200, body: '# Emitter\n', type: 'text/plain' },
-	[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
-	[FLEET_UPSTREAM_PATHS.mirrors.probe]: { status: 200, body: '# Probe\n', type: 'text/plain' },
-	[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
-		status: 200,
-		body: '# Scaffold\n',
-		type: 'text/plain',
-	},
-	[FLEET_UPSTREAM_PATHS.mirrors.test]: { status: 200, body: '# Test\n', type: 'text/plain' },
-})
-
-function buildTargetManifest(
-	blueprint = createBlueprint('sample', { src: ['core'] }),
-	dependencies?: unknown,
-	development?: unknown,
-	scripts?: unknown,
-): string {
-	const dependenciesAligned =
-		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.4' } : dependencies
-	const declared = development === undefined ? blueprintToDevDependencies(blueprint) : development
-	const aligned =
-		typeof declared === 'object' && declared !== null && !Array.isArray(declared)
-			? { ...declared, '@orkestrel/guide': '^0.0.9' }
-			: declared
-	return buildTargetManifestFixture(blueprint, dependenciesAligned, aligned, scripts)
-}
-
-// The advisory audit raises over one filled setup module no proof covers.
-// Several fixtures carry such a module to reach another subject, and each of
-// them has to state this question exactly rather than loosen its assertion. The
-// proof is derived from the module the same way the question derives it, so a
-// fixture naming a module other than `tests/setup.ts` states the remedy that
-// module actually wants.
-function buildSetupQuestion(target: string, module: string): Question {
-	const proof = `${module.slice(0, -'.ts'.length)}.test.ts`
-	return {
-		field: 'setup',
-		message: `The target at ${target} carries a test setup module that no proof covers: ${module}. Add ${proof} to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
-		blocking: false,
-	}
-}
-
-const AUDIT_REGISTRY = await createUpstreamServer({
-	'/@orkestrel%2Fbrowser': {
-		status: 200,
-		body: buildPackument(BROWSE_DEV_DEPENDENCIES['@orkestrel/browser']?.slice(1) ?? ''),
-	},
-	'/@orkestrel%2Fcontract': { status: 200, body: buildPackument('0.0.13') },
-	'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.5') },
-	'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
-	'/@orkestrel%2Fhtml': { status: 200, body: buildPackument('0.0.4') },
-	'/@orkestrel%2Fmiddleware': { status: 200, body: buildPackument('0.0.16') },
-	'/@orkestrel%2Fprobe': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
-	},
-	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
-	'/@orkestrel%2Fscaffold': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
-	},
-	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
-	'/@orkestrel%2Ftest': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
-	},
-	'/@microsoft%2Fapi-extractor': {
-		status: 200,
-		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
-	},
-	'/@types%2Fnode': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
-	},
-	'/@vitejs%2Fplugin-vue': {
-		status: 200,
-		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies['@vitejs/plugin-vue']?.slice(1) ?? ''),
-	},
-	'/@vitest%2Fbrowser-playwright': {
-		status: 200,
-		body: buildPackument(
-			SOURCE_BROWSER_DEV_DEPENDENCIES['@vitest/browser-playwright']?.slice(1) ?? '',
-		),
-	},
-	'/oxfmt': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),
-	},
-	'/oxlint': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.oxlint?.slice(1) ?? ''),
-	},
-	'/playwright': {
-		status: 200,
-		body: buildPackument(SOURCE_BROWSER_DEV_DEPENDENCIES.playwright?.slice(1) ?? ''),
-	},
-	'/typescript': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
-	},
-	'/vite': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
-	},
-	'/vite-plugin-singlefile': {
-		status: 200,
-		body: buildPackument('2.3.3'),
-	},
-	'/vitest': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
-	},
-	'/vue': {
-		status: 200,
-		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies.vue?.slice(1) ?? ''),
-	},
-	'/vue-tsc': {
-		status: 200,
-		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies['vue-tsc']?.slice(1) ?? ''),
-	},
-})
-const REGISTRY_OPTIONS: CLIOptions = {
-	upstream: { registry: { base: AUDIT_REGISTRY.base }, repository: { base: AUDIT_REGISTRY.base } },
-}
-
-afterAll(async () => AUDIT_REGISTRY.destroy())
+beforeAll(async () => AUDIT_REGISTRY.start())
+afterAll(async () => AUDIT_REGISTRY.stop())
 
 describe('CLI usage', () => {
 	it('refuses --bin by name on every reading verb', async () => {
 		for (const verb of ['audit', 'repair', 'catalog', 'overwrite']) {
 			const sink = createSink()
-			expect(await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([verb, '--bin'])).toBe(
-				EXIT_USAGE,
-			)
+			expect(
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([verb, '--bin']),
+			).toBe(EXIT_USAGE)
 			expect(sink.diagnostic).toStrictEqual([`USAGE: '${verb}' does not take --bin.`])
 		}
 	})
 
 	it('answers a request for usage instead of running, and writes nothing to the diagnostic', async () => {
 		const sink = createSink()
-		expect(await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(['--help'])).toBe(
+		expect(await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute(['--help'])).toBe(
 			EXIT_CLEAN,
 		)
 		expect(sink.output).toStrictEqual(renderUsage())
@@ -807,7 +629,7 @@ describe('CLI usage', () => {
 		for (const verb of VERBS) {
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([verb, '--help']),
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([verb, '--help']),
 			).toBe(EXIT_CLEAN)
 			expect(sink.output).toStrictEqual(renderUsage())
 		}
@@ -816,9 +638,9 @@ describe('CLI usage', () => {
 	for (const usageCase of USAGE_CASES) {
 		it(`refuses ${usageCase.label} on the diagnostic, with the usage code`, async () => {
 			const sink = createSink()
-			expect(await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(usageCase.argv)).toBe(
-				EXIT_USAGE,
-			)
+			expect(
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute(usageCase.argv),
+			).toBe(EXIT_USAGE)
 			expect(sink.output).toStrictEqual([])
 			expect(sink.diagnostic).toHaveLength(1)
 			expect(sink.diagnostic[0] ?? '').toContain(usageCase.mention)
@@ -829,7 +651,7 @@ describe('CLI usage', () => {
 	it('refuses a group no plan has, naming what it does take', async () => {
 		const sink = createSink()
 		expect(
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--groups',
 				'readme',
@@ -845,7 +667,7 @@ describe('CLI usage', () => {
 			const fleet = createFleet(workspace)
 			for (const group of GROUPS) {
 				const sink = createSink()
-				const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--groups',
 					group,
@@ -864,7 +686,7 @@ describe('CLI usage', () => {
 	it('refuses an environment no workspace has, on each axis it is offered to', async () => {
 		for (const axis of ['src', 'app']) {
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'widget',
 				`--${axis}`,
@@ -878,7 +700,7 @@ describe('CLI usage', () => {
 	it('refuses a dependency that is not a published fleet package', async () => {
 		const sink = createSink()
 		expect(
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'widget',
 				'--deps',
@@ -890,7 +712,7 @@ describe('CLI usage', () => {
 
 	it('reports a usage refusal as the one machine-readable value when --json was given', async () => {
 		const sink = createSink()
-		const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+		const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 			'audit',
 			'--groups',
 			'readme',
@@ -913,7 +735,7 @@ describe('CLI sanitization', () => {
 	it('passes on no hostile byte from a command line it refuses', async () => {
 		const sink = createSink()
 		expect(
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([HOSTILE_ARGUMENT]),
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([HOSTILE_ARGUMENT]),
 		).toBe(EXIT_USAGE)
 		expect(sink.diagnostic).toHaveLength(1)
 		for (const byte of HOSTILE_BYTES) expect(sink.diagnostic[0] ?? '').not.toContain(byte)
@@ -921,21 +743,24 @@ describe('CLI sanitization', () => {
 
 	it('forges no second line out of a line break in an argument', async () => {
 		const sink = createSink()
-		await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([HOSTILE_ARGUMENT])
+		await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([HOSTILE_ARGUMENT])
 		expect(sink.diagnostic).toHaveLength(1)
 		expect(sink.diagnostic[0] ?? '').toContain('pull forged')
 	})
 
 	it('keeps the visible word the refusal is about', async () => {
 		const sink = createSink()
-		await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([HOSTILE_ARGUMENT])
+		await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([HOSTILE_ARGUMENT])
 		expect(sink.diagnostic[0] ?? '').toContain('pull')
 	})
 
 	it('repaints no printed line from a lone carriage return in an argument', async () => {
 		const sink = createSink()
 		expect(
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(['audit', 'first\rsecond']),
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
+				'audit',
+				'first\rsecond',
+			]),
 		).toBe(EXIT_USAGE)
 		expect(sink.diagnostic).toHaveLength(1)
 		expect(sink.diagnostic[0] ?? '').not.toContain('\r')
@@ -944,7 +769,7 @@ describe('CLI sanitization', () => {
 
 	it('passes on no hostile byte through the machine-readable path either', async () => {
 		const sink = createSink()
-		const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+		const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 			'audit',
 			'--groups',
 			HOSTILE_ARGUMENT,
@@ -1003,7 +828,7 @@ describe('CLI new', () => {
 			const fresh = workspace.ensure('fresh')
 			const created = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...created.options }).execute([
 					'new',
 					'widget',
 					'--src',
@@ -1031,7 +856,7 @@ describe('CLI new', () => {
 
 			const audited = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...audited.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -1050,7 +875,7 @@ describe('CLI new', () => {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'widget',
 				'--src',
@@ -1075,7 +900,7 @@ describe('CLI new', () => {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'widget',
 				'--src',
@@ -1100,16 +925,16 @@ describe('CLI new', () => {
 
 	it('refuses a workspace that declares no environment at all', async () => {
 		const sink = createSink()
-		expect(await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(['new', 'widget'])).toBe(
-			EXIT_DRIFT,
-		)
+		expect(
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute(['new', 'widget']),
+		).toBe(EXIT_DRIFT)
 		expect(sink.diagnostic[0] ?? '').toContain('src')
 	})
 
 	it('refuses a name the gate will not generate', async () => {
 		const sink = createSink()
 		expect(
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'Widget',
 				'--src',
@@ -1124,7 +949,7 @@ describe('CLI new', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'widget',
 				'--src',
@@ -1151,7 +976,7 @@ describe('CLI new', () => {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('refused-shape')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'new',
 				'widget',
 				'--src',
@@ -1180,7 +1005,7 @@ describe('CLI new', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const blocked = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...blocked.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...blocked.options }).execute([
 				'new',
 				'Widget',
 				'--src',
@@ -1208,11 +1033,11 @@ describe('CLI new', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const lacking = workspace.ensure('lacking')
-			workspace.write('lacking/package.json', TARGET_MANIFEST_TEXT)
+			workspace.write('lacking/package.json', ALIGNED_MANIFEST_TEXT)
 			workspace.ensure('lacking/src/browser')
 			workspace.ensure('lacking/src/server')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -1253,7 +1078,7 @@ describe('CLI upstream baselines', () => {
 			const target = workspace.ensure('host-baseline')
 			const created = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...created.options }).execute([
 					'new',
 					'widget',
 					'--src',
@@ -1323,7 +1148,7 @@ describe('CLI upstream baselines', () => {
 			const target = workspace.ensure('canon-fetch')
 			const created = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...created.options }).execute([
 					'new',
 					'widget',
 					'--src',
@@ -1420,7 +1245,7 @@ describe('CLI upstream baselines', () => {
 			for (const name of ['audit-floor', 'forced-repair', 'offline-repair']) {
 				const sink = createSink()
 				expect(
-					await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 						'new',
 						'widget',
 						'--src',
@@ -1496,7 +1321,7 @@ describe('CLI upstream baselines', () => {
 			const target = workspace.ensure('offline-overwrite')
 			const created = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...created.options }).execute([
 					'new',
 					'widget',
 					'--src',
@@ -1757,7 +1582,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -1790,7 +1615,7 @@ describe('CLI audit', () => {
 			workspace.ensure('target/app/browser')
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					blueprint,
 					undefined,
 					omitDependencies(
@@ -1806,7 +1631,7 @@ describe('CLI audit', () => {
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -1832,7 +1657,7 @@ describe('CLI audit', () => {
 			workspace.ensure('target/app/browser')
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					blueprint,
 					undefined,
 					omitDependencies(
@@ -1848,7 +1673,7 @@ describe('CLI audit', () => {
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -1879,7 +1704,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -1889,7 +1714,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					undefined,
 					undefined,
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
@@ -1897,7 +1722,7 @@ describe('CLI audit', () => {
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -1925,14 +1750,14 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					undefined,
 					{ '@orkestrel/emitter': '^0.0.5' },
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['vitest', 'typescript', 'vite']),
 				),
 			)
 			const sink = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -1959,13 +1784,13 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, {
+				buildAlignedManifest(undefined, undefined, {
 					...TARGET_DEV_DEPENDENCIES,
 					typescript: '^6.0.3',
 				}),
 			)
 			const sink = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -1994,7 +1819,7 @@ describe('CLI audit', () => {
 		})
 		try {
 			const fleet = createFleet(workspace)
-			const manifest = buildTargetManifest(undefined, undefined, {
+			const manifest = buildAlignedManifest(undefined, undefined, {
 				...TARGET_DEV_DEPENDENCIES,
 				typescript: '^6.0.3',
 			})
@@ -2057,7 +1882,7 @@ describe('CLI audit', () => {
 		})
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			const sink = createSink()
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'audit',
@@ -2086,13 +1911,13 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, {
+				buildAlignedManifest(undefined, undefined, {
 					...TARGET_DEV_DEPENDENCIES,
 					leftpad: '^1.0.0',
 				}),
 			)
 			const sink = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -2113,14 +1938,14 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					undefined,
 					{ typescript: '~6.4.0' },
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
 				),
 			)
 			const sink = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -2139,10 +1964,10 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest(undefined, undefined, 'invalid'))
+			workspace.write('target/package.json', buildAlignedManifest(undefined, undefined, 'invalid'))
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -2170,7 +1995,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					undefined,
 					undefined,
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
@@ -2181,7 +2006,7 @@ describe('CLI audit', () => {
 			const configuration = workspace.read('target/vite.config.ts')
 			const blocked = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...blocked.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...blocked.options }).execute([
 					'repair',
 					'--groups',
 					'tests',
@@ -2202,7 +2027,7 @@ describe('CLI audit', () => {
 
 			const selected = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...selected.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...selected.options }).execute([
 					'repair',
 					'--groups',
 					'docs',
@@ -2228,14 +2053,14 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					undefined,
 					undefined,
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
 				),
 			)
 			const excluded = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...excluded.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...excluded.options }).execute([
 				'audit',
 				'--groups',
 				'docs',
@@ -2249,7 +2074,7 @@ describe('CLI audit', () => {
 			expect(excludedAudit.questions).toStrictEqual([])
 
 			const included = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...included.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...included.options }).execute([
 				'audit',
 				'--groups',
 				'tests',
@@ -2315,9 +2140,9 @@ describe('CLI audit', () => {
 									? ['browser']
 									: [],
 				})
-				workspace.write('target/package.json', buildTargetManifest(blueprint))
+				workspace.write('target/package.json', buildAlignedManifest(blueprint))
 				const sink = createSink()
-				const exit = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				const exit = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--groups',
 					'configs',
@@ -2559,7 +2384,7 @@ describe('CLI audit', () => {
 			workspace.ensure('target/tests')
 			workspace.write('target/configs/app/other.config.ts', 'export {}\n')
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--groups',
 					'configs',
@@ -2583,7 +2408,7 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/Setup.test.ts', 'export {}\n')
 			workspace.write('target/tests/nested/setup.test.ts', 'export {}\n')
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--groups',
 					'configs',
@@ -2621,9 +2446,9 @@ describe('CLI audit', () => {
 				global: true,
 				showcase: true,
 			})
-			workspace.write('target/package.json', buildTargetManifest(blueprint))
+			workspace.write('target/package.json', buildAlignedManifest(blueprint))
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--groups',
 					'configs',
@@ -2647,6 +2472,244 @@ describe('CLI audit', () => {
 		}
 	})
 
+	// The study project follows the exact-case test files beneath `tests/studies`, which is the
+	// population its include collects. Each row states its answer before the derivation reads the
+	// target, and `globSync` over the include is the second mechanism. It follows the host's case
+	// folding, so the case-folded row skips it: Windows reads `tests/Studies` as `tests/studies`,
+	// which is why the derivation reads stored names instead.
+	it.each([
+		{ label: 'no studies directory', files: [], studies: false, folds: false },
+		{
+			label: 'a types module alone',
+			files: ['tests/studies/types.ts'],
+			studies: false,
+			folds: false,
+		},
+		{
+			label: 'the harness module alone',
+			files: ['tests/setupStudy.ts'],
+			studies: false,
+			folds: false,
+		},
+		{
+			label: 'a root studies directory alone',
+			files: ['studies/adapter.test.ts'],
+			studies: false,
+			folds: false,
+		},
+		{
+			label: 'a case-folded directory',
+			files: ['tests/Studies/adapter.test.ts'],
+			studies: false,
+			folds: true,
+		},
+		{
+			label: 'a test of another suffix',
+			files: ['tests/studies/adapter.test.js'],
+			studies: false,
+			folds: false,
+		},
+		{
+			label: 'a studies entry that is a file',
+			files: ['tests/studies'],
+			studies: false,
+			folds: false,
+		},
+		{
+			label: 'a test directly in the directory',
+			files: ['tests/studies/adapter.test.ts'],
+			studies: true,
+			folds: false,
+		},
+		{
+			label: 'a test nested in the directory',
+			files: ['tests/studies/memory/deep/adapter.test.ts'],
+			studies: true,
+			folds: false,
+		},
+	])(
+		'selects the studies project only from exact-case tests: $label',
+		async ({ files, studies, folds }) => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const fleet = createFleet(workspace)
+				for (const file of files) workspace.write(`target/${file}`, 'export {}\n')
+				workspace.write(
+					'target/package.json',
+					buildAlignedManifest(createBlueprint('sample', { src: ['core'], studies })),
+				)
+				const collected = globSync(STUDIES_TEST_INCLUDE, { cwd: fleet.target }).length > 0
+				expect(folds || collected === studies).toBe(true)
+				const sink = createSink()
+				expect(
+					await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
+						'repair',
+						'--groups',
+						'configs',
+						'--from',
+						fleet.host,
+						'--target',
+						fleet.target,
+						'--json',
+					]),
+				).toBe(EXIT_CLEAN)
+				const registered = requireValue(workspace.read('target/vite.config.ts'))
+				expect(registered.includes("name: { label: 'studies', color: 'red' }")).toBe(studies)
+				expect(registered.includes('setupStudy')).toBe(false)
+				const repaired: RepairResult = JSON.parse(sink.output[0] ?? '')
+				expect(
+					repaired.audit.questions.filter(
+						({ field }) => field === 'projects' || field === 'scripts',
+					),
+				).toStrictEqual([])
+				const scripts = JSON.parse(requireValue(workspace.read('target/package.json'))).scripts
+				expect(isRecord(scripts) && Object.hasOwn(scripts, 'test:studies')).toBe(studies)
+			} finally {
+				workspace.destroy()
+			}
+		},
+	)
+
+	// An Agent-shaped target holds study tests and a publishing manifest written before scaffold
+	// planned them. One repair writes the project, the script, and the gate, and the next writes
+	// nothing, so the target settles instead of oscillating between two plans.
+	it('settles an Agent-shaped target with study tests in one repair', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/tests/studies/memory/adapter.test.ts', 'export {}\n')
+			workspace.write('target/tests/studies/memory/types.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(createBlueprint('sample', { src: ['core'] })),
+			)
+			const planned = blueprintToScripts(
+				createBlueprint('sample', { src: ['core'], studies: true }),
+			)
+			expect(planned.prepublishOnly).toContain('npm test && npm run test:studies && ')
+
+			const invocation = [
+				'repair',
+				'--groups',
+				'configs',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			]
+			const first = createSink()
+			expect(
+				await new CLI({ ...AUDIT_REGISTRY.options, ...first.options }).execute(invocation),
+			).toBe(EXIT_CLEAN)
+			const settled: RepairResult = JSON.parse(first.output[0] ?? '')
+			expect(settled.written).toContain('vite.config.ts')
+			expect(settled.written).toContain('package.json')
+			const manifest = JSON.parse(requireValue(workspace.read('target/package.json')))
+			expect(manifest.scripts['test:studies']).toBe(planned['test:studies'])
+			expect(manifest.scripts.prepublishOnly).toBe(planned.prepublishOnly)
+			expect(manifest.scripts.test).toBe(planned.test)
+			expect(requireValue(workspace.read('target/vite.config.ts'))).toContain(
+				'projects: [srcCore, policy, config, studies, distribution, probe]',
+			)
+			expect(requireValue(workspace.read('target/vite.config.ts'))).toContain(
+				'export function studies(override?: UserConfig): UserConfig {',
+			)
+
+			const bytes = requireValue(workspace.read('target/vite.config.ts'))
+			const audit = createSink()
+			await new CLI({ ...AUDIT_REGISTRY.options, ...audit.options }).execute([
+				'audit',
+				'--groups',
+				'configs',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const read: Audit = JSON.parse(audit.output[0] ?? '')
+			expect(
+				read.questions.filter(({ field }) => field === 'projects' || field === 'scripts'),
+			).toStrictEqual([])
+
+			const second = createSink()
+			expect(
+				await new CLI({ ...AUDIT_REGISTRY.options, ...second.options }).execute(invocation),
+			).toBe(EXIT_CLEAN)
+			const quiet: RepairResult = JSON.parse(second.output[0] ?? '')
+			expect(quiet.written).toStrictEqual([])
+			expect(workspace.read('target/vite.config.ts')).toBe(bytes)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The planned `test:studies` script is a project script like any other, so a value naming
+	// another project is a differing planned script, and the same script with the fact absent
+	// names a project the plan does not register.
+	it('reports a study script that names the wrong project and one that names an unplanned project', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const studied = createBlueprint('sample', { src: ['core'], studies: true })
+			const planned = blueprintToScripts(studied)
+			workspace.write('target/tests/studies/adapter.test.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(studied, undefined, undefined, {
+					...planned,
+					'test:studies': planned['test:studies']?.replace(
+						'--project studies',
+						'--project service',
+					),
+				}),
+			)
+			const wrong = createSink()
+			await new CLI({ ...AUDIT_REGISTRY.options, ...wrong.options }).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const differing: Audit = JSON.parse(wrong.output[0] ?? '')
+			expect(differing.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} declares a planned script with a differing value: test:studies. Keep the declared value unchanged or replace it with the planned value: ${JSON.stringify('test:studies')} declares ${JSON.stringify(planned['test:studies']?.replace('--project studies', '--project service'))}; planned ${JSON.stringify(planned['test:studies'])}.`,
+					blocking: false,
+				},
+			])
+
+			workspace.remove('target/tests/studies')
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(studied, undefined, undefined, planned),
+			)
+			const unplanned = createSink()
+			await new CLI({ ...AUDIT_REGISTRY.options, ...unplanned.options }).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const absent: Audit = JSON.parse(unplanned.output[0] ?? '')
+			expect(absent.questions.filter(({ field }) => field === 'projects')).toStrictEqual([
+				{
+					field: 'projects',
+					message: `The manifest at ${fleet.target} names a Vitest project the planned configuration does not register: studies. Add the project to vite.config.ts or remove the script that names it.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	// Publishing is what selects the distribution project, and nothing else does.
 	// Reading the proof's own presence back off the target was a loop: a target
 	// lacking the file was compiled as a workspace that wanted no file, so the
@@ -2657,7 +2720,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			expect(workspace.read('target/tests/distribution.test.ts')).toBeUndefined()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--groups',
 					'configs',
@@ -2682,9 +2745,9 @@ describe('CLI audit', () => {
 			workspace.remove('target/src')
 			workspace.ensure('target/app/core')
 			const blueprint = createBlueprint('sample', { app: ['core'] })
-			workspace.write('target/package.json', buildTargetManifest(blueprint))
+			workspace.write('target/package.json', buildAlignedManifest(blueprint))
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--groups',
 					'configs',
@@ -2712,10 +2775,10 @@ describe('CLI audit', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -2744,7 +2807,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
+				buildAlignedManifest(undefined, undefined, undefined, {
 					test: 'npm run test:setup',
 					'test:setup':
 						'vitest run --config vite.config.ts --no-cache --reporter=dot --project setup',
@@ -2753,7 +2816,7 @@ describe('CLI audit', () => {
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -2782,11 +2845,11 @@ describe('CLI audit', () => {
 			delete scripts['test:config']
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -2804,7 +2867,7 @@ describe('CLI audit', () => {
 			)
 			const repaired = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...repaired.options }).execute([
 					'repair',
 					'--groups',
 					'manifest',
@@ -2837,7 +2900,7 @@ describe('CLI audit', () => {
 			delete scripts['test:probe']
 			delete scripts['test:bench']
 			delete scripts.prepack
-			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
+			const manifest = buildAlignedManifest(blueprint, undefined, undefined, scripts)
 			workspace.write('target/package.json', manifest)
 			const question: Question = {
 				field: 'scripts',
@@ -2847,7 +2910,7 @@ describe('CLI audit', () => {
 
 			const before = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...before.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...before.options }).execute([
 					'audit',
 					'--groups',
 					'manifest',
@@ -2863,7 +2926,7 @@ describe('CLI audit', () => {
 
 			const repaired = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...repaired.options }).execute([
 					'repair',
 					'--groups',
 					'manifest',
@@ -2893,7 +2956,7 @@ describe('CLI audit', () => {
 
 			const after = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...after.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...after.options }).execute([
 					'audit',
 					'--groups',
 					'manifest',
@@ -2931,12 +2994,12 @@ describe('CLI audit', () => {
 			delete scripts['test:probe']
 			delete scripts['test:bench']
 			delete scripts.prepack
-			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
+			const manifest = buildAlignedManifest(blueprint, undefined, undefined, scripts)
 			workspace.write('target/package.json', manifest)
 			const sink = createSink()
 
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--groups',
 					'manifest',
@@ -2980,7 +3043,7 @@ describe('CLI audit', () => {
 			const scripts = { ...blueprintToScripts(blueprint) }
 			delete scripts['test:probe']
 			delete scripts['test:bench']
-			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
+			const manifest = buildAlignedManifest(blueprint, undefined, undefined, scripts)
 			const projection = blueprintToWritableScripts(blueprint).filter(
 				(script) => script.name !== 'test:bench',
 			)
@@ -2990,7 +3053,7 @@ describe('CLI audit', () => {
 			const sink = createSink()
 
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--groups',
 					'manifest',
@@ -3136,11 +3199,11 @@ describe('CLI audit', () => {
 			const scripts = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3167,7 +3230,7 @@ describe('CLI audit', () => {
 			privateWorkspace.write('target/package.json', blueprintToManifest(blueprint))
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3195,7 +3258,7 @@ describe('CLI audit', () => {
 			publishedWorkspace.write('target/package.json', blueprintToManifest(blueprint))
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3228,7 +3291,7 @@ describe('CLI audit', () => {
 				test: `${test.replace(' && npm run test:service', '')} && npm run lint:check`,
 				prepublishOnly: 'npm run test:service',
 			}
-			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
+			const manifest = buildAlignedManifest(blueprint, undefined, undefined, scripts).replace(
 				'"name": "@orkestrel/sample",',
 				'"name": "sample",\n\t"private": true,',
 			)
@@ -3238,7 +3301,7 @@ describe('CLI audit', () => {
 			workspace.write('target/package.json', manifest)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3285,7 +3348,7 @@ describe('CLI audit', () => {
 				test: `${test.replace(' && npm run test:service', '')} && npm run lint:check`,
 			}
 			delete scripts['test:service']
-			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
+			const manifest = buildAlignedManifest(blueprint, undefined, undefined, scripts).replace(
 				'"name": "@orkestrel/sample",',
 				'"name": "sample",\n\t"private": true,',
 			)
@@ -3295,7 +3358,7 @@ describe('CLI audit', () => {
 			workspace.write('target/package.json', manifest)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3337,14 +3400,14 @@ describe('CLI audit', () => {
 			const predecessor = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
+				buildAlignedManifest(undefined, undefined, undefined, {
 					...predecessor,
 					test: `${requireValue(predecessor.test)} && npm run check`,
 				}),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -3377,7 +3440,7 @@ describe('CLI audit', () => {
 			)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					createBlueprint('sample', { src: ['core'], integration: true }),
 					undefined,
 					undefined,
@@ -3386,7 +3449,7 @@ describe('CLI audit', () => {
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3429,7 +3492,7 @@ describe('CLI audit', () => {
 			)
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
+				buildAlignedManifest(
 					createBlueprint('sample', { src: ['core'], conformance: true, service: true }),
 					undefined,
 					undefined,
@@ -3438,7 +3501,7 @@ describe('CLI audit', () => {
 			)
 			const refused = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...refused.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...refused.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3467,7 +3530,7 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			const accepted = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...accepted.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...accepted.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3498,7 +3561,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'new',
 					'widget',
 					'--src',
@@ -3514,7 +3577,7 @@ describe('CLI audit', () => {
 			expect(requireValue(workspace.read('fresh/tests/setupPolicy.ts')).trim()).not.toBe('')
 			const seeded = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...seeded.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...seeded.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3529,7 +3592,7 @@ describe('CLI audit', () => {
 			workspace.write('fresh/tests/setup.ts', FILLED_SETUP_TEXT)
 			const filled = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...filled.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...filled.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3549,12 +3612,12 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			workspace.write('target/tests/setup.ts', FILLED_SETUP_TEXT)
 			workspace.write('target/tests/setupServer.ts', FILLED_SETUP_TEXT)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3580,7 +3643,7 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			const augmentation =
 				"import type { JourneyVariant } from '@orkestrel/test'\n\ndeclare module 'vitest' {\n\tinterface ProvidedContext {\n\t\treadonly variant: string\n\t\treadonly variants: readonly JourneyVariant[]\n\t\treadonly capture: boolean\n\t}\n}\n"
 			workspace.write('target/tests/setupBrowser.ts', augmentation)
@@ -3627,11 +3690,11 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			workspace.write('target/tests/setup.ts', HOOK_SETUP_TEXT)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3655,13 +3718,13 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createCatalogFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			workspace.write('target/.agents/orchestration.md', '# Orchestration\n')
 			workspace.write('target/.claude/rules/names.md', '# Names\n')
 			workspace.write('target/.claude/agents/planner.md', '# Planner\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3695,11 +3758,11 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			workspace.write('target/.claude/rules/names.md', '# Names\n')
 			const scoped = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...scoped.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...scoped.options }).execute([
 					'audit',
 					'--groups',
 					'tests',
@@ -3716,7 +3779,7 @@ describe('CLI audit', () => {
 			// selection admits its group. A silent scoped audit is the selection rather
 			// than a reading that never fires.
 			const whole = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...whole.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...whole.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -3742,11 +3805,11 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			workspace.write('target/.claude/rules/names.md', '# Names\n')
 			const repaired = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...repaired.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -3782,13 +3845,13 @@ describe('CLI audit', () => {
 			const blueprint = createBlueprint('sample', { src: ['core'], global: true, setup: ['node'] })
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
+				buildAlignedManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
 			)
 			workspace.write('target/tests/setupGlobal.ts', ARTIFACT_TEMPLATES.tests.global.module)
 			workspace.write('target/tests/setupGlobal.test.ts', ARTIFACT_TEMPLATES.tests.global.proof)
 			const seeded = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...seeded.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...seeded.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3807,7 +3870,7 @@ describe('CLI audit', () => {
 			)
 			const filled = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...filled.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...filled.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3835,14 +3898,14 @@ describe('CLI audit', () => {
 			const blueprint = createBlueprint('sample', { src: ['core'], setup: ['node'] })
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
+				buildAlignedManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
 			)
 			workspace.write('target/tests/setup.ts', FILLED_SETUP_TEXT)
 			workspace.write('target/tests/setupServer.ts', FILLED_SETUP_TEXT)
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3867,13 +3930,13 @@ describe('CLI audit', () => {
 			const blueprint = createBlueprint('sample', { src: ['core'], setup: ['node'] })
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
+				buildAlignedManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
 			)
 			workspace.write('target/tests/setup.ts', FILLED_SETUP_TEXT)
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3899,10 +3962,10 @@ describe('CLI audit', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -3925,7 +3988,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			const created = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...created.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -3939,11 +4002,11 @@ describe('CLI audit', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3953,7 +4016,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const json = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...json.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...json.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -3994,7 +4057,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -4015,7 +4078,7 @@ describe('CLI audit', () => {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('fresh')
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'new',
 					'sample',
 					'--src',
@@ -4028,7 +4091,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--groups',
 					'manifest',
@@ -4040,7 +4103,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const json = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...json.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...json.options }).execute([
 					'audit',
 					'--groups',
 					'manifest',
@@ -4079,7 +4142,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -4115,11 +4178,11 @@ describe('CLI audit', () => {
 		try {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('target')
-			workspace.write('target/package.json', TARGET_MANIFEST_TEXT)
+			workspace.write('target/package.json', ALIGNED_MANIFEST_TEXT)
 			workspace.ensure('target/src/core')
 			const report = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...report.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...report.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -4129,7 +4192,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const json = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...json.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...json.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -4178,7 +4241,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -4189,7 +4252,7 @@ describe('CLI audit', () => {
 			workspace.write('target/.claude/agents/stray.md', 'stray\n')
 			const report = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...report.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...report.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4199,7 +4262,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const json = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...json.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...json.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4242,7 +4305,7 @@ describe('CLI audit', () => {
 			workspace.write('target/.codex/agents/stray.md', 'stray\n')
 			const second = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...second.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...second.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4263,7 +4326,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -4274,7 +4337,7 @@ describe('CLI audit', () => {
 			workspace.remove('target/.editorconfig')
 			const report = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...report.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...report.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4286,7 +4349,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const json = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...json.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...json.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4338,7 +4401,7 @@ describe('CLI audit', () => {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('fresh')
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'new',
 					'sample',
 					'--src',
@@ -4351,7 +4414,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const repaired = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...repaired.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -4361,7 +4424,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const repairedJSON = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repairedJSON.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...repairedJSON.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -4410,7 +4473,7 @@ describe('CLI audit', () => {
 			for (const path of deleted) workspace.remove(`fresh/${path}`)
 			const report = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...report.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...report.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -4420,7 +4483,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const deletedJSON = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...deletedJSON.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...deletedJSON.options }).execute([
 					'audit',
 					'--from',
 					host,
@@ -4479,7 +4542,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'new',
 				'widget',
 				'--src',
@@ -4491,7 +4554,7 @@ describe('CLI audit', () => {
 			])
 			workspace.ensure('fresh/src/core')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -4509,7 +4572,7 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -4520,7 +4583,7 @@ describe('CLI audit', () => {
 			])
 			const before = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...before.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...before.options }).execute([
 					'audit',
 					'--groups',
 					'docs',
@@ -4538,7 +4601,7 @@ describe('CLI audit', () => {
 			workspace.write('target/AGENTS.md', 'A line a consumer added.\n')
 			const after = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...after.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...after.options }).execute([
 					'audit',
 					'--groups',
 					'docs',
@@ -4562,7 +4625,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			const other = createHostRoot(workspace, 'other', buildFleetManifest())
 			workspace.write('other/LICENSE', 'A licence the other host ships.\n')
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -4573,7 +4636,7 @@ describe('CLI audit', () => {
 			])
 			const matched = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...matched.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...matched.options }).execute([
 					'audit',
 					'--groups',
 					'docs',
@@ -4585,7 +4648,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const differing = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...differing.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...differing.options }).execute([
 					'audit',
 					'--groups',
 					'docs',
@@ -4607,7 +4670,7 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -4617,7 +4680,7 @@ describe('CLI audit', () => {
 			workspace.write('target/.cursor/rules/stray.md', '# A rule nobody planned\n')
 			workspace.write('target/NOTES.md', '# Notes a consumer keeps\n')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -4646,7 +4709,7 @@ describe('CLI audit', () => {
 			const bare = workspace.ensure('bare')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'audit',
 					'--target',
 					bare,
@@ -4664,7 +4727,7 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			const broken = createHostRoot(workspace, 'broken', buildHostManifest())
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				broken,
@@ -4686,7 +4749,7 @@ describe('CLI audit', () => {
 			const refused = workspace.ensure('refused')
 			workspace.write('refused/package.json', REFUSED_MANIFEST_TEXT)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -4700,7 +4763,7 @@ describe('CLI audit', () => {
 			expect(audit.questions.some((question) => question.blocking)).toBe(true)
 			const report = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...report.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...report.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4721,7 +4784,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'audit',
 				'--from',
 				fleet.host,
@@ -4752,7 +4815,7 @@ describe('CLI repair', () => {
 		})
 		try {
 			const fleet = createFleet(workspace)
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			const sink = createSink()
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'repair',
@@ -4784,7 +4847,7 @@ describe('CLI repair', () => {
 			// The proof selects the planned `setup` project, so this run has a script
 			// to write as well as a range to reconcile.
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
-			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/package.json', buildAlignedManifest())
 			const before = requireValue(workspace.read('target/package.json'))
 			const sink = createSink()
 
@@ -4844,7 +4907,7 @@ describe('CLI repair', () => {
 		const server = await createUpstreamServer(FLEET_RELEASE_REPLIES)
 		try {
 			const fleet = createFleet(workspace)
-			const previous = buildTargetManifest()
+			const previous = buildAlignedManifest()
 				.replaceAll(/\t\t"prepack": .*\n/gu, '')
 				.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
 				.replace(` && ${RELEASE_PROOF_COMMAND}`, '')
@@ -4885,7 +4948,7 @@ describe('CLI repair', () => {
 			// The customization keeps the release proof so the projected manifest still
 			// gates the distribution project: a customization that removed the gate
 			// would block the verb at the planned-project boundary instead.
-			const customized = buildTargetManifest()
+			const customized = buildAlignedManifest()
 				.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
 				.replace(` && ${RELEASE_PROOF_COMMAND}`, ` && ${RELEASE_PROOF_COMMAND} && npm run verify`)
 			workspace.write('target/package.json', customized)
@@ -4893,7 +4956,7 @@ describe('CLI repair', () => {
 			const sink = createSink()
 
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -4928,7 +4991,7 @@ describe('CLI repair', () => {
 			// A non-blocking question rides a complete result without drifting the exit,
 			// so the standing scripts advisory reports inside a clean audit.
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...audited.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -4956,7 +5019,7 @@ describe('CLI repair', () => {
 				styles: true,
 				extensions: [{ surface: 'styles', name: 'print' }],
 			})
-			workspace.write('target/package.json', buildTargetManifest(blueprint))
+			workspace.write('target/package.json', buildAlignedManifest(blueprint))
 			for (const face of ['styles', 'print']) {
 				workspace.write(`target/src/${face}/index.scss`, '')
 				workspace.write(`target/src/${face}/sheet.ts`, `import './index.scss'\n`)
@@ -4964,7 +5027,7 @@ describe('CLI repair', () => {
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -4986,7 +5049,7 @@ describe('CLI repair', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(blueprint, undefined, undefined, {
+				buildAlignedManifest(blueprint, undefined, undefined, {
 					...blueprintToScripts(blueprint),
 					control: 'vitest run --project src:absent',
 				}),
@@ -4994,7 +5057,7 @@ describe('CLI repair', () => {
 			workspace.write('target/vite.config.ts', 'control\n')
 			const refused = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...refused.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...refused.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -5026,12 +5089,12 @@ describe('CLI repair', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -5064,12 +5127,12 @@ describe('CLI repair', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -5088,7 +5151,7 @@ describe('CLI repair', () => {
 
 			const audited = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...audited.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -5115,11 +5178,11 @@ describe('CLI repair', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -5145,7 +5208,7 @@ describe('CLI repair', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5167,7 +5230,7 @@ describe('CLI repair', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5193,7 +5256,7 @@ describe('CLI repair', () => {
 		try {
 			const fleet = createFleet(workspace)
 			for (const group of GROUPS) {
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--groups',
 					group,
@@ -5203,7 +5266,7 @@ describe('CLI repair', () => {
 					fleet.target,
 				])
 				const sink = createSink()
-				const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--groups',
 					group,
@@ -5226,7 +5289,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5237,7 +5300,7 @@ describe('CLI repair', () => {
 			])
 			workspace.remove('target/AGENTS.md')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5260,7 +5323,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5278,7 +5341,7 @@ describe('CLI repair', () => {
 			const sink = createSink()
 
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--groups',
 					'docs',
@@ -5298,7 +5361,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5311,7 +5374,7 @@ describe('CLI repair', () => {
 			const sink = createSink()
 
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--groups',
 					'docs',
@@ -5333,7 +5396,7 @@ describe('CLI repair', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -5364,7 +5427,7 @@ describe('CLI repair', () => {
 			const refused = workspace.ensure('refused')
 			workspace.write('refused/package.json', REFUSED_MANIFEST_TEXT)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -5383,7 +5446,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5394,7 +5457,7 @@ describe('CLI repair', () => {
 			])
 			workspace.write('target/AGENTS.md', 'A line a consumer added.\n')
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'repair',
 				'--groups',
 				'docs',
@@ -5417,7 +5480,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -5430,7 +5493,7 @@ describe('CLI repair', () => {
 			workspace.write(`target/${path}`, '# Hand-edited pointer\n')
 			const audited = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...audited.options }).execute([
 					'audit',
 					'--from',
 					fleet.host,
@@ -5447,7 +5510,7 @@ describe('CLI repair', () => {
 			).toStrictEqual([[path, 'stale']])
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -5472,11 +5535,11 @@ describe('CLI repair', () => {
 			// The skills fact registers its own project, so the target's chain reaches it.
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(createBlueprint('sample', { src: ['core'], skills: true })),
+				buildAlignedManifest(createBlueprint('sample', { src: ['core'], skills: true })),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'repair',
 					'--from',
 					fleet.host,
@@ -5500,7 +5563,7 @@ describe('CLI repair', () => {
 			const control = createScratch({ prefix: SCRATCH_PREFIX })
 			try {
 				const plain = createFleet(control)
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 					'repair',
 					'--from',
 					plain.host,
@@ -5526,7 +5589,7 @@ describe('CLI overwrite', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const range = requireValue(TARGET_DEV_DEPENDENCIES.typescript)
-			const manifest = buildTargetManifest(
+			const manifest = buildAlignedManifest(
 				undefined,
 				undefined,
 				omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
@@ -5722,11 +5785,11 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const malformed = buildTargetManifest(undefined, undefined, {
+			const malformed = buildAlignedManifest(undefined, undefined, {
 				...omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
 				'legacy-plugin': { version: '1.0.0' },
 			})
-			const section = buildTargetManifest(undefined, undefined, 'none')
+			const section = buildAlignedManifest(undefined, undefined, 'none')
 			workspace.write('target/package.json', malformed)
 			createRepository(fleet.target)
 			trackFiles(fleet.target)
@@ -5837,7 +5900,7 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const manifest = TARGET_MANIFEST_TEXT.replace(
+			const manifest = ALIGNED_MANIFEST_TEXT.replace(
 				'"name": "@orkestrel/sample"',
 				'"name": "@orkestrel/scaffold"',
 			)
@@ -5910,7 +5973,7 @@ describe('CLI overwrite', () => {
 			workspace.write('target/tests/setupBrowser.test.ts', 'export {}\n')
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(blueprint, undefined, undefined, predecessor),
+				buildAlignedManifest(blueprint, undefined, undefined, predecessor),
 			)
 			createRepository(fleet.target)
 			trackFiles(fleet.target)
@@ -5990,7 +6053,10 @@ describe('CLI overwrite', () => {
 			expect(born).not.toHaveProperty('test:app')
 			expect(blueprintToScripts(grown).test).toContain('npm run test:app')
 			workspace.ensure('target/app/core')
-			workspace.write('target/package.json', buildTargetManifest(grown, undefined, undefined, born))
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(grown, undefined, undefined, born),
+			)
 			const before = requireValue(workspace.read('target/package.json'))
 
 			const sink = createSink()
@@ -6025,7 +6091,7 @@ describe('CLI overwrite', () => {
 		const server = await createUpstreamServer({})
 		try {
 			const fleet = createCatalogFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -6072,11 +6138,11 @@ describe('CLI overwrite', () => {
 			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, scripts),
+				buildAlignedManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 					'overwrite',
 					'--dirty',
 					'--groups',
@@ -6101,7 +6167,7 @@ describe('CLI overwrite', () => {
 			trackFiles(fleet.target)
 			const selected = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...selected.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...selected.options }).execute([
 					'overwrite',
 					'--dirty',
 					'--offline',
@@ -6221,7 +6287,7 @@ describe('CLI overwrite', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'overwrite',
 				'--target',
 				fleet.target,
@@ -6239,7 +6305,7 @@ describe('CLI overwrite', () => {
 			const fleet = createFleet(workspace)
 			createRepository(fleet.target)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'overwrite',
 				'--target',
 				fleet.target,
@@ -6258,7 +6324,7 @@ describe('CLI overwrite', () => {
 			const fleet = createFleet(workspace)
 			createRepository(fleet.target)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'overwrite',
 				'--target',
 				fleet.target,
@@ -6277,7 +6343,7 @@ describe('CLI overwrite', () => {
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'overwrite',
 				'--target',
 				fleet.target,
@@ -6324,7 +6390,7 @@ describe('CLI overwrite', () => {
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -6401,7 +6467,7 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createCatalogFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -6414,7 +6480,7 @@ describe('CLI overwrite', () => {
 			trackFiles(fleet.target)
 			commitFiles(fleet.target)
 			const sink = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...sink.options }).execute([
 				'overwrite',
 				'--offline',
 				'--from',
@@ -6451,7 +6517,7 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createCatalogFleet(workspace)
-			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+			await new CLI({ ...AUDIT_REGISTRY.options, ...createSink().options }).execute([
 				'repair',
 				'--from',
 				fleet.host,
@@ -6464,7 +6530,7 @@ describe('CLI overwrite', () => {
 			workspace.write('target/.claude/rules/names.md', '# Superseded rule\n')
 			const refused = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...refused.options }).execute([
+				await new CLI({ ...AUDIT_REGISTRY.options, ...refused.options }).execute([
 					'overwrite',
 					'--from',
 					fleet.host,
@@ -6476,7 +6542,7 @@ describe('CLI overwrite', () => {
 			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Superseded rule\n')
 
 			const waived = createSink()
-			const code = await new CLI({ ...REGISTRY_OPTIONS, ...waived.options }).execute([
+			const code = await new CLI({ ...AUDIT_REGISTRY.options, ...waived.options }).execute([
 				'overwrite',
 				'--dirty',
 				'--offline',

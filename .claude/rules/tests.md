@@ -22,7 +22,9 @@ paths:
   resolves to `tests/setup<Name>.ts`. A root `tests/setup<Name>.ts` that declares an export has
   `tests/setup<Name>.test.ts` or is imported by `tests/setup.test.ts`, which can prove several
   setup modules when their helpers serve several projects. A vendored module is outside this
-  population. The policy sweep (`tests/setupPolicy.ts`) enforces both directions.
+  population. The policy sweep (`tests/setupPolicy.ts`) enforces both directions. `tests/studies/**`
+  is outside the mirrored population: a study test names a package-level subject and mirrors no
+  module.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
 - Tests are deterministic: identical inputs produce identical results.
 - Keep default suites fast: give each timer the shortest real duration that still separates the orderings the test asserts on a loaded host, and make no network calls.
@@ -57,6 +59,7 @@ its own:
 | `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
 | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
 | `tests/agents/**/*.test.ts`  | Each skill script does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; the scaffold checkout alone carries them                     |
+| `tests/studies/**/*.test.ts` | Evaluations of the workspace's consumer study code under `studies/`, run through bounded subprocesses and protocol fixtures; the `test:studies` script is their gate                         |
 | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
 | `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          |
 | `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
@@ -167,7 +170,7 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 - Keep it out of the default run where the workspace has a gate that can hold it.
   `.claude/rules/workspace.md` fixes which gate each isolated project runs from, and that placement
   differs between a publishing and a `private: true` workspace.
-- The fixed expensive-proof projects are `distribution` and `service`.
+- The fixed expensive-proof projects are `distribution`, `service`, and `studies`.
 - A `distribution` proof reads `import.meta.env.MODE` and fails, rather than skips, on an unreachable
   registry under `--mode release`. The publish gate invokes it that way, so a proof that skips there
   passes the gate without ever proving the artifact installs. An ordinary local run may still skip.
@@ -201,6 +204,9 @@ Place helpers by environment:
 - `tests/setupBrowser.ts`: DOM/Vue/browser helpers and setup CSS.
 - `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; every
   sheet-face project loads it after `tests/setupBrowser.ts`.
+- `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,
+  its source tests too. It sits in no project's `setupFiles`, apart from `tests/setup.ts` and
+  `tests/setupServer.ts`, as `tests/setupPolicy.ts` does.
 
 ### Recorder
 

@@ -40,6 +40,7 @@ import {
 	bytesToHex,
 	CANON_PATHS,
 	CATALOG_AGENT_PATH,
+	computeTotal,
 	DEPENDENCY_NAME_PATTERN,
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
@@ -407,18 +408,42 @@ export function isExactCaseFile(path: string): boolean {
 	if (!isPhysicalFile(full)) return false
 	const root = parse(full).root
 	const segments = relative(root, full).split(sep)
-	let parent = root
-	for (const segment of segments) {
+	return segments.every((segment, index) => {
+		const parent = join(root, ...segments.slice(0, index))
 		const entries = attempt(() => readdirSync(parent))
-		if (entries.success) {
-			if (!entries.value.includes(segment)) return false
-		} else {
-			const actual = attempt(() => realpathSync.native(join(parent, segment)))
-			if (!actual.success || basename(actual.value) !== segment) return false
-		}
-		parent = join(parent, segment)
-	}
-	return true
+		if (entries.success) return entries.value.includes(segment)
+		const actual = attempt(() => realpathSync.native(join(parent, segment)))
+		return actual.success && basename(actual.value) === segment
+	})
+}
+
+/**
+ * Lists a path followed by each directory above it, nearest first.
+ *
+ * @param path - The host path to climb from.
+ * @param limit - The most paths to list; every ancestor by default.
+ * @returns The path, then `dirname` of each result in turn, ending at the first path that is its
+ * own parent (`.` for a relative path, the filesystem root for an absolute one) or at `limit`.
+ *
+ * @remarks
+ * The climb is derived from the path text alone and reads no filesystem, so a caller bounds a walk
+ * by the length it asks for rather than by a counter it reassigns. The final path of an unbounded
+ * list is the one `dirname` leaves unchanged.
+ *
+ * @example
+ * ```ts
+ * import { listAncestors } from '@orkestrel/scaffold/server'
+ *
+ * listAncestors('notes/entry/file.md') // ['notes/entry/file.md', 'notes/entry', 'notes', '.']
+ * listAncestors('notes/entry/file.md', 2) // ['notes/entry/file.md', 'notes/entry']
+ * ```
+ */
+export function listAncestors(
+	path: string,
+	limit: number = Number.POSITIVE_INFINITY,
+): readonly string[] {
+	const parent = dirname(path)
+	return parent === path || limit <= 1 ? [path] : [path, ...listAncestors(parent, limit - 1)]
 }
 
 /**
@@ -476,14 +501,15 @@ export function computeFileDigest(path: string): string | undefined {
 		if (!before.isFile() || before.nlink !== 1 || before.size > MAX_ARTIFACT_BYTES) return undefined
 		const hash = createHash('sha256')
 		const buffer = Buffer.alloc(65_536)
-		let size = 0
+		const lengths: number[] = []
 		for (;;) {
 			const length = readSync(handle, buffer, 0, buffer.byteLength, null)
 			if (length === 0) break
-			size += length
-			if (size > MAX_ARTIFACT_BYTES) return undefined
+			lengths.push(length)
+			if (computeTotal(lengths) > MAX_ARTIFACT_BYTES) return undefined
 			hash.update(buffer.subarray(0, length))
 		}
+		const size = computeTotal(lengths)
 		const after = fstatSync(handle)
 		if (size !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs) {
 			return undefined
@@ -544,14 +570,15 @@ export function computeFileDigest(path: string): string | undefined {
  */
 export function resolveRealPath(path: string): string | undefined {
 	if (!isFilesystemPath(path)) return undefined
-	let current = resolve(path)
+	// Each step appends the path to read next, and an array iterator reads what the
+	// array grows by, so the climb is one loop over the paths it has reached.
+	const trail = [resolve(path)]
 	const pending: string[] = []
-	for (let depth = 0; depth <= MAX_PATH_DEPTH; depth += 1) {
+	for (const [depth, current] of trail.entries()) {
+		if (depth > MAX_PATH_DEPTH) break
 		const real = attempt(() => realpathSync(current))
 		if (real.success) {
-			let physical = real.value
-			for (const segment of pending) physical = join(physical, segment)
-			return physical
+			return pending.reduce((physical, segment) => join(physical, segment), real.value)
 		}
 		if (!matchesMissingPath(real.error)) return undefined
 		const status = attempt(() => lstatSync(current))
@@ -560,14 +587,14 @@ export function resolveRealPath(path: string): string | undefined {
 			const target = attempt(() => readlinkSync(current))
 			if (!target.success) return undefined
 			if (target.value.split(/[\\/]/u).includes('..')) return undefined
-			current = resolve(dirname(current), target.value)
+			trail.push(resolve(dirname(current), target.value))
 			continue
 		}
 		if (!matchesMissingPath(status.error)) return undefined
 		const parent = dirname(current)
 		if (parent === current) return undefined
 		pending.unshift(relative(parent, current))
-		current = parent
+		trail.push(parent)
 	}
 	return undefined
 }
@@ -705,9 +732,10 @@ export function listFiles(root: string): readonly string[] {
 			root,
 		})
 	}
-	const files: string[] = []
 	const pending = [{ full: root, path: '', depth: 0 }]
-	let visited = 0
+	// One record per entry read: the count of what was read is its length, and the files are the
+	// records that name one.
+	const entries: Array<{ readonly path: string; readonly file: boolean }> = []
 	while (pending.length > 0) {
 		const current = pending.pop()
 		if (current === undefined) break
@@ -724,14 +752,15 @@ export function listFiles(root: string): readonly string[] {
 			for (;;) {
 				const entry = handle.readSync()
 				if (entry === null) break
-				visited += 1
-				if (visited > MAX_INVENTORY_PATHS) {
+				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
+				const file = !entry.isDirectory() || entry.isSymbolicLink()
+				entries.push({ path, file })
+				if (entries.length > MAX_INVENTORY_PATHS) {
 					throw new ScaffoldError('TARGET', 'Listing exceeds the paths one inventory may report', {
 						root,
 						limit: MAX_INVENTORY_PATHS,
 					})
 				}
-				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
 				if (!isPath(path)) {
 					throw new ScaffoldError(
 						'TARGET',
@@ -742,10 +771,7 @@ export function listFiles(root: string): readonly string[] {
 						},
 					)
 				}
-				if (!entry.isDirectory() || entry.isSymbolicLink()) {
-					files.push(path)
-					continue
-				}
+				if (file) continue
 				const depth = current.depth + 1
 				if (depth >= MAX_PATH_DEPTH) {
 					throw new ScaffoldError(
@@ -764,7 +790,10 @@ export function listFiles(root: string): readonly string[] {
 		attempt(() => handle.closeSync())
 		if (!walked.success) throw walked.error
 	}
-	return files.sort()
+	return entries
+		.filter(({ file }) => file)
+		.map(({ path }) => path)
+		.sort()
 }
 
 /**
@@ -813,9 +842,10 @@ export function listDirectories(root: string): readonly string[] {
 			root,
 		})
 	}
-	const directories: string[] = []
 	const pending = [{ full: root, path: '', depth: 0 }]
-	let visited = 0
+	// One record per entry read: the count of what was read is its length, and the directories are
+	// the records that name one.
+	const entries: Array<{ readonly path: string; readonly directory: boolean }> = []
 	while (pending.length > 0) {
 		const current = pending.pop()
 		if (current === undefined) break
@@ -832,14 +862,15 @@ export function listDirectories(root: string): readonly string[] {
 			for (;;) {
 				const entry = handle.readSync()
 				if (entry === null) break
-				visited += 1
-				if (visited > MAX_INVENTORY_PATHS) {
+				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
+				const directory = entry.isDirectory() && !entry.isSymbolicLink()
+				entries.push({ path, directory })
+				if (entries.length > MAX_INVENTORY_PATHS) {
 					throw new ScaffoldError('TARGET', 'Listing exceeds the paths one inventory may report', {
 						root,
 						limit: MAX_INVENTORY_PATHS,
 					})
 				}
-				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
 				if (!isPath(path)) {
 					throw new ScaffoldError(
 						'TARGET',
@@ -850,7 +881,7 @@ export function listDirectories(root: string): readonly string[] {
 						},
 					)
 				}
-				if (!entry.isDirectory() || entry.isSymbolicLink()) continue
+				if (!directory) continue
 				const depth = current.depth + 1
 				if (depth >= MAX_PATH_DEPTH) {
 					throw new ScaffoldError(
@@ -863,14 +894,16 @@ export function listDirectories(root: string): readonly string[] {
 						},
 					)
 				}
-				directories.push(path)
 				pending.push({ full: join(current.full, entry.name), path, depth })
 			}
 		})
 		attempt(() => handle.closeSync())
 		if (!walked.success) throw walked.error
 	}
-	return directories.sort()
+	return entries
+		.filter(({ directory }) => directory)
+		.map(({ path }) => path)
+		.sort()
 }
 
 /**
@@ -905,16 +938,12 @@ export function listDirectories(root: string): readonly string[] {
  * ```
  */
 export function listCanonPaths(target: string, groups: readonly Group[]): readonly string[] {
-	const held: string[] = []
-	for (const member of CANON_PATHS) {
+	return CANON_PATHS.flatMap((member): readonly string[] => {
 		const full = resolveContainedPath(target, member)
-		if (full === undefined) continue
-		if (isPhysicalFile(full)) held.push(member)
-		else if (isPhysicalDirectory(full)) {
-			for (const name of listFiles(full)) held.push(`${member}/${name}`)
-		}
-	}
-	return held.filter((path) => groups.includes(inferGroup(path)))
+		if (full === undefined) return []
+		if (isPhysicalFile(full)) return [member]
+		return isPhysicalDirectory(full) ? listFiles(full).map((name) => `${member}/${name}`) : []
+	}).filter((path) => groups.includes(inferGroup(path)))
 }
 
 /**
@@ -951,27 +980,20 @@ export function pruneEmptiedDirectories(
 	target: string,
 	removed: readonly string[],
 ): readonly string[] {
-	const candidates = new Set<string>()
-	for (const path of removed) {
-		let parent = dirname(path)
-		while (parent !== '.' && parent !== dirname(parent) && !candidates.has(parent)) {
-			candidates.add(parent)
-			parent = dirname(parent)
-		}
-	}
+	// Every ancestor of a removed path except the path itself and the root of its form
+	// (`.` or a filesystem root), which stands whatever was removed beneath it.
+	const candidates = new Set(removed.flatMap((path) => listAncestors(path).slice(1, -1)))
 	const ordered = [...candidates].sort(
 		(left, right) =>
 			compareValues(right.split('/').length, left.split('/').length) || compareValues(left, right),
 	)
-	const pruned: string[] = []
-	for (const candidate of ordered) {
+	return ordered.flatMap((candidate): readonly string[] => {
 		const directory = resolveContainedPath(target, candidate)
-		if (directory === undefined || !isPhysicalDirectory(directory)) continue
+		if (directory === undefined || !isPhysicalDirectory(directory)) return []
 		const entries = attempt(() => readdirSync(directory))
-		if (!entries.success || entries.value.length > 0) continue
-		if (attempt(() => rmdirSync(directory)).success) pruned.push(candidate)
-	}
-	return pruned
+		if (!entries.success || entries.value.length > 0) return []
+		return attempt(() => rmdirSync(directory)).success ? [candidate] : []
+	})
 }
 
 /**
@@ -1028,12 +1050,15 @@ export function readFileHex(
 		const before = fstatSync(handle)
 		if (!before.isFile() || before.nlink !== 1 || before.size > limit) return undefined
 		const bytes = Buffer.alloc(before.size)
-		let offset = 0
-		while (offset < bytes.byteLength) {
-			const length = readSync(handle, bytes, offset, bytes.byteLength - offset, offset)
+		const reads: number[] = []
+		for (;;) {
+			const position = computeTotal(reads)
+			if (position >= bytes.byteLength) break
+			const length = readSync(handle, bytes, position, bytes.byteLength - position, position)
 			if (length === 0) break
-			offset += length
+			reads.push(length)
 		}
+		const offset = computeTotal(reads)
 		const overflow = readSync(handle, Buffer.alloc(1), 0, 1, offset)
 		const after = fstatSync(handle)
 		if (
@@ -1122,41 +1147,47 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
 			limit: MAX_COLLECTION_ITEMS,
 		})
 	}
-	let remaining = MAX_TOTAL_ARTIFACT_BYTES
-	const snapshot: Record<string, string> = {}
-	for (const path of paths) {
-		const full = resolveContainedPath(target, path)
-		if (full === undefined) {
-			throw new ScaffoldError('INVALID', `Snapshot path leaves its target at ${path}`, {
+	// Each path reads with what the earlier ones left of the total budget, so the fold carries the
+	// bytes spent beside the entries read. `paths` is bounded by `isCollection` above.
+	const read = paths.reduce<{
+		readonly entries: ReadonlyArray<readonly [string, string]>
+		readonly spent: readonly number[]
+	}>(
+		(state, path) => {
+			const full = resolveContainedPath(target, path)
+			if (full === undefined) {
+				throw new ScaffoldError('INVALID', `Snapshot path leaves its target at ${path}`, {
+					target,
+					path,
+				})
+			}
+			const status = attempt(() => lstatSync(full))
+			if (!status.success) {
+				if (matchesMissingPath(status.error)) return state
+				throw new ScaffoldError('TARGET', `Snapshot path cannot be inspected at ${path}`, {
+					target,
+					path,
+					error: status.error,
+				})
+			}
+			if (isPhysicalDirectory(full)) return { ...state, entries: [...state.entries, [path, '']] }
+			const hex = readFileHex(
 				target,
 				path,
-			})
-		}
-		const status = attempt(() => lstatSync(full))
-		if (!status.success) {
-			if (matchesMissingPath(status.error)) continue
-			throw new ScaffoldError('TARGET', `Snapshot path cannot be inspected at ${path}`, {
-				target,
-				path,
-				error: status.error,
-			})
-		}
-		if (isPhysicalDirectory(full)) {
-			snapshot[path] = ''
-			continue
-		}
-		const hex = readFileHex(target, path, Math.min(MAX_ARTIFACT_BYTES, remaining))
-		if (hex === undefined) {
-			throw new ScaffoldError('TARGET', `Snapshot path is not a readable file at ${path}`, {
-				target,
-				path,
-				limit: MAX_TOTAL_ARTIFACT_BYTES,
-			})
-		}
-		remaining -= hex.length / 2
-		snapshot[path] = hex
-	}
-	return snapshot
+				Math.min(MAX_ARTIFACT_BYTES, MAX_TOTAL_ARTIFACT_BYTES - computeTotal(state.spent)),
+			)
+			if (hex === undefined) {
+				throw new ScaffoldError('TARGET', `Snapshot path is not a readable file at ${path}`, {
+					target,
+					path,
+					limit: MAX_TOTAL_ARTIFACT_BYTES,
+				})
+			}
+			return { entries: [...state.entries, [path, hex]], spent: [...state.spent, hex.length / 2] }
+		},
+		{ entries: [], spent: [] },
+	)
+	return Object.fromEntries(read.entries)
 }
 
 /**
@@ -1263,19 +1294,20 @@ export function readHostFloor(root?: string): Host {
 	if (manifest === undefined) {
 		throw new ScaffoldError('TARGET', `The vendored host carries no manifest at ${host}`, { host })
 	}
-	const bytes: Record<string, string> = {}
-	for (const entry of manifest.entries) {
-		const path = source ? entry.destination : entry.storage
-		const hex = readFileHex(host, path)
-		if (hex === undefined || hexToDigest(hex) !== entry.digest) {
-			throw new ScaffoldError(
-				'TARGET',
-				`The vendored host cannot read the declared file at ${path}`,
-				{ host, path, destination: entry.destination },
-			)
-		}
-		bytes[entry.destination] = hex
-	}
+	const bytes = Object.fromEntries(
+		manifest.entries.map((entry) => {
+			const path = source ? entry.destination : entry.storage
+			const hex = readFileHex(host, path)
+			if (hex === undefined || hexToDigest(hex) !== entry.digest) {
+				throw new ScaffoldError(
+					'TARGET',
+					`The vendored host cannot read the declared file at ${path}`,
+					{ host, path, destination: entry.destination },
+				)
+			}
+			return [entry.destination, hex]
+		}),
+	)
 	return { manifest, bytes }
 }
 
@@ -1357,26 +1389,32 @@ export function readManifestEntry(destination: string, source: string): Manifest
  */
 export function filesToHost(files: readonly HostFile[], floor: Host): Host | undefined {
 	const declared = new Set(floor.manifest.entries.map((entry) => entry.destination))
-	const held = new Map<string, string>()
-	for (const file of files) {
-		if (file.lookup !== 'found' || !declared.has(file.path)) return undefined
-		if (!isFloorPath(file.path)) held.set(file.path, file.hex)
-	}
-	const entries: ManifestEntry[] = []
-	const bytes: Record<string, string> = {}
-	for (const entry of floor.manifest.entries) {
-		const hex = isFloorPath(entry.destination)
+	if (files.some((file) => file.lookup !== 'found' || !declared.has(file.path))) return undefined
+	// A later row of one path replaces an earlier one, as a keyed write does.
+	const held = new Map(
+		files.flatMap((file): ReadonlyArray<readonly [string, string]> =>
+			file.lookup === 'found' && !isFloorPath(file.path) ? [[file.path, file.hex]] : [],
+		),
+	)
+	const rows = floor.manifest.entries.map((entry) => ({
+		entry,
+		hex: isFloorPath(entry.destination)
 			? floor.bytes[entry.destination]
-			: held.get(entry.destination)
-		if (hex === undefined) return undefined
-		entries.push({
-			storage: entry.storage,
-			destination: entry.destination,
-			executable: entry.executable,
-			digest: hexToDigest(hex),
-		})
-		bytes[entry.destination] = hex
-	}
+			: held.get(entry.destination),
+	}))
+	// An entry with no bytes ends the fill, and each entry before it is digested first, in order.
+	const ending = rows.findIndex(({ hex }) => hex === undefined)
+	const filled = rows
+		.slice(0, ending === -1 ? rows.length : ending)
+		.flatMap(({ entry, hex }) => (hex === undefined ? [] : [{ entry, hex }]))
+	const entries = filled.map(({ entry, hex }): ManifestEntry => ({
+		storage: entry.storage,
+		destination: entry.destination,
+		executable: entry.executable,
+		digest: hexToDigest(hex),
+	}))
+	if (ending !== -1) return undefined
+	const bytes = Object.fromEntries(filled.map(({ entry, hex }) => [entry.destination, hex]))
 	return {
 		manifest: {
 			entries,
@@ -1431,8 +1469,7 @@ export function stageBytes(
 		throw new ScaffoldError('INVALID', 'Staging host root is not a host path', { host: root })
 	}
 	const declared = new Map(host.manifest.entries.map((entry) => [entry.destination, entry]))
-	const staged: ManifestEntry[] = []
-	for (const destination of destinations) {
+	return destinations.map((destination): ManifestEntry => {
 		const entry = declared.get(destination)
 		const hex = host.bytes[destination]
 		if (entry === undefined || hex === undefined) {
@@ -1472,9 +1509,8 @@ export function stageBytes(
 				storage: entry.storage,
 			})
 		}
-		staged.push(entry)
-	}
-	return staged
+		return entry
+	})
 }
 
 /**
@@ -1566,37 +1602,46 @@ export function stageHost(
 	if (!isVacant(host)) {
 		throw new ScaffoldError('TARGET', `Staging host root is not vacant at ${host}`, { host })
 	}
-	const vendored: string[] = []
-	const roots: string[] = []
-	const missing: string[] = []
-	for (const path of [...HOST_PATHS, ...CANON_PATHS, ...REFERENCE_PATHS]) {
-		const full = resolveContainedPath(source, path)
-		if (full === undefined) {
-			throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${path}`, {
-				checkout: source,
-				path,
-			})
-		}
-		if (isPhysicalFile(full)) {
-			vendored.push(path)
-			continue
-		}
-		if (!isPhysicalDirectory(full)) {
-			// A canon file the checkout no longer holds is owned without being shipped: a target's
-			// copy still reports foreign and `overwrite` still deletes it, so nothing is staged for it.
-			if (!CANON_PATHS.includes(path)) missing.push(path)
-			continue
-		}
-		roots.push(path)
-		for (const nested of listDirectories(full)) {
-			const rooted = `${path}/${nested}`
-			if (!matchesSensitivePath(rooted)) roots.push(rooted)
-		}
-		for (const name of listFiles(full)) {
-			const destination = `${path}/${name}`
-			if (!matchesSensitivePath(destination)) vendored.push(destination)
-		}
-	}
+	const reads = [...HOST_PATHS, ...CANON_PATHS, ...REFERENCE_PATHS].map(
+		(
+			path,
+		): {
+			readonly vendored: readonly string[]
+			readonly roots: readonly string[]
+			readonly missing: readonly string[]
+		} => {
+			const full = resolveContainedPath(source, path)
+			if (full === undefined) {
+				throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${path}`, {
+					checkout: source,
+					path,
+				})
+			}
+			if (isPhysicalFile(full)) return { vendored: [path], roots: [], missing: [] }
+			if (!isPhysicalDirectory(full)) {
+				// A canon file the checkout no longer holds is owned without being shipped: a target's
+				// copy still reports foreign and `overwrite` still deletes it, so nothing is staged for it.
+				return { vendored: [], roots: [], missing: CANON_PATHS.includes(path) ? [] : [path] }
+			}
+			const nested = listDirectories(full)
+			const names = listFiles(full)
+			return {
+				vendored: names
+					.map((name) => `${path}/${name}`)
+					.filter((destination) => !matchesSensitivePath(destination)),
+				roots: [
+					path,
+					...nested
+						.map((name) => `${path}/${name}`)
+						.filter((rooted) => !matchesSensitivePath(rooted)),
+				],
+				missing: [],
+			}
+		},
+	)
+	const vendored = reads.flatMap((read) => read.vendored)
+	const roots = reads.flatMap((read) => read.roots).sort()
+	const missing = reads.flatMap((read) => read.missing)
 	if (missing.length > 0) {
 		throw new ScaffoldError('TARGET', 'The checkout does not carry every vendored path', {
 			checkout: source,
@@ -1633,36 +1678,36 @@ export function stageHost(
 	// Seeded with the reserved metadata name a staged host writes at its own root,
 	// the same literal `readHostManifest` reads back, so a vendored file claiming it
 	// is refused rather than silently replaced by the manifest.
-	const stored = new Set<string>([MANIFEST_NAME])
-	const candidates: ManifestEntry[] = []
-	for (const destination of vendored) {
-		const full = resolveContainedPath(source, destination)
-		if (full === undefined) {
-			throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${destination}`, {
-				checkout: source,
-				path: destination,
-			})
-		}
-		const entry = readManifestEntry(destination, full)
-		if (entry === undefined) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Vendored path is not a plain file within the artifact ceiling at ${destination}`,
-				{ checkout: source, path: destination, limit: MAX_ARTIFACT_BYTES },
-			)
-		}
-		if (stored.has(entry.storage)) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Two vendored paths claim the storage name ${entry.storage}`,
-				{ checkout: source, path: destination, storage: entry.storage },
-			)
-		}
-		stored.add(entry.storage)
-		candidates.push(entry)
-	}
-	candidates.sort((first, second) => (first.storage < second.storage ? -1 : 1))
-	roots.sort()
+	// A storage name is a collision when it is the manifest's own or an earlier vendored path
+	// already claimed it, and each path is checked after its own read, as a walk in order would.
+	const storages = vendored.map((destination) => pathToStorage(destination))
+	const candidates = vendored
+		.map((destination, index): ManifestEntry => {
+			const full = resolveContainedPath(source, destination)
+			if (full === undefined) {
+				throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${destination}`, {
+					checkout: source,
+					path: destination,
+				})
+			}
+			const entry = readManifestEntry(destination, full)
+			if (entry === undefined) {
+				throw new ScaffoldError(
+					'TARGET',
+					`Vendored path is not a plain file within the artifact ceiling at ${destination}`,
+					{ checkout: source, path: destination, limit: MAX_ARTIFACT_BYTES },
+				)
+			}
+			if (entry.storage === MANIFEST_NAME || storages.indexOf(entry.storage) < index) {
+				throw new ScaffoldError(
+					'TARGET',
+					`Two vendored paths claim the storage name ${entry.storage}`,
+					{ checkout: source, path: destination, storage: entry.storage },
+				)
+			}
+			return entry
+		})
+		.sort((first, second) => (first.storage < second.storage ? -1 : 1))
 	const baseline = resolveContainedPath(source, options?.inventory ?? HOST_INVENTORY_PATH)
 	if (baseline === undefined) {
 		throw new ScaffoldError('INVALID', 'Surface inventory leaves its checkout', {
@@ -1693,8 +1738,7 @@ export function stageHost(
 			...(established.success ? {} : { error: established.error }),
 		})
 	}
-	const entries: ManifestEntry[] = []
-	for (const entry of candidates) {
+	const entries = candidates.map((entry): ManifestEntry => {
 		const origin = resolveContainedPath(source, entry.destination)
 		const destination = resolveContainedPath(root, entry.storage)
 		if (origin === undefined || destination === undefined) {
@@ -1724,21 +1768,21 @@ export function stageHost(
 				storage: entry.storage,
 			})
 		}
-		entries.push({ ...entry, digest })
-	}
+		return { ...entry, digest }
+	})
 	const collisions = readSurfaceCollisions(join(root, 'guides'))
-	const growth: string[] = []
-	if (published !== undefined) {
-		for (const [name, owners] of collisions) {
-			const record = published.get(name)
-			const isSubset = record !== undefined && owners.every((owner) => record.includes(owner))
-			if (!isSubset) {
-				growth.push(
-					`${name} staged (${owners.join(', ')}), recorded (${record?.join(', ') ?? 'absent'})`,
-				)
-			}
-		}
-	}
+	const growth =
+		published === undefined
+			? []
+			: [...collisions].flatMap(([name, owners]): readonly string[] => {
+					const record = published.get(name)
+					const isSubset = record !== undefined && owners.every((owner) => record.includes(owner))
+					return isSubset
+						? []
+						: [
+								`${name} staged (${owners.join(', ')}), recorded (${record?.join(', ') ?? 'absent'})`,
+							]
+				})
 	if (growth.length > 0) {
 		throw new ScaffoldError(
 			'TARGET',
@@ -1815,25 +1859,27 @@ export function readSurfaceCollisions(root: string): ReadonlyMap<string, readonl
 		})
 	}
 	const guide = loaded.value
-	const owners = new Map<string, Set<string>>()
-	for (const path of listFiles(root)) {
-		if (path.includes('/') || extname(path) !== '.md' || path === 'README.md') continue
-		const text = readFileText(root, path)
-		if (text === undefined) {
-			throw new ScaffoldError('TARGET', `Surface guide cannot be read at ${path}`, { root, path })
-		}
-		for (const symbol of guide.createGuide(text).surface()) {
-			const claimed = owners.get(symbol.name) ?? new Set<string>()
-			claimed.add(basename(path, '.md'))
-			owners.set(symbol.name, claimed)
-		}
-	}
-	const collisions = new Map<string, readonly string[]>()
-	for (const name of [...owners.keys()].sort()) {
-		const claimed = owners.get(name)
-		if (claimed !== undefined && claimed.size > 1) collisions.set(name, [...claimed].sort())
-	}
-	return collisions
+	const claims = listFiles(root)
+		.filter((path) => !path.includes('/') && extname(path) === '.md' && path !== 'README.md')
+		.flatMap((path) => {
+			const text = readFileText(root, path)
+			if (text === undefined) {
+				throw new ScaffoldError('TARGET', `Surface guide cannot be read at ${path}`, { root, path })
+			}
+			return guide
+				.createGuide(text)
+				.surface()
+				.map((symbol): readonly [string, string] => [symbol.name, basename(path, '.md')])
+		})
+	const grouped = Map.groupBy(claims, ([name]) => name)
+	return new Map(
+		[...grouped.keys()]
+			.sort()
+			.flatMap((name): ReadonlyArray<readonly [string, readonly string[]]> => {
+				const owners = [...new Set((grouped.get(name) ?? []).map(([, owner]) => owner))]
+				return owners.length > 1 ? [[name, owners.sort()]] : []
+			}),
+	)
 }
 
 /**

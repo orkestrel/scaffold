@@ -56,17 +56,15 @@ function buildRangeLiteral(literal: string): Literal {
 function sweepFile(path: string, literals: readonly Literal[]): readonly Hit[] {
 	const content = readFileSync(path)
 	if (content.includes(0)) return []
-	const hits: Hit[] = []
-	content
+	return content
 		.toString('utf8')
 		.split(/\r\n|\n/)
-		.forEach((text, index) => {
+		.flatMap((text, index) => {
 			const match = literals.find((entry) => entry.pattern.test(text))
-			if (match !== undefined) {
-				hits.push({ path, line: index + 1, literal: match.literal, text: text.trim() })
-			}
+			return match === undefined
+				? []
+				: [{ path, line: index + 1, literal: match.literal, text: text.trim() }]
 		})
-	return hits
 }
 
 function main(argv: readonly string[]): number {

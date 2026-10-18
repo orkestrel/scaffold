@@ -1,29 +1,23 @@
 import type { Question } from '@src/core'
-import type { GuideModule } from '@orkestrel/guide'
 import { GuideCommand } from '@orkestrel/guide/server'
 import { readInventory } from '@orkestrel/test/server'
 import { createVitest } from 'vitest/node'
 
-const PATTERNS: readonly string[] = ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md']
-const FENCE_LANGUAGES: readonly string[] = Object.freeze(['sh', 'text', 'ts'])
-const EXAMPLE_LANGUAGE = 'ts'
-const MODULES: Readonly<Record<string, GuideModule>> = Object.freeze({
-	'@orkestrel/scaffold': 'src/core',
-	'@orkestrel/scaffold/server': 'src/server',
-})
-
 await new GuideCommand({
 	root: new URL('../', import.meta.url),
-	patterns: PATTERNS,
-	modules: MODULES,
-	languages: FENCE_LANGUAGES,
-	language: EXAMPLE_LANGUAGE,
+	patterns: ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md'],
+	modules: {
+		'@orkestrel/scaffold': 'src/core',
+		'@orkestrel/scaffold/server': 'src/server',
+	},
+	languages: ['sh', 'text', 'ts'],
+	language: 'ts',
 	reader: readInventory,
 	runner: createVitest,
 }).execute(async ({ files, report, root, rows }) => {
 	const { isArray, isRecord } = await import('@orkestrel/contract')
 	const { createGuide } = await import('@orkestrel/guide')
-	const { requireValue } = await import('@orkestrel/test')
+	const { captureError, requireValue } = await import('@orkestrel/test')
 	const { createScratch } = await import('@orkestrel/test/server')
 	const {
 		ARTIFACT_TEMPLATES,
@@ -219,14 +213,11 @@ await new GuideCommand({
 		})
 
 		it('executes the error-code narrowing example', () => {
-			let code: string | undefined
-			try {
+			const error = captureError(() => {
 				throw new ScaffoldError('TARGET', 'The target carries no readable manifest.')
-			} catch (error) {
-				if (!isScaffoldError(error)) throw error
-				code = error.code
-			}
-			expect(code).toBe('TARGET')
+			})
+			if (!isScaffoldError(error)) throw error
+			expect(error.code).toBe('TARGET')
 		})
 
 		it('reports a retained setup seed when the planned release seed differs', async () => {
@@ -312,35 +303,35 @@ await new GuideCommand({
 			// The parser names the declarations and their extents, so the lift carries the
 			// emitted text whatever width the formatter printed it at, and a name the proof
 			// stopped declaring fails the order assertion rather than thinning the drive.
-			const declarations: string[] = []
-			const declared: string[] = []
-			for (const statement of readStatements(content, 'distribution.test.ts')) {
-				if (statement.syntax !== 'FunctionDeclaration') continue
-				for (const { name } of statement.declarations) {
-					if (!names.includes(name)) continue
-					declared.push(name)
-					declarations.push(statement.text)
-				}
-			}
+			const lifted = readStatements(content, 'distribution.test.ts')
+				.filter((statement) => statement.syntax === 'FunctionDeclaration')
+				.flatMap((statement) =>
+					statement.declarations
+						.filter(({ name }) => names.includes(name))
+						.map(({ name }) => ({ name, text: statement.text })),
+				)
+			const declared = lifted.map(({ name }) => name)
 			expect(declared).toStrictEqual(names)
-			const calls: string[] = []
-			const expected: unknown[] = []
-			for (const target of [
+			const targets = [
 				'../outside.cjs',
 				'./x/./outside.cjs',
 				'./x/../outside.cjs',
 				'./x/node_modules/outside.cjs',
-			]) {
-				calls.push(
-					`classifier.resolveTarget([${JSON.stringify(target)}, './valid.cjs'], ['import'])`,
-					`classifier.collectTargets([${JSON.stringify(target)}, './valid.cjs'])`,
-					`classifier.resolveTarget(${JSON.stringify(target)}, ['import'])`,
-					`classifier.collectTargets(${JSON.stringify(target)})`,
-				)
-				expected.push('./valid.cjs', ['./valid.cjs'], target, [target])
-			}
+			]
+			const calls = targets.flatMap((target) => [
+				`classifier.resolveTarget([${JSON.stringify(target)}, './valid.cjs'], ['import'])`,
+				`classifier.collectTargets([${JSON.stringify(target)}, './valid.cjs'])`,
+				`classifier.resolveTarget(${JSON.stringify(target)}, ['import'])`,
+				`classifier.collectTargets(${JSON.stringify(target)})`,
+			])
+			const expected: unknown[] = targets.flatMap((target) => [
+				'./valid.cjs',
+				['./valid.cjs'],
+				target,
+				[target],
+			])
 			const answers = await driveClassifier(
-				`${declarations.join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
+				`${lifted.map(({ text }) => text).join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
 				calls,
 			)
 			expect(answers).toStrictEqual(expected)
@@ -516,6 +507,8 @@ await new GuideCommand({
 			const all = [...configured, ...sources, ...tested]
 			const pairs = all.map(({ path, ownership }): [string, string] => [path, ownership])
 			const planned = Object.fromEntries(pairs)
+			const seeds = ['index.scss', '_tokens.scss', '_mixins.scss', 'sheet.ts', 'index.ts']
+			const faces = ['styles', 'print']
 			const expected: Record<string, string> = {
 				'src/styles/themes/index.scss': 'birth',
 				'src/styles/themes/_default.scss': 'birth',
@@ -525,13 +518,16 @@ await new GuideCommand({
 				'tests/setupStyles.test.ts': 'birth',
 				'configs/src/vite.themes.config.ts': 'content',
 				'tests/distribution.test.ts': 'presence',
+				...Object.fromEntries(
+					faces.flatMap((face): Array<[string, string]> => [
+						...seeds.map((name): [string, string] => [`src/${face}/${name}`, 'birth']),
+						[`tests/src/${face}/index.test.ts`, 'birth'],
+						[`configs/src/vite.${face}.config.ts`, 'content'],
+						[`configs/src/tsconfig.${face}.json`, 'content'],
+					]),
+				),
 			}
-			const seeds = ['index.scss', '_tokens.scss', '_mixins.scss', 'sheet.ts', 'index.ts']
-			for (const face of ['styles', 'print']) {
-				for (const name of seeds) expected[`src/${face}/${name}`] = 'birth'
-				expected[`tests/src/${face}/index.test.ts`] = 'birth'
-				expected[`configs/src/vite.${face}.config.ts`] = 'content'
-				expected[`configs/src/tsconfig.${face}.json`] = 'content'
+			for (const face of faces) {
 				for (const folder of ['elements', 'components', 'utilities']) {
 					const barrels = sources.filter(({ path }) => path.startsWith(`src/${face}/${folder}/`))
 					const found = barrels.map(({ path, ownership, content }) => [path, ownership, content])
@@ -1095,7 +1091,7 @@ await new GuideCommand({
 				['tests/app/vue/integration.test.ts', 'birth'],
 			])
 			const families =
-				"const families = new Set(['Journey', 'Refusal', 'Matrix', ...(CAPTURE ? ['Capture'] : [])])"
+				"const families = ['Journey', 'Refusal', 'Matrix', ...(CAPTURE ? ['Capture'] : [])]"
 			const [base, framed] = journeys.map(({ content }) => content)
 			expect(base).toContain("await import('../../../app/browser/main.js')")
 			expect(framed).toContain("import App from '../../../app/vue/App.vue'")
@@ -1109,7 +1105,7 @@ await new GuideCommand({
 			)`
 				const roles =
 					'for (const role of ACCESSIBLE_ROLES) expect(page.getByRole(role).elements()).toEqual([])'
-				const recorded = "proven.add('Refusal')"
+				const recorded = "proven.push('Refusal')"
 				const journey = requireValue(content)
 				expect(journey).toContain(refusal)
 				expect(journey).toContain(roles)

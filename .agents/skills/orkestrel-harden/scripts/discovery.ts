@@ -58,6 +58,12 @@ interface Collected {
 	readonly gate?: string | undefined
 }
 
+interface Selection {
+	readonly selected: readonly string[]
+	readonly skip: number
+	readonly closed: boolean
+}
+
 interface Gates {
 	readonly units: readonly Gate[]
 	readonly files: ReadonlyMap<string, string>
@@ -80,6 +86,17 @@ interface Gate extends Unit {
 interface Listing extends Unit {
 	readonly collected: readonly Collected[]
 	readonly empty: readonly string[]
+}
+
+interface UnitReading {
+	readonly listing: Listing
+	readonly populated: readonly string[]
+}
+
+interface ProjectReading {
+	readonly project: string
+	readonly populated: boolean
+	readonly empty: boolean
 }
 
 interface Invocation {
@@ -108,46 +125,71 @@ function readCLIOptions(): ReadonlyMap<string, Option> {
 		windowsHide: true,
 	})
 	if (help.status !== 0) throw new Error(help.stderr || 'Cannot read Vitest CLI options')
-	const options = new Map<string, Option>()
-	for (const line of help.stdout.split(/\r\n|\n/u)) {
-		const match = /^\s+(?:(-\w), )?--([\w.-]+)(?: ([<[][^\n]*?[>\]]))?\s{2}/u.exec(line)
-		const name = match?.[2]
-		if (name === undefined) continue
-		const option = { name: name.replace(/^no-/u, ''), argument: match?.[3] }
-		options.set(`--${name}`, option)
-		if (name.startsWith('no-')) options.set(`--${name.slice(3)}`, option)
-		options.set(`--${name.replace(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`)}`, option)
-		if (match?.[1] !== undefined) options.set(match[1], option)
-	}
-	return options
+	// A later line that names the same flag replaces the earlier option at the earlier position.
+	return new Map(
+		help.stdout.split(/\r\n|\n/u).flatMap((line): Array<readonly [string, Option]> => {
+			const match = /^\s+(?:(-\w), )?--([\w.-]+)(?: ([<[][^\n]*?[>\]]))?\s{2}/u.exec(line)
+			const name = match?.[2]
+			if (name === undefined) return []
+			const option = { name: name.replace(/^no-/u, ''), argument: match?.[3] }
+			return [
+				[`--${name}`, option],
+				...(name.startsWith('no-') ? [[`--${name.slice(3)}`, option] as const] : []),
+				[`--${name.replace(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`)}`, option],
+				...(match?.[1] === undefined ? [] : [[match[1], option] as const]),
+			]
+		}),
+	)
+}
+
+// An option that takes a value consumes the token after it, so that token is never read as a runner.
+function skipRunnerOptions(command: readonly string[], index: number): number {
+	const skipped = [...command.entries()].reduce<{
+		readonly next: number
+		readonly found: number | undefined
+	}>(
+		(state, [position, option]) => {
+			if (state.found !== undefined || position < state.next) return state
+			if (!option.startsWith('-')) return { ...state, found: position }
+			if (['-e', '--eval', '-p', '--print', '-c', '--check'].includes(option)) {
+				return { ...state, found: -1 }
+			}
+			return {
+				...state,
+				next:
+					position +
+					([
+						'-r',
+						'--require',
+						'--import',
+						'--loader',
+						'--experimental-loader',
+						'--max-old-space-size',
+						'--max_old_space_size',
+						'-p',
+						'--package',
+					].includes(option)
+						? 2
+						: 1),
+			}
+		},
+		{ next: index, found: undefined },
+	)
+	return skipped.found ?? skipped.next
 }
 
 function findRunner(command: readonly string[]): number {
-	let index = 0
 	const executable = basename(command[0] ?? '').replace(/\.(?:exe|cmd)$/u, '')
-	if (executable === 'npm') {
-		if (command[1] !== 'exec') return -1
-		index = 2
-	} else if (executable === 'node' || executable === 'npx') index = 1
-	if (index > 0) {
-		while (command[index]?.startsWith('-')) {
-			const option = command[index]
-			if (['-e', '--eval', '-p', '--print', '-c', '--check'].includes(option ?? '')) return -1
-			index += [
-				'-r',
-				'--require',
-				'--import',
-				'--loader',
-				'--experimental-loader',
-				'--max-old-space-size',
-				'--max_old_space_size',
-				'-p',
-				'--package',
-			].includes(option ?? '')
+	const start =
+		executable === 'npm'
+			? command[1] === 'exec'
 				? 2
-				: 1
-		}
-	}
+				: -1
+			: executable === 'node' || executable === 'npx'
+				? 1
+				: 0
+	const index = start > 0 ? skipRunnerOptions(command, start) : start
+	if (index < 0) return -1
 	return ['vitest', 'vitest.mjs', 'vitest.js'].includes(
 		basename(command[index] ?? '').replace(/\.cmd$/u, ''),
 	)
@@ -155,55 +197,47 @@ function findRunner(command: readonly string[]): number {
 		: -1
 }
 
+// The first `--` ends the options, so the rest of the arguments pass verbatim. A runner option that
+// takes a value consumes the argument after it, so a step below `skip` reads nothing.
 function readSelection(
 	argv: readonly string[],
 	options: ReadonlyMap<string, Option>,
 ): readonly string[] {
-	const selected: string[] = []
-	for (let index = 0; index < argv.length; index++) {
-		const token = argv[index]
-		if (token === undefined) continue
-		if (token === '--') {
-			selected.push(...argv.slice(index))
-			break
-		}
-		if (!token.startsWith('-')) {
-			selected.push(token)
-			continue
-		}
-		const equals = token.indexOf('=')
-		const flag = equals < 0 ? token : token.slice(0, equals)
-		const positive = flag.replace(/^--no-/u, '--')
-		const option = options.get(positive) ?? options.get(positive.split('.').slice(0, 1).join('.'))
-		if (option === undefined || !OMITTED.has(option.name.split('.')[0] ?? '')) {
-			selected.push(token)
-			continue
-		}
-		const next = argv[index + 1]
-		if (
-			!flag.startsWith('--no-') &&
-			equals < 0 &&
-			next !== undefined &&
-			!next.startsWith('-') &&
-			(option.argument !== undefined || next === 'true' || next === 'false')
-		)
-			index++
-	}
-	return selected
+	return argv.reduce<Selection>(
+		(state, token, index) => {
+			if (state.closed || index < state.skip) return state
+			if (token === '--') {
+				return { ...state, selected: state.selected.concat(argv.slice(index)), closed: true }
+			}
+			if (!token.startsWith('-')) return { ...state, selected: [...state.selected, token] }
+			const equals = token.indexOf('=')
+			const flag = equals < 0 ? token : token.slice(0, equals)
+			const positive = flag.replace(/^--no-/u, '--')
+			const option = options.get(positive) ?? options.get(positive.split('.').slice(0, 1).join('.'))
+			if (option === undefined || !OMITTED.has(option.name.split('.')[0] ?? '')) {
+				return { ...state, selected: [...state.selected, token] }
+			}
+			const next = argv[index + 1]
+			const valued =
+				!flag.startsWith('--no-') &&
+				equals < 0 &&
+				next !== undefined &&
+				!next.startsWith('-') &&
+				(option.argument !== undefined || next === 'true' || next === 'false')
+			return { ...state, skip: index + (valued ? 2 : 1) }
+		},
+		{ selected: [], skip: 0, closed: false },
+	).selected
 }
 
 function readArguments(argv: readonly string[], names: readonly string[]): readonly string[] {
-	const values: string[] = []
-	for (let index = 0; index < argv.length; index++) {
-		const token = argv[index]
-		if (token === '--') break
-		if (token === undefined) continue
+	const end = argv.indexOf('--')
+	return (end < 0 ? argv : argv.slice(0, end)).flatMap((token, index) => {
 		const equals = token.indexOf('=')
-		if (!names.includes(equals < 0 ? token : token.slice(0, equals))) continue
+		if (!names.includes(equals < 0 ? token : token.slice(0, equals))) return []
 		const value = equals < 0 ? argv[index + 1] : token.slice(equals + 1)
-		if (value !== undefined && !value.startsWith('-')) values.push(value)
-	}
-	return values
+		return value !== undefined && !value.startsWith('-') ? [value] : []
+	})
 }
 
 function readScripts(): Readonly<Record<string, string>> {
@@ -211,37 +245,32 @@ function readScripts(): Readonly<Record<string, string>> {
 	if (typeof parsed !== 'object' || parsed === null) return {}
 	const scripts = Object.fromEntries(Object.entries(parsed)).scripts
 	if (typeof scripts !== 'object' || scripts === null) return {}
-	const record: Record<string, string> = {}
-	for (const [key, value] of Object.entries(scripts))
-		if (typeof value === 'string') record[key] = value
-	return record
+	return Object.fromEntries(
+		Object.entries(scripts).flatMap(([key, value]) =>
+			typeof value === 'string' ? [[key, value] as const] : [],
+		),
+	)
 }
 
 function readCommands(text: string): ReadonlyArray<readonly string[]> {
-	const commands: string[][] = []
-	let command: string[] = []
-	for (const match of text.matchAll(/(?:[^\s"';&|]+|"[^"]*"|'[^']*')+|[;&|]+/gu)) {
-		if (/^[;&|]+$/u.test(match[0])) {
-			commands.push(command)
-			command = []
-		} else {
-			command.push(match[0].replace(/["']/gu, ''))
-		}
-	}
-	commands.push(command)
-	return commands
+	const tokens = [...text.matchAll(/(?:[^\s"';&|]+|"[^"]*"|'[^']*')+|[;&|]+/gu)].map(
+		(match) => match[0],
+	)
+	// A separator token ends a command, so the commands are the runs of tokens between the cuts.
+	const cuts = tokens.flatMap((token, index) => (/^[;&|]+$/u.test(token) ? [index] : []))
+	return [-1, ...cuts].map((cut, at) =>
+		tokens.slice(cut + 1, cuts[at] ?? tokens.length).map((token) => token.replace(/["']/gu, '')),
+	)
 }
 
 function listInvocations(commands: ReadonlyArray<readonly string[]>): readonly Invocation[] {
-	const invoked: Invocation[] = []
-	for (const command of commands) {
+	return commands.flatMap((command) => {
 		const index = command.indexOf('npm')
 		const name = command[index + 2]
-		if (index < 0 || command[index + 1] !== 'run' || name === undefined) continue
+		if (index < 0 || command[index + 1] !== 'run' || name === undefined) return []
 		const separator = command.indexOf('--', index + 3)
-		invoked.push({ name, args: separator < 0 ? [] : command.slice(separator + 1), ancestors: [] })
-	}
-	return invoked
+		return [{ name, args: separator < 0 ? [] : command.slice(separator + 1), ancestors: [] }]
+	})
 }
 
 function readGates(
@@ -274,12 +303,9 @@ function readGates(
 			const expanded = script.map((command, index) =>
 				index === script.length - 1 ? [...command, ...args] : command,
 			)
-			pending.push(
-				...listInvocations(expanded).map((entry) => ({
-					...entry,
-					ancestors: [...ancestors, name],
-				})),
-			)
+			for (const entry of listInvocations(expanded)) {
+				pending.push({ ...entry, ancestors: [...ancestors, name] })
+			}
 			const gate = root === name ? name : `${root} > ${name}`
 			for (const command of expanded) {
 				const index = findRunner(command)
@@ -388,28 +414,30 @@ function listCollected(
 		}
 		const parsed: unknown = JSON.parse(readFileSync(listing, 'utf8'))
 		if (!Array.isArray(parsed)) return undefined
-		const collected: Collected[] = []
-		for (const entry of parsed) {
-			if (typeof entry !== 'object' || entry === null) continue
+		const collected = parsed.flatMap((entry): Collected[] => {
+			if (typeof entry !== 'object' || entry === null) return []
 			const record = Object.fromEntries(Object.entries(entry))
 			const location =
 				typeof record.location === 'object' && record.location !== null
 					? Object.fromEntries(Object.entries(record.location))
 					: {}
 			if (
-				typeof record.file === 'string' &&
-				(record.projectName === undefined || typeof record.projectName === 'string') &&
-				(!full || typeof record.name === 'string')
+				typeof record.file !== 'string' ||
+				(record.projectName !== undefined && typeof record.projectName !== 'string') ||
+				(full && typeof record.name !== 'string')
 			) {
-				collected.push({
+				return []
+			}
+			return [
+				{
 					file: relative(process.cwd(), record.file).split('\\').join('/'),
 					projectName: record.projectName ?? '',
 					name: typeof record.name === 'string' ? record.name : undefined,
 					line: typeof location.line === 'number' ? location.line : undefined,
 					column: typeof location.column === 'number' ? location.column : undefined,
-				})
-			}
-		}
+				},
+			]
+		})
 		cache.set(key, collected)
 		return collected
 	} catch (error) {
@@ -429,12 +457,11 @@ function listTestFiles(directory: string): readonly string[] {
 
 function countMarkers(file: string): Readonly<Record<string, number>> {
 	const text = readFileSync(file, 'utf8')
-	const counts: Record<string, number> = {}
-	for (const marker of MARKERS) {
-		const count = text.split(marker).length - 1
-		if (count > 0) counts[marker] = count
-	}
-	return counts
+	return Object.fromEntries(
+		MARKERS.map((marker) => [marker, text.split(marker).length - 1] as const).filter(
+			([, count]) => count > 0,
+		),
+	)
 }
 
 function collectListings(
@@ -442,93 +469,140 @@ function collectListings(
 	named: readonly string[],
 	gates: Gates,
 ): readonly Listing[] | undefined {
-	const units: Unit[] = [{ config, mode: undefined }]
-	for (const gate of gates.units) {
-		if (
-			!units.some(
-				(unit) =>
-					unit.config === gate.config &&
-					unit.mode === gate.mode &&
-					unit.root === gate.root &&
-					unit.dir === gate.dir,
+	const base: Unit = { config, mode: undefined }
+	// A gate joins the units unless the base unit or an earlier gate already names the same unit.
+	const units: readonly Unit[] = [
+		base,
+		...gates.units
+			.filter(
+				(gate, index) =>
+					![base, ...gates.units.slice(0, index)].some((unit) => isSameUnit(unit, gate)),
 			)
-		) {
-			units.push({
+			.map((gate) => ({
 				config: gate.config,
 				mode: gate.mode,
 				...(gate.root === undefined ? {} : { root: gate.root }),
 				...(gate.dir === undefined ? {} : { dir: gate.dir }),
-			})
-		}
-	}
-	const listings: Listing[] = []
-	const populated = new Set<string>()
+			})),
+	]
+	// A listing is a memo keyed by its arguments: each key is written once, on its first miss.
 	const cache = new Map<string, readonly Collected[]>()
-	for (const unit of units) {
-		const reached = gates.units.filter(
-			(gate) =>
-				gate.config === unit.config &&
-				gate.mode === unit.mode &&
-				gate.root === unit.root &&
-				gate.dir === unit.dir,
-		)
-		const parameters = readUnitArguments(unit)
-		const collected = listCollected(parameters, true, cache)
-		if (collected === undefined) return undefined
-		const scope =
-			named.length === 0
-				? undefined
-				: listCollected(
-						[...parameters, ...named.flatMap((name) => ['--project', name])],
-						false,
-						cache,
-					)
-		if (named.length > 0 && scope === undefined) return undefined
-		const selected: Array<{ readonly gate: Gate; readonly identities: ReadonlySet<string> }> = []
-		for (const gate of reached) {
-			const selection =
-				JSON.stringify(gate.args) === JSON.stringify(parameters)
-					? collected
-					: listCollected(gate.args, gate.full, cache)
-			if (selection === undefined) {
-				console.error(`discovery: gate ${gate.chain}: vitest list refused ${gate.args.join(' ')}`)
-				return undefined
-			}
-			selected.push({
-				gate,
-				identities: new Set(
-					selection.map((entry) =>
-						JSON.stringify([
-							entry.file,
-							entry.projectName,
-							...(gate.full ? [entry.name, entry.line, entry.column] : []),
-						]),
-					),
-				),
-			})
+	const readings = collectReadings(units, (unit) => readUnit(unit, named, gates, cache))
+	if (readings === undefined) return undefined
+	const listings = readings.map(({ listing }) => listing)
+	const populated = new Set(readings.flatMap((reading) => reading.populated))
+	// A project empty under one unit may still list tests under another, so each unit is asked for it.
+	const rescans = collectReadings(
+		[...new Set(listings.flatMap((listing) => listing.empty))]
+			.filter((name) => !populated.has(name))
+			.flatMap((name) => units.map((unit) => ({ name, unit }))),
+		({ name, unit }) => {
+			const selection = listCollected([...readUnitArguments(unit), '--project', name], false, cache)
+			return selection === undefined ? undefined : { name, listed: selection.length > 0 }
+		},
+	)
+	if (rescans === undefined) return undefined
+	const resolved = new Set([
+		...populated,
+		...rescans.filter(({ listed }) => listed).map(({ name }) => name),
+	])
+	return listings.map((listing) => ({
+		...listing,
+		empty: listing.empty.filter((name) => !resolved.has(name)),
+	}))
+}
+
+// Runs one read per item in order and stops at the first refusal, so no later read spawns.
+function collectReadings<Item, Reading>(
+	items: readonly Item[],
+	read: (item: Item) => Reading | undefined,
+): readonly Reading[] | undefined {
+	return items.reduce<readonly Reading[] | undefined>((readings, item) => {
+		if (readings === undefined) return undefined
+		const reading = read(item)
+		return reading === undefined ? undefined : [...readings, reading]
+	}, [])
+}
+
+function isSameUnit(left: Unit, right: Unit): boolean {
+	return (
+		left.config === right.config &&
+		left.mode === right.mode &&
+		left.root === right.root &&
+		left.dir === right.dir
+	)
+}
+
+function readUnit(
+	unit: Unit,
+	named: readonly string[],
+	gates: Gates,
+	cache: Map<string, readonly Collected[]>,
+): UnitReading | undefined {
+	const reached = gates.units.filter((gate) => isSameUnit(gate, unit))
+	const parameters = readUnitArguments(unit)
+	const collected = listCollected(parameters, true, cache)
+	if (collected === undefined) return undefined
+	const scope =
+		named.length === 0
+			? undefined
+			: listCollected(
+					[...parameters, ...named.flatMap((name) => ['--project', name])],
+					false,
+					cache,
+				)
+	if (named.length > 0 && scope === undefined) return undefined
+	const selected = collectReadings(reached, (gate) => {
+		const selection =
+			JSON.stringify(gate.args) === JSON.stringify(parameters)
+				? collected
+				: listCollected(gate.args, gate.full, cache)
+		if (selection === undefined) {
+			console.error(`discovery: gate ${gate.chain}: vitest list refused ${gate.args.join(' ')}`)
+			return undefined
 		}
-		const empty: string[] = []
-		for (const project of new Set([...reached.flatMap((gate) => gate.projects), ...named])) {
-			if (project.includes('*') || project.startsWith('!')) continue
+		return {
+			gate,
+			identities: new Set(
+				selection.map((entry) =>
+					JSON.stringify([
+						entry.file,
+						entry.projectName,
+						...(gate.full ? [entry.name, entry.line, entry.column] : []),
+					]),
+				),
+			),
+		}
+	})
+	if (selected === undefined) return undefined
+	const readings = collectReadings(
+		[...new Set([...reached.flatMap((gate) => gate.projects), ...named])].filter(
+			(project) => !project.includes('*') && !project.startsWith('!'),
+		),
+		(project): ProjectReading | undefined => {
 			if (
 				selected.some(
 					({ gate, identities }) =>
 						gate.projects.length === 1 && gate.projects[0] === project && identities.size > 0,
 				)
 			) {
-				populated.add(project)
-				continue
+				return { project, populated: true, empty: false }
 			}
 			const selection = listCollected([...parameters, '--project', project], false, cache)
 			if (selection === undefined) return undefined
-			if (selection.length > 0) populated.add(project)
-			else if (
-				(reached.some((gate) => gate.projects.includes(project)) || named.includes(project)) &&
-				(named.length === 0 || named.includes(project))
-			)
-				empty.push(project)
-		}
-		listings.push({
+			return {
+				project,
+				populated: selection.length > 0,
+				empty:
+					selection.length === 0 &&
+					(reached.some((gate) => gate.projects.includes(project)) || named.includes(project)) &&
+					(named.length === 0 || named.includes(project)),
+			}
+		},
+	)
+	if (readings === undefined) return undefined
+	return {
+		listing: {
 			...unit,
 			collected: collected
 				.filter(
@@ -550,22 +624,10 @@ function collectListings(
 						),
 					)?.gate.chain,
 				})),
-			empty,
-		})
+			empty: readings.filter(({ empty }) => empty).map(({ project }) => project),
+		},
+		populated: readings.filter(({ populated }) => populated).map(({ project }) => project),
 	}
-	const candidates = new Set(listings.flatMap((listing) => listing.empty))
-	for (const name of candidates) {
-		if (populated.has(name)) continue
-		for (const unit of units) {
-			const selection = listCollected([...readUnitArguments(unit), '--project', name], false, cache)
-			if (selection === undefined) return undefined
-			if (selection.length > 0) populated.add(name)
-		}
-	}
-	return listings.map((listing) => ({
-		...listing,
-		empty: listing.empty.filter((name) => !populated.has(name)),
-	}))
 }
 
 function readUnitArguments(unit: Unit): readonly string[] {
@@ -577,25 +639,35 @@ function readUnitArguments(unit: Unit): readonly string[] {
 	]
 }
 
+function identifyCollected(entry: Collected): string {
+	return JSON.stringify([entry.file, entry.projectName, entry.name, entry.line, entry.column])
+}
+
+// The same test listed twice in one listing is two occurrences, and the same occurrence listed by
+// two listings is one test: the last listing's fields win, and the gate is the last one any named.
 function mergeCollected(listings: readonly Listing[]): readonly Collected[] {
-	const collected = new Map<string, Collected>()
-	for (const listing of listings) {
-		const occurrences = new Map<string, number>()
-		for (const entry of listing.collected) {
-			const identity = JSON.stringify([
-				entry.file,
-				entry.projectName,
-				entry.name,
-				entry.line,
-				entry.column,
-			])
-			const occurrence = (occurrences.get(identity) ?? 0) + 1
-			occurrences.set(identity, occurrence)
-			const key = JSON.stringify([identity, occurrence])
-			collected.set(key, { ...entry, gate: entry.gate ?? collected.get(key)?.gate })
-		}
-	}
-	return [...collected.values()]
+	const keyed = listings.flatMap((listing) => {
+		const positions = new Map(
+			[...Map.groupBy(listing.collected, identifyCollected).values()].flatMap((group) =>
+				group.map((entry, position) => [entry, position + 1] as const),
+			),
+		)
+		return listing.collected.map((entry) => ({
+			entry,
+			key: JSON.stringify([identifyCollected(entry), positions.get(entry)]),
+		}))
+	})
+	return [...Map.groupBy(keyed, ({ key }) => key).values()].flatMap((group) => {
+		const last = group.at(-1)
+		return last === undefined
+			? []
+			: [
+					{
+						...last.entry,
+						gate: group.findLast(({ entry }) => entry.gate !== undefined)?.entry.gate,
+					},
+				]
+	})
 }
 
 function readSnapshot(gates: Gates): string {
@@ -606,14 +678,30 @@ function readSnapshot(gates: Gates): string {
 		),
 	]
 	const roots = new Set(bases.flatMap((base) => [base, join(base, 'tmp/probes')]))
-	const files = new Map<string, number>()
-	for (const root of roots) {
-		if (!existsSync(root)) continue
-		for (const file of listFiles(root)) {
-			if (/\.test\.[cm]?[jt]sx?$/u.test(file.path)) files.set(file.path, file.modified)
-		}
-	}
+	// A later listing of the same path replaces the earlier modification time at the earlier position.
+	const files = new Map(
+		[...roots].flatMap((root) =>
+			existsSync(root)
+				? listFiles(root)
+						.filter((file) => /\.test\.[cm]?[jt]sx?$/u.test(file.path))
+						.map((file) => [file.path, file.modified] as const)
+				: [],
+		),
+	)
 	return JSON.stringify([...files].sort(([left], [right]) => left.localeCompare(right)))
+}
+
+function collectStableListings(
+	config: string,
+	named: readonly string[],
+	gates: Gates,
+	attempt = 0,
+): readonly Listing[] | undefined {
+	const before = readSnapshot(gates)
+	const listings = collectListings(config, named, gates)
+	if (before === readSnapshot(gates)) return listings
+	if (attempt === 1) throw new Error('Test files changed during both census attempts')
+	return collectStableListings(config, named, gates, attempt + 1)
 }
 
 function main(argv: readonly string[]): number {
@@ -634,14 +722,7 @@ function main(argv: readonly string[]): number {
 	const canonical = relative(process.cwd(), resolve(config)).split('\\').join('/')
 	const gates = readGates(readScripts(), canonical, readCLIOptions())
 	const named = (readOption(argv, '--projects') ?? '').split(',').filter((name) => name !== '')
-	let listings: readonly Listing[] | undefined
-	for (let attempt = 0; attempt < 2; attempt++) {
-		const before = readSnapshot(gates)
-		listings = collectListings(canonical, named, gates)
-		if (before === readSnapshot(gates)) break
-		listings = undefined
-		if (attempt === 1) throw new Error('Test files changed during both census attempts')
-	}
+	const listings = collectStableListings(canonical, named, gates)
 	if (listings === undefined) {
 		console.error('discovery: vitest list failed')
 		return 2

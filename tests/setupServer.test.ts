@@ -1,12 +1,14 @@
-import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, readFileSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { chmodSync, existsSync, readFileSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { basename, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
-import { createTeardown, requireValue } from '@orkestrel/test'
+import { captureError, createTeardown, requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import {
+	CONFIG_TEMPLATES,
 	DISTRIBUTION_TEST_PATH,
 	extractVersion,
 	MINIMUM_NPM_VERSION,
@@ -15,13 +17,26 @@ import {
 } from '@src/core'
 import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
 import { computeDigest, pathToStorage, readHostFloor } from '@src/server'
-import { buildSnapshot } from './setup.js'
+import packageManifest from '../package.json' with { type: 'json' }
+import { buildBlueprint, buildSnapshot, ENTRY_FILES, PLANNED_SETUP_SEED } from './setup.js'
 import {
+	ALIGNED_MANIFEST_TEXT,
 	AUDIT_EXIT_CASES,
+	AUDIT_REGISTRY,
+	AUDIT_REPLIES,
+	BENCH_SCRIPT,
+	BRIEF_SCRIPT,
+	buildAlignedManifest,
 	buildBoundaryCases,
+	buildBrowsersRoot,
 	buildCheckoutManifest,
 	buildCLIOptions,
 	buildCompiledPlan,
+	buildDistributionClassification,
+	buildDistributionClassifier,
+	buildDistributionProof,
+	buildEntryWorkspace,
+	buildEnvironment,
 	buildFleetManifest,
 	buildHostManifest,
 	buildInstalledHostReplies,
@@ -29,10 +44,6 @@ import {
 	buildManifestEntry,
 	buildMaterializerOptions,
 	buildOptionArgv,
-	runSkillScript,
-	spawnSkillScript,
-	spawnNpm,
-	buildEnvironment,
 	buildOrganization,
 	buildPackument,
 	buildReleaseScenarios,
@@ -44,15 +55,32 @@ import {
 	buildVendoredManifest,
 	buildVendoredPlan,
 	buildVendoredSnapshot,
+	buildWhoamiEnvironment,
 	buildWorktree,
+	captureScaffoldCode,
+	captureScaffoldMessage,
+	captureScaffoldRejection,
 	CASE_FOLDING,
 	CATALOG_AGENT_ROWS_TEXT,
 	CATALOG_AGENT_TEXT,
 	CHECKOUT_GUIDE_PATHS,
+	checkTypes,
+	CITE_SCRIPT,
+	CLAIM_ABSENT,
+	CLAIM_DRIVER,
+	CLAIM_ELISION,
+	CLAIM_EXAMPLE,
+	CLAIM_KEYWORDS,
+	CLAIM_LINE,
+	CLAIM_OPENER,
+	CLAIM_PREFIX,
+	collectRuntimeClosure,
 	COMMAND_CASES,
 	commitFiles,
+	COMPARE_SCRIPT,
 	CORE_GENERATED,
 	CORE_GENERATED_COUNT,
+	countClaims,
 	createCatalogFleet,
 	createCheckout,
 	createDistributionScratch,
@@ -63,51 +91,90 @@ import {
 	createSink,
 	createStagedHost,
 	createUpstreamServer,
+	createWhoamiRegistry,
+	DECLARATION_CASES,
 	DIGEST_CASES,
+	DISCOVERY_SCRIPT,
+	driveModule,
+	ensureTmpRoot,
 	executeOllamaHook,
 	executeOllamaSetup,
+	extractDeclarations,
 	FILESYSTEM_PATH_CASES,
+	findRefusals,
 	FLEET_ARTIFACT_COUNT,
 	FLEET_BIRTH_COUNT,
 	FLEET_BIRTH_PATHS,
+	FLEET_MIRROR_REPLIES,
+	FLEET_RELEASE_REPLIES,
 	FLEET_UPSTREAM_PATHS,
 	GIT_PATH_CASES,
 	HOST_DIRECTORY_PATHS,
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
+	LAUNCH_SCRIPT,
+	linkPackage,
 	listExecutablePaths,
+	locateClaimOpening,
+	locatePackage,
+	LOGIN_SCRIPT,
+	MAP_SCRIPT,
+	matchesBalance,
 	normalizeBashPath,
+	NPM_REGISTRY,
 	OLLAMA_TOOLS,
 	omitDependencies,
+	parseClaimVerdict,
+	parseOllamaOrigin,
+	parseVitestReport,
+	PINS_SCRIPT,
 	PROTECTED_PATH_CASES,
 	provisionNpm,
-	captureScaffoldCode,
-	captureScaffoldMessage,
+	readCheckoutManifest,
+	readCheckoutName,
+	readCheckoutRanges,
+	readInstalledRecord,
 	readManifestVersion,
 	readNpmFloor,
 	readNpmVersion,
-	parseVitestReport,
-	captureScaffoldRejection,
 	readSpecifiers,
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
+	RELEASE_MODE,
 	renderLauncher,
-	resolveOllamaShell,
 	resolveNpmEntry,
+	resolveOllamaShell,
 	resolveTool,
+	RESULT_SCRIPT,
+	RESULT_STREAM,
+	runEntry,
+	runSkillScript,
 	SCRATCH_PREFIX,
+	selectSeededNames,
 	SENSITIVE_PATH_CASES,
 	SKILL_CANON_FILES,
+	spawnNpm,
+	spawnSkillScript,
 	STAGED_PATHS,
+	stageResolver,
+	stageRootConfig,
 	STORAGE_PATH_CASES,
 	supportsMappedLoopback,
+	SWEEP_HOURS_AGO,
+	SWEEP_MINUTES_AGO,
+	SWEEP_SCRIPT,
 	TARGET_DEV_DEPENDENCIES,
 	TARGET_MANIFEST_TEXT,
+	TestAuditRegistry,
+	TestRegistry,
 	trackFiles,
 	UPSTREAM_ENDPOINT_CASES,
 	UPSTREAM_PATHS,
 	USAGE_CASES,
 	VENDORED_FILES,
+	WAVE_SCRIPT,
+	WAVE_STEPS,
+	WINDOW_SCRIPT,
 	WORKSPACE_ROOT,
 } from './setupServer.js'
 
@@ -1721,20 +1788,19 @@ describe('the mapped loopback reading', () => {
 			// refused the address family. A request that failed for any other reason — a
 			// port nothing listens on, a fixture that never bound — carries a different
 			// code and disagrees with that claim, where a boolean agrees with it.
-			let delivered = false
-			let refusal: string | undefined
-			try {
-				delivered = (await fetch(`http://[::ffff:127.0.0.1]:${loopback.port}/`)).ok
-			} catch (error) {
-				// The client wraps the host's refusal, so the code sits on the cause rather
-				// than on the rejection the call raised.
-				const cause: unknown = error instanceof Error ? error.cause : undefined
-				const code: unknown = isObject(cause)
-					? Object.getOwnPropertyDescriptor(cause, 'code')?.value
-					: undefined
-				refusal = isString(code) ? code : undefined
-			}
-			expect({ delivered, refusal }).toStrictEqual(
+			const outcome = await fetch(`http://[::ffff:127.0.0.1]:${loopback.port}/`).then(
+				(response) => ({ delivered: response.ok, refusal: undefined }),
+				(error: unknown) => {
+					// The client wraps the host's refusal, so the code sits on the cause rather
+					// than on the rejection the call raised.
+					const cause: unknown = error instanceof Error ? error.cause : undefined
+					const code: unknown = isObject(cause)
+						? Object.getOwnPropertyDescriptor(cause, 'code')?.value
+						: undefined
+					return { delivered: false, refusal: isString(code) ? code : undefined }
+				},
+			)
+			expect(outcome).toStrictEqual(
 				reachable
 					? { delivered: true, refusal: undefined }
 					: { delivered: false, refusal: 'EAFNOSUPPORT' },
@@ -1822,6 +1888,513 @@ describe('the skill script runner', () => {
 			expect(brief.status).toBe(0)
 			expect(isObject(brief.json) && isString(brief.json.brief)).toBe(true)
 		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the endpoint reader', () => {
+	it('parses an HTTP origin and refuses every endpoint carrying more than an origin', () => {
+		expect(parseOllamaOrigin('127.0.0.1:11434')?.origin).toBe('http://127.0.0.1:11434')
+		expect(parseOllamaOrigin('https://example.test')?.protocol).toBe('https:')
+		expect(parseOllamaOrigin('http://[::1]:1')?.hostname).toBe('[::1]')
+		const accepted = [
+			'',
+			'http://user:secret@host',
+			'http://host/path',
+			'http://host/?query=1',
+			'http://host/#fragment',
+			'ftp://host',
+			'http://',
+		].filter((endpoint) => parseOllamaOrigin(endpoint) !== undefined)
+		expect(accepted).toStrictEqual([])
+	})
+})
+
+describe('the host probes', () => {
+	it('reads the registry once, whichever way the host answers, and shares the reading', () => {
+		const first = new TestRegistry()
+		expect(typeof first.reachable).toBe('boolean')
+		expect(first.reachable).toBe(first.reachable)
+		expect(Object.isFrozen(NPM_REGISTRY)).toBe(true)
+		expect(NPM_REGISTRY.reachable).toBe(first.reachable)
+		expect(RELEASE_MODE).toBe(import.meta.env.MODE === 'release')
+	})
+})
+
+describe('the example claim instrument', () => {
+	it('lists each shipped declaration once, each with controls that hold exactly one claim', () => {
+		expect(new Set(DECLARATION_CASES.map(({ types }) => types)).size).toBe(DECLARATION_CASES.length)
+		for (const declaration of DECLARATION_CASES) {
+			expect(declaration.types).toMatch(/^dist\/src\/\w+\/index\.d\.ts$/u)
+			expect(declaration.module).toBe(declaration.types.replace('.d.ts', '.js'))
+			expect(declaration.controls.length).toBeGreaterThan(0)
+			expect(countClaims(declaration.controls)).toBe(declaration.controls.length)
+		}
+		expect(Object.isFrozen(DECLARATION_CASES)).toBe(true)
+	})
+
+	it('reads a fenced example, its comment prefix, and a claim line', () => {
+		const printed = [' * Example', ' * ```ts', ' * isBranch(1) // false', ' * ```', ' *'].map(
+			(line) => line.replace(CLAIM_PREFIX, ''),
+		)
+		const bodies = [...printed.join('\n').matchAll(CLAIM_EXAMPLE)].map(
+			(match) => match.groups?.body,
+		)
+		expect(bodies).toStrictEqual(['isBranch(1) // false\n'])
+		expect(CLAIM_LINE.exec('isBranch(1) // false')?.groups).toMatchObject({
+			expression: 'isBranch(1)',
+			verdict: 'false',
+		})
+		expect(CLAIM_LINE.test('no verdict here')).toBe(false)
+		expect(CLAIM_OPENER.test('isBranch(1)')).toBe(true)
+		expect(CLAIM_OPENER.test('1 + 1')).toBe(false)
+		expect(CLAIM_KEYWORDS).toContain('const')
+		expect(Object.isFrozen(CLAIM_KEYWORDS)).toBe(true)
+		expect(CLAIM_ELISION).toBe('…')
+	})
+
+	it('counts the claim-shaped lines across example bodies', () => {
+		expect(countClaims(['a() // 1\nplain\nb() // 2', 'none', 'c() // 3'])).toBe(3)
+		expect(countClaims([])).toBe(0)
+	})
+
+	it('parses a literal verdict to its canonical encoding and refuses prose', () => {
+		expect(parseClaimVerdict('true')).toBe('true')
+		expect(parseClaimVerdict('-1.5')).toBe('-1.5')
+		expect(parseClaimVerdict("'text'")).toBe('"text"')
+		expect(parseClaimVerdict("['a', 1]")).toBe('["a",1]')
+		expect(parseClaimVerdict('undefined')).toBe(CLAIM_ABSENT)
+		expect(parseClaimVerdict('the digest of the empty membership')).toBe(undefined)
+		expect(parseClaimVerdict('{ path: 1 }')).toBe(undefined)
+	})
+
+	it('balances brackets and quotes and refuses every fragment that does not close', () => {
+		const closed = ['(a)', '[{()}]', "'(' + (b)", "'it\\'s'", '`${a}`', '']
+		const open = ['(a', 'a)', ')(', "'a(", '[{)}]', '{']
+		expect(closed.filter((text) => !matchesBalance(text))).toStrictEqual([])
+		expect(open.filter((text) => matchesBalance(text))).toStrictEqual([])
+	})
+
+	it('locates the first line of the statement a claim sits on, and refuses a statement', () => {
+		expect(locateClaimOpening(['foo(', '  1,', ') // 3'], 2, ')')).toBe(0)
+		expect(locateClaimOpening(['first()', 'second() // 4'], 1, 'second()')).toBe(1)
+		expect(locateClaimOpening(['if (a) b // 5'], 0, 'if (a) b')).toBe(undefined)
+		expect(locateClaimOpening(['1 + 1 // 2'], 0, '1 + 1')).toBe(undefined)
+		expect(locateClaimOpening([') // 6'], 0, ')')).toBe(undefined)
+	})
+
+	it('answers each claim of a block in a child, and names the claims a block refused or threw past', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			scratch.write('answers.mjs', 'export const answer = 42\n')
+			const driven = spawnSync(process.execPath, ['--input-type=module', '--eval', CLAIM_DRIVER], {
+				encoding: 'utf8',
+				input: JSON.stringify({
+					module: pathToFileURL(join(scratch.path, 'answers.mjs')).href,
+					blocks: [
+						{ source: 'record(0, (answer))\nrecord(1, (undefined))', claims: [0, 1] },
+						{ source: 'record(2, (', claims: [2] },
+						{
+							source: "record(3, (answer))\nthrow new Error('stop')\nrecord(4, (answer))",
+							claims: [3, 4],
+						},
+					],
+				}),
+				timeout: 30_000,
+				windowsHide: true,
+			})
+			expect(driven.status).toBe(0)
+			expect(driven.stderr).toBe('')
+			const outcomes: unknown = JSON.parse(driven.stdout)
+			expect(outcomes).toMatchObject({
+				0: { driven: true, encoded: '42' },
+				1: { driven: true, encoded: CLAIM_ABSENT },
+				2: { driven: false },
+				3: { driven: true, encoded: '42' },
+				4: { driven: false },
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the entry workspace runner', () => {
+	it('links an installed package into a scratch workspace without installing it', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			linkPackage(scratch, '@orkestrel/contract')
+			expect(scratch.has('node_modules/@orkestrel/contract/package.json')).toBe(true)
+			expect(
+				JSON.parse(requireValue(scratch.read('node_modules/@orkestrel/contract/package.json'))),
+			).toMatchObject({ name: '@orkestrel/contract' })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('writes the entry, its configuration, its project, and the linked packages', () => {
+		const scratch = buildEntryWorkspace(ENTRY_FILES)
+		try {
+			for (const path of Object.keys(ENTRY_FILES)) {
+				expect(scratch.read(path)).toBe(ENTRY_FILES[path])
+			}
+			expect(scratch.read('tests/guides.test.ts')).toBe(
+				readFileSync(join(WORKSPACE_ROOT, 'tests/guides.test.ts'), 'utf8'),
+			)
+			expect(scratch.has('vite.config.ts')).toBe(true)
+			expect(scratch.has('tests/fixture.test.ts')).toBe(true)
+			const linked = [
+				'@orkestrel/contract',
+				'@orkestrel/guide',
+				'@orkestrel/test',
+				'vite',
+				'vitest',
+			]
+			expect(
+				linked.filter((name) => !scratch.has(`node_modules/${name}/package.json`)),
+			).toStrictEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports the exit and the error stream of a run whose script is missing', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			scratch.write('package.json', '{"name":"entry-runner-control"}\n')
+			const run = runEntry(scratch, ['--check'])
+			expect(run.status).not.toBe(0)
+			expect(run.lines).toStrictEqual([])
+			expect(run.stderr).toContain('test:guides')
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the emitted-template staging', () => {
+	it('creates the persistent scratch parent in the checkout', () => {
+		const directory = ensureTmpRoot()
+		expect(directory).toBe(join(WORKSPACE_ROOT, 'tmp').replace(/[\\/]$/u, ''))
+		expect(existsSync(directory)).toBe(true)
+	})
+
+	it('stages the emitted root configuration, the vendored helpers, and the plugin declarations', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			stageRootConfig(buildBlueprint({ app: ['browser'] }), scratch, 'selected')
+			const staged = ['vite.config.ts', 'tsconfig.json', 'package.json', 'plugins.d.ts']
+			expect(staged.filter((path) => !scratch.has(`selected/${path}`))).toStrictEqual([])
+			expect(scratch.read('selected/configs/helpers.ts')).toBe(
+				readFileSync(join(WORKSPACE_ROOT, 'configs/helpers.ts'), 'utf8'),
+			)
+			expect(scratch.has('selected/configs/browsers.ts')).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads a clean typecheck as empty text and a failing one as its diagnostics', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			scratch.write(
+				'clean/tsconfig.json',
+				'{"compilerOptions":{"strict":true,"noEmit":true},"files":["a.ts"]}',
+			)
+			scratch.write('clean/a.ts', 'export const a: number = 1\n')
+			scratch.write(
+				'broken/tsconfig.json',
+				'{"compilerOptions":{"strict":true,"noEmit":true},"files":["a.ts"]}',
+			)
+			scratch.write('broken/a.ts', "export const a: number = 'one'\n")
+			expect(checkTypes(join(scratch.path, 'clean'))).toBe('')
+			expect(checkTypes(join(scratch.path, 'broken'))).toContain('error TS2322')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('writes the emitted browser resolver and loads it in a real process', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const file = stageResolver(scratch)
+			expect(file).toBe(join(scratch.path, 'browsers.ts'))
+			expect(scratch.read('browsers.ts')).toBe(CONFIG_TEMPLATES.browsers)
+			scratch.write(
+				'answers.ts',
+				'export function answer(value: number): number {\n\treturn value * 2\n}\n',
+			)
+			expect(
+				driveModule(join(scratch.path, 'answers.ts'), 'answers', [
+					'answers.answer(2)',
+					'answers.answer(21)',
+				]),
+			).toStrictEqual([4, 42])
+			expect(() => driveModule(join(scratch.path, 'answers.ts'), 'answers', ['missing()'])).toThrow(
+				'Command failed',
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('builds a browsers directory of real executable files', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const root = buildBrowsersRoot(scratch, ['chromium-1/chrome', 'chromium-2/chrome'])
+			expect(root).toBe(join(scratch.path, 'browsers'))
+			expect(scratch.names('browsers')).toStrictEqual(['chromium-1', 'chromium-2'])
+			const executable = statSync(join(root, 'chromium-1', 'chrome')).mode & 0o111
+			expect(supportsMode() ? executable !== 0 : true).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lifts the named declarations of a module, in source order, and refuses a name it lacks', () => {
+		const source =
+			"import { x } from 'node:fs'\nconst A = 1\nconst B = 2\nfunction f(): number {\n\treturn A\n}\n"
+		const lifted = extractDeclarations(source, ['f', 'A'])
+		expect(lifted).toContain("import { x } from 'node:fs'")
+		expect(lifted.indexOf('const A = 1')).toBeLessThan(lifted.indexOf('function f()'))
+		expect(lifted).not.toContain('const B')
+		expect(lifted).toContain('export { f, A }')
+		expect(() => extractDeclarations(source, ['A', 'absent'])).toThrow('declares no absent')
+	})
+
+	it('lifts the emitted distribution proof into a classifier module and a classification entry', () => {
+		const proof = buildDistributionProof()
+		expect(proof).toContain('buildStage')
+		const classifier = buildDistributionClassifier()
+		expect(classifier).toContain('function resolveTarget')
+		expect(classifier).toContain('export { ')
+		const classification = buildDistributionClassification()
+		expect(classification).toContain(classifier.slice(0, classifier.indexOf('\n')))
+		expect(classification).toContain('export function classifyStage(')
+		expect(classification).toContain('return { entries, targets, subpaths, undeclared, excluded }')
+	})
+
+	it('finds a project row whose parameters differ from the signature the sweep demands', () => {
+		const content = [
+			'export function good(override?: UserConfig): UserConfig {',
+			'\treturn {}',
+			'}',
+			'export function bad(extra: string): UserConfig {',
+			'\treturn {}',
+			'}',
+			'export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {',
+			'\treturn base',
+			'}',
+			'export function resolveWorkspacePath(path: string): string {',
+			'\treturn path',
+			'}',
+		].join('\n')
+		expect(findRefusals(content)).toStrictEqual(['bad(extra: string)'])
+		expect(
+			findRefusals('export function policy(override?: UserConfig): UserConfig {\n\treturn {}\n}\n'),
+		).toStrictEqual([])
+		expect(PLANNED_SETUP_SEED).toBe('')
+	})
+})
+
+describe('the command fixtures served from a registry', () => {
+	it('serves a packument for each fleet package and a guide for each fleet mirror', () => {
+		for (const reply of Object.values(FLEET_RELEASE_REPLIES)) {
+			expect(reply.status).toBe(200)
+			expect(JSON.parse(String(reply.body))).toHaveProperty('dist-tags.latest')
+		}
+		for (const reply of Object.values(FLEET_MIRROR_REPLIES)) {
+			expect(reply).toMatchObject({ status: 200, type: 'text/plain' })
+			expect(String(reply.body)).toMatch(/^# \w+\n$/u)
+		}
+		expect(Object.isFrozen(FLEET_RELEASE_REPLIES)).toBe(true)
+		expect(Object.isFrozen(FLEET_MIRROR_REPLIES)).toBe(true)
+		expect(Object.keys(FLEET_RELEASE_REPLIES)).toContain('/vite')
+	})
+
+	it('aligns the target manifest to the registry and keeps every other section the base builds', () => {
+		const aligned: unknown = JSON.parse(buildAlignedManifest())
+		expect(aligned).toMatchObject({
+			dependencies: { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.4' },
+			devDependencies: { '@orkestrel/guide': '^0.0.9' },
+			scripts: expect.any(Object),
+		})
+		expect(ALIGNED_MANIFEST_TEXT).toContain('"vite": "~8.3.4"')
+		expect(ALIGNED_MANIFEST_TEXT).not.toContain('~8.2.0')
+		expect(buildAlignedManifest(undefined, { custom: '1.0.0' })).toContain('"custom": "1.0.0"')
+		expect(buildAlignedManifest(undefined, undefined, 'not a record')).toContain(
+			'"devDependencies": "not a record"',
+		)
+	})
+
+	it('serves the audit replies only while the shared fixture is started', async () => {
+		expect(Object.isFrozen(AUDIT_REPLIES)).toBe(true)
+		expect(Object.isFrozen(AUDIT_REGISTRY)).toBe(true)
+		const registry = new TestAuditRegistry()
+		expect(captureError(() => registry.options)).toBeInstanceOf(Error)
+		await registry.start()
+		try {
+			const { upstream } = registry.options
+			const base = requireValue(upstream?.registry?.base)
+			expect(upstream?.repository?.base).toBe(base)
+			expect((await fetch(`${base}/vite`)).status).toBe(200)
+			await registry.start()
+			expect(registry.options.upstream?.registry?.base).toBe(base)
+		} finally {
+			await registry.stop()
+		}
+		expect(captureError(() => registry.options)).toBeInstanceOf(Error)
+		await registry.stop()
+	})
+})
+
+describe('the checkout readers', () => {
+	it('reads the manifest from disk and agrees with the compile-time import', () => {
+		expect(readCheckoutManifest().name).toBe(packageManifest.name)
+		expect(readCheckoutName()).toBe(packageManifest.name)
+		const ranges = readCheckoutRanges()
+		expect(ranges.vitest).toBe(packageManifest.devDependencies.vitest)
+		for (const [name, range] of Object.entries(packageManifest.dependencies ?? {})) {
+			expect([name, ranges[name]]).toStrictEqual([name, range])
+		}
+	})
+
+	it('selects the table rows the manifest does not declare, sorted, and never the package itself', () => {
+		const seeded = selectSeededNames()
+		const declared = readCheckoutRanges()
+		expect(seeded.toSorted()).toStrictEqual([...seeded])
+		expect(seeded.every((name) => declared[name] === undefined)).toBe(true)
+		expect(seeded).not.toContain(readCheckoutName())
+	})
+
+	it('locates the nearest installed copy and refuses a package nothing installs', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			scratch.write('node_modules/shared/package.json', '{"name":"shared","version":"1.0.0"}')
+			scratch.write('a/node_modules/shared/package.json', '{"name":"shared","version":"2.0.0"}')
+			scratch.ensure('a/b')
+			expect(locatePackage(join(scratch.path, 'a', 'b'), 'shared')).toBe(
+				join(scratch.path, 'a', 'node_modules', 'shared'),
+			)
+			expect(locatePackage(scratch.path, 'shared')).toBe(
+				join(scratch.path, 'node_modules', 'shared'),
+			)
+			expect(() => locatePackage(scratch.path, 'absent-package')).toThrow(
+				'No installed package resolves absent-package',
+			)
+			expect(readInstalledRecord(join(scratch.path, 'a', 'node_modules', 'shared'))).toMatchObject({
+				version: '2.0.0',
+			})
+			scratch.write('broken/package.json', '[]')
+			expect(() => readInstalledRecord(join(scratch.path, 'broken'))).toThrow('is not a record')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('collects the fleet packages an installed package reaches through runtime and peer edges', () => {
+		const closure = collectRuntimeClosure('@orkestrel/browser')
+		expect(closure.toSorted()).toStrictEqual([...closure])
+		expect(new Set(closure).size).toBe(closure.length)
+		expect(closure.every((name) => name.startsWith('@orkestrel/'))).toBe(true)
+		const direct = readInstalledRecord(locatePackage(WORKSPACE_ROOT, '@orkestrel/browser'))
+		for (const section of [direct.dependencies, direct.peerDependencies]) {
+			for (const name of Object.keys(section ?? {}).filter((key) =>
+				key.startsWith('@orkestrel/'),
+			)) {
+				expect(closure.includes(name)).toBe(true)
+			}
+		}
+	})
+})
+
+describe('the skill script fixtures', () => {
+	it('names an existing script of the checkout, with a mirrored proof, for each skill script', () => {
+		const paths = [
+			BENCH_SCRIPT,
+			BRIEF_SCRIPT,
+			CITE_SCRIPT,
+			COMPARE_SCRIPT,
+			DISCOVERY_SCRIPT,
+			LAUNCH_SCRIPT,
+			LOGIN_SCRIPT,
+			MAP_SCRIPT,
+			PINS_SCRIPT,
+			RESULT_SCRIPT,
+			SWEEP_SCRIPT,
+			WAVE_SCRIPT,
+			WINDOW_SCRIPT,
+		]
+		expect(new Set(paths).size).toBe(paths.length)
+		for (const path of paths) {
+			expect(path).toMatch(/^\.agents\/skills\/orkestrel-[a-z]+\/scripts\/[a-z]+\.ts$/u)
+			expect([path, existsSync(join(WORKSPACE_ROOT, path))]).toStrictEqual([path, true])
+			const proof = path.replace(/^\.agents\//u, 'tests/agents/').replace(/\.ts$/u, '.test.ts')
+			expect([proof, existsSync(join(WORKSPACE_ROOT, proof))]).toStrictEqual([proof, true])
+		}
+	})
+
+	it('lists the wave steps once each and reads the result stream as an init and a result event', () => {
+		expect(Object.isFrozen(WAVE_STEPS)).toBe(true)
+		expect(new Set(WAVE_STEPS).size).toBe(WAVE_STEPS.length)
+		const events = RESULT_STREAM.trimEnd()
+			.split('\n')
+			.map((line): unknown => JSON.parse(line))
+		expect(events).toMatchObject([
+			{ type: 'system', subtype: 'init', session_id: 's1' },
+			{ type: 'result', result: 'READY' },
+		])
+		expect(SWEEP_HOURS_AGO).toBeGreaterThan(SWEEP_MINUTES_AGO)
+		expect(SWEEP_MINUTES_AGO).toBeGreaterThan(0)
+	})
+})
+
+describe('the whoami registry', () => {
+	it('answers whoami with the user it was given, refuses uploads, and records every request', async () => {
+		const registry = await createWhoamiRegistry('fixture')
+		try {
+			const whoami = await fetch(`${registry.url}-/whoami`)
+			expect(whoami.status).toBe(200)
+			expect(await whoami.json()).toStrictEqual({ username: 'fixture' })
+			expect((await fetch(`${registry.url}some-package`)).status).toBe(404)
+			expect(
+				(await fetch(`${registry.url}some-package`, { method: 'PUT', body: '{}' })).status,
+			).toBe(401)
+			expect(registry.requests).toStrictEqual([
+				'GET /-/whoami',
+				'GET /some-package',
+				'PUT /some-package',
+			])
+			expect(registry.port).toBe(Number(new URL(registry.url).port))
+		} finally {
+			await registry.destroy()
+		}
+		await expect(fetch(registry.url)).rejects.toThrow('fetch failed')
+	})
+
+	it('refuses whoami when it was given no user', async () => {
+		const registry = await createWhoamiRegistry(undefined)
+		try {
+			expect((await fetch(`${registry.url}-/whoami`)).status).toBe(401)
+		} finally {
+			await registry.destroy()
+		}
+	})
+
+	it('builds the environment that routes npm to the fixture with a scratch token', async () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		const registry = await createWhoamiRegistry('fixture')
+		try {
+			const environment = buildWhoamiEnvironment(scratch.path, registry)
+			expect(environment.npm_config_registry).toBe(registry.url)
+			expect(environment.npm_config_cache).toBe(join(scratch.path, 'npm-cache'))
+			expect(readFileSync(requireValue(environment.npm_config_userconfig), 'utf8')).toContain(
+				`//127.0.0.1:${String(registry.port)}/:_authToken=fixture-token`,
+			)
+		} finally {
+			await registry.destroy()
 			scratch.destroy()
 		}
 	})

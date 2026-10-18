@@ -377,21 +377,6 @@ export interface UpstreamOptions {
 }
 
 /**
- * Represents the byte allowance one whole upstream call spends across every read it makes.
- *
- * @remarks
- * `remaining` is deliberately mutable, and it is the one member of this module's
- * contracts that is. The carrier is what makes `budget` a bound on a call rather
- * than on a request: each read subtracts what it consumed from the same object,
- * so many small answers exhaust the call exactly as one oversized answer does.
- * Each call constructs its own carrier from `budget`, because concurrent calls
- * own separate budgets and must not spend each other's.
- */
-export interface ReadAllowance {
-	remaining: number
-}
-
-/**
  * Represents the committed vendored-file inventory as one call's reads are decided against.
  *
  * @remarks

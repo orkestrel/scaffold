@@ -13,6 +13,8 @@ import {
 	listFiles,
 	readMissingFlags,
 	readOption,
+	parseJsonRecord,
+	readString,
 	runNpm,
 } from '../../orkestrel-dispatch/scripts/helpers.ts'
 
@@ -24,19 +26,26 @@ interface Manifest {
 	readonly version: string | undefined
 }
 
+interface Source {
+	readonly archive: Buffer | undefined
+	readonly version: string | undefined
+	readonly failure: string | undefined
+}
+
+interface TarState {
+	readonly next: number
+	readonly name: string | undefined
+	readonly files: ReadonlyArray<readonly [string, Buffer]>
+	readonly done: boolean
+}
+
 function readManifest(): Manifest {
 	if (!existsSync('package.json')) return { name: undefined, version: undefined }
-	let parsed: unknown
 	try {
-		parsed = JSON.parse(readFileSync('package.json', 'utf8'))
+		const record = parseJsonRecord(readFileSync('package.json', 'utf8'))
+		return { name: readString(record, 'name'), version: readString(record, 'version') }
 	} catch {
 		return { name: undefined, version: undefined }
-	}
-	if (typeof parsed !== 'object' || parsed === null) return { name: undefined, version: undefined }
-	const record = Object.fromEntries(Object.entries(parsed))
-	return {
-		name: typeof record.name === 'string' ? record.name : undefined,
-		version: typeof record.version === 'string' ? record.version : undefined,
 	}
 }
 
@@ -51,41 +60,96 @@ function readHeaderText(header: Buffer, start: number, length: number): string {
 	return slice.subarray(0, end === -1 ? slice.length : end).toString('utf8')
 }
 
-function readPaxPath(data: Buffer): string | undefined {
-	let offset = 0
-	while (offset < data.length) {
-		const space = data.indexOf(0x20, offset)
-		if (space === -1) return undefined
-		const length = Number(data.subarray(offset, space).toString('utf8'))
-		if (!Number.isFinite(length) || length <= 0) return undefined
-		const record = data.subarray(space + 1, offset + length - 1).toString('utf8')
-		if (record.startsWith('path=')) return record.slice('path='.length)
-		offset += length
+function readPaxPath(data: Buffer, offset = 0): string | undefined {
+	if (offset >= data.length) return undefined
+	const space = data.indexOf(0x20, offset)
+	if (space === -1) return undefined
+	const length = Number(data.subarray(offset, space).toString('utf8'))
+	if (!Number.isFinite(length) || length <= 0) return undefined
+	const record = data.subarray(space + 1, offset + length - 1).toString('utf8')
+	return record.startsWith('path=')
+		? record.slice('path='.length)
+		: readPaxPath(data, offset + length)
+}
+
+// A tar entry occupies a header block and the data blocks its size names, so a step ignores every
+// block offset an earlier entry already consumed.
+function stepTar(archive: Buffer, state: TarState, offset: number): TarState {
+	if (state.done || offset < state.next) return state
+	const header = archive.subarray(offset, offset + BLOCK)
+	if (header.every((byte) => byte === 0)) return { ...state, done: true }
+	const size = Number.parseInt(readHeaderText(header, 124, 12).trim() || '0', 8)
+	const type = String.fromCharCode(header[156] ?? 0)
+	const magic = readHeaderText(header, 257, 6)
+	const prefix = magic.startsWith('ustar') ? readHeaderText(header, 345, 155) : ''
+	const shortName = readHeaderText(header, 0, 100)
+	const name = state.name ?? (prefix === '' ? shortName : `${prefix}/${shortName}`)
+	const data = archive.subarray(offset + BLOCK, offset + BLOCK + size)
+	const next = offset + BLOCK + Math.ceil(size / BLOCK) * BLOCK
+	return {
+		next,
+		name:
+			type === 'x'
+				? readPaxPath(data)
+				: type === 'L'
+					? readHeaderText(data, 0, data.length)
+					: undefined,
+		files:
+			type === '0' || type === '\0' ? [...state.files, [name, Buffer.from(data)]] : state.files,
+		done: !Number.isFinite(next),
 	}
-	return undefined
 }
 
 function readTar(archive: Buffer): ReadonlyMap<string, Buffer> {
-	const files = new Map<string, Buffer>()
-	let offset = 0
-	let overrideName: string | undefined
-	while (offset + BLOCK <= archive.length) {
-		const header = archive.subarray(offset, offset + BLOCK)
-		if (header.every((byte) => byte === 0)) break
-		const size = Number.parseInt(readHeaderText(header, 124, 12).trim() || '0', 8)
-		const type = String.fromCharCode(header[156] ?? 0)
-		const magic = readHeaderText(header, 257, 6)
-		const prefix = magic.startsWith('ustar') ? readHeaderText(header, 345, 155) : ''
-		const shortName = readHeaderText(header, 0, 100)
-		const name = overrideName ?? (prefix === '' ? shortName : `${prefix}/${shortName}`)
-		const data = archive.subarray(offset + BLOCK, offset + BLOCK + size)
-		overrideName = undefined
-		if (type === 'x') overrideName = readPaxPath(data)
-		else if (type === 'L') overrideName = readHeaderText(data, 0, data.length)
-		else if (type === '0' || type === '\0') files.set(name, Buffer.from(data))
-		offset += BLOCK + Math.ceil(size / BLOCK) * BLOCK
+	const offsets = Array.from(
+		{ length: Math.floor(archive.length / BLOCK) },
+		(_, index) => index * BLOCK,
+	)
+	// A later entry of the same name replaces an earlier one at the earlier position, as a map write does.
+	return new Map(
+		offsets.reduce<TarState>((state, offset) => stepTar(archive, state, offset), {
+			next: 0,
+			name: undefined,
+			files: [],
+			done: false,
+		}).files,
+	)
+}
+
+function unpackTar(archive: Buffer): ReadonlyMap<string, Buffer> | Error {
+	try {
+		return readTar(gunzipSync(archive))
+	} catch (error) {
+		return error instanceof Error ? error : new Error(String(error))
 	}
-	return files
+}
+
+async function readSource(
+	name: string,
+	requested: string | undefined,
+	tarball: string | undefined,
+): Promise<Source> {
+	if (tarball !== undefined) {
+		return existsSync(tarball)
+			? { archive: readFileSync(tarball), version: requested, failure: undefined }
+			: { archive: undefined, version: requested, failure: `${tarball} does not exist` }
+	}
+	const version = requested ?? readNpmValue(['view', name, 'version', '--json'])
+	const url =
+		version === undefined
+			? undefined
+			: readNpmValue(['view', `${name}@${version}`, 'dist.tarball', '--json'])
+	if (version === undefined || url === undefined) {
+		return {
+			archive: undefined,
+			version,
+			failure: `the registry served no tarball for ${name}${version === undefined ? '' : `@${version}`}`,
+		}
+	}
+	const fetched = await fetchTarball(url)
+	return fetched === undefined
+		? { archive: undefined, version, failure: `fetching ${url} failed` }
+		: { archive: fetched, version, failure: undefined }
 }
 
 // A dist tree holds nothing a walk skips, so every emitted file counts.
@@ -125,53 +189,31 @@ async function main(argv: readonly string[]): Promise<number> {
 		)
 		return 64
 	}
-	let version = readOption(argv, '--version')
-	let archive: Buffer
-	if (tarball !== undefined) {
-		if (!existsSync(tarball)) {
-			console.error(`compare: ${tarball} does not exist`)
-			return 2
-		}
-		archive = readFileSync(tarball)
-	} else {
-		version ??= readNpmValue(['view', name, 'version', '--json'])
-		const url =
-			version === undefined
-				? undefined
-				: readNpmValue(['view', `${name}@${version}`, 'dist.tarball', '--json'])
-		if (version === undefined || url === undefined) {
-			console.error(
-				`compare: the registry served no tarball for ${name}${version === undefined ? '' : `@${version}`}`,
-			)
-			return 2
-		}
-		const fetched = await fetchTarball(url)
-		if (fetched === undefined) {
-			console.error(`compare: fetching ${url} failed`)
-			return 2
-		}
-		archive = fetched
-	}
-	const published = new Map<string, Buffer>()
-	let entries: ReadonlyMap<string, Buffer>
-	try {
-		entries = readTar(gunzipSync(archive))
-	} catch (error) {
-		console.error(
-			`compare: the tarball could not be read: ${error instanceof Error ? error.message : String(error)}`,
-		)
+	const source = await readSource(name, readOption(argv, '--version'), tarball)
+	const { archive, version } = source
+	if (archive === undefined) {
+		console.error(`compare: ${source.failure}`)
 		return 2
 	}
-	for (const [path, content] of entries) {
-		const prefixed = `${PACKAGE_PREFIX}${dist}/`
-		if (path.startsWith(prefixed) && isMaterial(path))
-			published.set(path.slice(prefixed.length), content)
+	const entries = unpackTar(archive)
+	if (entries instanceof Error) {
+		console.error(`compare: the tarball could not be read: ${entries.message}`)
+		return 2
 	}
-	const local = new Map<string, Buffer>()
-	for (const { path } of listFiles(dist, NOTHING_SKIPPED)) {
-		const key = relative(dist, path).split('\\').join('/')
-		if (isMaterial(key)) local.set(key, readFileSync(path))
-	}
+	const prefixed = `${PACKAGE_PREFIX}${dist}/`
+	const published = new Map(
+		[...entries].flatMap(([path, content]) =>
+			path.startsWith(prefixed) && isMaterial(path)
+				? [[path.slice(prefixed.length), content] as const]
+				: [],
+		),
+	)
+	const local = new Map(
+		listFiles(dist, NOTHING_SKIPPED).flatMap(({ path }) => {
+			const key = relative(dist, path).split('\\').join('/')
+			return isMaterial(key) ? [[key, readFileSync(path)] as const] : []
+		}),
+	)
 	const added = [...local.keys()].filter((key) => !published.has(key)).sort()
 	const removed = [...published.keys()].filter((key) => !local.has(key)).sort()
 	const changed = [...local.keys()]

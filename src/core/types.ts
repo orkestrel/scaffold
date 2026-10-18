@@ -190,6 +190,37 @@ export interface ManifestScript {
 }
 
 /**
+ * Represents one string or object brace found in manifest text.
+ *
+ * @remarks
+ * `text` is the brace character or the quoted string with its quotes, `index` is
+ * where it starts in the scanned text, and `depth` counts the objects open once
+ * it is read, braces alone. `value` is set only for a string that a colon
+ * follows, and is the offset of the first character after that colon and the
+ * whitespace beside it, so the character at `value` begins the string's value.
+ */
+export interface ManifestToken {
+	readonly text: string
+	readonly index: number
+	readonly depth: number
+	readonly value: number | undefined
+}
+
+/**
+ * Represents one in-place replacement of manifest text.
+ *
+ * @remarks
+ * `start` and `end` bound the replaced bytes, with `end` exclusive, and `text` takes their
+ * place. A writer collects its edits and lands them from the last offset to the first, so
+ * each offset still names the text it was read from.
+ */
+export interface ManifestEdit {
+	readonly start: number
+	readonly end: number
+	readonly text: string
+}
+
+/**
  * Describes the manifest regions a writing operation may change.
  *
  * @remarks
@@ -236,7 +267,7 @@ export interface Override {
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
- * `vendors`, `global`, `showcase`, `journey`, `styles`, `themes`, and `skills` are structural facts: each is
+ * `vendors`, `studies`, `global`, `showcase`, `journey`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
@@ -256,6 +287,11 @@ export interface Override {
  * starts nothing. Neither is derivable from the other: a workspace may declare
  * vendors before it writes a suite, and a suite may drive a service the skeleton
  * does not start.
+ *
+ * `studies` says the workspace holds at least one exact-case `*.test.ts` file
+ * beneath `tests/studies`, nested or direct, and it alone registers the `studies`
+ * Vitest project over that directory. The harness module the study tests import,
+ * `tests/setupStudy.ts`, selects nothing and is not planned.
  */
 export interface Blueprint {
 	readonly name: string
@@ -282,6 +318,7 @@ export interface Blueprint {
 	readonly conformance: boolean
 	readonly service: boolean
 	readonly vendors: readonly string[]
+	readonly studies: boolean
 	readonly global: boolean
 	readonly showcase: boolean
 	readonly journey: boolean

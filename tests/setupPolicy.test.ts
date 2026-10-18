@@ -33,9 +33,18 @@ import {
 	inspectSkillBridges,
 	inspectSkillImports,
 	inspectPolicyWorkspace,
+	extractPolicySection,
 	inspectPolicySetup,
+	inspectSkillTemplateTODOs,
+	isPolicyDirectory,
+	matchesSkillToken,
 	normalizePolicyFilename,
 	normalizePolicyPath,
+	parsePolicyJSON,
+	parseSkillFrontmatter,
+	POLICY_EXTRACTOR,
+	POLICY_PUBLISHES,
+	POLICY_ROOT,
 	POLICY_SURFACE_HOST,
 	POLICY_SURFACE_EXPORT_CASES,
 	createPolicySurfaceGuide,
@@ -44,6 +53,7 @@ import {
 	readSkillExports,
 	readSkillDeclarations,
 	readSkillManifest,
+	resolvePolicyPackage,
 	resolveSkillDeclaration,
 	SKILL_DECLARATION_MESSAGES,
 	SKILL_DECLARATION_REFUSALS,
@@ -1259,5 +1269,115 @@ describe('inspectSkill', () => {
 			scratch.destroy()
 			control.destroy()
 		}
+	})
+})
+
+describe('the policy readers', () => {
+	it('parses JSON text and answers undefined for text that is not JSON', () => {
+		expect(parsePolicyJSON('{"scripts":{"test":"vitest"}}')).toStrictEqual({
+			scripts: { test: 'vitest' },
+		})
+		expect(parsePolicyJSON('[1,2]')).toStrictEqual([1, 2])
+		expect(parsePolicyJSON('{')).toBe(undefined)
+		expect(parsePolicyJSON('')).toBe(undefined)
+	})
+
+	it('extracts the lines beneath a heading up to the next second-level heading', () => {
+		const lines = ['# Top', '## Rules', 'one', 'two', '### Sub', '## Next', 'three']
+		expect(extractPolicySection(lines, 1)).toStrictEqual(['one', 'two', '### Sub'])
+		expect(extractPolicySection(lines, 5)).toStrictEqual(['three'])
+		expect(extractPolicySection(lines, 6)).toStrictEqual([])
+		expect(extractPolicySection(lines, 0)).toStrictEqual([])
+	})
+
+	it('folds a description block, joins its blank lines, and stops at the next key', () => {
+		const frontmatter = requireValue(
+			parseSkillFrontmatter(
+				'---\nname: demo\ndescription: >-\n  Use it.\n  More.\n\n  Third.\nextra: yes\n---\nBody\n',
+			),
+		)
+		expect(frontmatter.keys).toStrictEqual(['name', 'description', 'extra'])
+		expect(frontmatter.name).toBe('demo')
+		expect(frontmatter.description).toBe('Use it. More.\nThird.')
+		expect(frontmatter.source).toStrictEqual({
+			name: ' demo',
+			description: ' >-\n  Use it.\n  More.\n\n  Third.',
+		})
+		// The controls: a quoted description, a folded block on another key, and an unclosed block
+		// each refuse, so the folding above is not a reader that accepts every shape.
+		expect(parseSkillFrontmatter('---\nname: demo\ndescription: "Use it."\n---\n')).toBe(undefined)
+		expect(parseSkillFrontmatter('---\nname: >-\n  demo\n---\n')).toBe(undefined)
+		expect(parseSkillFrontmatter('---\nname: demo\n')).toBe(undefined)
+	})
+
+	it('matches a skill token only as a complete name', () => {
+		expect(matchesSkillToken('Use $demo now', 'demo')).toBe(true)
+		expect(matchesSkillToken('Use $demo', 'demo')).toBe(true)
+		expect(matchesSkillToken('Use $demo-two now', 'demo')).toBe(false)
+		expect(matchesSkillToken('Use $demox now', 'demo')).toBe(false)
+		expect(matchesSkillToken('Use $demo-two and $demo.', 'demo')).toBe(true)
+		expect(matchesSkillToken('Use demo', 'demo')).toBe(false)
+	})
+
+	it('reports each template TODO outside code spans and fences, in line order', () => {
+		const content = [
+			'# Title',
+			'TODO outside',
+			'`TODO inline` and TODO',
+			'```',
+			'TODO fenced',
+			'```',
+			'TODO after',
+			'~~~~',
+			'TODO in tilde',
+			'~~~',
+			'still fenced TODO',
+			'~~~~',
+			'TODO end',
+			'TODO `unterminated TODO',
+		].join('\n')
+		expect(
+			inspectSkillTemplateTODOs('skill', '.agents/skills/demo/SKILL.md', content).map(
+				({ line }) => line,
+			),
+		).toStrictEqual([2, 3, 7, 13, 14, 14])
+		expect(inspectSkillTemplateTODOs('bridge', 'path', 'clean\n`TODO`\n')).toStrictEqual([])
+	})
+})
+
+describe('the workspace readings', () => {
+	it('anchors the root at the checkout the tests run in', () => {
+		expect(POLICY_ROOT).toBe(resolve('.'))
+		expect(existsSync(join(POLICY_ROOT, 'tests', 'setupPolicy.ts'))).toBe(true)
+	})
+
+	it('reads a physical directory and refuses a file, a missing path, and a link', () => {
+		const scratch = createScratch({ prefix: 'policy-directory-' })
+		try {
+			scratch.write('directory/file.txt', 'x')
+			expect(isPolicyDirectory(join(scratch.path, 'directory'))).toBe(true)
+			expect(isPolicyDirectory(join(scratch.path, 'directory', 'file.txt'))).toBe(false)
+			expect(isPolicyDirectory(join(scratch.path, 'absent'))).toBe(false)
+			scratch.link('linked', join(scratch.path, 'directory'))
+			expect(isPolicyDirectory(join(scratch.path, 'linked'))).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('resolves an installed package and answers undefined for an absent one', () => {
+		const resolved = requireValue(resolvePolicyPackage('vitest/package.json'))
+		expect(existsSync(resolved)).toBe(true)
+		expect(resolvePolicyPackage('@absent/policy-package')).toBe(undefined)
+	})
+
+	it('derives the published axis and the extractor from what the checkout holds', () => {
+		const published = ['core', 'browser', 'server'].some((environment) =>
+			existsSync(join(POLICY_ROOT, 'src', environment)),
+		)
+		expect(POLICY_PUBLISHES).toBe(published)
+		expect(POLICY_EXTRACTOR !== undefined).toBe(
+			existsSync(join(POLICY_ROOT, 'node_modules', '@microsoft', 'api-extractor')),
+		)
 	})
 })

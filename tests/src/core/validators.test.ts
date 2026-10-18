@@ -77,6 +77,9 @@ describe('extension guards', () => {
 		expect(isBlueprint(blueprint)).toBe(true)
 		expect(isBlueprint({ ...blueprint, styles: 'true' })).toBe(false)
 		expect(isBlueprint({ ...blueprint, themes: undefined })).toBe(false)
+		expect(isBlueprint({ ...blueprint, studies: undefined })).toBe(false)
+		expect(isBlueprint({ ...blueprint, studies: 'true' })).toBe(false)
+		expect(isBlueprint({ ...blueprint, studies: true })).toBe(true)
 		expect(
 			isBlueprint({ ...blueprint, extensions: [{ surface: 'browser', name: 'react', axes: [] }] }),
 		).toBe(false)
@@ -260,10 +263,9 @@ describe('collection bounds', () => {
 
 describe('isAudit', () => {
 	it('accepts the findings a compiler can produce from a full snapshot', () => {
-		const current: Record<string, string> = {}
-		for (let index = 0; index < MAX_COLLECTION_ITEMS; index += 1) {
-			current[`foreign/f${index}.md`] = ''
-		}
+		const current: Record<string, string> = Object.fromEntries(
+			Array.from({ length: MAX_COLLECTION_ITEMS }, (_value, index) => [`foreign/f${index}.md`, '']),
+		)
 		const compiler = new Compiler()
 		const audit = compiler.audit(createBlueprint('sample', { src: ['core'] }), current)
 		compiler.destroy()
@@ -352,10 +354,12 @@ describe('isSnapshot', () => {
 	})
 
 	it('refuses a record carrying more entries than one collection accepts', () => {
-		const oversized: Record<string, string> = {}
-		for (let index = 0; index <= MAX_COLLECTION_ITEMS; index += 1) {
-			oversized[`guides/${index}.md`] = '68690a'
-		}
+		const oversized: Record<string, string> = Object.fromEntries(
+			Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, (_value, index) => [
+				`guides/${index}.md`,
+				'68690a',
+			]),
+		)
 		expect(Object.keys(oversized)).toHaveLength(MAX_COLLECTION_ITEMS + 1)
 		expect(isSnapshot(oversized)).toBe(false)
 	})

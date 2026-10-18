@@ -64,18 +64,15 @@ interface DisclosureContext {
 
 // A journey verb resolves its own target by accessible name, so a second mounted disclosure called
 // "Advanced" is an ambiguity rather than a second fixture. Each build takes the previous one out.
-let mounted: HTMLElement | undefined
-
 function buildDisclosure(): DisclosureContext {
-	mounted?.remove()
+	for (const stale of document.querySelectorAll('[data-disclosure]')) stale.remove()
 	const container = render(
-		'<details><summary>Advanced</summary><p>Every setting.</p></details><button type="button">Dismiss</button>',
+		'<div data-disclosure><details><summary>Advanced</summary><p>Every setting.</p></details><button type="button">Dismiss</button></div>',
 	)
 	const details = requireValue(container.querySelector('details'))
 	requireValue(container.querySelector('button')).addEventListener('click', () => {
 		details.open = false
 	})
-	mounted = container
 	return { summary: requireValue(container.querySelector('summary')) }
 }
 

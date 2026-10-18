@@ -165,6 +165,7 @@ one environment, so each is its own project:
 | `distribution`      | `tests/distribution.test.ts`                                   | The packed package installs and resolves through its public exports                                                                                                                                                         | `prepublishOnly`; absent when private |
 | `integration`       | `tests/integration.test.ts`                                    | The package's features work together end to end across environments                                                                                                                                                         | `test`                                |
 | `service`           | `tests/service/**/*.test.ts`                                   | The live external services this package drives, driven for real                                                                                                                                                             | `prepublishOnly`; `test` when private |
+| `studies`           | `tests/studies/**/*.test.ts`                                   | The consumer study proofs: installed packages driven through bounded subprocesses and protocol fixtures                                                                                                                     | `prepublishOnly`; `test` when private |
 
 - Define the Node `setup` project when `global` selects its seeded proof or a root file matches
   `tests/setup*.test.ts`, exact-case, other than `tests/setupBrowser.test.ts` and
@@ -173,6 +174,10 @@ one environment, so each is its own project:
   exact-case browser proof exists; collect those browser proof paths alone. For each registered project, emit
   its `test:setup` or `test:setup:browser` script and run it from `test`; otherwise emit neither its
   project nor its script.
+- Define the `studies` project when at least one exact-case `*.test.ts` file sits beneath
+  `tests/studies`, nested or direct. Give it `tests/setup.ts` alone: `tests/setupStudy.ts` is the
+  harness module those tests import, and it is no project's setup file. Scaffold plans no
+  `tests/setupStudy.ts`, and the root `studies/` directory is no test-project input.
 - When `tests/setupGlobal.ts` exists, give `src:browser`, `setup:browser`, and `integration` that
   module as their `globalSetup` option, and give no other project a global setup.
 - When a browser application selects the journey axis, register `journey:<variant>` projects
@@ -183,15 +188,16 @@ one environment, so each is its own project:
   from its application project, and run `test:journey` and one `test:journey:<framework>` per
   app-side browser extension after the application projects in `test`.
 
-`conformance`, `integration`, `distribution`, and `service` are separate subjects, not names for
-one.
+`conformance`, `integration`, `distribution`, `studies`, and `service` are separate subjects, not
+names for one.
 Keep `conformance` in `test`: measure this package against an installed official artifact, and start
 any server the proof drives itself. Keep `integration` in `test`: compose the workspace's public
 surfaces without packing, installing, or driving an external service. In a publishing workspace,
-run `distribution` and `service` from `prepublishOnly`: pack and install the package in
-`distribution`, and drive the real service with `tests/setupService.ts`, longer timeouts, and no file
+run `distribution`, `studies`, and `service` from `prepublishOnly`: pack and install the package in
+`distribution`, run the authored study proofs in `studies` after `npm test` and before the release
+proof, and drive the real service with `tests/setupService.ts`, longer timeouts, and no file
 parallelism in `service`. In a `private: true` workspace, never declare `prepublishOnly`; omit
-`distribution`, reach `service` from `test`, and retain the service project's isolated
+`distribution`, reach `studies` and then `service` from `test`, and retain each isolated project's
 configuration.
 
 One project sits on neither axis. `probe` includes `tmp/probes/**/*.test.ts` so an agent can run a
@@ -221,7 +227,8 @@ Setup assets:
 Scope with `test:src`, `test:src:core`, `test:src:<face>`, `test:app`, `test:app:server`, and
 equivalent scripts. Each cross-cutting project has its own script too: `test:policy`,
 `test:config`, `test:setup`, `test:setup:browser`, `test:journey`, `test:journey:<framework>`,
-`test:guides`, `test:conformance`, `test:distribution`, `test:integration`, `test:service`.
+`test:guides`, `test:conformance`, `test:distribution`, `test:integration`, `test:studies`,
+`test:service`.
 
 ## Typechecking and environment isolation
 

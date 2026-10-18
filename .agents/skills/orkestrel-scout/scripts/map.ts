@@ -53,6 +53,17 @@ interface AnchorRow {
 	readonly heading: string
 }
 
+interface TomlState {
+	readonly table: string
+	readonly fence: string | undefined
+	readonly rows: readonly LineRow[]
+}
+
+interface YamlState {
+	readonly stack: ReadonlyArray<{ readonly indent: number; readonly key: string }>
+	readonly rows: readonly LineRow[]
+}
+
 interface Report {
 	readonly tree?: readonly TreeRow[]
 	readonly headings?: readonly LineRow[]
@@ -93,35 +104,42 @@ function mapTree(paths: readonly string[]): readonly TreeRow[] {
 		.sort((left, right) => left.path.localeCompare(right.path))
 }
 
+function scanFences(lines: readonly string[]): readonly boolean[] {
+	const fenced: boolean[] = []
+	for (const text of lines) fenced.push((fenced.at(-1) ?? false) !== text.startsWith('```'))
+	return fenced
+}
+
 function mapHeadings(paths: readonly string[]): readonly LineRow[] {
-	const rows: LineRow[] = []
-	for (const path of expandPaths(paths).filter((candidate) => candidate.endsWith('.md'))) {
-		let fenced = false
-		readLines(path).forEach((text, index) => {
-			if (text.startsWith('```')) fenced = !fenced
-			if (fenced) return
-			const match = text.match(HEADING)
-			if (match?.[1] !== undefined && match[2] !== undefined) {
-				rows.push({ path, line: index + 1, text: `${match[1]} ${match[2]}` })
-			}
+	return expandPaths(paths)
+		.filter((candidate) => candidate.endsWith('.md'))
+		.flatMap((path) => {
+			const lines = readLines(path)
+			const fenced = scanFences(lines)
+			return lines.flatMap((text, index) => {
+				if (fenced[index] === true) return []
+				const match = text.match(HEADING)
+				return match?.[1] !== undefined && match[2] !== undefined
+					? [{ path, line: index + 1, text: `${match[1]} ${match[2]}` }]
+					: []
+			})
 		})
-	}
-	return rows
 }
 
 function mapExports(paths: readonly string[]): readonly LineRow[] {
-	const rows: LineRow[] = []
-	for (const path of expandPaths(paths).filter((candidate) => /\.[cm]?ts$/u.test(candidate))) {
-		readLines(path).forEach((text, index) => {
-			const match = text.match(EXPORT)
-			if (match?.[1] !== undefined && match[2] !== undefined) {
-				rows.push({ path, line: index + 1, text: `${match[1]} ${match[2]}` })
-			} else if (/^export\s+\*\s+from\s+/u.test(text)) {
-				rows.push({ path, line: index + 1, text: text.trim() })
-			}
-		})
-	}
-	return rows
+	return expandPaths(paths)
+		.filter((candidate) => /\.[cm]?ts$/u.test(candidate))
+		.flatMap((path) =>
+			readLines(path).flatMap((text, index) => {
+				const match = text.match(EXPORT)
+				if (match?.[1] !== undefined && match[2] !== undefined) {
+					return [{ path, line: index + 1, text: `${match[1]} ${match[2]}` }]
+				}
+				return /^export\s+\*\s+from\s+/u.test(text)
+					? [{ path, line: index + 1, text: text.trim() }]
+					: []
+			}),
+		)
 }
 
 function buildMatcher(term: string, ignoreCase: boolean): (text: string) => boolean {
@@ -137,102 +155,112 @@ function mapCensus(
 	const files = expandPaths(roots).filter(isText)
 	return terms.map((term) => {
 		const matches = buildMatcher(term, ignoreCase)
-		const rows: LineRow[] = []
-		for (const path of files) {
-			readLines(path).forEach((text, index) => {
-				if (matches(text)) rows.push({ path, line: index + 1, text: text.trim().slice(0, 160) })
-			})
+		return {
+			term,
+			rows: files.flatMap((path) =>
+				readLines(path).flatMap((text, index) =>
+					matches(text) ? [{ path, line: index + 1, text: text.trim().slice(0, 160) }] : [],
+				),
+			),
 		}
-		return { term, rows }
 	})
 }
 
 function mapRefs(target: string, roots: readonly string[]): readonly LineRow[] {
 	const needle = normalizeSlashes(target)
 	const name = basename(needle)
-	const rows: LineRow[] = []
-	for (const path of expandPaths(roots).filter(isText)) {
-		if (path === needle) continue
-		readLines(path).forEach((text, index) => {
-			if (text.includes(needle) || text.includes(name)) {
-				rows.push({ path, line: index + 1, text: text.trim().slice(0, 160) })
-			}
-		})
+	return expandPaths(roots)
+		.filter(isText)
+		.filter((path) => path !== needle)
+		.flatMap((path) =>
+			readLines(path).flatMap((text, index) =>
+				text.includes(needle) || text.includes(name)
+					? [{ path, line: index + 1, text: text.trim().slice(0, 160) }]
+					: [],
+			),
+		)
+}
+
+function stepYamlState(state: YamlState, text: string, path: string, line: number): YamlState {
+	const content = text.trimStart()
+	if (content === '' || content.startsWith('#')) return state
+	const indent = text.length - content.length
+	const match = content.match(/^([A-Za-z_][\w-]*)\s*:(?:\s+(.*))?$/u)
+	if (match?.[1] === undefined) {
+		// A list item, a block scalar line, or a wrapped value extends the key before it.
+		const last = state.rows.at(-1)
+		return last !== undefined && indent >= (state.stack.at(-1)?.indent ?? 0)
+			? {
+					...state,
+					rows: state.rows.with(-1, {
+						...last,
+						text: `${last.text} ${content.trim()}`.trimEnd(),
+					}),
+				}
+			: state
 	}
-	return rows
+	// Indents strictly increase along the stack, so the entries at or past this indent are the tail.
+	const stack = state.stack.filter((entry) => entry.indent < indent)
+	const key = [...stack.map((entry) => entry.key), match[1]].join('.')
+	return {
+		stack: [...stack, { indent, key: match[1] }],
+		rows: [...state.rows, { path, line, text: `${key}: ${(match[2] ?? '').trim()}`.trimEnd() }],
+	}
 }
 
 function readYamlKeys(path: string, lines: readonly string[], offset: number): readonly LineRow[] {
-	const rows: LineRow[] = []
-	const stack: Array<{ readonly indent: number; readonly key: string }> = []
-	lines.forEach((text, index) => {
-		const content = text.trimStart()
-		if (content === '' || content.startsWith('#')) return
-		const indent = text.length - content.length
-		const match = content.match(/^([A-Za-z_][\w-]*)\s*:(?:\s+(.*))?$/u)
-		if (match?.[1] === undefined) {
-			// A list item, a block scalar line, or a wrapped value extends the key before it.
-			const last = rows.at(-1)
-			if (last !== undefined && indent >= (stack.at(-1)?.indent ?? 0)) {
-				rows[rows.length - 1] = { ...last, text: `${last.text} ${content.trim()}`.trimEnd() }
-			}
-			return
-		}
-		while (stack.length > 0 && (stack.at(-1)?.indent ?? 0) >= indent) stack.pop()
-		const key = [...stack.map((entry) => entry.key), match[1]].join('.')
-		stack.push({ indent, key: match[1] })
-		rows.push({ path, line: index + offset, text: `${key}: ${(match[2] ?? '').trim()}`.trimEnd() })
-	})
-	return rows
+	return lines.reduce<YamlState>(
+		(state, text, index) => stepYamlState(state, text, path, index + offset),
+		{ stack: [], rows: [] },
+	).rows
+}
+
+function stepTomlState(state: TomlState, text: string, path: string, line: number): TomlState {
+	if (state.fence !== undefined) {
+		// The body of a multi-line string carries no key.
+		return text.includes(state.fence) ? { ...state, fence: undefined } : state
+	}
+	const header = text.match(/^\s*\[\[?([^\]]+)\]\]?\s*$/u)
+	if (header?.[1] !== undefined) return { ...state, table: header[1].trim() }
+	const match = text.match(/^\s*([A-Za-z0-9_.-]+|"[^"]+")\s*=\s*(.*)$/u)
+	if (match?.[1] === undefined) return state
+	const value = (match[2] ?? '').trim()
+	const opening = value.match(/^("""|''')/u)?.[1]
+	return {
+		table: state.table,
+		fence: opening !== undefined && value.indexOf(opening, 3) === -1 ? opening : undefined,
+		rows: [
+			...state.rows,
+			{
+				path,
+				line,
+				text: `${state.table === '' ? '' : `${state.table}.`}${match[1]}: ${value}`.trimEnd(),
+			},
+		],
+	}
 }
 
 function readTomlKeys(path: string, lines: readonly string[], offset: number): readonly LineRow[] {
-	const rows: LineRow[] = []
-	let table = ''
-	let fence: string | undefined
-	lines.forEach((text, index) => {
-		if (fence !== undefined) {
-			// The body of a multi-line string carries no key.
-			if (text.includes(fence)) fence = undefined
-			return
-		}
-		const header = text.match(/^\s*\[\[?([^\]]+)\]\]?\s*$/u)
-		if (header?.[1] !== undefined) {
-			table = header[1].trim()
-			return
-		}
-		const match = text.match(/^\s*([A-Za-z0-9_.-]+|"[^"]+")\s*=\s*(.*)$/u)
-		if (match?.[1] === undefined) return
-		const value = (match[2] ?? '').trim()
-		const opening = value.match(/^("""|''')/u)?.[1]
-		if (opening !== undefined && value.indexOf(opening, 3) === -1) fence = opening
-		rows.push({
-			path,
-			line: index + offset,
-			text: `${table === '' ? '' : `${table}.`}${match[1]}: ${value}`.trimEnd(),
-		})
-	})
-	return rows
+	return lines.reduce<TomlState>(
+		(state, text, index) => stepTomlState(state, text, path, index + offset),
+		{ table: '', fence: undefined, rows: [] },
+	).rows
 }
 
 function mapFrontmatter(paths: readonly string[]): readonly LineRow[] {
-	const rows: LineRow[] = []
-	for (const path of expandPaths(paths).filter((candidate) =>
-		/\.(md|mdc|toml|ya?ml)$/u.test(candidate),
-	)) {
-		const lines = readLines(path)
-		const markdown = /\.mdc?$/u.test(path)
-		const end = markdown ? lines.indexOf('---', 1) : lines.length
-		if (markdown && (lines[0] !== '---' || end === -1)) continue
-		const body = lines.slice(markdown ? 1 : 0, end)
-		const offset = markdown ? 2 : 1
-		rows.push(
-			...(path.endsWith('.toml')
+	return expandPaths(paths)
+		.filter((candidate) => /\.(md|mdc|toml|ya?ml)$/u.test(candidate))
+		.flatMap((path) => {
+			const lines = readLines(path)
+			const markdown = /\.mdc?$/u.test(path)
+			const end = markdown ? lines.indexOf('---', 1) : lines.length
+			if (markdown && (lines[0] !== '---' || end === -1)) return []
+			const body = lines.slice(markdown ? 1 : 0, end)
+			const offset = markdown ? 2 : 1
+			return path.endsWith('.toml')
 				? readTomlKeys(path, body, offset)
-				: readYamlKeys(path, body, offset)),
-		)
-	}
-	return rows
+				: readYamlKeys(path, body, offset)
+		})
 }
 
 function readHeadingTexts(path: string): ReadonlySet<string> {
@@ -240,63 +268,64 @@ function readHeadingTexts(path: string): ReadonlySet<string> {
 }
 
 function mapAnchors(paths: readonly string[]): readonly AnchorRow[] {
-	const headings = new Map<string, ReadonlySet<string>>()
-	const rows: AnchorRow[] = []
-	for (const path of expandPaths(paths).filter((candidate) => candidate.endsWith('.md'))) {
-		readLines(path).forEach((text, index) => {
-			for (const match of text.matchAll(ANCHOR)) {
-				const target = match[1] === undefined ? path : normalizeSlashes(match[1])
-				const heading = (match[2] ?? '').trim()
-				if (heading === '') continue
-				if (!existsSync(target)) {
-					rows.push({ path, line: index + 1, target, heading })
-					continue
-				}
-				const known = headings.get(target) ?? readHeadingTexts(target)
-				headings.set(target, known)
-				if (!known.has(heading.toLowerCase())) rows.push({ path, line: index + 1, target, heading })
-			}
-		})
-	}
-	return rows
+	const citations = expandPaths(paths)
+		.filter((candidate) => candidate.endsWith('.md'))
+		.flatMap((path) =>
+			readLines(path).flatMap((text, index) =>
+				[...text.matchAll(ANCHOR)].flatMap((match) => {
+					const target = match[1] === undefined ? path : normalizeSlashes(match[1])
+					const heading = (match[2] ?? '').trim()
+					return heading === '' ? [] : [{ path, line: index + 1, target, heading }]
+				}),
+			),
+		)
+	// Each existing target is read once, in the order its first citation names it.
+	const headings = new Map(
+		[...new Set(citations.map(({ target }) => target).filter((target) => existsSync(target)))].map(
+			(target) => [target, readHeadingTexts(target)],
+		),
+	)
+	return citations.filter(
+		({ target, heading }) => headings.get(target)?.has(heading.toLowerCase()) !== true,
+	)
 }
 
 function renderReport(report: Report): string {
-	const lines: string[] = []
-	if (report.tree !== undefined) {
-		lines.push('## Tree')
-		for (const row of report.tree) lines.push(`${row.path}\t${row.lines} lines\t${row.bytes} bytes`)
-		lines.push(
-			`total\t${report.tree.length} files\t${report.tree.reduce((sum, row) => sum + row.lines, 0)} lines`,
-		)
-	}
-	if (report.headings !== undefined) {
-		lines.push('## Headings')
-		for (const row of report.headings) lines.push(`${row.path}:${row.line}\t${row.text}`)
-	}
-	if (report.frontmatter !== undefined) {
-		lines.push('## Frontmatter')
-		for (const row of report.frontmatter) lines.push(`${row.path}:${row.line}	${row.text}`)
-	}
-	if (report.exports !== undefined) {
-		lines.push('## Exports (text reading)')
-		for (const row of report.exports) lines.push(`${row.path}:${row.line}\t${row.text}`)
-	}
-	if (report.census !== undefined) {
-		for (const entry of report.census) {
-			lines.push(`## Census: ${entry.term} (${entry.rows.length})`)
-			for (const row of entry.rows) lines.push(`${row.path}:${row.line}\t${row.text}`)
-		}
-	}
-	if (report.refs !== undefined) {
-		lines.push(`## Refs (${report.refs.length})`)
-		for (const row of report.refs) lines.push(`${row.path}:${row.line}\t${row.text}`)
-	}
-	if (report.anchors !== undefined) {
-		lines.push(`## Unresolved anchors (${report.anchors.length})`)
-		for (const row of report.anchors)
-			lines.push(`${row.path}:${row.line}\t${row.target} § ${row.heading}`)
-	}
+	const { tree, headings, frontmatter, exports, census, refs, anchors } = report
+	const lines = [
+		...(tree === undefined
+			? []
+			: [
+					'## Tree',
+					...tree.map((row) => `${row.path}\t${row.lines} lines\t${row.bytes} bytes`),
+					`total\t${tree.length} files\t${tree.reduce((sum, row) => sum + row.lines, 0)} lines`,
+				]),
+		...(headings === undefined
+			? []
+			: ['## Headings', ...headings.map((row) => `${row.path}:${row.line}\t${row.text}`)]),
+		...(frontmatter === undefined
+			? []
+			: ['## Frontmatter', ...frontmatter.map((row) => `${row.path}:${row.line}\t${row.text}`)]),
+		...(exports === undefined
+			? []
+			: [
+					'## Exports (text reading)',
+					...exports.map((row) => `${row.path}:${row.line}\t${row.text}`),
+				]),
+		...(census ?? []).flatMap((entry) => [
+			`## Census: ${entry.term} (${entry.rows.length})`,
+			...entry.rows.map((row) => `${row.path}:${row.line}\t${row.text}`),
+		]),
+		...(refs === undefined
+			? []
+			: [`## Refs (${refs.length})`, ...refs.map((row) => `${row.path}:${row.line}\t${row.text}`)]),
+		...(anchors === undefined
+			? []
+			: [
+					`## Unresolved anchors (${anchors.length})`,
+					...anchors.map((row) => `${row.path}:${row.line}\t${row.target} § ${row.heading}`),
+				]),
+	]
 	return `${lines.join('\n')}\n`
 }
 

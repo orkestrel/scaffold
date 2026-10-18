@@ -246,6 +246,96 @@ export interface ScriptInvocations {
 	readonly scripts: readonly string[]
 }
 
+/**
+ * Represents one word or operator a shell command splits into.
+ *
+ * @remarks
+ * `value` is the text after quoting and escaping are removed. `resolved` is `false` when a shell
+ * expansion (`$`, a backtick, or `%`) outside single quotes decides the value, so the word names
+ * nothing literal.
+ */
+export interface ScriptToken {
+	readonly value: string
+	readonly resolved: boolean
+}
+
+/**
+ * Lists what one gate reaches through `npm run`.
+ *
+ * @remarks
+ * `visited` holds every script name the walk reached, declared or not. `projects` holds the Vitest
+ * projects the readable scripts among them name, and `unreadable` holds the reached scripts whose
+ * command cannot be read literally.
+ */
+export interface ScriptChain {
+	readonly visited: ReadonlySet<string>
+	readonly projects: ReadonlySet<string>
+	readonly unreadable: ReadonlySet<string>
+}
+
+/**
+ * Represents what one shell token contributed to a reading of its command.
+ *
+ * @remarks
+ * `through` is the index of the last token this step consumed, which is its own unless an option
+ * or an `npm run` took the tokens that follow it as arguments. `running` is whether the command
+ * the token belongs to runs `vitest run`, which every later token of that command inherits. The
+ * reading is the concatenation of every step's lists, so no step rewrites an earlier one.
+ */
+export interface ScriptStep extends ScriptInvocations {
+	readonly through: number
+	readonly running: boolean
+}
+
+/**
+ * Describes one git query: the streaming intake of its NUL-delimited output and the read that
+ * runs it.
+ *
+ * @remarks
+ * A query is created for one run and reads once. `collect` takes the next owned output bytes,
+ * `refuse` aborts the run with the first refusal, and `read` runs the query to completion. The
+ * intake is part of the contract so a caller that already holds the output can feed it without a
+ * process.
+ */
+export interface GitQueryInterface {
+	/** Reports the abort signal the query raises on its first refusal. */
+	readonly signal: AbortSignal
+	/** Lists the complete records collected so far, in arrival order. */
+	readonly records: readonly string[]
+	/**
+	 * Collects the complete NUL-delimited records from one raw git output chunk.
+	 *
+	 * @param chunk - The next owned output bytes.
+	 * @returns Nothing.
+	 *
+	 * @remarks
+	 * A chunk may end inside a record or inside a UTF-8 sequence, so the unfinished tail carries
+	 * into the next chunk. A chunk arriving after a refusal is ignored. The record beyond the
+	 * working-tree inventory limit, and an unfinished record beyond the supported path limit,
+	 * each refuse the query.
+	 */
+	collect(chunk: Uint8Array): void
+	/**
+	 * Aborts the query with its first target refusal.
+	 *
+	 * @param message - The refusal message.
+	 * @returns Nothing.
+	 *
+	 * @remarks
+	 * A later refusal is ignored, so the signal's reason stays the first one.
+	 */
+	refuse(message: string): void
+	/**
+	 * Runs the query and reads its records.
+	 *
+	 * @returns The non-empty records git wrote, in git's own order.
+	 * @throws `ScaffoldError('TARGET', …)` when the query fails, cannot start, or its output is
+	 * incomplete or outside the working-tree inventory bounds, and `ScaffoldError('INVALID', …)`
+	 * when the query already ran.
+	 */
+	read(): Promise<readonly string[]>
+}
+
 /** Represents one target question beside the artifact groups that make it relevant. */
 export interface TargetQuestion extends Question {
 	readonly groups: readonly Group[]

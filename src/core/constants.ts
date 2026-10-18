@@ -450,6 +450,15 @@ export const SERVICE_SETUP_PATH = 'tests/setupService.ts'
  */
 export const SERVICE_TEST_INCLUDE = 'tests/service/**/*.test.ts'
 
+/**
+ * Names the include the study project covers, a directory whose test files make a workspace `studies`.
+ *
+ * @remarks
+ * The selector and the emitted include read one population: an exact-case file beneath
+ * `tests/studies`, nested or direct, whose name ends in `.test.ts`.
+ */
+export const STUDIES_TEST_INCLUDE = 'tests/studies/**/*.test.ts'
+
 /** Names the Vite wrapper whose presence makes a workspace `showcase`. */
 export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
 

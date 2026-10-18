@@ -26,17 +26,19 @@ interface Errors {
 }
 
 function readEvents(path: string): ReadonlyArray<Record<string, unknown>> {
-	const events: Array<Record<string, unknown>> = []
-	for (const line of readFileSync(path, 'utf8').split(/\r\n|\n/)) {
-		if (line.trim() === '') continue
-		try {
-			const parsed: unknown = JSON.parse(line)
-			if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-				events.push(Object.fromEntries(Object.entries(parsed)))
+	return readFileSync(path, 'utf8')
+		.split(/\r\n|\n/)
+		.flatMap((line) => {
+			if (line.trim() === '') return []
+			try {
+				const parsed: unknown = JSON.parse(line)
+				return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+					? [Object.fromEntries(Object.entries(parsed))]
+					: []
+			} catch {
+				return []
 			}
-		} catch {}
-	}
-	return events
+		})
 }
 
 function readAnswer(text: string | undefined): string | undefined {

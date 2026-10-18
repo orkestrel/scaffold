@@ -73,6 +73,16 @@ interface StepResult {
 	readonly note: string | undefined
 }
 
+interface Verdict {
+	readonly exit: number | undefined
+	readonly note: string | undefined
+}
+
+interface RangeMove {
+	readonly ranges: Record<string, unknown>
+	readonly moved: readonly string[]
+}
+
 interface Ruling {
 	readonly distMoved: boolean | undefined
 	readonly rangesMoved: boolean | undefined
@@ -108,15 +118,15 @@ function readRanges(
 	manifest: Record<string, unknown>,
 	fields: readonly string[],
 ): ReadonlyMap<string, string> {
-	const ranges = new Map<string, string>()
-	for (const field of fields) {
-		const block = manifest[field]
-		if (typeof block !== 'object' || block === null) continue
-		for (const [name, range] of Object.entries(block)) {
-			if (typeof range === 'string') ranges.set(`${field} ${name}`, range)
-		}
-	}
-	return ranges
+	return new Map(
+		fields.flatMap((field) => {
+			const block = manifest[field]
+			if (typeof block !== 'object' || block === null) return []
+			return Object.entries(block).flatMap(([name, range]) =>
+				typeof range === 'string' ? [[`${field} ${name}`, range] as const] : [],
+			)
+		}),
+	)
 }
 
 function compareRanges(
@@ -180,12 +190,19 @@ function describeFailure(result: SpawnSyncReturns<string>): string | undefined {
 		.join(' | ')
 }
 
+function readVerdict(result: SpawnSyncReturns<string>): Verdict {
+	return { exit: result.status ?? undefined, note: describeFailure(result) }
+}
+
+// A judge reads the finished command and answers the exit and note its one log entry carries, so no
+// entry is amended after it is appended.
 function runStep(
 	runner: Runner,
 	step: string,
 	file: string,
 	args: readonly string[],
 	cwd: string,
+	judge: (result: SpawnSyncReturns<string>) => Verdict = readVerdict,
 ): SpawnSyncReturns<string> | undefined {
 	const command = describeCommand(file, args)
 	if (runner.dry) {
@@ -199,14 +216,44 @@ function runStep(
 		windowsHide: true,
 		maxBuffer: 64 * 1024 * 1024,
 	})
-	runner.steps.push({
-		step,
-		command,
-		exit: result.status ?? undefined,
-		durationMs: Date.now() - started,
-		note: describeFailure(result),
-	})
+	const durationMs = Date.now() - started
+	const verdict = judge(result)
+	runner.steps.push({ step, command, exit: verdict.exit, durationMs, note: verdict.note })
 	return result
+}
+
+// The audit exits 1 on the drift the pin step exists to close, so its exit is a reading here.
+function judgePin(result: SpawnSyncReturns<string>): Verdict {
+	const releases = readReleases(result.stdout)
+	if (releases === undefined || (result.status !== 0 && result.status !== 1)) {
+		return {
+			exit: result.status === null || result.status === 0 ? 2 : result.status,
+			note:
+				releases === undefined ? 'the audit printed no releases envelope' : describeFailure(result),
+		}
+	}
+	return { exit: 0, note: `${releases.length} release reading(s)` }
+}
+
+function judgeOverwrite(result: SpawnSyncReturns<string>, offline: boolean): Verdict {
+	if (!offline || result.status !== 1) return readVerdict(result)
+	const note = readString(readJsonObject(result.stdout), 'note')
+	return note !== undefined && note.includes(OFFLINE_REFUSAL)
+		? { exit: 0, note: 'offline overwrite skipped the catalog step by design' }
+		: { exit: 1, note: describeFailure(result) }
+}
+
+// The audit reads the canonical sources of scaffold's own checkout as foreign paths and exits 1.
+function judgeVerify(result: SpawnSyncReturns<string>, own: boolean): Verdict {
+	if (readReleases(result.stdout) === undefined) {
+		return {
+			exit: result.status === null || result.status === 0 ? 2 : result.status,
+			note: 'the audit printed no releases envelope',
+		}
+	}
+	return own && result.status === 1
+		? { exit: 0, note: 'foreign-path findings are expected on the scaffold checkout' }
+		: readVerdict(result)
 }
 
 function runNpmStep(
@@ -235,11 +282,6 @@ function recordStep(runner: Runner, step: string, command: string, note: string)
 	runner.steps.push({ step, command, exit: runner.dry ? undefined : 0, durationMs: 0, note })
 }
 
-function replaceLastStep(runner: Runner, exit: number | undefined, note: string | undefined): void {
-	const last = runner.steps.pop()
-	if (last !== undefined) runner.steps.push({ ...last, exit, note })
-}
-
 function failed(runner: Runner): boolean {
 	return runner.steps.some(
 		(entry) =>
@@ -250,26 +292,40 @@ function failed(runner: Runner): boolean {
 	)
 }
 
+// A release moves a declared range to its registry caret when the range differs, and a later release
+// of the same name reads the range the earlier one wrote.
+function computeRanges(ranges: Record<string, unknown>, releases: readonly Release[]): RangeMove {
+	return releases.reduce<RangeMove>(
+		(state, release) => {
+			if (release.latest === undefined || !(release.name in state.ranges)) return state
+			const caret = `^${release.latest}`
+			return state.ranges[release.name] === caret
+				? state
+				: {
+						ranges: { ...state.ranges, [release.name]: caret },
+						moved: [...state.moved, `${release.name} ${String(release.range)} -> ${caret}`],
+					}
+		},
+		{ ranges, moved: [] },
+	)
+}
+
 function writeRanges(target: string, releases: readonly Release[]): readonly string[] {
 	const manifest = readManifest(target)
 	if (manifest === undefined) return []
-	const moved: string[] = []
-	for (const field of RANGE_FIELDS) {
+	const fields = RANGE_FIELDS.flatMap((field) => {
 		const block = manifest[field]
-		if (typeof block !== 'object' || block === null) continue
-		const ranges = Object.fromEntries(Object.entries(block))
-		for (const release of releases) {
-			if (release.latest === undefined || !(release.name in ranges)) continue
-			const caret = `^${release.latest}`
-			if (ranges[release.name] !== caret) {
-				ranges[release.name] = caret
-				moved.push(`${release.name} ${String(release.range)} -> ${caret}`)
-			}
+		if (typeof block !== 'object' || block === null) return []
+		return [{ field, ...computeRanges(Object.fromEntries(Object.entries(block)), releases) }]
+	})
+	const moved = fields.flatMap((entry) => entry.moved)
+	if (moved.length > 0) {
+		const written = {
+			...manifest,
+			...Object.fromEntries(fields.map((entry) => [entry.field, entry.ranges])),
 		}
-		manifest[field] = ranges
+		writeFileSync(join(target, 'package.json'), `${JSON.stringify(written, null, '\t')}\n`)
 	}
-	if (moved.length > 0)
-		writeFileSync(join(target, 'package.json'), `${JSON.stringify(manifest, null, '\t')}\n`)
 	return moved
 }
 
@@ -285,19 +341,11 @@ function runPin(
 		scaffoldFile,
 		[...scaffoldPrefix, 'audit', '--json', ...offline],
 		runner.target,
+		judgePin,
 	)
 	if (audit !== undefined) {
 		const releases = readReleases(audit.stdout)
-		if (releases === undefined || (audit.status !== 0 && audit.status !== 1)) {
-			replaceLastStep(
-				runner,
-				audit.status === null || audit.status === 0 ? 2 : audit.status,
-				releases === undefined ? 'the audit printed no releases envelope' : describeFailure(audit),
-			)
-			return
-		}
-		// The audit exits 1 on the drift this step exists to close, so its exit is a reading here.
-		replaceLastStep(runner, 0, `${releases.length} release reading(s)`)
+		if (releases === undefined || (audit.status !== 0 && audit.status !== 1)) return
 		const moved = writeRanges(runner.target, releases)
 		recordStep(
 			runner,
@@ -346,21 +394,14 @@ function runOverwrite(
 	scaffoldPrefix: readonly string[],
 	offline: readonly string[],
 ): void {
-	const written = runStep(
+	runStep(
 		runner,
 		'overwrite',
 		scaffoldFile,
 		[...scaffoldPrefix, 'overwrite', '--json', ...offline],
 		runner.target,
+		(result) => judgeOverwrite(result, runner.offline),
 	)
-	if (runner.offline && written !== undefined && written.status === 1) {
-		const note = readString(readJsonObject(written.stdout), 'note')
-		if (note !== undefined && note.includes(OFFLINE_REFUSAL)) {
-			replaceLastStep(runner, 0, 'offline overwrite skipped the catalog step by design')
-		} else {
-			replaceLastStep(runner, 1, describeFailure(written))
-		}
-	}
 	if (!failed(runner)) {
 		runStep(
 			runner,
@@ -385,21 +426,11 @@ function runVerify(
 		scaffoldFile,
 		[...scaffoldPrefix, 'audit', '--json', ...offline],
 		runner.target,
+		(result) => judgeVerify(result, own),
 	)
 	if (audit === undefined) return
-	// The audit reads the canonical sources of scaffold's own checkout as foreign paths and exits 1.
-	if (own && audit.status === 1) {
-		replaceLastStep(runner, 0, 'foreign-path findings are expected on the scaffold checkout')
-	}
 	const releases = readReleases(audit.stdout)
-	if (releases === undefined) {
-		replaceLastStep(
-			runner,
-			audit.status === null || audit.status === 0 ? 2 : audit.status,
-			'the audit printed no releases envelope',
-		)
-		return
-	}
+	if (releases === undefined) return
 	const drift = releases.filter(
 		(release) => release.latest !== undefined && release.range !== `^${release.latest}`,
 	)
@@ -504,13 +535,6 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 	const version = readString(manifest, 'version')
 	const before = readRanges(manifest, RANGE_FIELDS)
 	const offline = runner.offline ? ['--offline'] : []
-	let hits: number | undefined
-	let ruling: Ruling = {
-		distMoved: undefined,
-		rangesMoved: undefined,
-		ranges: undefined,
-		hits: undefined,
-	}
 	if (selected.has('pin')) runPin(runner, scaffoldFile, scaffoldPrefix, offline)
 	if (selected.has('commit') && !failed(runner)) runCommit(runner)
 	if (selected.has('overwrite') && !failed(runner)) {
@@ -527,9 +551,10 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 		runVerify(runner, scaffoldFile, scaffoldPrefix, offline, name === SCAFFOLD)
 	}
 	if (selected.has('install') && !failed(runner)) runNpmStep(runner, 'install', ['install'])
-	if (selected.has('pins') && !failed(runner)) {
-		hits = runPins(runner, before, readOption(argv, '--prior') ?? version)
-	}
+	const hits =
+		selected.has('pins') && !failed(runner)
+			? runPins(runner, before, readOption(argv, '--prior') ?? version)
+			: undefined
 	if (selected.has('format') && !failed(runner)) runNpmStep(runner, 'format', ['run', 'format'])
 	if (selected.has('gates') && !failed(runner)) {
 		for (const gate of GATES) {
@@ -537,8 +562,11 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 			runNpmStep(runner, 'gates', ['run', gate])
 		}
 	}
-	if (selected.has('compare') && !failed(runner)) ruling = runCompare(runner, name)
-	ruling = { ...ruling, hits }
+	const compared: Ruling =
+		selected.has('compare') && !failed(runner)
+			? runCompare(runner, name)
+			: { distMoved: undefined, rangesMoved: undefined, ranges: undefined, hits: undefined }
+	const ruling: Ruling = { ...compared, hits }
 	const bump =
 		ruling.distMoved === true || ruling.rangesMoved === true
 			? 'bump'
@@ -562,31 +590,34 @@ function readLayers(catalogPath: string): ReadonlyMap<string, readonly string[]>
 	const start = text.indexOf('<!-- orkestrel:catalog -->')
 	const end = text.indexOf('<!-- /orkestrel:catalog -->')
 	if (start === -1 || end === -1) return undefined
-	const layers = new Map<string, string[]>()
-	for (const line of text.slice(start, end).split(/\r\n|\n/)) {
-		const match = line.match(
-			/^\|\s*`(@orkestrel\/[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|\s*(L\d+)\s*\|/u,
-		)
-		if (match?.[1] === undefined || match[3] === undefined) continue
-		const members = layers.get(match[3]) ?? []
-		members.push(`${match[1]} ${match[2] ?? ''}`.trim())
-		layers.set(match[3], members)
-	}
+	const rows = text
+		.slice(start, end)
+		.split(/\r\n|\n/)
+		.flatMap((line) => {
+			const match = line.match(
+				/^\|\s*`(@orkestrel\/[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|\s*(L\d+)\s*\|/u,
+			)
+			return match?.[1] === undefined || match[3] === undefined
+				? []
+				: [{ layer: match[3], member: `${match[1]} ${match[2] ?? ''}`.trim() }]
+		})
 	return new Map(
-		[...layers.entries()].sort(([left], [right]) => Number(left.slice(1)) - Number(right.slice(1))),
+		[...Map.groupBy(rows, ({ layer }) => layer)]
+			.map(([layer, members]) => [layer, members.map(({ member }) => member)] as const)
+			.sort(([left], [right]) => Number(left.slice(1)) - Number(right.slice(1))),
 	)
 }
 
 function renderVisit(visit: Visit): string {
-	const lines = visit.steps.map(
-		(entry) =>
-			`wave: ${entry.step.padEnd(9)} exit=${entry.exit === undefined ? 'dry' : String(entry.exit)} ${String(entry.durationMs).padStart(7)} ms  ${entry.command}${entry.note === undefined ? '' : `  (${entry.note})`}`,
-	)
-	lines.push(
+	const lines = [
+		...visit.steps.map(
+			(entry) =>
+				`wave: ${entry.step.padEnd(9)} exit=${entry.exit === undefined ? 'dry' : String(entry.exit)} ${String(entry.durationMs).padStart(7)} ms  ${entry.command}${entry.note === undefined ? '' : `  (${entry.note})`}`,
+		),
 		`wave: ruling dist ${describeReading(visit.ruling.distMoved, 'moved', 'same')}, ranges ${describeReading(visit.ruling.rangesMoved, 'moved', 'same')}${visit.ruling.hits === undefined ? '' : `, ${visit.ruling.hits} self-pin hit(s)`}`,
-	)
-	for (const range of visit.ruling.ranges ?? []) lines.push(`wave: range ${range}`)
-	lines.push(visit.row)
+		...(visit.ruling.ranges ?? []).map((range) => `wave: range ${range}`),
+		visit.row,
+	]
 	return `${lines.join('\n')}\n`
 }
 

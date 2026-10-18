@@ -229,12 +229,7 @@ export class Compiler implements CompilerInterface {
 	#scaffold(blueprint: Blueprint, groups: readonly Group[]): Scaffolding {
 		const stages: CompileRecord[] = []
 		const draft = this.#draft(blueprint)
-		const selected: Artifact[] = []
-		for (const group of groups) {
-			for (const artifact of draft) {
-				if (artifact.group === group) selected.push(artifact)
-			}
-		}
+		const selected = groups.flatMap((group) => draft.filter((artifact) => artifact.group === group))
 		const artifacts = applyOverrides(selected, blueprint.overrides)
 		stages.push({ stage: 'draft', input: { blueprint, groups }, output: artifacts })
 		const questions = this.#gate(blueprint, draft, artifacts)

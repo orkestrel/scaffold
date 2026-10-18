@@ -12,7 +12,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { once } from 'node:events'
-import { join } from 'node:path'
+import { dirname, join, parse } from 'node:path'
 import { Worker } from 'node:worker_threads'
 import { arrayOf, isRecord, isString } from '@orkestrel/contract'
 import { captureError, createRecorder, requireValue } from '@orkestrel/test'
@@ -45,6 +45,7 @@ import {
 	isVacant,
 	listCanonPaths,
 	listDirectories,
+	listAncestors,
 	listFiles,
 	Materializer,
 	matchesAnchor,
@@ -109,11 +110,6 @@ import {
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 import { createScratch, supportsFileLinks, supportsMode } from '@orkestrel/test/server'
-
-// Evaluated at module scope so every case shares one reading: the probe opens a real
-// listener and a socket per call, and its answer is a property of the host rather than
-// of any case that reads it.
-const MAPPED_LOOPBACK: boolean = await supportsMappedLoopback()
 
 describe('Ollama setup', () => {
 	it("uses the running host's Bash path form", () => {
@@ -411,23 +407,25 @@ describe.skipIf(process.platform !== 'win32' && resolveOllamaShell() === undefin
 		// fixture answered. A host with no IPv6 stack refuses that `AF_INET6` connect with
 		// `EAFNOSUPPORT`, so the request never arrives and the assertion measures the host, which
 		// is what supportsMappedLoopback reports on.
-		it.skipIf(!MAPPED_LOOPBACK)(
-			'refuses redirected version readiness without starting a local daemon',
-			async () => {
-				const server = await createOllamaServer({ status: { version: 302 } })
-				try {
-					const host = server.url.replace('127.0.0.1', '[::ffff:127.0.0.1]')
-					const result = await executeOllamaSetup(host, 'fixture-model')
-					expect(result.failed).toBe(true)
-					expect(result.stderr).toContain(
-						'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
-					)
-					expect(server.requests.map((request) => request.path)).toStrictEqual(['/api/version'])
-				} finally {
-					await server.destroy()
-				}
-			},
-		)
+		it('refuses redirected version readiness without starting a local daemon', async (context) => {
+			if (!(await supportsMappedLoopback())) {
+				context.skip(
+					'the host refuses an AF_INET6 connect with EAFNOSUPPORT, so the rewritten address reaches nothing',
+				)
+			}
+			const server = await createOllamaServer({ status: { version: 302 } })
+			try {
+				const host = server.url.replace('127.0.0.1', '[::ffff:127.0.0.1]')
+				const result = await executeOllamaSetup(host, 'fixture-model')
+				expect(result.failed).toBe(true)
+				expect(result.stderr).toContain(
+					'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
+				)
+				expect(server.requests.map((request) => request.path)).toStrictEqual(['/api/version'])
+			} finally {
+				await server.destroy()
+			}
+		})
 
 		it('refuses a redirected pull with a completed protocol body', async () => {
 			const server = await createOllamaServer({ present: false, status: { pull: 302 } })
@@ -614,21 +612,25 @@ describe('vendored imports', () => {
 			})),
 			...controls.map((control) => ({ ...control, vendored: false })),
 		]
-		const imported: string[] = []
-		const controlled: string[] = []
-		for (const module of modules) {
+		// Each import the parser reads is a line and whether its module reports it: a control
+		// reports every import it makes, and a vendored module reports only one it cannot rule on.
+		const readings = modules.flatMap((module) =>
 			// The parser reads the imports the module makes. A pattern reads its text, so
 			// it reports a specifier a string literal or a comment carries as an import,
 			// and the vendored set holds both of those.
-			for (const specifier of readSpecifiers(module.content, module.path)) {
+			readSpecifiers(module.content, module.path).flatMap((specifier) => {
 				if (specifier === undefined) {
 					// An argument assembled at runtime names no package to rule on, so the
 					// proof reports the import rather than passing over it.
-					if (module.vendored) imported.push(`${module.path}: unreadable import`)
-					else controlled.push(`${module.path}: unreadable import`)
-					continue
+					return [
+						{
+							vendored: module.vendored,
+							line: `${module.path}: unreadable import`,
+							reported: true,
+						},
+					]
 				}
-				if (!specifier.startsWith('@orkestrel/')) continue
+				if (!specifier.startsWith('@orkestrel/')) return []
 				// A subpath names no package of its own, so the ruling reads the scope and
 				// the first segment: `@orkestrel/test/server` is declared when
 				// `@orkestrel/test` is.
@@ -636,11 +638,21 @@ describe('vendored imports', () => {
 					BASE_DEV_DEPENDENCIES,
 					specifier.split('/').slice(0, 2).join('/'),
 				)
-				if (!module.vendored) {
-					controlled.push(`${module.path}: ${specifier} ${declared ? 'declared' : 'undeclared'}`)
-				} else if (!declared) imported.push(`${module.path}: ${specifier}`)
-			}
-		}
+				return module.vendored
+					? [{ vendored: true, line: `${module.path}: ${specifier}`, reported: !declared }]
+					: [
+							{
+								vendored: false,
+								line: `${module.path}: ${specifier} ${declared ? 'declared' : 'undeclared'}`,
+								reported: true,
+							},
+						]
+			}),
+		)
+		const imported = readings
+			.filter(({ vendored, reported }) => vendored && reported)
+			.map(({ line }) => line)
+		const controlled = readings.filter(({ vendored }) => !vendored).map(({ line }) => line)
 		expect(controlled).toStrictEqual([
 			'control/from.ts: @orkestrel/test/server declared',
 			'control/dynamic.ts: @orkestrel/test/server declared',
@@ -1409,6 +1421,39 @@ describe('listCanonPaths', () => {
 			}
 		},
 	)
+})
+
+describe('listAncestors', () => {
+	it('lists a relative path, then each directory above it, ending at the dot', () => {
+		expect(listAncestors('notes/entry/file.md')).toEqual([
+			'notes/entry/file.md',
+			'notes/entry',
+			'notes',
+			'.',
+		])
+		expect(listAncestors('file.md')).toEqual(['file.md', '.'])
+		expect(listAncestors('.')).toEqual(['.'])
+	})
+
+	it('ends an absolute path at its filesystem root, whichever host reads it', () => {
+		const root = parse(process.cwd()).root
+		const path = join(root, 'a', 'b')
+		expect(listAncestors(path)).toEqual([path, join(root, 'a'), root])
+		expect(listAncestors(root)).toEqual([root])
+	})
+
+	it('derives each entry from the one before it with no filesystem read', () => {
+		const ancestors = listAncestors(join('absent', 'segment', 'deeper', 'file.md'))
+		expect(ancestors.slice(1)).toEqual(ancestors.slice(0, -1).map((ancestor) => dirname(ancestor)))
+		expect(dirname(ancestors.at(-1) ?? '')).toBe(ancestors.at(-1))
+	})
+
+	it('stops at the limit it is given and lists the path alone for a limit below two', () => {
+		expect(listAncestors('a/b/c/d', 3)).toEqual(['a/b/c/d', 'a/b/c', 'a/b'])
+		expect(listAncestors('a/b/c/d', 1)).toEqual(['a/b/c/d'])
+		expect(listAncestors('a/b/c/d', 0)).toEqual(['a/b/c/d'])
+		expect(listAncestors('a/b', 10)).toEqual(['a/b', 'a', '.'])
+	})
 })
 
 describe('pruneEmptiedDirectories', () => {
@@ -2602,7 +2647,7 @@ describe('stageHost', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
-			for (let index = 0; index < 256; index += 1) {
+			for (const index of Array.from({ length: 256 }).keys()) {
 				workspace.write(
 					`checkout/.claude/rules/interleave-${String(index).padStart(3, '0')}.md`,
 					`${String(index)}\n`,

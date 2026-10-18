@@ -19,6 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import {
+	parseJsonRecord,
 	readList,
 	readMissingFlags,
 	readOption,
@@ -40,6 +41,11 @@ interface Upload {
 	readonly journal: string
 }
 
+interface Published {
+	readonly uploads: readonly Upload[]
+	readonly stopped: boolean
+}
+
 function waitFor(ms: number): Promise<void> {
 	return new Promise((settle) => {
 		setTimeout(settle, ms)
@@ -52,14 +58,11 @@ function readWhoami(): string | undefined {
 	return result.status === 0 && user !== '' ? user : undefined
 }
 
-async function pollWhoami(waitSeconds: number): Promise<string | undefined> {
-	const started = Date.now()
-	let user = readWhoami()
-	while (user === undefined && Date.now() - started < waitSeconds * 1000) {
-		await waitFor(POLL_MS)
-		user = readWhoami()
-	}
-	return user
+async function pollWhoami(waitSeconds: number, started = Date.now()): Promise<string | undefined> {
+	const user = readWhoami()
+	if (user !== undefined || Date.now() - started >= waitSeconds * 1000) return user
+	await waitFor(POLL_MS)
+	return pollWhoami(waitSeconds, started)
 }
 
 function readServed(name: string, version: string): boolean {
@@ -67,14 +70,22 @@ function readServed(name: string, version: string): boolean {
 	return result.status === 0 && result.stdout.replace(/["\s]/gu, '') === version
 }
 
-async function confirmServed(name: string, version: string, waitSeconds: number): Promise<boolean> {
-	const started = Date.now()
-	let served = readServed(name, version)
-	while (!served && Date.now() - started < waitSeconds * 1000) {
-		await waitFor(POLL_MS)
-		served = readServed(name, version)
-	}
-	return served
+async function confirmServed(
+	name: string,
+	version: string,
+	waitSeconds: number,
+	started = Date.now(),
+): Promise<boolean> {
+	const served = readServed(name, version)
+	if (served || Date.now() - started >= waitSeconds * 1000) return served
+	await waitFor(POLL_MS)
+	return confirmServed(name, version, waitSeconds, started)
+}
+
+function findGitRoot(directory: string): string {
+	return existsSync(join(directory, '.git')) || dirname(directory) === directory
+		? directory
+		: findGitRoot(dirname(directory))
 }
 
 function readErrorCode(text: string): string | undefined {
@@ -88,14 +99,43 @@ function readManifestName(directory: string): {
 	const path = join(directory, 'package.json')
 	if (!existsSync(path)) return { name: undefined, version: undefined }
 	try {
-		const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'))
-		if (typeof parsed !== 'object' || parsed === null)
-			return { name: undefined, version: undefined }
-		const record = Object.fromEntries(Object.entries(parsed))
+		const record = parseJsonRecord(readFileSync(path, 'utf8'))
 		return { name: readString(record, 'name'), version: readString(record, 'version') }
 	} catch {
 		return { name: undefined, version: undefined }
 	}
+}
+
+function publishPackage(directory: string, otp: string): Upload {
+	const manifest = readManifestName(directory)
+	const journal = `tmp/units/publish-${(manifest.name ?? directory).replace(/[^A-Za-z0-9.-]+/gu, '-')}.log`
+	const result = runNpm(
+		['publish', '--ignore-scripts', '--browser=false', `--otp=${otp}`],
+		directory,
+	)
+	writeFileSync(journal, `${result.stdout}\n${result.stderr}\nexit=${result.status ?? 'null'}\n`)
+	const match = `${result.stdout}\n${result.stderr}`.match(ACCEPTED)
+	const accepted = result.status === 0 && match !== null
+	const name = match?.[1] ?? manifest.name
+	const version = match?.[2] ?? manifest.version
+	const upload: Upload = {
+		directory,
+		name,
+		version,
+		exit: result.status ?? undefined,
+		accepted,
+		confirmed: false,
+		code: accepted ? undefined : readErrorCode(result.stderr),
+		journal,
+	}
+	if (accepted) {
+		console.error(`window: accepted ${name ?? '?'}@${version ?? '?'}`)
+	} else {
+		console.error(
+			`window: ${name ?? directory} refused (${upload.code ?? `exit ${String(result.status)}`}); resume from it on a fresh code`,
+		)
+	}
+	return upload
 }
 
 async function publishAll(
@@ -104,39 +144,15 @@ async function publishAll(
 	waitSeconds: number,
 ): Promise<readonly Upload[]> {
 	mkdirSync('tmp/units', { recursive: true })
-	const uploads: Upload[] = []
-	for (const directory of directories) {
-		const manifest = readManifestName(directory)
-		const journal = `tmp/units/publish-${(manifest.name ?? directory).replace(/[^A-Za-z0-9.-]+/gu, '-')}.log`
-		const result = runNpm(
-			['publish', '--ignore-scripts', '--browser=false', `--otp=${otp}`],
-			directory,
-		)
-		writeFileSync(journal, `${result.stdout}\n${result.stderr}\nexit=${result.status ?? 'null'}\n`)
-		const match = `${result.stdout}\n${result.stderr}`.match(ACCEPTED)
-		const accepted = result.status === 0 && match !== null
-		const name = match?.[1] ?? manifest.name
-		const version = match?.[2] ?? manifest.version
-		const upload: Upload = {
-			directory,
-			name,
-			version,
-			exit: result.status ?? undefined,
-			accepted,
-			confirmed: false,
-			code: accepted ? undefined : readErrorCode(result.stderr),
-			journal,
-		}
-		if (!accepted) {
-			uploads.push(upload)
-			console.error(
-				`window: ${name ?? directory} refused (${upload.code ?? `exit ${String(result.status)}`}); resume from it on a fresh code`,
-			)
-			break
-		}
-		console.error(`window: accepted ${name ?? '?'}@${version ?? '?'}`)
-		uploads.push(upload)
-	}
+	// A step after the first refusal returns the state unchanged, so nothing publishes past it.
+	const { uploads } = directories.reduce<Published>(
+		(state, directory) => {
+			if (state.stopped) return state
+			const upload = publishPackage(directory, otp)
+			return { uploads: [...state.uploads, upload], stopped: !upload.accepted }
+		},
+		{ uploads: [], stopped: false },
+	)
 	const confirmed: Upload[] = []
 	for (const upload of uploads) {
 		if (!upload.accepted || upload.name === undefined || upload.version === undefined) {
@@ -199,8 +215,7 @@ async function main(argv: readonly string[]): Promise<number> {
 			return 64
 		}
 		for (const directory of directories) {
-			let root = resolve(directory)
-			while (!existsSync(join(root, '.git')) && dirname(root) !== root) root = dirname(root)
+			const root = findGitRoot(resolve(directory))
 			const entry = join(root, '.git')
 			if (!existsSync(entry) || !statSync(entry).isFile()) continue
 			const line = readFileSync(entry, 'utf8')

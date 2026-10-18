@@ -30,7 +30,7 @@ import {
 } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createRecorder, requireValue } from '@orkestrel/test'
-import { buildBlueprint, buildHostArtifact } from '../../setup.js'
+import { buildBlueprint, buildHostArtifact, MATERIALIZED_PATHS } from '../../setup.js'
 import {
 	buildHostManifest,
 	buildCompiledPlan,
@@ -51,15 +51,6 @@ import {
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 import { createScratch } from '@orkestrel/test/server'
-
-const MATERIALIZED = [
-	'package.json',
-	'AGENTS.md',
-	'.claude/agents/orkestrel.md',
-	'.claude/rules/names.md',
-	'guides/guide.md',
-	'scripts/codex.sh',
-]
 
 describe('Materializer construction', () => {
 	it('reads installed reference guides without planting unclaimed mirrors', () => {
@@ -230,13 +221,13 @@ describe('Materializer value host', () => {
 				const fromValue = valued.materialize(buildVendoredPlan(), valuedTarget)
 				expect(fromValue.written).toEqual(fromRoot.written)
 				expect(fromValue.skipped).toEqual(fromRoot.skipped)
-				expect(readSnapshot(valuedTarget, MATERIALIZED)).toEqual(
-					readSnapshot(rootedTarget, MATERIALIZED),
+				expect(readSnapshot(valuedTarget, MATERIALIZED_PATHS)).toEqual(
+					readSnapshot(rootedTarget, MATERIALIZED_PATHS),
 				)
 				// The modes agree too, because a value host is filled into a private
 				// root and copied from it: the write path is the one a directory host
 				// takes, so the executable declaration survives either representation.
-				for (const path of MATERIALIZED) {
+				for (const path of MATERIALIZED_PATHS) {
 					expect(statSync(join(valuedTarget, path)).mode).toBe(
 						statSync(join(rootedTarget, path)).mode,
 					)
@@ -413,10 +404,10 @@ describe('Materializer materialize', () => {
 			const materializer = new Materializer({ host })
 			try {
 				const result = materializer.materialize(buildVendoredPlan(), target)
-				expect(result.written).toEqual([...MATERIALIZED, '.claude/skills'])
+				expect(result.written).toEqual([...MATERIALIZED_PATHS, '.claude/skills'])
 				expect(result.skipped).toEqual([])
 				expect(result.removed).toEqual([])
-				expect([...listFiles(target)].sort()).toEqual([...MATERIALIZED].sort())
+				expect([...listFiles(target)].sort()).toEqual([...MATERIALIZED_PATHS].sort())
 				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('AGENTS.md\n')
 				expect(readFileSync(join(target, '.claude/rules/names.md'), 'utf8')).toBe(
 					'.claude/rules/names.md\n',
@@ -958,7 +949,7 @@ describe('Materializer repair', () => {
 				rmSync(join(target, '.claude/rules/names.md'))
 				writeFileSync(join(target, 'AGENTS.md'), '# Edited agents\n', 'utf8')
 				writeFileSync(join(target, 'guides/guide.md'), '# Edited guide\n', 'utf8')
-				const audit = buildTargetAudit(target, MATERIALIZED, ['AGENTS.md'])
+				const audit = buildTargetAudit(target, MATERIALIZED_PATHS, ['AGENTS.md'])
 				const result = materializer.repair(buildVendoredPlan(), audit, target)
 				expect(result.written).toEqual(['AGENTS.md', '.claude/rules/names.md'])
 				expect(result.skipped).toEqual([
@@ -990,7 +981,7 @@ describe('Materializer repair', () => {
 			try {
 				materializer.materialize(buildVendoredPlan(), target)
 				rmSync(join(target, '.claude/rules/names.md'))
-				const audit = buildTargetAudit(target, MATERIALIZED, [])
+				const audit = buildTargetAudit(target, MATERIALIZED_PATHS, [])
 				writeFileSync(join(target, 'AGENTS.md'), '# Moved after the audit\n', 'utf8')
 				expect(
 					captureScaffoldCode(() => materializer.repair(buildVendoredPlan(), audit, target)),
@@ -1135,10 +1126,10 @@ describe('Materializer repair', () => {
 			const materializer = new Materializer({ host })
 			try {
 				materializer.materialize(buildVendoredPlan(), target)
-				const audit = buildTargetAudit(target, MATERIALIZED, [])
+				const audit = buildTargetAudit(target, MATERIALIZED_PATHS, [])
 				const result = materializer.repair(buildVendoredPlan(), audit, target)
 				expect(result.written).toEqual([])
-				expect(result.skipped).toEqual(MATERIALIZED)
+				expect(result.skipped).toEqual(MATERIALIZED_PATHS)
 			} finally {
 				materializer.destroy()
 			}

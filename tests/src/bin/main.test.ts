@@ -30,25 +30,27 @@ describe('scaffold', () => {
 			stdio: ['ignore', 'pipe', 'pipe'],
 			windowsHide: true,
 		})
-		let output = ''
-		let diagnostic = ''
+		const output: string[] = []
+		const diagnostic: string[] = []
 		child.stdout.setEncoding('utf8')
 		child.stderr.setEncoding('utf8')
 		child.stdout.on('data', (chunk: string) => {
-			if (output.length >= 10) return
-			output += chunk.slice(0, 10 - output.length)
-			if (output.length === 10) child.stdout.destroy()
+			const held = output.join('').length
+			if (held >= 10) return
+			const kept = chunk.slice(0, 10 - held)
+			output.push(kept)
+			if (held + kept.length === 10) child.stdout.destroy()
 		})
 		child.stderr.on('data', (chunk: string) => {
-			diagnostic += chunk
+			diagnostic.push(chunk)
 		})
 		const code = await new Promise<number | null>((resolveCode, reject) => {
 			child.once('error', reject)
 			child.once('close', resolveCode)
 		})
-		expect(output).toHaveLength(10)
-		expect(diagnostic).not.toContain('Unhandled')
-		expect(diagnostic).not.toContain('node:events')
+		expect(output.join('')).toHaveLength(10)
+		expect(diagnostic.join('')).not.toContain('Unhandled')
+		expect(diagnostic.join('')).not.toContain('node:events')
 		expect(code).toBe(EXIT_CLEAN)
 	})
 

@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import { join } from 'node:path'
-import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
+import { DISCOVERY_SCRIPT, runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 
 describe('discovery.ts', () => {
 	it('passes allowOnly and strictTags boolean values to full gate collection', () => {
@@ -21,7 +19,7 @@ describe('discovery.ts', () => {
 					'package.json',
 					JSON.stringify({ type: 'module', scripts: { test: `vitest run ${option} false` } }),
 				)
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect(run).toMatchObject({ status: 0 })
 				expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 			}
@@ -33,7 +31,7 @@ describe('discovery.ts', () => {
 				'package.json',
 				JSON.stringify({ type: 'module', scripts: { test: 'vitest run --allowOnly false' } }),
 			)
-			const refused = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const refused = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(refused).toMatchObject({ status: 2 })
 			expect(refused.stderr).toContain('allowOnly')
 		} finally {
@@ -58,7 +56,7 @@ describe('discovery.ts', () => {
 					'package.json',
 					JSON.stringify({ type: 'module', scripts: { test: command } }),
 				)
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect(run).toMatchObject({ status: 0 })
 				expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 			}
@@ -79,7 +77,7 @@ describe('discovery.ts', () => {
 				"import { appendFileSync } from 'node:fs'\nappendFileSync('listings', 'listed\\n')\nexport default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
 			)
 			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 0 })
 			expect(scratch.read('listings')).toBe('listed\n')
 		} finally {
@@ -103,7 +101,7 @@ describe('discovery.ts', () => {
 				"export default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
 			)
 			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(2)
 			expect(run.stderr).toContain('test > test:core')
 			expect(run.stderr).toContain('--unrecognized')
@@ -138,7 +136,7 @@ export default ({ mode }) => {
 }\n`,
 			)
 			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 0 })
 			expect(run.json?.ungated).toEqual([])
 			expect(run.json?.projects).toContainEqual(
@@ -166,7 +164,7 @@ export default ({ mode }) => {
 			)
 			for (const file of ['tests/a.test.ts', 'nested/tests/b.test.ts'])
 				scratch.write(file, "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 3 })
 			expect(run.json?.projects).toEqual([
 				{ name: 'base', files: 1, tests: 1 },
@@ -196,7 +194,7 @@ export default ({ mode }) => {
 				"import { playwright } from '@vitest/browser-playwright'\nexport default ({ mode }) => ({ test: { name: 'web', include: mode === 'empty' ? [] : ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } })\n",
 			)
 			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 3 })
 			expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
 			expect(run.json?.empty).toEqual([])
@@ -220,7 +218,7 @@ export default ({ mode }) => {
 				'tests/a.test.ts',
 				"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 3 })
 			expect(run.json?.projects).toEqual([{ name: 'core', files: 1, tests: 2 }])
 		} finally {
@@ -244,7 +242,7 @@ export default ({ mode }) => {
 				'tests/a.test.ts',
 				"import { it } from 'vitest'\nit('same', { tags: ['chosen'] }, () => {})\nit('same', { tags: ['outside'] }, () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 3 })
 			expect(run.json?.projects).toEqual([{ name: 'core', files: 1, tests: 2 }])
 		} finally {
@@ -272,7 +270,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 3 })
 			expect(run.json?.projects).toEqual([{ name: 'core', files: 2, tests: 2 }])
 		} finally {
@@ -294,7 +292,7 @@ export default ({ mode }) => {
 				'vitest run --project core -- --project absent',
 			]) {
 				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect.soft(run.status, test + run.stdout + run.stderr).toBe(0)
 				expect
 					.soft(run.json?.projects)
@@ -321,7 +319,7 @@ export default ({ mode }) => {
 				"export default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
 			)
 			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run).toMatchObject({ status: 3 })
 			expect(run.json?.projects).toEqual([{ name: 'core', files: 1, tests: 1 }])
 		} finally {
@@ -340,7 +338,7 @@ export default ({ mode }) => {
 			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
 			for (const test of ['vitest --merge-reports', 'vitest --listTags', 'vitest --clearCache']) {
 				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect.soft(run.status, test + run.stdout + run.stderr).toBe(3)
 			}
 		} finally {
@@ -398,7 +396,7 @@ export default ({ mode }) => {
 				'vitest run --shard 1/2',
 			]) {
 				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect.soft(run.status, `${test}\n${run.stderr}`).toBe(3)
 				expect.soft(run.json?.projects, test).toEqual([{ name: 'core', files: 2, tests: 4 }])
 			}
@@ -411,7 +409,7 @@ export default ({ mode }) => {
 					},
 				}),
 			)
-			const complete = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const complete = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect.soft(complete.status, complete.stderr).toBe(0)
 			expect(complete.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 2, tests: 4 }])
 		} finally {
@@ -432,7 +430,7 @@ export default ({ mode }) => {
 				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { projects: [{ test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }] } }\n",
 			)
 			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
 			expect(run.json?.ungated).toEqual(['web (chromium)'])
@@ -458,7 +456,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.projects).toEqual([{ name: 'node', files: 2, tests: 2 }])
 			expect(run.json?.ungated).toEqual(['node'])
@@ -480,7 +478,7 @@ export default ({ mode }) => {
 				"export default { test: { name: 'core', include: ['tests/a.test.ts'] } }\n",
 			)
 			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.projects).toEqual([{ name: 'core', files: 1, tests: 1 }])
 		} finally {
@@ -501,7 +499,7 @@ export default ({ mode }) => {
 				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { projects: [{ test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }] } }\n",
 			)
 			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([
 				{
@@ -539,7 +537,7 @@ export default ({ mode }) => {
 				},
 			]) {
 				scratch.write('package.json', JSON.stringify({ type: 'module', scripts }))
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect(run.status).toBe(3)
 				expect(run.json?.empty).toEqual(['probe'])
 				expect(run.json?.workbenches).toEqual([])
@@ -563,7 +561,7 @@ export default ({ mode }) => {
 				'npm exec vitest run',
 			]) {
 				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect.soft(run.status, test).toBe(0)
 				expect
 					.soft(run.json?.projects, test)
@@ -598,7 +596,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.empty).toEqual([])
 			expect(run.json?.workbenches).toEqual(['probe'])
@@ -638,7 +636,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['browser'])
 			expect(run.json?.projects).toContainEqual({ name: 'browser', files: 1, tests: 1 })
@@ -663,7 +661,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['browser'])
 		} finally {
@@ -692,7 +690,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['node'])
 			expect(run.json?.projects).toEqual([
@@ -724,7 +722,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['core (legacy)'])
 		} finally {
@@ -748,7 +746,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['app:core'])
 			expect(run.json?.projects).toEqual([
@@ -777,7 +775,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['browser'])
 			expect(run.json?.projects).toEqual([
@@ -805,7 +803,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 		} finally {
@@ -827,7 +825,7 @@ export default ({ mode }) => {
 			)
 			for (const test of ['npm ls vitest', 'vitest list tests/shared.test.ts']) {
 				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
-				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 				expect(run.status).toBe(3)
 				expect(run.json?.ungated).toEqual(['core'])
 			}
@@ -853,7 +851,7 @@ export default ({ mode }) => {
 					`cases/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['core'])
 			expect(run.json?.projects).toEqual([
@@ -884,7 +882,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['browser'])
 			expect(run.json?.projects).toEqual([
@@ -916,7 +914,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['core (chromium)'])
 			expect(run.json?.projects).toEqual([
@@ -945,7 +943,7 @@ export default ({ mode }) => {
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([
 				{
@@ -977,7 +975,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 		} finally {
@@ -1001,7 +999,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(scratch.read('listings')).toBe('listed\nlisted\nlisted\n')
 			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
@@ -1036,7 +1034,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.ungated).toEqual(['wrapper (chromium)'])
 			expect(run.json?.projects).toEqual([
@@ -1085,7 +1083,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.undiscovered).toEqual([])
 			expect(run.json?.projects).toContainEqual(
@@ -1130,7 +1128,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.undiscovered).toEqual([])
 			expect(run.json?.projects).toContainEqual(
@@ -1168,7 +1166,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('collects', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--config', 'second.config.ts', '--json'], {
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--config', 'second.config.ts', '--json'], {
 				cwd: scratch.path,
 			})
 			expect(run.status).toBe(3)
@@ -1217,7 +1215,7 @@ export default ({ mode }) => {
 				'cases/selected/excluded.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(scratch.read('listings')).toBe('listed\nlisted\nlisted\n')
 			expect(run.json?.ungated).toEqual(['excluded'])
@@ -1244,7 +1242,9 @@ export default ({ mode }) => {
 					units: [{ config: 'selected.config.ts', mode: 'selected' }],
 				}),
 			])
-			const scoped = runSkillScript(SCRIPT, ['--projects', 'core', '--json'], { cwd: scratch.path })
+			const scoped = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'core', '--json'], {
+				cwd: scratch.path,
+			})
 			expect(scoped.status).toBe(0)
 			expect(scoped.json?.projects).toEqual([
 				{ name: 'core', gate: 'test > test:core', files: 1, tests: 1 },
@@ -1280,7 +1280,7 @@ export default ({ mode }) => {
 					`tests/${name}.test.ts`,
 					"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
 				)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([
 				expect.objectContaining({ name: 'browser', gate: 'test', files: 1, tests: 2 }),
@@ -1307,7 +1307,9 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--projects', 'absent', '--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'absent', '--json'], {
+				cwd: scratch.path,
+			})
 			expect(run.status).toBe(3)
 			expect(run.json?.empty).toEqual(['absent'])
 			expect(run.json?.projects).toEqual([
@@ -1334,7 +1336,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			expect(runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path }).status).toBe(0)
+			expect(runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path }).status).toBe(0)
 			expect(scratch.has('tmp')).toBe(false)
 		} finally {
 			scratch.destroy()
@@ -1356,7 +1358,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 		} finally {
@@ -1380,7 +1382,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.json?.projects).toEqual([
 				{ name: 'core (chromium)', gate: 'test', files: 1, tests: 1 },
 			])
@@ -1414,7 +1416,7 @@ export default ({ mode }) => {
 				'tests/distribution.test.ts',
 				"import { writeFileSync } from 'node:fs'\nimport { it } from 'vitest'\nwriteFileSync('collected', 'yes')\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--projects', 'core,server', '--json'], {
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'core,server', '--json'], {
 				cwd: scratch.path,
 			})
 			expect(scratch.has('collected')).toBe(true)
@@ -1424,7 +1426,7 @@ export default ({ mode }) => {
 				{ name: 'server', gate: 'test', files: 1, tests: 1 },
 			])
 			expect(run.json?.undiscovered).toEqual([])
-			const control = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const control = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(control.status).toBe(0)
 			expect(scratch.has('collected')).toBe(true)
 		} finally {
@@ -1450,7 +1452,7 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(2)
 			expect(run.stderr).toContain("have different 'maxWorkers' but same 'sequence.groupOrder'")
 			expect(run.stderr).toContain("Provide unique 'sequence.groupOrder' for them.")
@@ -1461,7 +1463,7 @@ export default ({ mode }) => {
 				'vite.config.ts',
 				"throw new Error('Fixture configuration refused')\nexport default {}\n",
 			)
-			const refused = runSkillScript(SCRIPT, [], { cwd: scratch.path })
+			const refused = runSkillScript(DISCOVERY_SCRIPT, [], { cwd: scratch.path })
 			expect(refused.status).toBe(2)
 			expect(refused.stderr).toContain('Fixture configuration refused')
 		} finally {
@@ -1471,7 +1473,7 @@ export default ({ mode }) => {
 
 	// Budgeted for the whole skills project running beside this checkout-wide census.
 	it('reads this checkout: every gated project, its root chain, the workbench, and the skip markers', () => {
-		const run = runSkillScript(SCRIPT, ['--json'], { cwd: WORKSPACE_ROOT })
+		const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: WORKSPACE_ROOT })
 		expect(run).toMatchObject({ status: 0 })
 		const projects = run.json?.projects
 		if (!isArray(projects)) throw new Error('The census carries no projects')
@@ -1497,7 +1499,7 @@ export default ({ mode }) => {
 				isRecord(helpers.markers) &&
 				typeof helpers.markers['.skipIf('] === 'number',
 		).toBe(true)
-		const text = runSkillScript(SCRIPT, [], { cwd: WORKSPACE_ROOT })
+		const text = runSkillScript(DISCOVERY_SCRIPT, [], { cwd: WORKSPACE_ROOT })
 		expect(text.status).toBe(0)
 		expect(text.stdout).toContain(
 			'discovery: probe is an empty workbench; no chain containing " > " names it',
@@ -1508,14 +1510,15 @@ export default ({ mode }) => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-' })
 		try {
 			expect(
-				runSkillScript(SCRIPT, ['--config', 'absent.config.ts'], { cwd: WORKSPACE_ROOT }).status,
+				runSkillScript(DISCOVERY_SCRIPT, ['--config', 'absent.config.ts'], { cwd: WORKSPACE_ROOT })
+					.status,
 			).toBe(64)
-			expect(runSkillScript(SCRIPT, ['--config', '--json'], { cwd: WORKSPACE_ROOT }).status).toBe(
-				64,
-			)
+			expect(
+				runSkillScript(DISCOVERY_SCRIPT, ['--config', '--json'], { cwd: WORKSPACE_ROOT }).status,
+			).toBe(64)
 			scratch.write('package.json', '{"scripts":{"test":"vitest run --project a"}}')
 			scratch.write('vite.config.ts', 'export default {}\n')
-			expect(runSkillScript(SCRIPT, [], { cwd: scratch.path }).status).toBe(2)
+			expect(runSkillScript(DISCOVERY_SCRIPT, [], { cwd: scratch.path }).status).toBe(2)
 		} finally {
 			scratch.destroy()
 		}

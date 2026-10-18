@@ -100,8 +100,10 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `HostArtifact`          | interface | Represents a file byte-copied from the vendored data root, planned before its bytes are read.     |
 | `HydratedArtifact`      | interface | Represents a vendored file whose exact bytes have been read, so its content can be compared.      |
 | `ManifestDependencySet` | interface | Describes the runtime, development, and peer sections read from an existing package manifest.     |
+| `ManifestEdit`          | interface | Represents one in-place replacement of manifest text.                                             |
 | `ManifestRegionSet`     | interface | Describes the manifest regions a writing operation may change.                                    |
 | `ManifestScript`        | interface | Represents one manifest script a region-writing operation may replace.                            |
+| `ManifestToken`         | interface | Represents one string or object brace found in manifest text.                                     |
 | `Override`              | interface | Represents one artifact override.                                                                 |
 | `Plan`                  | interface | Holds the compiled, ordered artifact list and the selection it covers.                            |
 | `PlanSummary`           | interface | Represents the tally of one plan by artifact origin.                                              |
@@ -191,6 +193,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `SKILLS_CONFIG_PATH`              | const | Names the TypeScript wrapper whose presence makes a workspace `skills`.                                |
 | `SOURCE_BROWSER_DEV_DEPENDENCIES` | const | Lists the development dependencies a published browser `src` environment adds.                         |
 | `SRC_MATRIX`                      | const | Holds the build and export settings each published `src` environment contributes, frozen.              |
+| `STUDIES_TEST_INCLUDE`            | const | Names the include the study project covers, a directory whose test files make a workspace `studies`.   |
 | `STYLES_DEV_DEPENDENCIES`         | const | Lists the development dependencies the styles surface adds, frozen.                                    |
 | `STYLES_ENTRY_PATH`               | const | Names the base stylesheet marker.                                                                      |
 | `SURFACES`                        | const | Lists the surfaces an extension may extend, frozen.                                                    |
@@ -257,6 +260,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `compareVersions`           | function | Compares two versions by their numeric components.                                                  |
 | `computeBytes`              | function | Counts the UTF-8 bytes text encodes to.                                                             |
 | `computeHash`               | function | Computes the deterministic content identity of text.                                                |
+| `computeTotal`              | function | Computes the sum of a list of numbers.                                                              |
 | `contentToHex`              | function | Encodes text as the exact lowercase hexadecimal form of its UTF-8 bytes.                            |
 | `extractRangeMajor`         | function | Extracts the major component of an admitted dependency range.                                       |
 | `extractVersion`            | function | Extracts the major, minor, and patch components of an exact version.                                |
@@ -276,6 +280,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `nameToGuide`               | function | Derives the guide mirror path a package name answers for.                                           |
 | `planToSummary`             | function | Projects a plan into its tally by artifact origin.                                                  |
 | `renderSkillPointer`        | function | Renders the `SKILL.md` pointer a target carries in place of a canonical skill.                      |
+| `scanManifestTokens`        | function | Scans manifest text for its strings and object braces, in order.                                    |
 | `selectGroups`              | function | Selects the groups a compile covers, in plan order.                                                 |
 | `selectHostPaths`           | function | Selects the host paths a named workspace vendors.                                                   |
 | `serializeTypeScriptString` | function | Serializes one string as a single-quoted TypeScript literal.                                        |
@@ -310,11 +315,13 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `blueprintToWritableScripts`        | function | Projects a blueprint into the manifest scripts a region write may replace.                               |
 | `dependenciesToQuestions`           | function | Measures one declared package list against the name and range syntax it accepts.                         |
 | `insertManifestDependencies`        | function | Inserts dependencies a package manifest does not declare into the section each one names.                |
+| `insertManifestSection`             | function | Inserts dependencies into one section of package manifest text.                                          |
 | `overridesToQuestions`              | function | Measures a blueprint's overrides against the artifacts drafted for it.                                   |
 | `pathToCondition`                   | function | Builds one `exports` condition block for a built environment.                                            |
 | `planToFindings`                    | function | Compares a plan against a target's current content.                                                      |
 | `planToHash`                        | function | Computes a plan's content identity.                                                                      |
 | `replaceManifestRanges`             | function | Replaces the runtime and development dependency ranges in package manifest text, and never a peer range. |
+| `replaceManifestOverride`           | function | Replaces one npm override leaf in manifest text, inserting its absent ancestors.                         |
 | `replaceManifestOverrides`          | function | Replaces selected npm override leaves while preserving every byte outside the edited path.               |
 | `replaceManifestScripts`            | function | Replaces named script values in package manifest text.                                                   |
 | `replacePlanRanges`                 | function | Replaces dependency ranges in a plan's manifest and recomputes its identity.                             |
@@ -359,7 +366,6 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `MaterializeResult`     | interface | Reports the outcome of one mutation of a target.                                                  |
 | `MaterializerInterface` | interface | Describes the mutation contract: the package's only filesystem writer.                            |
 | `MaterializerOptions`   | interface | Represents the options for the materializer.                                                      |
-| `ReadAllowance`         | interface | Represents the byte allowance one whole upstream call spends across every read it makes.          |
 | `SurfaceCollision`      | interface | Represents a Surface name claimed by distinct package guides.                                     |
 | `TextReadResult`        | interface | Reports the outcome of one bounded read whose body is taken as text.                              |
 | `Worktree`              | interface | Describes what git reports about a target's working tree.                                         |
@@ -447,6 +453,7 @@ The inventory contracts carry these data members.
 | `isPhysicalDirectory`     | function | Tests whether a path is a physical directory this package will read or write into.     |
 | `isPhysicalFile`          | function | Tests whether a path is a physical file this package will read or replace.             |
 | `isVacant`                | function | Tests whether a target is safe to write a fresh workspace into.                        |
+| `listAncestors`           | function | Lists a path followed by each directory above it, nearest first.                       |
 | `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                     |
 | `listDirectories`         | function | Lists a directory's descendant directories as sorted root-relative paths.              |
 | `listFiles`               | function | Lists a directory's files as sorted root-relative paths.                               |
@@ -644,7 +651,8 @@ answers a read and grant no verb write authority that it did not already have.
 states what each emits and what each refuses. Creation leaves `setup` empty, and the remaining
 structural facts take no creation option. Add a root `tests/setup*.test.ts` proof for `setup`,
 `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
-`tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
+`tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`, a
+`*.test.ts` file beneath `tests/studies` for `studies`,
 `tests/setupGlobal.ts` for `global`, `configs/app/vite.journey.config.ts` for `journey`, and
 `configs/agents/tsconfig.skills.json` for `skills`; reading verbs detect each exact-case file and
 register its fixed machinery. An explicitly supplied
@@ -666,9 +674,11 @@ read from the markers Surfaces and extensions lists. The remaining facts come fr
 files: `src/bin/main.ts` selects `bin`, each root `tests/setup*.test.ts` match selects `setup`,
 `tests/guides.test.ts` selects `guides`, `tests/integration.test.ts` selects `integration`,
 `tests/conformance.test.ts` selects `conformance`, `tests/setupService.ts` selects `service`,
+any exact-case `*.test.ts` file beneath `tests/studies`, nested or direct, selects `studies`,
 `tests/setupGlobal.ts` selects `global`, `configs/app/vite.journey.config.ts` selects `journey`,
 and `configs/agents/tsconfig.skills.json` selects `skills`. A containing directory does not select
-any of those facts by itself. `tests/distribution.test.ts` selects nothing: the published `src`
+any of those facts by itself: `tests/studies/types.ts`, a case-folded `tests/Studies` directory, and
+the harness module `tests/setupStudy.ts` select no `studies`. `tests/distribution.test.ts` selects nothing: the published `src`
 axis and the sheet faces the target ships already decide the `distribution` project, and the file is
 planned from that.
 
@@ -1012,8 +1022,8 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
 `repair` need the plan to describe and restore a target that already has that shape. A library
 caller creating a workspace holds the same refusal, and the Compile section states it.
 
-`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, `styles`,
-`themes`, `showcase`, `journey`, and `skills` are structural facts, and `extensions` lists the
+`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `studies`, `global`,
+`styles`, `themes`, `showcase`, `journey`, and `skills` are structural facts, and `extensions` lists the
 extension faces. Reading verbs set each fact and list each extension only when the workspace
 physically ships the directory or exact-case file that defines it, never because of the workspace's
 name and never because a sibling fact is set.
@@ -1076,6 +1086,18 @@ timeouts and disabled file parallelism are the same in each workspace form. `ven
 workspace drives and emits `scripts/service.sh`, an inventory skeleton that starts nothing. The
 vendor inventory and live-service setup are independent: a workspace may declare vendors before it
 writes a suite, and a suite may drive a service the skeleton does not start.
+
+`studies` says the workspace holds at least one exact-case `*.test.ts` file beneath `tests/studies`,
+nested or direct, and it alone registers the `studies` Vitest project over that directory and its
+`test:studies` script. The project loads `tests/setup.ts` alone. The tests import
+`tests/setupStudy.ts`, a harness module the package owns, so scaffold plans no such file and no
+project loads it as a setup file. A publishing workspace invokes the project from `prepublishOnly`,
+after `npm test` and before the release proof; a `private: true` workspace invokes it from `test`,
+before the live-service project. Its longer timeouts and disabled file parallelism match the
+live-service project. The root `studies/` directory holds the adapters and declarations the study
+tests run, and it selects nothing. A `prepublishOnly` chain written before the fact existed upgrades
+in place: the generated chain without its study step, and without both its study step and the release
+proof, are accepted predecessors.
 
 `integration` projects a cross-environment composition proof for any workspace, independently of
 whether it has a published `src`. Its generated seed imports every selected `src` and `app`
@@ -1678,7 +1700,7 @@ the others are not.
 
 Content ownership does not preserve an arbitrary custom Vitest project. The optional proof projects
 are fixed: `guides`, `integration`, `conformance`, and `service` are selected by their defining
-paths, and `distribution` by a published `src` environment. A workspace that needs other local
+paths, `studies` by its test files, and `distribution` by a published `src` environment. A workspace that needs other local
 configuration must keep those edits outside a content-owned file; `repair` restores that file to the
 canonical project set.
 
@@ -2478,11 +2500,11 @@ module's behavior unmeasured. A generated file there would read as a proof while
 which is worse than an absent one. So the file a consumer writes is what selects each of those
 projects. Scaffold also seeds proofs for its own setup modules, as Root setup mirror describes.
 
-Registration follows the same split. Scaffold registers `conformance` and `service` when their
+Registration follows the same split. Scaffold registers `conformance`, `studies`, and `service` when their
 structural facts are set, and registers `distribution` whenever the workspace publishes at least one
-`src` environment or sheet face. In a publishing workspace, `distribution` and `service` run from `prepublishOnly`
+`src` environment or sheet face. In a publishing workspace, `distribution`, `studies`, and `service` run from `prepublishOnly`
 and `conformance` stays in `test`. In a `private: true` workspace, `distribution` is absent,
-`service` runs from `test`, and there is no `prepublishOnly` at all. The `policy` project reports an exporting root setup module that lacks its sibling proof or an import from `tests/setup.test.ts`.
+`studies` and then `service` run from `test`, and there is no `prepublishOnly` at all. The `policy` project reports an exporting root setup module that lacks its sibling proof or an import from `tests/setup.test.ts`.
 Separately, a filled, exporting `tests/setup*.ts` module that no `tests/setup*.test.ts`
 proof covers raises the non-blocking `setup` question in `audit`, which names the modules and the proof to add.
 For setup modules the workspace authors, the workspace supplies the behavior proof; the setup modules scaffold seeds arrive with their sibling proofs.
@@ -2617,7 +2639,9 @@ no `tests/conformance.test.ts` registers a project whose include resolves to not
 exits non-zero on it. A blueprint carrying `service` gets `tests/setupService.ts` — the root
 configuration names that module by path, so an absent one fails the project's load rather than its
 run — and still no suite beneath `tests/service`, so `test:service` reports no test files until the
-consumer writes the first one. The `distribution` project no longer has that case: `new` writes the
+consumer writes the first one. A blueprint carrying `studies` has no such case, because the fact is
+the presence of a collected test file and an include with no file behind it leaves the fact unset.
+The `distribution` project no longer has that case: `new` writes the
 proof into the workspace it registers the project in, and a target that later lost the file reports
 drift that `repair` closes. Every remaining case is visible the first time the script runs, which is
 why none is silent.

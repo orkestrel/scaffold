@@ -12,6 +12,7 @@ import {
 	compareVersions,
 	computeBytes,
 	computeHash,
+	computeTotal,
 	contentToHex,
 	GUIDES_TEST_PATH,
 	extractRangeMajor,
@@ -41,6 +42,7 @@ import {
 	nameToGuide,
 	planToSummary,
 	PRINT_WIDTH,
+	scanManifestTokens,
 	selectGroups,
 	selectHostPaths,
 	serializeTypeScriptString,
@@ -54,7 +56,11 @@ import {
 	buildHydratedArtifact,
 	buildPlan,
 	buildPurityCases,
+	DIFFERING_HEX,
 	MANIFEST_SAMPLE,
+	MATCHING_HEX,
+	OWNERSHIPS,
+	PLANNED_TEXT,
 	RANGE_CASES,
 } from '../../setup.js'
 import { waitForDelay } from '@orkestrel/test'
@@ -105,6 +111,31 @@ describe('computeHash', () => {
 		expect(computeHash('scaffold')).toBe(computeHash('scaffold'))
 		expect(computeHash('scaffold')).not.toBe(computeHash('scaffole'))
 		expect(computeHash('scaffold')).toHaveLength(16)
+	})
+})
+
+describe('computeHash and computeBytes over code points', () => {
+	it('folds a surrogate pair as its two code units and a lone surrogate as one', () => {
+		// Digests of the FNV-1a fold over UTF-16 code units, recorded from the loop that indexed them.
+		expect(computeHash('a😀b')).toBe('72aaf0fb746e9b41')
+		expect(computeHash('a\uD83Db')).toBe('75009316f14c2993')
+		expect(computeBytes('a😀b')).toBe(6)
+		expect(computeBytes('a\uD83Db')).toBe(5)
+	})
+})
+
+describe('computeTotal', () => {
+	it('adds the numbers it is given and answers zero for none', () => {
+		expect(computeTotal([65_536, 65_536, 12])).toBe(131_084)
+		expect(computeTotal([0.5, 0.5])).toBe(1)
+		expect(computeTotal([-3, 3])).toBe(0)
+		expect(computeTotal([])).toBe(0)
+	})
+
+	it('leaves the list it reads untouched', () => {
+		const values = [1, 2, 3]
+		computeTotal(values)
+		expect(values).toStrictEqual([1, 2, 3])
 	})
 })
 
@@ -304,6 +335,17 @@ describe('serializeTypeScriptString', () => {
 		expect(serializeTypeScriptString("a'b\\c\n\t\u2028\u2029")).toBe(
 			"'a\\'b\\\\c\\n\\t\\u2028\\u2029'",
 		)
+	})
+})
+
+describe('serializeTypeScriptString surrogates', () => {
+	it('keeps a surrogate pair whole and escapes a lone surrogate or control character', () => {
+		expect(serializeTypeScriptString('😀')).toBe("'😀'")
+		expect(serializeTypeScriptString('😀x')).toBe("'😀x'")
+		expect(serializeTypeScriptString('\uD83D')).toBe("'\\ud83d'")
+		expect(serializeTypeScriptString('\uDC00')).toBe("'\\udc00'")
+		expect(serializeTypeScriptString('\uD83D\u0001')).toBe("'\\ud83d\\u0001'")
+		expect(serializeTypeScriptString('')).toBe("''")
 	})
 })
 
@@ -698,10 +740,67 @@ describe('manifestToDependencies', () => {
 	})
 })
 
-const OWNERSHIPS: readonly Ownership[] = ['content', 'presence', 'birth']
-const PLANNED = '# Sample\n'
-const MATCHING = contentToHex(PLANNED)
-const DIFFERING = contentToHex('# Edited\n')
+describe('scanManifestTokens', () => {
+	it('reads strings and braces in order with the object depth after each', () => {
+		const tokens = scanManifestTokens('{"a": {"b": "c"}, "d": 1}')
+		expect(tokens?.map((token) => [token.text, token.depth])).toStrictEqual([
+			['{', 1],
+			['"a"', 1],
+			['{', 2],
+			['"b"', 2],
+			['"c"', 2],
+			['}', 1],
+			['"d"', 1],
+			['}', 0],
+		])
+	})
+
+	it('offsets the value a key introduces and none for a string with no colon', () => {
+		const text = '{"a" :\n  "b", "c": {}}'
+		const tokens = scanManifestTokens(text) ?? []
+		const keys = tokens.filter((token) => token.value !== undefined)
+		expect(keys.map((token) => token.text)).toStrictEqual(['"a"', '"c"'])
+		expect(keys.map((token) => text.charAt(token.value ?? -1))).toStrictEqual(['"', '{'])
+		expect(tokens.find((token) => token.text === '"b"')?.value).toBeUndefined()
+		expect(tokens.map((token) => token.index)).toStrictEqual([0, 1, 9, 14, 19, 20, 21])
+	})
+
+	it('treats a brace, a colon, and an escaped quote inside a string as text', () => {
+		const tokens = scanManifestTokens('{"a{": "}\\"b", "[": 1}') ?? []
+		expect(tokens.map((token) => token.text)).toStrictEqual(['{', '"a{"', '"}\\"b"', '"["', '}'])
+		expect(tokens.map((token) => token.depth)).toStrictEqual([1, 1, 1, 1, 0])
+	})
+
+	it('ignores arrays when it counts depth', () => {
+		const tokens = scanManifestTokens('{"a": [{"b": 1}], "c": ["d"]}') ?? []
+		expect(tokens.map((token) => [token.text, token.depth])).toStrictEqual([
+			['{', 1],
+			['"a"', 1],
+			['{', 2],
+			['"b"', 2],
+			['}', 1],
+			['"c"', 1],
+			['"d"', 1],
+			['}', 0],
+		])
+	})
+
+	it('answers undefined for a string that is never closed, and nothing for text without any', () => {
+		expect(scanManifestTokens('{"a')).toBeUndefined()
+		expect(scanManifestTokens('{"a": "b\\"}')).toBeUndefined()
+		expect(scanManifestTokens('"\\')).toBeUndefined()
+		expect(scanManifestTokens('')).toStrictEqual([])
+		expect(scanManifestTokens('1, [2] true')).toStrictEqual([])
+	})
+
+	it('reads the same tokens however the text is spaced', () => {
+		const compact = scanManifestTokens('{"a":{"b":"c"}}') ?? []
+		const spaced = scanManifestTokens('{\n\t"a" : {\n\t\t"b" :  "c"\n\t}\n}') ?? []
+		expect(spaced.map((token) => [token.text, token.depth])).toStrictEqual(
+			compact.map((token) => [token.text, token.depth]),
+		)
+	})
+})
 
 describe('artifactToFinding producer matrix', () => {
 	// The instrument's population is every finding the producer can reach: every
@@ -710,26 +809,27 @@ describe('artifactToFinding producer matrix', () => {
 	// from inside it could only show the producer disagreeing with itself, and the
 	// question here is what the producer never reaches at all.
 	it('reaches every verdict shape, and the guard admits one it never reaches', () => {
-		const cells: string[] = []
-		const verdicts: string[] = []
-		for (const ownership of OWNERSHIPS) {
-			for (const [state, observed] of [
-				['absent', undefined],
-				['matching', MATCHING],
-				['differing', DIFFERING],
-			] as const) {
+		const readings = OWNERSHIPS.flatMap((ownership) =>
+			(
+				[
+					['absent', undefined],
+					['matching', MATCHING_HEX],
+					['differing', DIFFERING_HEX],
+				] as const
+			).map(([state, observed]) => {
 				const finding = artifactToFinding(
-					buildContentArtifact({ ownership, content: PLANNED }),
+					buildContentArtifact({ ownership, content: PLANNED_TEXT }),
 					observed,
 				)
 				// Soundness in the direction the guard does promise: the producer never
 				// emits a finding the guard rejects.
 				expect(isFinding(finding)).toBe(true)
 				const verdict = `${finding.ownership}/${finding.drift}/${finding.observed === undefined ? 'no observed' : 'observed'}`
-				cells.push(`${ownership} ${state} -> ${verdict}`)
-				verdicts.push(verdict)
-			}
-		}
+				return { cell: `${ownership} ${state} -> ${verdict}`, verdict }
+			}),
+		)
+		const cells = readings.map(({ cell }) => cell)
+		const verdicts = readings.map(({ verdict }) => verdict)
 		expect(cells).toStrictEqual([
 			'content absent -> content/missing/no observed',
 			'content matching -> content/aligned/observed',
@@ -759,7 +859,7 @@ describe('artifactToFinding producer matrix', () => {
 			group: 'manifest',
 			ownership: 'birth',
 			drift: 'stale',
-			observed: MATCHING,
+			observed: MATCHING_HEX,
 		}
 		expect(isFinding(control)).toBe(true)
 		expect(verdicts).not.toContain('birth/stale/observed')

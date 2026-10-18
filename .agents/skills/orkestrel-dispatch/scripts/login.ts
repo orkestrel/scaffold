@@ -21,6 +21,12 @@ interface Status {
 	readonly text: string
 }
 
+interface Poll {
+	readonly url: string | undefined
+	readonly code: string | undefined
+	readonly live: boolean
+}
+
 function readStatus(command: string, args: readonly string[]): Status {
 	const result = spawnSync(command, args, { encoding: 'utf8', windowsHide: true })
 	if (result.error !== undefined)
@@ -44,6 +50,27 @@ function waitFor(ms: number): Promise<void> {
 	})
 }
 
+async function pollLogin(
+	started: number,
+	capSeconds: number,
+	url?: string,
+	code?: string,
+): Promise<Poll> {
+	if (Date.now() - started >= capSeconds * 1000) return { url, code, live: false }
+	await waitFor(POLL_MS)
+	const text = existsSync(JOURNAL) ? readFileSync(JOURNAL, 'utf8') : ''
+	const nextUrl = url ?? text.match(URL_PATTERN)?.[0]
+	if (url === undefined && nextUrl !== undefined) console.error(`login: open ${nextUrl}`)
+	const nextCode = code ?? text.match(CODE_PATTERN)?.[1]
+	if (code === undefined && nextCode !== undefined) {
+		console.error(`login: enter the code ${nextCode}`)
+	}
+	if (readStatus('codex', ['login', 'status']).live) {
+		return { url: nextUrl, code: nextCode, live: true }
+	}
+	return pollLogin(started, capSeconds, nextUrl, nextCode)
+}
+
 async function loginCodex(capSeconds: number): Promise<number> {
 	const before = readStatus('codex', ['login', 'status'])
 	if (before.live) {
@@ -57,29 +84,7 @@ async function loginCodex(capSeconds: number): Promise<number> {
 		stdio: ['ignore', journal, journal],
 		windowsHide: true,
 	})
-	let url: string | undefined
-	let code: string | undefined
-	let live = false
-	while (Date.now() - started < capSeconds * 1000) {
-		await waitFor(POLL_MS)
-		const text = existsSync(JOURNAL) ? readFileSync(JOURNAL, 'utf8') : ''
-		if (url === undefined) {
-			url = text.match(URL_PATTERN)?.[0]
-			if (url !== undefined) console.error(`login: open ${url}`)
-		}
-		if (code === undefined) {
-			code = text.match(CODE_PATTERN)?.[1]
-			if (code !== undefined) console.error(`login: enter the code ${code}`)
-		}
-		if (child.exitCode !== null && readStatus('codex', ['login', 'status']).live) {
-			live = true
-			break
-		}
-		if (child.exitCode === null && readStatus('codex', ['login', 'status']).live) {
-			live = true
-			break
-		}
-	}
+	const { url, code, live } = await pollLogin(started, capSeconds)
 	if (child.exitCode === null && child.pid !== undefined) killTree(child.pid)
 	closeSync(journal)
 	console.log(

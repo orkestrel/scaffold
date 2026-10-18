@@ -5,6 +5,7 @@ import {
 	GUIDES_TEST_PATH,
 	INTEGRATION_TEST_PATH,
 	SERVICE_TEST_INCLUDE,
+	STUDIES_TEST_INCLUDE,
 } from './constants.js'
 
 /**
@@ -82,11 +83,13 @@ export const peers: readonly string[] =
 	peerDependencies === undefined ? [] : Object.keys(peerDependencies)
 
 const resolve = {
-	alias: Object.entries(tsconfig.compilerOptions.paths).reduce((aliases, [key, values]) => {
-		const [path] = values
-		if (path === undefined) throw new Error('tsconfig path alias ' + key + ' has no target')
-		return Object.assign(aliases, { [key]: resolveWorkspacePath(path) })
-	}, {}),
+	alias: Object.fromEntries(
+		Object.entries(tsconfig.compilerOptions.paths).map(([key, values]) => {
+			const [path] = values
+			if (path === undefined) throw new Error('tsconfig path alias ' + key + ' has no target')
+			return [key, resolveWorkspacePath(path)]
+		}),
+	),
 }
 
 // Merges a caller's override onto the configuration a factory declares, so a
@@ -115,53 +118,67 @@ const resolve = {
 // merges it, so an override's arrays elsewhere concatenate with the base's rather than
 // replacing them.
 export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
-	if (override !== undefined && 'command' in override && 'mode' in override) {
-		if (typeof override.mode !== 'string') {
-			throw new Error('The project invocation carries no string mode')
-		}
-		override = { mode: override.mode }
+	if (
+		override !== undefined &&
+		'command' in override &&
+		'mode' in override &&
+		typeof override.mode !== 'string'
+	) {
+		throw new Error('The project invocation carries no string mode')
 	}
-	const merged: UserConfig = override === undefined ? { ...base } : mergeConfig(base, override)
+	const effective: UserConfig | undefined =
+		override !== undefined && 'command' in override && typeof override.mode === 'string'
+			? { mode: override.mode }
+			: override
+	const merged: UserConfig = effective === undefined ? { ...base } : mergeConfig(base, effective)
 	const name = merged.test?.name
 	const label = typeof name === 'string' ? name : name?.label
 	const browser = merged.test?.browser
-	if (label !== undefined && browser?.instances !== undefined) {
-		merged.test = {
-			...merged.test,
-			browser: {
-				...browser,
-				instances: browser.instances.map((instance) => ({
-					...instance,
-					name: instance.name ?? \`\${label} (\${instance.browser})\`,
-				})),
-			},
-		}
+	const named: UserConfig =
+		label !== undefined && browser?.instances !== undefined
+			? {
+					...merged,
+					test: {
+						...merged.test,
+						browser: {
+							...browser,
+							instances: browser.instances.map((instance) => ({
+								...instance,
+								name: instance.name ?? \`\${label} (\${instance.browser})\`,
+							})),
+						},
+					},
+				}
+			: merged
+	if (named.plugins === undefined || effective === undefined) return named
+	const candidates = effective.plugins ?? []
+	const bases = base.plugins ?? []
+	// A base plugin takes the first candidate of its own name that no earlier base plugin took, and
+	// candidates of other names never compete for it, so its pick is the candidate whose rank among
+	// its name equals the number of earlier base plugins sharing that name.
+	const chosen = bases.map((plugin, position) =>
+		isNamedPlugin(plugin)
+			? candidates
+					.flatMap((candidate, index) =>
+						isNamedPlugin(candidate) && candidate.name === plugin.name ? [index] : [],
+					)
+					.at(
+						bases
+							.slice(0, position)
+							.filter((earlier) => isNamedPlugin(earlier) && earlier.name === plugin.name).length,
+					)
+			: undefined,
+	)
+	return {
+		...named,
+		plugins: [
+			...bases.map((plugin, position) => {
+				const index = chosen[position]
+				return index === undefined ? plugin : (candidates[index] ?? plugin)
+			}),
+			...candidates.filter((_, index) => !chosen.includes(index)),
+		],
 	}
-	if (merged.plugins === undefined || override === undefined) return merged
-	const candidates = override.plugins ?? []
-	const taken = new Set<number>()
-	const selected: PluginOption[] = []
-	for (const plugin of base.plugins ?? []) {
-		if (!isNamedPlugin(plugin)) {
-			selected.push(plugin)
-			continue
-		}
-		const index = candidates.findIndex(
-			(candidate, position) =>
-				!taken.has(position) && isNamedPlugin(candidate) && candidate.name === plugin.name,
-		)
-		const replacement = candidates[index]
-		if (replacement === undefined) {
-			selected.push(plugin)
-		} else {
-			selected.push(replacement)
-			taken.add(index)
-		}
-	}
-	for (const [index, plugin] of candidates.entries()) {
-		if (!taken.has(index)) selected.push(plugin)
-	}
-	return { ...merged, plugins: selected }
 }
 
 function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
@@ -741,6 +758,26 @@ export function service(override?: UserConfig): UserConfig {
 			name: { label: 'service', color: 'red' },
 			include: ['${SERVICE_TEST_INCLUDE}'],
 			setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],
+			environment: 'node',
+			browser: { enabled: false },
+			testTimeout: 120_000,
+			hookTimeout: 120_000,
+			fileParallelism: false,
+			sequence: { groupOrder: 1 },
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
+		studies: `// Authored study proofs run installed packages through bounded subprocesses and protocol fixtures,
+// so this project is isolated in its own gate script, test:studies.
+export function studies(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		test: {
+			name: { label: 'studies', color: 'red' },
+			include: ['${STUDIES_TEST_INCLUDE}'],
+			setupFiles: ['./tests/setup.ts'],
 			environment: 'node',
 			browser: { enabled: false },
 			testTimeout: 120_000,
@@ -1340,34 +1377,33 @@ export function resolvePinnedBrowser(): string | undefined {
  */
 export function resolveManagedBrowser(pinned: string): string | undefined {
 	if (isBrowserExecutable(pinned)) return pinned
-	let revisionRoot = dirname(pinned)
-	for (;;) {
-		if (CHROMIUM_ENTRY_PATTERN.test(basename(revisionRoot))) break
-		const parent = dirname(revisionRoot)
-		if (parent === revisionRoot) return undefined
-		revisionRoot = parent
-	}
+	// One \`dirname\` per path segment reaches the root from any path, and the nearest
+	// ancestor named \`chromium-<revision>\` is the revision directory this build sits in.
+	const directory = dirname(pinned)
+	const ancestors = directory
+		.split(/[\\\\/]/u)
+		.reduce<string[]>((chain) => [...chain, dirname(chain.at(-1) ?? directory)], [directory])
+	const revisionRoot = ancestors.find((ancestor) => CHROMIUM_ENTRY_PATTERN.test(basename(ancestor)))
+	if (revisionRoot === undefined) return undefined
 	const browsersRoot = dirname(revisionRoot)
 	for (const alias of ['chromium', 'chromium.exe']) {
 		const candidate = resolvePath(browsersRoot, alias)
 		if (isBrowserExecutable(candidate)) return candidate
 	}
-	let entries: readonly string[]
 	try {
-		entries = readdirSync(browsersRoot)
+		const revisions = readdirSync(browsersRoot)
+			.filter((entry) => CHROMIUM_ENTRY_PATTERN.test(entry))
+			.sort(compareRevisions)
+		for (const revision of revisions) {
+			for (const layout of CHROMIUM_LAYOUTS) {
+				const candidate = resolvePath(browsersRoot, revision, layout)
+				if (isBrowserExecutable(candidate)) return candidate
+			}
+		}
+		return undefined
 	} catch {
 		return undefined
 	}
-	const revisions = entries
-		.filter((entry) => CHROMIUM_ENTRY_PATTERN.test(entry))
-		.sort(compareRevisions)
-	for (const revision of revisions) {
-		for (const layout of CHROMIUM_LAYOUTS) {
-			const candidate = resolvePath(browsersRoot, revision, layout)
-			if (isBrowserExecutable(candidate)) return candidate
-		}
-	}
-	return undefined
 }
 
 /**
@@ -1385,15 +1421,13 @@ export function resolveManagedBrowser(pinned: string): string | undefined {
 export function resolveBundledBrowser(platform: NodeJS.Platform, root: string): string | undefined {
 	if (platform !== 'linux') return undefined
 	for (const layout of BUNDLED_CHROMIUM_LAYOUTS) {
-		let matches: readonly string[]
 		try {
-			matches = globSync(layout, { cwd: root })
+			for (const match of globSync(layout, { cwd: root }).sort(compareRevisions)) {
+				const candidate = resolvePath(root, match)
+				if (isBrowserExecutable(candidate)) return candidate
+			}
 		} catch {
 			return undefined
-		}
-		for (const match of [...matches].sort(compareRevisions)) {
-			const candidate = resolvePath(root, match)
-			if (isBrowserExecutable(candidate)) return candidate
 		}
 	}
 	return undefined
@@ -1416,21 +1450,21 @@ export function resolveSystemBrowser(
 	environment: NodeJS.ProcessEnv,
 ): string | undefined {
 	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
-	const roots = new Set<string>()
-	if (platform === 'win32') {
-		for (const root of [
-			environment.LOCALAPPDATA,
-			environment.PROGRAMFILES,
-			environment['PROGRAMFILES(X86)'],
-		]) {
-			if (root !== undefined && root.length > 0) roots.add(root)
-		}
-		const homeDrive = environment.HOMEDRIVE
-		if (homeDrive !== undefined && homeDrive.length > 0) {
-			roots.add(join(homeDrive, 'Program Files'))
-			roots.add(join(homeDrive, 'Program Files (x86)'))
-		}
-	}
+	const homeDrive = environment.HOMEDRIVE
+	const roots = new Set(
+		platform === 'win32'
+			? [
+					...[
+						environment.LOCALAPPDATA,
+						environment.PROGRAMFILES,
+						environment['PROGRAMFILES(X86)'],
+					].flatMap((root) => (root !== undefined && root.length > 0 ? [root] : [])),
+					...(homeDrive !== undefined && homeDrive.length > 0
+						? [join(homeDrive, 'Program Files'), join(homeDrive, 'Program Files (x86)')]
+						: []),
+				]
+			: [],
+	)
 	for (const browser of SYSTEM_BROWSER_CHANNELS) {
 		if (platform === 'win32') {
 			for (const root of roots) {
@@ -1607,10 +1641,10 @@ const CAPTURE = inject('capture')
 
 describe('{{application}} arrival journey', () => {
 	it('proves the declared arrival families', async () => {
-		const families = new Set(['Journey', 'Refusal', 'Matrix', ...(CAPTURE ? ['Capture'] : [])])
-		const proven = new Set<string>()
+		const families = ['Journey', 'Refusal', 'Matrix', ...(CAPTURE ? ['Capture'] : [])]
+		const proven: string[] = []
 		const states = ['{{application}}-arrival']
-		const placed = new Set<string>()
+		const placed: string[] = []
 		const portfolio = createPortfolio({
 			states,
 			variants: VARIANTS,
@@ -1627,30 +1661,30 @@ describe('{{application}} arrival journey', () => {
 				})
 				.element()
 			expect(isRendered(heading)).toBe(true)
-			proven.add('Journey')
+			proven.push('Journey')
 			await portfolio.place('{{application}}-arrival')
-			placed.add('{{application}}-arrival')
+			placed.push('{{application}}-arrival')
 
 			for (const role of ACCESSIBLE_ROLES) expect(page.getByRole(role).elements()).toEqual([])
 			expect(readRefusal('Continue')).toBe(
 				'No interactive element has the accessible name "Continue"',
 			)
-			proven.add('Refusal')
+			proven.push('Refusal')
 
-			const measured = new Set<string>()
+			const measured: string[] = []
 			for (const variant of VARIANTS) {
 				await page.viewport(variant.width, variant.height)
 				expect(readStyle(heading, 'display')).toBe('block')
 				expect(window.innerWidth).toBe(variant.width)
-				measured.add(variant.name)
+				measured.push(variant.name)
 			}
-			expect(measured).toEqual(new Set(VARIANTS.map(({ name }) => name)))
-			proven.add('Matrix')
+			expect(measured).toEqual(VARIANTS.map(({ name }) => name))
+			proven.push('Matrix')
 
 			const files = expandCaptures(states, VARIANTS)
 			expect(portfolio.files).toEqual(files)
 			expect(new Set(files).size).toBe(states.length * VARIANTS.length)
-			expect(placed).toEqual(new Set(states))
+			expect(placed).toEqual(states)
 			const expected = CAPTURE
 				? expandCaptures(
 						states,
@@ -1660,7 +1694,7 @@ describe('{{application}} arrival journey', () => {
 			expect(portfolio.paths.map((path) => path.replaceAll('\\\\', '/').split('/').at(-1))).toEqual(
 				expected,
 			)
-			if (CAPTURE) proven.add('Capture')
+			if (CAPTURE) proven.push('Capture')
 			expect(proven).toEqual(families)
 		} finally {
 {{cleanup}}			const variant = VARIANTS.find(({ name }) => name === VARIANT)
@@ -1705,13 +1739,7 @@ describe('{{name}} entry', () => {
 })
 `,
 		styles: Object.freeze({
-			module: `/** Carries a CSSOM rule and its enclosing layer. */
-export interface SheetEntry {
-	readonly rule: CSSRule
-	readonly layer: string | undefined
-}
-
-/** Describes an adopted stylesheet and its idempotent release operation. */
+			module: `/** Describes an adopted stylesheet and its idempotent release operation. */
 export interface SheetAdoption {
 	readonly sheet: CSSStyleSheet
 	release(): void
@@ -1743,42 +1771,36 @@ export function adoptSheet(text: string): SheetAdoption {
 
 /**
  * Reads layer statements and blocks in declaration order, including repeated names.
- * @param sheet - The parsed sheet.
+ * @param source - The parsed sheet, or a grouping rule inside it.
+ * @param layer - The qualified name of the layer that encloses \`source\`, when one does.
  * @returns Qualified layer names, with an empty name for an anonymous layer.
  * @example
  * \`\`\`ts
  * readLayerNames(new CSSStyleSheet()) // []
  * \`\`\`
  */
-export function readLayerNames(sheet: CSSStyleSheet): readonly string[] {
-	const pending: SheetEntry[] = Array.from(sheet.cssRules, (rule) => ({
-		rule,
-		layer: undefined,
-	})).reverse()
-	const names: string[] = []
-	while (pending.length > 0) {
-		const entry = pending.pop()
-		if (entry === undefined) break
-		const { rule, layer } = entry
-		const declared =
-			rule instanceof CSSLayerStatementRule
-				? rule.nameList
-				: rule instanceof CSSLayerBlockRule
-					? [rule.name]
-					: []
-		for (const name of declared) names.push(layer === undefined ? name : layer + '.' + name)
-		if (!(rule instanceof CSSGroupingRule)) continue
-		const parent =
-			rule instanceof CSSLayerBlockRule
-				? layer === undefined
-					? rule.name
-					: layer + '.' + rule.name
-				: layer
-		for (const child of Array.from(rule.cssRules).reverse()) {
-			pending.push({ rule: child, layer: parent })
-		}
-	}
-	return names
+export function readLayerNames(
+	source: CSSStyleSheet | CSSGroupingRule,
+	layer?: string,
+): readonly string[] {
+	return Array.from(source.cssRules).flatMap((rule) => [
+		...(rule instanceof CSSLayerStatementRule
+			? rule.nameList
+			: rule instanceof CSSLayerBlockRule
+				? [rule.name]
+				: []
+		).map((name) => (layer === undefined ? name : layer + '.' + name)),
+		...(rule instanceof CSSGroupingRule
+			? readLayerNames(
+					rule,
+					rule instanceof CSSLayerBlockRule
+						? layer === undefined
+							? rule.name
+							: layer + '.' + rule.name
+						: layer,
+				)
+			: []),
+	])
 }
 `,
 			proof: `import type { SheetAdoption } from './setupStyles.js'
@@ -2068,15 +2090,17 @@ function isList(value: unknown): value is readonly unknown[] {
 // thing: an array falls through the former and keeps the latter.
 function isPackageTarget(target: string): boolean {
 	if (!target.startsWith('./')) return false
-	for (const segment of target.slice(2).split(/[\\\\/]/u)) {
-		let decoded = segment
-		try {
-			decoded = decodeURIComponent(segment)
-		} catch {}
-		const normalized = decoded.toLowerCase()
-		if (normalized === '.' || normalized === '..' || normalized === 'node_modules') return false
-	}
-	return true
+	const refused = ['.', '..', 'node_modules']
+	return target
+		.slice(2)
+		.split(/[\\\\/]/u)
+		.every((segment) => {
+			try {
+				return !refused.includes(decodeURIComponent(segment).toLowerCase())
+			} catch {
+				return !refused.includes(segment.toLowerCase())
+			}
+		})
 }
 
 function readJson(path: string): unknown {
@@ -2105,7 +2129,7 @@ function runNpm(args: readonly string[], cwd: string): SpawnSyncReturns<string> 
 	return spawnSync(NPM, [...args], {
 		cwd,
 		encoding: 'utf8',
-		env: { ...process.env, npm_config_cache: join(readScratch(), 'cache') },
+		env: { ...process.env, npm_config_cache: join(DISTRIBUTION_SUITE.scratch, 'cache') },
 		shell: SHELL,
 		windowsHide: true,
 	})
@@ -2160,11 +2184,14 @@ function matchesFile(path: string): boolean {
 // the containing condition or fallback list unresolved, so the walk continues.
 function targetToDeclaration(target: string, installed: string): string | undefined {
 	if (!isPackageTarget(target)) return undefined
-	let declaration = target
-	if (target.endsWith('.cjs')) declaration = \`\${target.slice(0, -4)}.d.cts\`
-	else if (target.endsWith('.mjs')) declaration = \`\${target.slice(0, -4)}.d.mts\`
-	else if (target.endsWith('.js')) declaration = \`\${target.slice(0, -3)}.d.ts\`
-	else if (!isDeclaration(target)) return undefined
+	const declaration = target.endsWith('.cjs')
+		? \`\${target.slice(0, -4)}.d.cts\`
+		: target.endsWith('.mjs')
+			? \`\${target.slice(0, -4)}.d.mts\`
+			: target.endsWith('.js')
+				? \`\${target.slice(0, -3)}.d.ts\`
+				: target
+	if (declaration === target && !isDeclaration(target)) return undefined
 	return matchesFile(join(installed, declaration)) ? declaration : undefined
 }
 
@@ -2196,21 +2223,22 @@ function resolveDeclaration(
 // physical nested manifest starts a scope even when it omits \`type\` or cannot be
 // parsed. A directory at that spelling is not a manifest, so the walk continues.
 function readPackageType(installed: string, target: string): unknown {
-	let directory = dirname(join(installed, target))
-	while (true) {
-		const path = join(directory, 'package.json')
-		if (matchesFile(path)) {
-			try {
-				const manifest = readJson(path)
-				return isRecord(manifest) ? manifest.type : undefined
-			} catch {
-				return undefined
-			}
-		}
-		if (directory === installed) return undefined
-		const parent = dirname(directory)
-		if (parent === directory) return undefined
-		directory = parent
+	// One \`dirname\` per path segment reaches the root from any path. The walk ends at the
+	// installed package, so no scope above it is consulted.
+	const start = dirname(join(installed, target))
+	const chain = start
+		.split(/[\\\\/]/u)
+		.reduce<string[]>((climbed) => [...climbed, dirname(climbed.at(-1) ?? start)], [start])
+	const end = chain.indexOf(installed)
+	const scope = chain
+		.slice(0, end === -1 ? chain.length : end + 1)
+		.find((directory) => matchesFile(join(directory, 'package.json')))
+	if (scope === undefined) return undefined
+	try {
+		const manifest = readJson(join(scope, 'package.json'))
+		return isRecord(manifest) ? manifest.type : undefined
+	} catch {
+		return undefined
 	}
 }
 
@@ -2379,16 +2407,13 @@ function checkProject(stage: Stage, project: string): readonly string[] {
 	if (refused.length > 0) {
 		throw new Error(\`The consumer compiler wrote \${refused} to its error stream\`)
 	}
-	const reported: string[] = []
-	for (const line of \`\${result.stdout ?? ''}\`.split(/\\r\\n|\\n/u)) {
-		if (line.trim().length === 0) continue
-		const last = reported.at(-1)
-		// An elaborated diagnostic prints its detail on indented lines under its own
-		// first line, so each of those joins the diagnostic it elaborates.
-		if (/^\\s/u.test(line) && last !== undefined) {
-			reported[reported.length - 1] = \`\${last} \${line.trim()}\`
-			continue
-		}
+	const lines = \`\${result.stdout ?? ''}\`.split(/\\r\\n|\\n/u).filter((line) => line.trim().length > 0)
+	// An elaborated diagnostic prints its detail on indented lines under its own
+	// first line, so each of those joins the diagnostic it elaborates. The first line
+	// has no diagnostic above it to join, so it opens one whatever its indentation.
+	const heads = lines.flatMap((line, index) => (index === 0 || !/^\\s/u.test(line) ? [index] : []))
+	const reported = heads.map((head, position) => {
+		const line = lines[head] ?? ''
 		const located = DIAGNOSTIC_PATTERN.exec(line)?.[1]
 		if (located === undefined) {
 			throw new Error(\`The consumer compiler reported \${line}, which names no location\`)
@@ -2396,8 +2421,11 @@ function checkProject(stage: Stage, project: string): readonly string[] {
 		if (resolve(stage.consumer, located) === project) {
 			throw new Error(\`The scratch project is itself at fault: \${line}\`)
 		}
-		reported.push(line)
-	}
+		return [
+			line,
+			...lines.slice(head + 1, heads[position + 1] ?? lines.length).map((detail) => detail.trim()),
+		].join(' ')
+	})
 	if (reported.length === 0 && result.status !== 0) {
 		throw new Error(\`The consumer compiler refused the project: \${readOutput(result)}\`)
 	}
@@ -2434,13 +2462,14 @@ const surfaced: Record<keyof typeof published, true> = declared
 // One consumer module importing every installed entry, written where its own
 // resolution finds the installed package.
 function writeConsumerProbe(stage: Stage, path: string, specifiers: readonly string[]): void {
-	const names: string[] = []
-	const bindings: string[] = []
-	for (const [index, specifier] of specifiers.entries()) {
-		const binding = \`entry\${String(index)}\`
-		names.push(binding)
-		bindings.push(\`import * as \${binding} from \${JSON.stringify(specifier)}\`)
-	}
+	const modules = specifiers.map((specifier, index) => ({
+		binding: \`entry\${String(index)}\`,
+		specifier,
+	}))
+	const bindings = modules.map(
+		({ binding, specifier }) => \`import * as \${binding} from \${JSON.stringify(specifier)}\`,
+	)
+	const names = modules.map(({ binding }) => binding)
 	const source = \`\${bindings.join('\\n')}\\nexport const surface = [\${names.join(', ')}]\\n\`
 	writeFile(join(stage.consumer, path), source)
 }
@@ -2462,8 +2491,8 @@ function driveRuntime(stage: Stage, specifier: string, driver: string): readonly
 // published surface back off the installed tree. Every later claim reads this
 // result, so a failure here is raised where it happens rather than once per entry.
 function buildStage(): Stage {
-	const packed = join(readScratch(), 'packed')
-	const consumer = join(readScratch(), 'consumer')
+	const packed = join(DISTRIBUTION_SUITE.scratch, 'packed')
+	const consumer = join(DISTRIBUTION_SUITE.scratch, 'consumer')
 	mkdirSync(packed, { recursive: true })
 	const pack = runNpm(['pack', '--ignore-scripts', '--pack-destination', packed], ROOT)
 	if (pack.status !== 0) throw new Error(\`npm pack refused this workspace: \${readOutput(pack)}\`)
@@ -2488,16 +2517,9 @@ function buildStage(): Stage {
 	if (!isRecord(manifest) || !isRecord(manifest.exports)) {
 		throw new Error('The installed manifest publishes no exports map')
 	}
-	const entries: Entry[] = []
-	const targets: string[] = []
-	const subpaths: string[] = []
-	const undeclared: string[] = []
-	const excluded: string[] = []
-	for (const [subpath, entry] of Object.entries(manifest.exports)) {
-		const files = collectTargets(entry)
-		targets.push(...files)
-		subpaths.push(subpath)
-		const declaration = readDeclaration(entry, installed)
+	const readings = Object.entries(manifest.exports).map(([subpath, mapping]) => {
+		const files = collectTargets(mapping)
+		const declaration = readDeclaration(mapping, installed)
 		// A subpath resolving no declaration is partitioned rather than dropped. It is a
 		// defect when a runtime loads one of its targets for names, because a consumer
 		// importing it compiles against nothing under \`node16\`. It is an excluded
@@ -2508,21 +2530,19 @@ function buildStage(): Stage {
 			declaration.commonjs === undefined &&
 			declaration.browser === undefined
 		) {
-			if (files.some(isModule)) undeclared.push(subpath)
-			else excluded.push(subpath)
-			continue
+			return { subpath, files, entry: undefined }
 		}
-		const importTarget = resolveTarget(entry, RUNTIME_CONDITIONS.module)
-		const requireTarget = resolveTarget(entry, RUNTIME_CONDITIONS.commonjs)
-		const browserTarget = resolveTarget(entry, RUNTIME_CONDITIONS.browser)
-		const browsable = resolvesBrowser(entry)
+		const importTarget = resolveTarget(mapping, RUNTIME_CONDITIONS.module)
+		const requireTarget = resolveTarget(mapping, RUNTIME_CONDITIONS.commonjs)
+		const browserTarget = resolveTarget(mapping, RUNTIME_CONDITIONS.browser)
+		const browsable = resolvesBrowser(mapping)
 		const shadowed = browsable && requireTarget === browserTarget
 		const requirable = requireTarget !== undefined && !shadowed
-		const loadable = requirable && resolvesCommonJS(entry, installed)
-		entries.push({
+		const loadable = requirable && resolvesCommonJS(mapping, installed)
+		const entry: Entry = {
 			subpath,
 			specifier: subpath === '.' ? name : \`\${name}\${subpath.slice(1)}\`,
-			mapping: entry,
+			mapping,
 			declaration: {
 				importable: declaration.module !== undefined,
 				requirable: declaration.commonjs !== undefined,
@@ -2532,32 +2552,57 @@ function buildStage(): Stage {
 			importable: importTarget !== undefined && !(browsable && importTarget === browserTarget),
 			requirable,
 			loadable,
-		})
-	}
+		}
+		return { subpath, files, entry }
+	})
+	const entries = readings.flatMap(({ entry }) => (entry === undefined ? [] : [entry]))
+	const targets = readings.flatMap(({ files }) => files)
+	const subpaths = readings.map(({ subpath }) => subpath)
+	const undeclared = readings
+		.filter(({ entry, files }) => entry === undefined && files.some(isModule))
+		.map(({ subpath }) => subpath)
+	const excluded = readings
+		.filter(({ entry, files }) => entry === undefined && !files.some(isModule))
+		.map(({ subpath }) => subpath)
 	return { consumer, installed, archives, entries, subpaths, undeclared, excluded, targets }
 }
 
-let scratch: string | undefined
-let staged: Stage | undefined
+// The scratch directory and the staged consumer, which the start hook fills once for this
+// file's run and the stop hook removes.
+class DistributionSuite {
+	#scratch: string | undefined
+	#stage: Stage | undefined
 
-function readScratch(): string {
-	if (scratch === undefined) {
-		throw new Error('The distribution setup has not allocated its scratch directory')
+	get scratch(): string {
+		if (this.#scratch === undefined) {
+			throw new Error('The distribution setup has not allocated its scratch directory')
+		}
+		return this.#scratch
 	}
-	return scratch
+
+	get stage(): Stage | undefined {
+		return this.#stage
+	}
+
+	start(): void {
+		const scratch = mkdtempSync(join(tmpdir(), 'distribution-'))
+		this.#scratch = scratch
+		mkdirSync(join(scratch, 'cache'), { recursive: true })
+		this.#stage = openStage()
+	}
+
+	destroy(): void {
+		if (this.#scratch !== undefined) {
+			rmSync(this.#scratch, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
+		}
+	}
 }
 
-beforeAll(() => {
-	scratch = mkdtempSync(join(tmpdir(), 'distribution-'))
-	mkdirSync(join(scratch, 'cache'), { recursive: true })
-	staged = openStage()
-})
+const DISTRIBUTION_SUITE = new DistributionSuite()
 
-afterAll(() => {
-	if (scratch !== undefined) {
-		rmSync(scratch, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
-	}
-})
+beforeAll(() => DISTRIBUTION_SUITE.start())
+
+afterAll(() => DISTRIBUTION_SUITE.destroy())
 
 // Installing the packed archive resolves its own runtime dependencies, so an
 // unreachable registry leaves nothing to measure. Under release that is the gate
@@ -2572,14 +2617,19 @@ function openStage(): Stage | undefined {
 		}
 		return buildStage()
 	} catch (error) {
-		rmSync(readScratch(), { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
+		rmSync(DISTRIBUTION_SUITE.scratch, {
+			force: true,
+			recursive: true,
+			maxRetries: 3,
+			retryDelay: 100,
+		})
 		throw error
 	}
 }
 
 describe('distribution classifiers', () => {
 	it('classifies synthetic export mappings without a registry stage', () => {
-		const root = join(readScratch(), 'classifiers')
+		const root = join(DISTRIBUTION_SUITE.scratch, 'classifiers')
 		writeFile(
 			join(root, 'package.json'),
 			JSON.stringify({
@@ -2648,6 +2698,7 @@ describe('distribution classifiers', () => {
 // The staged consumer, or a skip naming what the run could not reach. \`it.skipIf\`
 // carries no reason, so the gate sits here where the test context can state one.
 function requireStage(context: TestContext): Stage {
+	const staged = DISTRIBUTION_SUITE.stage
 	if (staged === undefined) {
 		return context.skip('\`npm ping\` did not answer, so nothing was packed or installed')
 	}
@@ -2712,28 +2763,24 @@ describe('installed package consumer', () => {
 	it('compiles a consumer under every module resolution [requires the registry]', (context) => {
 		const stage = requireStage(context)
 		const name = readManifestName(join(stage.installed, 'package.json'))
-		const reported: string[] = []
-		const silent: string[] = []
-		for (const driver of RESOLUTIONS) {
-			for (const [extension, format] of FORMATS) {
+		const readings = RESOLUTIONS.flatMap((driver) =>
+			FORMATS.flatMap(([extension, format]) => {
 				const written = selectEntries(stage.entries, driver.conditions[format])
-				if (written.length === 0) continue
+				if (written.length === 0) return []
 				const label = \`\${driver.label}.\${extension}\`
 				const probe = \`probe.\${label}\`
 				const specifiers = written.map((entry) => entry.specifier)
 				writeConsumerProbe(stage, probe, specifiers)
 				const project = writeProject(stage, probe, driver, [\`./\${probe}\`])
-				for (const message of checkProject(stage, project)) {
-					reported.push(\`\${label}: \${message}\`)
-				}
+				const messages = checkProject(stage, project).map((message) => \`\${label}: \${message}\`)
 				const control = \`control.\${label}\`
 				writeConsumerProbe(stage, control, [\`\${name}\${ABSENT_SUBPATH}\`])
 				const refused = writeProject(stage, control, driver, [\`./\${control}\`])
-				if (checkProject(stage, refused).length === 0) silent.push(label)
-			}
-		}
-		expect(reported).toStrictEqual([])
-		expect(silent).toStrictEqual([])
+				return [{ messages, silent: checkProject(stage, refused).length === 0 ? [label] : [] }]
+			}),
+		)
+		expect(readings.flatMap(({ messages }) => messages)).toStrictEqual([])
+		expect(readings.flatMap(({ silent }) => silent)).toStrictEqual([])
 	})
 {{guard}}})
 

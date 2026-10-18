@@ -70,6 +70,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		conformance: input?.conformance ?? false,
 		service: input?.service ?? false,
 		vendors: input?.vendors ?? [],
+		studies: input?.studies ?? false,
 		global: input?.global ?? false,
 		showcase: input?.showcase ?? false,
 		journey: input?.journey ?? false,

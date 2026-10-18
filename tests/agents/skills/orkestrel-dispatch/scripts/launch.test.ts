@@ -2,11 +2,14 @@ import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isRecord, parseJSON } from '@orkestrel/contract'
-import { waitForCondition, waitForEvent } from '@orkestrel/test'
+import { createTeardown, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import { WORKSPACE_ROOT, buildSkillRun, runSkillScript } from '../../../../setupServer.js'
-
-const SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/launch.ts'
+import {
+	buildSkillRun,
+	LAUNCH_SCRIPT,
+	runSkillScript,
+	WORKSPACE_ROOT,
+} from '../../../../setupServer.js'
 
 describe('launch.ts', () => {
 	it('journals a command, ends the errors file with the exit trailer, and prints a summary', () => {
@@ -14,7 +17,7 @@ describe('launch.ts', () => {
 		try {
 			scratch.write('say.cjs', "process.stdout.write('hello\\n'); process.stderr.write('warn\\n')")
 			const run = runSkillScript(
-				SCRIPT,
+				LAUNCH_SCRIPT,
 				[
 					'--journal',
 					'tmp/units/say.jsonl',
@@ -49,7 +52,7 @@ describe('launch.ts', () => {
 		try {
 			scratch.write('sleep.cjs', 'setTimeout(() => {}, 20000)')
 			const run = runSkillScript(
-				SCRIPT,
+				LAUNCH_SCRIPT,
 				[
 					'--journal',
 					'tmp/units/sleep.jsonl',
@@ -75,7 +78,7 @@ describe('launch.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-start-' })
 		try {
 			const run = runSkillScript(
-				SCRIPT,
+				LAUNCH_SCRIPT,
 				[
 					'--journal',
 					'tmp/units/none.jsonl',
@@ -99,13 +102,14 @@ describe('launch.ts', () => {
 
 	it('prints a spawn line and writes the pid file while the command runs, then the summary last', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-pid-' })
-		let closed: Promise<[number | null]> | undefined
+		const teardown = createTeardown()
+		teardown.add(() => scratch.destroy())
 		try {
 			scratch.write('sleep.cjs', 'setTimeout(() => {}, 20000)')
 			const child = spawn(
 				process.execPath,
 				[
-					join(WORKSPACE_ROOT, SCRIPT),
+					join(WORKSPACE_ROOT, LAUNCH_SCRIPT),
 					'--journal',
 					'tmp/units/live.jsonl',
 					'--errors',
@@ -118,21 +122,31 @@ describe('launch.ts', () => {
 				],
 				{ cwd: scratch.path, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] },
 			)
-			let stdout = ''
+			const output: string[] = []
 			child.stdout.setEncoding('utf8')
 			child.stdout.on('data', (chunk: string) => {
-				stdout += chunk
+				output.push(chunk)
 			})
-			closed = waitForEvent<[number | null]>(
+			const closed = waitForEvent<[number | null]>(
 				(listener) => {
 					child.on('close', listener)
 				},
 				'launch.ts exits at the cap',
 				{ budget: 30_000 },
 			)
-			await waitForCondition('launch.ts prints its spawn line', () => stdout.includes('\n'), {
-				budget: 15_000,
+			// The launched tree holds files in the scratch directory until the cap ends it, so the
+			// teardown awaits the close before it removes the directory.
+			teardown.add(async () => {
+				await closed.catch(() => undefined)
 			})
+			await waitForCondition(
+				'launch.ts prints its spawn line',
+				() => output.join('').includes('\n'),
+				{
+					budget: 15_000,
+				},
+			)
+			const stdout = output.join('')
 			const spawned = parseJSON(stdout.split(/\r\n|\n/)[0] ?? '')
 			const pid = isRecord(spawned) ? spawned.pid : undefined
 			expect(typeof pid).toBe('number')
@@ -145,15 +159,13 @@ describe('launch.ts', () => {
 			expect(() => process.kill(pid, 0)).not.toThrow()
 			expect(scratch.read('tmp/units/live.jsonl.pid')).toBe(`${pid}\n`)
 			const [status] = await closed
-			const run = buildSkillRun(status, stdout, '')
+			const run = buildSkillRun(status, output.join(''), '')
 			expect(run.status).toBe(124)
 			expect(run.stdout.split(/\r\n|\n/).filter((line) => line !== '')).toHaveLength(2)
 			expect(run.json?.pid).toBe(pid)
 			expect(run.json?.capped).toBe(true)
 		} finally {
-			// The launched tree holds files in the scratch directory until the cap ends it.
-			await closed?.catch(() => undefined)
-			scratch.destroy()
+			await teardown.destroy()
 		}
 	})
 
@@ -162,7 +174,7 @@ describe('launch.ts', () => {
 		try {
 			scratch.write('tmp/units/none.jsonl.pid', '4242\n')
 			const run = runSkillScript(
-				SCRIPT,
+				LAUNCH_SCRIPT,
 				[
 					'--journal',
 					'tmp/units/none.jsonl',
@@ -186,7 +198,7 @@ describe('launch.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-nopid-' })
 		try {
 			const run = runSkillScript(
-				SCRIPT,
+				LAUNCH_SCRIPT,
 				[
 					'--journal',
 					'tmp/units/none.jsonl',
@@ -213,7 +225,7 @@ describe('launch.ts', () => {
 		try {
 			scratch.write('echo.cjs', 'process.stdout.write(process.argv.slice(2).join(" "))')
 			const run = runSkillScript(
-				SCRIPT,
+				LAUNCH_SCRIPT,
 				[
 					'--journal',
 					'tmp/units/echo.jsonl',
@@ -243,34 +255,40 @@ describe('launch.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-usage-' })
 		try {
 			expect(
-				runSkillScript(SCRIPT, ['--journal', 'a', '--errors', 'b'], { cwd: scratch.path }).status,
-			).toBe(64)
-			expect(
-				runSkillScript(SCRIPT, ['--journal', '--errors', 'b', '--', process.execPath, '-v'], {
-					cwd: scratch.path,
-				}).status,
+				runSkillScript(LAUNCH_SCRIPT, ['--journal', 'a', '--errors', 'b'], { cwd: scratch.path })
+					.status,
 			).toBe(64)
 			expect(
 				runSkillScript(
-					SCRIPT,
+					LAUNCH_SCRIPT,
+					['--journal', '--errors', 'b', '--', process.execPath, '-v'],
+					{
+						cwd: scratch.path,
+					},
+				).status,
+			).toBe(64)
+			expect(
+				runSkillScript(
+					LAUNCH_SCRIPT,
 					['--journal', 'same', '--errors', 'same', '--', process.execPath, '-v'],
 					{ cwd: scratch.path },
 				).status,
 			).toBe(64)
 			expect(
-				runSkillScript(SCRIPT, ['--journal', 'a', '--errors', 'b', '--', ''], { cwd: scratch.path })
-					.status,
+				runSkillScript(LAUNCH_SCRIPT, ['--journal', 'a', '--errors', 'b', '--', ''], {
+					cwd: scratch.path,
+				}).status,
 			).toBe(64)
 			expect(
 				runSkillScript(
-					SCRIPT,
+					LAUNCH_SCRIPT,
 					['--journal', 'a', '--errors', 'b', '--cap', 'soon', '--', process.execPath, '-v'],
 					{ cwd: scratch.path },
 				).status,
 			).toBe(64)
 			expect(
 				runSkillScript(
-					SCRIPT,
+					LAUNCH_SCRIPT,
 					['--journal', 'a', '--errors', 'b', '--cap', '--', process.execPath, '-v'],
 					{ cwd: scratch.path },
 				).status,

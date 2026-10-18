@@ -9,18 +9,33 @@ import type {
 import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } from '@src/core'
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
-import type { ServerResponse } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { ResolveHookSync } from 'node:module'
 import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
-import { chmodSync, existsSync, globSync, readFileSync, realpathSync } from 'node:fs'
+import {
+	chmodSync,
+	existsSync,
+	globSync,
+	mkdirSync,
+	readFileSync,
+	realpathSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
-import { delimiter, dirname, join, relative as relativePath } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import {
+	delimiter,
+	dirname,
+	join,
+	relative as relativePath,
+	resolve as resolvePath,
+} from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
@@ -35,6 +50,15 @@ import {
 } from '@orkestrel/process/server'
 import { parseSync, transformWithOxc } from 'vite'
 import {
+	BASE_DEV_DEPENDENCIES,
+	blueprintToConfigArtifacts,
+	blueprintToManifest,
+	blueprintToTestArtifacts,
+	BROWSE_DEV_DEPENDENCIES,
+	CONFIG_TEMPLATES,
+	DECLARATION_DEV_DEPENDENCIES,
+	FRAMEWORK_MATRIX,
+	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	CATALOG_AGENT_PATH,
 	CATALOG_CLOSING_MARKER,
 	CATALOG_OPENING_MARKER,
@@ -70,6 +94,7 @@ import {
 	isFilesystemPath,
 	isHostManifest,
 	isInventory,
+	listAncestors,
 	listFiles,
 	isManifestEntry,
 	isManifestRegionSet,
@@ -97,7 +122,13 @@ import {
 	readSurfaceCollisions,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
-import { captureError, createRecorder, resolveRoot, waitForCondition } from '@orkestrel/test'
+import {
+	captureError,
+	createRecorder,
+	requireValue,
+	resolveRoot,
+	waitForCondition,
+} from '@orkestrel/test'
 import {
 	createLoopback,
 	createScratch,
@@ -111,6 +142,13 @@ import {
 	buildHostArtifact,
 	buildPlan,
 	buildQuestion,
+	BROWSER_PLUGIN_DECLARATIONS,
+	CLASSIFIER_DECLARATIONS,
+	DEPENDENCY_TABLES,
+	ENTRY_OBSERVATION_PATH,
+	ENTRY_PASSING_TEST,
+	ENTRY_PATH,
+	ENTRY_VITE,
 } from './setup.js'
 
 /** Defines the package-owned project overlay for generated configuration parity. */
@@ -550,14 +588,11 @@ export function listExecutablePaths(): readonly string[] {
 		encoding: 'utf8',
 		maxBuffer: 1024 * 1024 * 32,
 	})
-	const paths: string[] = []
-	for (const line of listing.split('\n')) {
-		if (!line.startsWith('100755 ')) continue
-		const tab = line.indexOf('\t')
-		if (tab === -1) continue
-		paths.push(line.slice(tab + 1))
-	}
-	return paths.sort()
+	return listing
+		.split('\n')
+		.filter((line) => line.startsWith('100755 ') && line.includes('\t'))
+		.map((line) => line.slice(line.indexOf('\t') + 1))
+		.sort()
 }
 
 /**
@@ -897,11 +932,11 @@ export function installPackedScaffold(
 export function createDistributionScratch(prefix: string): ScratchInterface {
 	const workspace = createScratch({ prefix })
 	try {
-		for (let parent = dirname(workspace.path); ; parent = dirname(parent)) {
-			if (existsSync(join(parent, 'node_modules')))
-				throw new Error(`Distribution fixture inherits dependencies from ${parent}`)
-			if (dirname(parent) === parent) break
-		}
+		const inherited = listAncestors(workspace.path)
+			.slice(1)
+			.find((parent) => existsSync(join(parent, 'node_modules')))
+		if (inherited !== undefined)
+			throw new Error(`Distribution fixture inherits dependencies from ${inherited}`)
 		createRepository(workspace.path)
 		return workspace
 	} catch (error) {
@@ -1052,12 +1087,11 @@ export function installGeneratedWorkspace(
 export function parseVitestReport(text: string): readonly TestReportFile[] | undefined {
 	const report = parseJSON(text)
 	if (!isRecord(report) || !isArray(report.testResults)) return undefined
-	const files: TestReportFile[] = []
-	for (const result of report.testResults) {
+	const files = report.testResults.map((result): TestReportFile | undefined => {
 		if (!isRecord(result) || !isString(result.name) || !isArray(result.assertionResults)) {
 			return undefined
 		}
-		files.push({
+		return {
 			name: result.name,
 			status: result.status,
 			message: result.message,
@@ -1066,9 +1100,9 @@ export function parseVitestReport(text: string): readonly TestReportFile[] | und
 					? { title: assertion.title, status: assertion.status }
 					: { title: undefined, status: undefined },
 			),
-		})
-	}
-	return files
+		}
+	})
+	return files.every((file) => file !== undefined) ? files : undefined
 }
 
 /**
@@ -1838,40 +1872,40 @@ export function readStatements(source: string, name: string): readonly TestState
 			const wrapped =
 				statement.type === 'ExportNamedDeclaration' ? statement.declaration : statement
 			const declaration = wrapped === null ? undefined : wrapped
-			const bindings: Array<{
+			const bindings: ReadonlyArray<{
 				readonly name: string
 				readonly shape: ESTree.Function | ESTree.ArrowFunctionExpression | undefined
-			}> = []
+			}> =
+				declaration?.type === 'FunctionDeclaration'
+					? declaration.id === null
+						? []
+						: [{ name: declaration.id.name, shape: declaration }]
+					: declaration?.type === 'VariableDeclaration'
+						? declaration.declarations.flatMap((declarator) => {
+								if (declarator.id.type !== 'Identifier') return []
+								const initializer = declarator.init
+								const shape =
+									initializer?.type === 'ArrowFunctionExpression' ||
+									initializer?.type === 'FunctionExpression'
+										? initializer
+										: undefined
+								return [{ name: declarator.id.name, shape }]
+							})
+						: []
 			const body: TestStatement[] = []
-			if (declaration?.type === 'FunctionDeclaration') {
-				if (declaration.id !== null)
-					bindings.push({ name: declaration.id.name, shape: declaration })
-				if (declaration.body !== null)
-					pending.push({ statements: declaration.body.body, into: body })
-			} else if (declaration?.type === 'VariableDeclaration') {
-				for (const declarator of declaration.declarations) {
-					if (declarator.id.type !== 'Identifier') continue
-					const initializer = declarator.init
-					const shape =
-						initializer?.type === 'ArrowFunctionExpression' ||
-						initializer?.type === 'FunctionExpression'
-							? initializer
-							: undefined
-					bindings.push({ name: declarator.id.name, shape })
-				}
-			}
-			const declarations: TestDeclaration[] = []
-			for (const binding of bindings) {
+			if (declaration?.type === 'FunctionDeclaration' && declaration.body !== null)
+				pending.push({ statements: declaration.body.body, into: body })
+			const declarations: readonly TestDeclaration[] = bindings.map((binding) => {
 				const annotation = binding.shape?.returnType?.typeAnnotation
-				declarations.push({
+				return {
 					name: binding.name,
 					parameters: (binding.shape?.params ?? []).map((parameter) =>
 						source.slice(parameter.start, parameter.end),
 					),
 					returns:
 						annotation === undefined ? undefined : source.slice(annotation.start, annotation.end),
-				})
-			}
+				}
+			})
 			frame.into.push({
 				syntax: declaration?.type ?? statement.type,
 				exported:
@@ -2353,35 +2387,31 @@ export const SKILL_CANON_FILES: Readonly<Record<string, string>> = Object.freeze
  * select the claimed files while leaving unclaimed reference guides in the host.
  */
 export function buildFleetManifest(): HostManifest {
-	const entries: ManifestEntry[] = []
-	const roots: string[] = []
-	for (const path of [...HOST_PATHS, CATALOG_AGENT_PATH, ...REFERENCE_PATHS]) {
-		if (!HOST_DIRECTORY_PATHS.includes(path)) {
-			entries.push(buildManifestEntry({ storage: pathToStorage(path), destination: path }))
-			continue
-		}
-		roots.push(path)
-		const directory = fileURLToPath(new URL(`../${path}/`, import.meta.url))
-		for (const name of listFiles(directory)) {
-			const destination = `${path}/${name}`
-			entries.push(
-				buildManifestEntry({
+	const planned = [...HOST_PATHS, CATALOG_AGENT_PATH, ...REFERENCE_PATHS]
+	const entries = [
+		...planned.flatMap((path) => {
+			if (!HOST_DIRECTORY_PATHS.includes(path)) {
+				return [buildManifestEntry({ storage: pathToStorage(path), destination: path })]
+			}
+			const directory = fileURLToPath(new URL(`../${path}/`, import.meta.url))
+			return listFiles(directory).map((name) => {
+				const destination = `${path}/${name}`
+				return buildManifestEntry({
 					storage: pathToStorage(destination),
 					destination,
 					executable: matchesExecutablePath(destination),
-				}),
-			)
-		}
-	}
-	for (const [destination, text] of Object.entries(SKILL_CANON_FILES)) {
-		entries.push(
+				})
+			})
+		}),
+		...Object.entries(SKILL_CANON_FILES).map(([destination, text]) =>
 			buildManifestEntry({
 				storage: pathToStorage(destination),
 				destination,
 				digest: computeDigest(text),
 			}),
-		)
-	}
+		),
+	]
+	const roots = planned.filter((path) => HOST_DIRECTORY_PATHS.includes(path))
 	const membership = { entries, roots, surface: [] }
 	return {
 		...membership,
@@ -2482,50 +2512,45 @@ export const STAGING_SURFACE_FILES: Snapshot = Object.freeze({
  * storage name and roots sort as paths.
  */
 export function buildCheckoutManifest(): HostManifest {
-	const entries: ManifestEntry[] = []
-	const roots: string[] = []
-	for (const path of STAGED_PATHS) {
-		if (!HOST_DIRECTORY_PATHS.includes(path)) {
-			entries.push(
-				buildManifestEntry({
-					storage: pathToStorage(path),
-					destination: path,
-					executable: matchesExecutablePath(path),
-					digest: computeDigest(`${path}\n`),
-				}),
-			)
-			continue
-		}
-		roots.push(path)
-		if (path === '.claude/skills') continue
-		if (path === 'guides') {
-			for (const guide of CHECKOUT_GUIDE_PATHS)
-				entries.push(
+	const entries = [
+		...STAGED_PATHS.flatMap((path) => {
+			if (!HOST_DIRECTORY_PATHS.includes(path)) {
+				return [
+					buildManifestEntry({
+						storage: pathToStorage(path),
+						destination: path,
+						executable: matchesExecutablePath(path),
+						digest: computeDigest(`${path}\n`),
+					}),
+				]
+			}
+			if (path === '.claude/skills') return []
+			if (path === 'guides') {
+				return CHECKOUT_GUIDE_PATHS.map((guide) =>
 					buildManifestEntry({
 						storage: guide,
 						destination: guide,
 						digest: computeDigest(`${guide}\n`),
 					}),
 				)
-			continue
-		}
-		const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
-		entries.push(
-			buildManifestEntry({
-				storage: pathToStorage(destination),
-				destination,
-				executable: matchesExecutablePath(destination),
-				digest: computeDigest(`${destination}\n`),
-			}),
-		)
-	}
-	entries.push(
+			}
+			const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
+			return [
+				buildManifestEntry({
+					storage: pathToStorage(destination),
+					destination,
+					executable: matchesExecutablePath(destination),
+					digest: computeDigest(`${destination}\n`),
+				}),
+			]
+		}),
 		buildManifestEntry({
 			storage: pathToStorage(CATALOG_AGENT_PATH),
 			destination: CATALOG_AGENT_PATH,
 			digest: computeDigest(CATALOG_AGENT_ROWS_TEXT),
 		}),
-	)
+	]
+	const roots = STAGED_PATHS.filter((path) => HOST_DIRECTORY_PATHS.includes(path))
 	const membership = {
 		entries: [...entries].sort((first, second) => (first.storage < second.storage ? -1 : 1)),
 		roots: [...roots].sort(),
@@ -2767,21 +2792,18 @@ export function buildTargetAudit(
 	paths: readonly string[],
 	stale: readonly string[],
 ): Audit {
-	const findings: Finding[] = []
-	for (const path of paths) {
+	const findings = paths.map((path): Finding => {
 		const observed = readFileHex(target, path)
-		if (observed === undefined) {
-			findings.push({ path, group: 'docs', ownership: 'content', drift: 'missing' })
-			continue
-		}
-		findings.push({
-			path,
-			group: 'docs',
-			ownership: 'content',
-			drift: stale.includes(path) ? 'stale' : 'aligned',
-			observed,
-		})
-	}
+		return observed === undefined
+			? { path, group: 'docs', ownership: 'content', drift: 'missing' }
+			: {
+					path,
+					group: 'docs',
+					ownership: 'content',
+					drift: stale.includes(path) ? 'stale' : 'aligned',
+					observed,
+				}
+	})
 	return { findings, questions: [] }
 }
 
@@ -3061,23 +3083,28 @@ export function buildInventory(files: readonly TestVendoredFile[]): string {
 export function buildInstalledHostReplies(
 	floor: Host = readHostFloor(),
 ): Readonly<Record<string, TestUpstreamReply>> {
-	const replies: Record<string, TestUpstreamReply> = {
-		'/orkestrel/scaffold/refs/heads/main/host.json': {
-			status: 200,
-			body: JSON.stringify(floor.manifest),
-		},
-	}
-	for (const entry of floor.manifest.entries) {
-		if (isDeferredPath(entry.destination)) continue
-		const hex = floor.bytes[entry.destination]
-		if (hex === undefined) continue
-		replies[`/orkestrel/scaffold/refs/heads/main/${entry.destination}`] = {
-			status: 200,
-			body: Buffer.from(hex, 'hex').toString('utf8'),
-			type: 'text/plain',
-		}
-	}
-	return replies
+	return Object.fromEntries([
+		[
+			'/orkestrel/scaffold/refs/heads/main/host.json',
+			{ status: 200, body: JSON.stringify(floor.manifest) },
+		],
+		...floor.manifest.entries.flatMap((entry): Array<[string, TestUpstreamReply]> => {
+			if (isDeferredPath(entry.destination)) return []
+			const hex = floor.bytes[entry.destination]
+			return hex === undefined
+				? []
+				: [
+						[
+							`/orkestrel/scaffold/refs/heads/main/${entry.destination}`,
+							{
+								status: 200,
+								body: Buffer.from(hex, 'hex').toString('utf8'),
+								type: 'text/plain',
+							},
+						],
+					]
+		}),
+	])
 }
 
 /**
@@ -3102,17 +3129,17 @@ export function buildVendoredSnapshot(files: readonly TestVendoredFile[]): Snaps
  * Every other reply declares the encoded wire body's true byte length.
  */
 export function writeUpstreamReply(response: ServerResponse, reply: TestUpstreamReply): void {
-	const headers: Record<string, string> = { 'content-type': reply.type ?? 'application/json' }
 	const body =
 		reply.encoding === 'gzip'
 			? gzipSync(reply.body)
 			: typeof reply.body === 'string'
 				? Buffer.from(reply.body, 'utf8')
 				: Buffer.from(reply.body)
-	if (reply.location !== undefined) headers.location = reply.location
-	if (reply.encoding !== undefined) headers['content-encoding'] = reply.encoding
-	if (reply.chunked !== true) {
-		headers['content-length'] = String(body.byteLength)
+	const headers: Record<string, string> = {
+		'content-type': reply.type ?? 'application/json',
+		...(reply.location === undefined ? {} : { location: reply.location }),
+		...(reply.encoding === undefined ? {} : { 'content-encoding': reply.encoding }),
+		...(reply.chunked === true ? {} : { 'content-length': String(body.byteLength) }),
 	}
 	response.writeHead(reply.status, headers)
 	response.end(body)
@@ -3147,20 +3174,20 @@ export async function createUpstreamServer(
 ): Promise<TestUpstreamInterface> {
 	const served: string[] = []
 	const negotiated: Array<string | undefined> = []
-	const waiters = new Map<string, () => void>()
-	const arrivals = new Map<string, Promise<void>>()
-	const counts = { open: 0, peak: 0 }
-	for (const path of Object.keys(replies)) {
-		arrivals.set(path, new Promise<void>((settle) => waiters.set(path, settle)))
-	}
+	// Each connection event is +1 when a request opens and -1 when its response closes, in order.
+	const connections: number[] = []
+	const pending = Object.keys(replies).map((path) => ({ path, ...Promise.withResolvers<void>() }))
+	const arrivals = new Map(
+		pending.map(({ path, promise }): [string, Promise<void>] => [path, promise]),
+	)
+	const waiters = new Map(pending.map(({ path, resolve }): [string, () => void] => [path, resolve]))
 	const server = createServer((request, response) => {
 		const path = request.url ?? ''
 		served.push(path)
 		negotiated.push(request.headers.accept)
-		counts.open += 1
-		if (counts.open > counts.peak) counts.peak = counts.open
+		connections.push(1)
 		response.on('close', () => {
-			counts.open -= 1
+			connections.push(-1)
 		})
 		waiters.get(path)?.()
 		const reply = replies[path]
@@ -3192,7 +3219,13 @@ export async function createUpstreamServer(
 			return [...negotiated]
 		},
 		get peak() {
-			return counts.peak
+			return connections.reduce(
+				(state, delta) => ({
+					open: state.open + delta,
+					peak: Math.max(state.peak, state.open + delta),
+				}),
+				{ open: 0, peak: 0 },
+			).peak
 		},
 		arrival(path: string) {
 			return arrivals.get(path) ?? Promise.resolve()
@@ -3520,6 +3553,31 @@ export async function probeOllama(host: string, signal: AbortSignal): Promise<bo
 }
 
 /**
+ * Parses a configured Ollama endpoint into its HTTP origin.
+ *
+ * @param host - The HTTP origin, optionally without its scheme.
+ * @returns The parsed URL, or `undefined` when the text is empty, is not an HTTP origin, or carries
+ * credentials, a path, a query, or a fragment.
+ */
+export function parseOllamaOrigin(host: string): URL | undefined {
+	try {
+		const url = new URL(/^https?:\/\//iu.test(host) ? host : `http://${host}`)
+		const refused =
+			host.length === 0 ||
+			(url.protocol !== 'http:' && url.protocol !== 'https:') ||
+			url.username !== '' ||
+			url.password !== '' ||
+			url.pathname !== '/' ||
+			url.search !== '' ||
+			url.hash !== '' ||
+			url.hostname === ''
+		return refused ? undefined : url
+	} catch {
+		return undefined
+	}
+}
+
+/**
  * Runs the Windows Ollama setup protocol against a selected endpoint.
  *
  * @param host - The HTTP origin, optionally without its scheme.
@@ -3540,21 +3598,8 @@ export async function executeWindowsOllama(
 	workspace: string,
 ): Promise<ExecuteResult> {
 	if (model.length === 0) return buildOllamaResult(1, 'OLLAMA_MODEL must not be empty')
-	let url: URL
-	try {
-		url = new URL(/^https?:\/\//iu.test(host) ? host : `http://${host}`)
-		if (
-			host.length === 0 ||
-			(url.protocol !== 'http:' && url.protocol !== 'https:') ||
-			url.username !== '' ||
-			url.password !== '' ||
-			url.pathname !== '/' ||
-			url.search !== '' ||
-			url.hash !== '' ||
-			url.hostname === ''
-		)
-			throw new Error('Invalid origin')
-	} catch {
+	const url = parseOllamaOrigin(host)
+	if (url === undefined) {
 		return buildOllamaResult(
 			1,
 			'OLLAMA_HOST must be an HTTP origin without credentials, path, query, or fragment',
@@ -4096,21 +4141,1166 @@ export function spawnSkillScript(
 			windowsHide: true,
 			stdio: ['ignore', 'pipe', 'pipe'],
 		})
-		let stdout = ''
-		let stderr = ''
+		const stdout: string[] = []
+		const stderr: string[] = []
 		child.stdout.setEncoding('utf8')
 		child.stderr.setEncoding('utf8')
 		child.stdout.on('data', (chunk: string) => {
-			stdout += chunk
+			stdout.push(chunk)
 		})
 		child.stderr.on('data', (chunk: string) => {
-			stderr += chunk
+			stderr.push(chunk)
 		})
 		child.on('error', reject)
 		child.on('close', (status) => {
-			resolve(buildSkillRun(status, stdout, stderr))
+			resolve(buildSkillRun(status, stdout.join(''), stderr.join('')))
 		})
 	})
+}
+
+/**
+ * Reads whether the configured npm registry answers a ping, measuring it on the first read only.
+ *
+ * @remarks
+ * The ping takes the launcher's shell, for the reason `TestNpmLauncher` states: without it the
+ * probe is false on every Windows host, so the install case never runs there — in
+ * `prepublishOnly` included — and the failure reads as "no registry" instead of "this proof
+ * cannot launch npm". Every argument handed to npm is a literal, so the shell has nothing to
+ * escape. A suite that never asks pays for no ping, because the first read is the measurement.
+ */
+export class TestRegistry {
+	#reachable: boolean | undefined
+
+	/** True if `npm ping` answered within the probe's budget; false otherwise. */
+	get reachable(): boolean {
+		this.#reachable ??=
+			spawnSync(
+				NPM_LAUNCHER.command,
+				['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'],
+				{
+					cwd: WORKSPACE_ROOT,
+					stdio: 'ignore',
+					timeout: 5_000,
+					windowsHide: true,
+					shell: NPM_LAUNCHER.shell,
+				},
+			).status === 0
+		return this.#reachable
+	}
+}
+
+/** Holds the registry reading every installing proof shares. */
+export const NPM_REGISTRY = Object.freeze(new TestRegistry())
+
+/** Holds whether the run is the release run the publish gate invokes with `--mode release`. */
+export const RELEASE_MODE: boolean = import.meta.env.MODE === 'release'
+
+/** Describes one shipped declaration whose printed examples the distribution proof drives. */
+export interface TestDeclarationCase {
+	readonly types: string
+	readonly module: string
+	readonly controls: readonly string[]
+}
+
+/**
+ * Lists the declarations a consumer installs, each read because an example is shipped by whichever
+ * declaration prints it and a reader hovers over either.
+ *
+ * @remarks
+ * Each carries controls of its own, and none of them is in either built declaration, so every one
+ * lies outside the population the instrument covers. One control per outcome the rule can reach,
+ * because the instrument has one way to report and says nothing as undriven, glossed, or elided. A
+ * false claim must be scored a mismatch, which is the proof the comparison can fail at all. A claim
+ * the rule excludes must be named in the set that excluded it — undriven, glossed, or elided —
+ * which is the proof the rule reports what it cannot reach instead of dropping it. The false
+ * controls in the excluded spellings are the ones the previous instrument dropped silently: it
+ * named the statement kind alone, so a corrected example rewritten with a gloss or an elision left
+ * every list where it was.
+ */
+export const DECLARATION_CASES: readonly TestDeclarationCase[] = Object.freeze([
+	{
+		types: 'dist/src/core/index.d.ts',
+		module: 'dist/src/core/index.js',
+		controls: [
+			// The claim this package shipped before the correction below it, with the
+			// value its example only declared. It is false for every blueprint that
+			// compiles, and it is the class the previous instrument could not reach.
+			[
+				"const blueprint = createBlueprint('router', { src: ['core'] })",
+				"new Compiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true",
+			].join('\n'),
+			// A statement rather than an expression, which the rule excludes.
+			"if (isGroup('manifest')) inferGroup('AGENTS.md') // 'docs'",
+		],
+	},
+	{
+		types: 'dist/src/server/index.d.ts',
+		module: 'dist/src/server/index.js',
+		controls: [
+			"isBranch('main') // false",
+			"isBranch('main') // false — a branch name is not a branch",
+			"listFiles('./dist/host') // ['definitely-not-a-file', …]",
+		],
+	},
+])
+
+/** Matches one fenced `ts` example block and captures its body. */
+export const CLAIM_EXAMPLE = /```ts\n(?<body>[\s\S]*?)```/gu
+
+/**
+ * Matches a claim, a line inside a fenced example whose trailing comment states a verdict.
+ *
+ * @remarks
+ * That is the population, and every line in it lands in exactly one of the driven, elided,
+ * glossed, and undriven sets. It is driven when the verdict parses as a literal and the expression
+ * the comment sits on closes its own brackets and is an expression rather than a statement.
+ * Otherwise it is elided, glossed, or undriven, and each of those is asserted as the exact list of
+ * lines it holds.
+ */
+export const CLAIM_LINE = /^(?<expression>\S.*?) \/\/ (?<verdict>.+)$/u
+
+/** Matches the comment prefix a declaration file puts before each example line. */
+export const CLAIM_PREFIX = /^\s*\*( |$)/u
+
+/** Matches the first character an expression statement can begin with. */
+export const CLAIM_OPENER = /^[A-Za-z_$([]/u
+
+/** Lists the leading words that open a statement rather than an expression. */
+export const CLAIM_KEYWORDS: readonly string[] = Object.freeze([
+	'await',
+	'case',
+	'catch',
+	'class',
+	'const',
+	'declare',
+	'do',
+	'else',
+	'export',
+	'finally',
+	'for',
+	'function',
+	'if',
+	'import',
+	'let',
+	'return',
+	'switch',
+	'throw',
+	'try',
+	'var',
+	'while',
+])
+
+/**
+ * Marks a verdict this instrument declines to read as a literal.
+ *
+ * @remarks
+ * An elided value shows a prefix of a shape rather than the whole of one, so there is nothing to
+ * compare a run against and the line is named rather than scored.
+ */
+export const CLAIM_ELISION = '…'
+
+/** Encodes an `undefined` verdict, which JSON cannot carry, as text no other verdict encodes to. */
+export const CLAIM_ABSENT = '\u0000undefined'
+
+/**
+ * Holds the child that answers for the claims.
+ *
+ * @remarks
+ * It compiles each example block on its own, so a block this instrument mis-sliced reports its own
+ * refusal instead of taking the run down, and it records each claim where the example puts it, so a
+ * verdict that depends on the lines above it is read after they have run.
+ */
+export const CLAIM_DRIVER: string = [
+	"import { readFileSync } from 'node:fs'",
+	"const payload = JSON.parse(readFileSync(0, 'utf8'))",
+	'const module = await import(payload.module)',
+	'const names = Object.keys(module).filter((name) => /^[A-Za-z_$][\\w$]*$/u.test(name))',
+	"const preamble = 'const { ' + names.join(', ') + ' } = module'",
+	'const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor',
+	'const recorded = []',
+	'const refused = []',
+	'const record = (id, value) => {',
+	"	recorded.push([id, { driven: true, encoded: value === undefined ? '\\u0000undefined' : String(JSON.stringify(value)) }])",
+	'}',
+	'const compile = (block) => {',
+	'	try {',
+	"		return new AsyncFunction('module', 'record', preamble + '\\n' + block.source)",
+	'	} catch (error) {',
+	'		refused.push(block.claims.map((id) => [id, { driven: false, reason: String(error) }]))',
+	'		return undefined',
+	'	}',
+	'}',
+	'for (const block of payload.blocks) {',
+	'	const run = compile(block)',
+	'	if (run === undefined) continue',
+	'	try {',
+	'		await run(module, record)',
+	'	} catch (error) {',
+	'		refused.push(block.claims.map((id) => [id, { driven: false, reason: String(error) }]))',
+	'	}',
+	'}',
+	'process.stdout.write(JSON.stringify(Object.fromEntries([...refused.flat(), ...recorded])))',
+].join('\n')
+
+/**
+ * Counts the claim-shaped lines across a set of example bodies.
+ *
+ * @param bodies - The fenced example bodies to read.
+ * @returns How many lines carry an expression followed by a `//` verdict.
+ */
+export function countClaims(bodies: readonly string[]): number {
+	return bodies.flatMap((body) => body.split('\n')).filter((line) => CLAIM_LINE.test(line.trim()))
+		.length
+}
+
+/**
+ * Parses the verdict a claim comment states into the text the driver encodes its answer to.
+ *
+ * @param verdict - The comment text after the `//`.
+ * @returns The canonical JSON text of the literal, or `undefined` when the verdict is prose.
+ */
+export function parseClaimVerdict(verdict: string): string | undefined {
+	if (verdict === 'undefined') return CLAIM_ABSENT
+	try {
+		return JSON.stringify(
+			JSON.parse(
+				/^(true|false|-?\d+(\.\d+)?)$/u.test(verdict) ? verdict : verdict.replaceAll("'", '"'),
+			),
+		)
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Checks whether a source fragment closes every bracket and quote it opens.
+ *
+ * @param text - The source fragment to read.
+ * @returns True if the brackets never close beneath zero, end at zero, and no quote stays open;
+ * false otherwise.
+ */
+export function matchesBalance(text: string): boolean {
+	const end = [...text].reduce<{
+		readonly depth: number
+		readonly quote: string
+		readonly escaped: boolean
+		readonly balanced: boolean
+	}>(
+		(state, character) => {
+			if (!state.balanced) return state
+			if (state.escaped) return { ...state, escaped: false }
+			if (character === '\\') return { ...state, escaped: true }
+			if (state.quote !== '')
+				return { ...state, quote: character === state.quote ? '' : state.quote }
+			if (character === "'" || character === '"' || character === '`') {
+				return { ...state, quote: character }
+			}
+			const depth =
+				'(['.includes(character) || character === '{'
+					? state.depth + 1
+					: ')]'.includes(character) || character === '}'
+						? state.depth - 1
+						: state.depth
+			return { ...state, depth, balanced: depth >= 0 }
+		},
+		{ depth: 0, quote: '', escaped: false, balanced: true },
+	)
+	return end.balanced && end.depth === 0 && end.quote === ''
+}
+
+/**
+ * Locates the first line of the statement a claim comment sits on.
+ *
+ * @param lines - The example body's lines.
+ * @param index - The index of the line carrying the claim's comment.
+ * @param expression - The claim's expression, the comment removed.
+ * @returns The index of the shortest run of lines ending at the claim that closes every bracket it
+ * opens, or `undefined` when that run is a statement rather than an expression.
+ *
+ * @remarks
+ * A claim printed across several lines is driven as the one expression it is.
+ */
+export function locateClaimOpening(
+	lines: readonly string[],
+	index: number,
+	expression: string,
+): number | undefined {
+	const found = Array.from({ length: index + 1 }, (_, offset) => index - offset)
+		.map((start) => ({
+			start,
+			joined: [...lines.slice(start, index), expression].join('\n').trim(),
+		}))
+		.find(({ joined }) => matchesBalance(joined))
+	if (found === undefined || !CLAIM_OPENER.test(found.joined)) return undefined
+	return CLAIM_KEYWORDS.includes(/^[A-Za-z_$][\w$]*/u.exec(found.joined)?.[0] ?? '')
+		? undefined
+		: found.start
+}
+
+/**
+ * Links an installed package into the fixture workspace without installing.
+ *
+ * @param scratch - The fixture workspace to receive the package.
+ * @param name - The installed package name to link.
+ * @returns Nothing.
+ */
+export function linkPackage(scratch: ScratchInterface, name: string): void {
+	const destination = join(scratch.path, 'node_modules', ...name.split('/'))
+	mkdirSync(dirname(destination), { recursive: true })
+	symlinkSync(resolvePath('node_modules', ...name.split('/')), destination, 'junction')
+}
+
+/**
+ * Builds a workspace carrying the entry, its readers, and the planted disagreements.
+ *
+ * @param files - The workspace files to write, keyed root-relative.
+ * @param test - The guides-project module to run.
+ * @returns The allocated scratch workspace.
+ */
+export function buildEntryWorkspace(
+	files: Readonly<Record<string, string>>,
+	test = ENTRY_PASSING_TEST,
+): ScratchInterface {
+	const scratch = createScratch({ prefix: 'scaffold guides ' })
+	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
+	scratch.write(ENTRY_PATH, readFileSync(resolvePath(ENTRY_PATH), 'utf8'))
+	scratch.write('vite.config.ts', ENTRY_VITE)
+	scratch.write(ENTRY_OBSERVATION_PATH, test)
+	linkPackage(scratch, '@orkestrel/contract')
+	linkPackage(scratch, '@orkestrel/guide')
+	linkPackage(scratch, '@orkestrel/test')
+	linkPackage(scratch, 'vite')
+	linkPackage(scratch, 'vitest')
+	return scratch
+}
+
+/**
+ * Runs the entry through npm and reads what the process reported.
+ *
+ * @param scratch - The workspace to run in.
+ * @param args - The arguments forwarded to `test:guides`.
+ * @param vitest - The optional `VITEST` value supplied to the child process.
+ * @returns The exit status, the lines the run printed without the trailing blank, and its error stream.
+ */
+export function runEntry(
+	scratch: ScratchInterface,
+	args: readonly string[],
+	vitest?: string,
+): { readonly status: number | null; readonly lines: readonly string[]; readonly stderr: string } {
+	const adjacent = resolvePath(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')
+	const npm = process.env.npm_execpath ?? (existsSync(adjacent) ? adjacent : undefined)
+	if (npm === undefined) throw new Error('The npm CLI module is unavailable.')
+	const forwarded = args.length === 0 ? [] : ['--', ...args]
+	const { VITEST: _inherited, ...inherited } = process.env
+	const env = vitest === undefined ? inherited : { ...inherited, VITEST: vitest }
+	const run = spawnSync(
+		process.execPath,
+		[npm, '--loglevel=error', 'run', 'test:guides', ...forwarded],
+		{
+			cwd: scratch.path,
+			encoding: 'utf8',
+			env,
+			windowsHide: true,
+		},
+	)
+	return {
+		status: run.status,
+		lines: run.stdout
+			.split(/\r\n|\n/)
+			.filter(
+				(line) =>
+					line.startsWith('guides/') ||
+					line.startsWith('wrote ') ||
+					line.startsWith('next: ') ||
+					line.startsWith('usage: '),
+			),
+		stderr: run.stderr,
+	}
+}
+
+/**
+ * Creates the persistent directory every scratch allocation lands inside.
+ *
+ * The persistent directory every scratch allocation below lands inside, created
+ * once per test because `createScratch` throws when its `parent` is missing.
+ *
+ * @returns The directory path.
+ */
+export function ensureTmpRoot(): string {
+	mkdirSync(resolvePath('tmp'), { recursive: true })
+	return resolvePath('tmp')
+}
+
+/**
+ * Writes the emitted root configuration and the files a typecheck of it must resolve.
+ *
+ * The emitted root configuration and the files a typecheck of it has to resolve:
+ * the emitted browser resolver a browser selection also writes, the vendored
+ * boundary helpers, copied from this checkout because a generated workspace
+ * receives those exact bytes, and the plugin declaration above. Everything else
+ * the configuration names is installed here.
+ *
+ * @param blueprint - The selection to emit.
+ * @param workspace - The scratch workspace to write into.
+ * @param prefix - The directory inside the workspace that receives the files.
+ */
+export function stageRootConfig(
+	blueprint: Blueprint,
+	workspace: ScratchInterface,
+	prefix: string,
+): void {
+	for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+		if (artifact.origin === 'host') continue
+		if (
+			artifact.path !== 'vite.config.ts' &&
+			artifact.path !== 'tsconfig.json' &&
+			artifact.path !== 'configs/app/vite.journey.config.ts' &&
+			artifact.path !== 'configs/browsers.ts'
+		) {
+			continue
+		}
+		workspace.write(`${prefix}/${artifact.path}`, artifact.content)
+	}
+	workspace.write(
+		`${prefix}/configs/helpers.ts`,
+		readFileSync(resolvePath('configs/helpers.ts'), 'utf8'),
+	)
+	workspace.write(`${prefix}/package.json`, blueprintToManifest(blueprint))
+	workspace.write(`${prefix}/plugins.d.ts`, BROWSER_PLUGIN_DECLARATIONS)
+}
+
+/**
+ * Runs the `check` script a generated workspace vendors over one staged directory.
+ *
+ * The `check` script a generated workspace vendors, run over one staged
+ * directory. `tsc` reports through its exit code, so its diagnostics are returned
+ * either way and the caller reads the text rather than a thrown process error.
+ *
+ * @param root - The staged directory.
+ * @returns The compiler diagnostics, empty when the typecheck is clean.
+ */
+export function checkTypes(root: string): string {
+	try {
+		execFileSync(
+			process.execPath,
+			[
+				resolvePath('node_modules/typescript/bin/tsc'),
+				'--noEmit',
+				'--project',
+				join(root, 'tsconfig.json'),
+			],
+			{ stdio: 'pipe', encoding: 'utf8' },
+		)
+		return ''
+	} catch (error) {
+		const output = error instanceof Error && 'stdout' in error ? error.stdout : undefined
+		return isString(output) && output.length > 0 ? output : String(error)
+	}
+}
+
+/**
+ * Writes the emitted browser resolver where a real Node process can load it.
+ *
+ * The emitted browser resolver, written where a real Node process can load it.
+ * The file sits inside this checkout so its own `playwright` import resolves
+ * through the workspace's `node_modules`, which is what makes the loaded module
+ * the real one rather than a re-derivation of it.
+ *
+ * @param workspace - The scratch workspace to write into.
+ * @returns The path of the written resolver.
+ */
+export function stageResolver(workspace: ScratchInterface): string {
+	workspace.write('browsers.ts', CONFIG_TEMPLATES.browsers)
+	return join(workspace.path, 'browsers.ts')
+}
+
+/**
+ * Evaluates expressions against a loaded emitted module in a real Node process.
+ *
+ * One or more expressions evaluated against a loaded emitted module, in a real Node
+ * process that strips the module's types and runs it. The caller names the binding
+ * its own expressions read. This driver serializes an `undefined` answer as `null`.
+ *
+ * @param file - The module to load.
+ * @param binding - The name the expressions read the module through.
+ * @param calls - The expressions to evaluate.
+ * @returns Each answer, in call order.
+ */
+export function driveModule(
+	file: string,
+	binding: string,
+	calls: readonly string[],
+): readonly unknown[] {
+	const script = [
+		`const ${binding} = await import(${JSON.stringify(pathToFileURL(file).href)})`,
+		`console.log(JSON.stringify([${calls.join(', ')}]))`,
+	].join('\n')
+	const output = execFileSync(
+		process.execPath,
+		['--experimental-strip-types', '--input-type=module', '--eval', script],
+		{ stdio: 'pipe', encoding: 'utf8' },
+	)
+	const answers: unknown = JSON.parse(output)
+	if (!isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
+	return answers
+}
+
+/**
+ * Builds the emitted distribution proof whose text every lift reads.
+ *
+ * The emitted distribution proof, whose text every lift below reads.
+ *
+ * @returns The proof text.
+ */
+export function buildDistributionProof(): string {
+	const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
+		({ path }) => path === 'tests/distribution.test.ts',
+	)
+	return requireValue(proof?.content)
+}
+
+/**
+ * Builds the generated distribution proof lifted into one module for a direct classifier drive.
+ *
+ * The generated distribution proof lifted into one module for a direct classifier
+ * drive.
+ *
+ * @returns The lifted module text.
+ */
+export function buildDistributionClassifier(): string {
+	return extractDeclarations(buildDistributionProof(), CLASSIFIER_DECLARATIONS)
+}
+
+/**
+ * Builds the statements that classify one installed exports map, lifted from the emitted proof.
+ *
+ * The statements that classify one installed exports map, lifted from the emitted
+ * `buildStage` body. Packing and installing are outside this drive; the staged
+ * manifest and installed root are its real inputs, and every pushed record is the
+ * emitted statement's own value.
+ *
+ * @returns The lifted module text, exporting the classification entry.
+ */
+export function buildDistributionClassification(): string {
+	const content = buildDistributionProof()
+	const carried = ['entries', 'targets', 'subpaths', 'undeclared', 'excluded']
+	const stage = readStatements(content, 'proof.ts').find(
+		(statement) =>
+			statement.syntax === 'FunctionDeclaration' &&
+			statement.declarations.some(({ name }) => name === 'buildStage'),
+	)
+	if (stage === undefined) throw new Error('The emitted proof declares no buildStage body')
+	// The classification is every binding and walk the body writes after it reads the installed manifest.
+	const read = stage.body.findIndex(({ declarations }) =>
+		declarations.some(({ name }) => name === 'manifest'),
+	)
+	const classification = stage.body
+		.slice(read + 1)
+		.filter(({ syntax }) => syntax === 'VariableDeclaration' || syntax === 'ForOfStatement')
+	const declared = classification.flatMap(({ declarations: bindings }) =>
+		bindings.map(({ name }) => name),
+	)
+	const missing = carried.filter((name) => !declared.includes(name))
+	if (read === -1 || missing.length > 0) {
+		throw new Error('The emitted buildStage carries no complete classification walk')
+	}
+	return `${extractDeclarations(content, CLASSIFIER_DECLARATIONS)}
+export function classifyStage(
+	manifest: Readonly<Record<string, unknown>>,
+	installed: string,
+	name: string,
+): unknown {
+${classification.map(({ text }) => text).join('\n')}
+	return { entries, targets, subpaths, undeclared, excluded }
+}
+`
+}
+
+/**
+ * Extracts the named top-level declarations of a module into one module that exports each.
+ *
+ * One module carrying the named top-level declarations of another, in source order
+ * so a constant still precedes the function reading it, and exporting each name.
+ * The parser reads the names and the extents, so a formatter that rewrapped a
+ * declaration moves nothing here and a renamed declaration fails loudly. The lifted
+ * module also carries the proof's own `node:` imports, because a lifted declaration
+ * reaches the real filesystem through them; every other import the proof declares
+ * belongs to the suite around those declarations rather than to the declarations
+ * themselves.
+ *
+ * @param content - The module text.
+ * @param names - The declarations to lift.
+ * @returns The lifted module text.
+ */
+export function extractDeclarations(content: string, names: readonly string[]): string {
+	const statements = readStatements(content, 'proof.ts')
+	const imports = statements
+		.filter(
+			({ syntax, specifier }) =>
+				syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
+		)
+		.map(({ text }) => text)
+	// A name declared twice takes the later declaration, as an assignment sequence would.
+	const lifted = new Map(
+		statements.flatMap((statement) =>
+			statement.declarations.flatMap(({ name }): Array<[string, string]> =>
+				names.includes(name) ? [[name, statement.text]] : [],
+			),
+		),
+	)
+	const missing = names.filter((name) => !lifted.has(name))
+	if (missing.length > 0) {
+		throw new Error(`The emitted proof declares no ${missing.join(', ')}`)
+	}
+	return `${imports.join('\n')}\n\n${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
+}
+
+/**
+ * Builds one managed Playwright browsers directory from the entries named.
+ *
+ * One managed Playwright browsers directory, built from the entries named. Each
+ * entry is a real executable file, because the resolver reads the filesystem and
+ * a described layout would prove nothing about what it finds. `chmodSync` sets a
+ * permission bit `ScratchInterface` does not expose, so it stays on `node:fs`.
+ *
+ * @param workspace - The scratch workspace to write into.
+ * @param entries - The executable files to create.
+ * @returns The path of the browsers directory.
+ */
+export function buildBrowsersRoot(workspace: ScratchInterface, entries: readonly string[]): string {
+	for (const entry of entries) {
+		const target = `browsers/${entry}`
+		workspace.write(target, '')
+		chmodSync(join(workspace.path, target), 0o755)
+	}
+	return workspace.ensure('browsers')
+}
+
+/**
+ * Finds the project rows whose parameters differ from the factory or merge signature.
+ *
+ * Declarations whose parameters differ from the factory or merge signature, read off
+ * the parser rather than off the text: the question is what a declaration carries,
+ * and a pattern reports on one spelling of it. Membership is a value-exported
+ * top-level declaration whose return type is `UserConfig`, which is what Vitest calls
+ * as a project row. The emitted `resolveWorkspacePath` declares parameters under a
+ * return type of `string`, so the same rule leaves it outside the population. The
+ * merge's own signature is the one exemption, and it is asserted through this same
+ * reader beside the sweep rather than taken on trust.
+ *
+ * @param content - The root configuration text.
+ * @returns Each refused declaration with its parameters.
+ */
+export function findRefusals(content: string): readonly string[] {
+	return readStatements(content, 'vite.config.ts')
+		.filter((statement) => statement.exported === 'value')
+		.flatMap((statement) =>
+			statement.declarations.flatMap((declaration) => {
+				if (declaration.returns !== 'UserConfig') return []
+				const parameters = declaration.parameters.join(', ')
+				const required =
+					declaration.name === 'mergeOverride'
+						? 'base: UserConfig, override?: UserConfig'
+						: declaration.name === 'appShowcase'
+							? 'mode: string, override?: UserConfig'
+							: 'override?: UserConfig'
+				return parameters === required ? [] : [`${declaration.name}(${parameters})`]
+			}),
+		)
+}
+
+/**
+ * Maps each fleet package path to the packument the registry fixture serves for it.
+ */
+export const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
+	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
+	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
+	[FLEET_UPSTREAM_PATHS.packages.probe]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
+	},
+	[FLEET_UPSTREAM_PATHS.packages.scaffold]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
+	},
+	[FLEET_UPSTREAM_PATHS.packages.test]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
+	},
+	'/@microsoft%2Fapi-extractor': {
+		status: 200,
+		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
+	},
+	'/@types%2Fnode': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
+	},
+	'/oxfmt': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),
+	},
+	'/oxlint': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.oxlint?.slice(1) ?? ''),
+	},
+	'/typescript': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
+	},
+	'/vite': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
+	},
+	'/vitest': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
+	},
+})
+
+/**
+ * Maps each fleet mirror path to the guide text the repository fixture serves for it.
+ */
+export const FLEET_MIRROR_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
+	[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 200, body: '# Emitter\n', type: 'text/plain' },
+	[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+	[FLEET_UPSTREAM_PATHS.mirrors.probe]: { status: 200, body: '# Probe\n', type: 'text/plain' },
+	[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
+		status: 200,
+		body: '# Scaffold\n',
+		type: 'text/plain',
+	},
+	[FLEET_UPSTREAM_PATHS.mirrors.test]: { status: 200, body: '# Test\n', type: 'text/plain' },
+})
+
+/**
+ * Builds a target manifest whose fleet packages and toolchain already match the planned ranges.
+ *
+ * @param blueprint - The workspace shape whose scripts and tools are planned.
+ * @param dependencies - The value to place at `dependencies`.
+ * @param development - The value to place at `devDependencies`.
+ * @param scripts - The value to place at `scripts`.
+ * @returns The manifest text.
+ */
+export function buildAlignedManifest(
+	blueprint = createBlueprint('sample', { src: ['core'] }),
+	dependencies?: unknown,
+	development?: unknown,
+	scripts?: unknown,
+): string {
+	const dependenciesAligned =
+		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.4' } : dependencies
+	const declared = development === undefined ? blueprintToDevDependencies(blueprint) : development
+	const aligned =
+		typeof declared === 'object' && declared !== null && !Array.isArray(declared)
+			? { ...declared, '@orkestrel/guide': '^0.0.9' }
+			: declared
+	return buildTargetManifest(blueprint, dependenciesAligned, aligned, scripts)
+}
+
+/** Holds the target manifest text with its toolchain range already aligned to the registry. */
+export const ALIGNED_MANIFEST_TEXT = TARGET_MANIFEST_TEXT.replace('~8.2.0', '~8.3.4')
+
+/**
+ * Maps each registry path the audit fixture answers to the packument it serves.
+ */
+export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
+	'/@orkestrel%2Fbrowser': {
+		status: 200,
+		body: buildPackument(BROWSE_DEV_DEPENDENCIES['@orkestrel/browser']?.slice(1) ?? ''),
+	},
+	'/@orkestrel%2Fcontract': { status: 200, body: buildPackument('0.0.13') },
+	'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.5') },
+	'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
+	'/@orkestrel%2Fhtml': { status: 200, body: buildPackument('0.0.4') },
+	'/@orkestrel%2Fmiddleware': { status: 200, body: buildPackument('0.0.16') },
+	'/@orkestrel%2Fprobe': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
+	},
+	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
+	'/@orkestrel%2Fscaffold': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
+	},
+	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
+	'/@orkestrel%2Ftest': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
+	},
+	'/@microsoft%2Fapi-extractor': {
+		status: 200,
+		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
+	},
+	'/@types%2Fnode': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
+	},
+	'/@vitejs%2Fplugin-vue': {
+		status: 200,
+		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies['@vitejs/plugin-vue']?.slice(1) ?? ''),
+	},
+	'/@vitest%2Fbrowser-playwright': {
+		status: 200,
+		body: buildPackument(
+			SOURCE_BROWSER_DEV_DEPENDENCIES['@vitest/browser-playwright']?.slice(1) ?? '',
+		),
+	},
+	'/oxfmt': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),
+	},
+	'/oxlint': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.oxlint?.slice(1) ?? ''),
+	},
+	'/playwright': {
+		status: 200,
+		body: buildPackument(SOURCE_BROWSER_DEV_DEPENDENCIES.playwright?.slice(1) ?? ''),
+	},
+	'/typescript': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
+	},
+	'/vite': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
+	},
+	'/vite-plugin-singlefile': {
+		status: 200,
+		body: buildPackument('2.3.3'),
+	},
+	'/vitest': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
+	},
+	'/vue': {
+		status: 200,
+		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies.vue?.slice(1) ?? ''),
+	},
+	'/vue-tsc': {
+		status: 200,
+		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies['vue-tsc']?.slice(1) ?? ''),
+	},
+})
+
+/**
+ * Serves the upstream fixture the audit suites read, started and stopped by the suite's own hooks.
+ *
+ * @remarks
+ * The fixture holds an open server, so it starts in `beforeAll` and stops in `afterAll` rather than
+ * at module load, and the server lives in this class's `#` field instead of a module-scope binding.
+ */
+export class TestAuditRegistry {
+	#server: TestUpstreamInterface | undefined
+
+	/** The CLI options that route registry and repository reads to the fixture. */
+	get options(): CLIOptions {
+		if (this.#server === undefined) throw new Error('The audit registry is not started')
+		return {
+			upstream: {
+				registry: { base: this.#server.base },
+				repository: { base: this.#server.base },
+			},
+		}
+	}
+
+	/** Starts the fixture serving {@link AUDIT_REPLIES}; a started fixture is left running. */
+	async start(): Promise<void> {
+		this.#server ??= await createUpstreamServer(AUDIT_REPLIES)
+	}
+
+	/** Stops the fixture and releases its port; a stopped fixture is left stopped. */
+	async stop(): Promise<void> {
+		const server = this.#server
+		this.#server = undefined
+		await server?.destroy()
+	}
+}
+
+/** Holds the audit registry the CLI suites share, stopped until a suite starts it. */
+export const AUDIT_REGISTRY = Object.freeze(new TestAuditRegistry())
+/**
+ * Reads the checkout manifest as text from disk and parses it.
+ *
+ * The manifest is read from disk as text here. The tables derive from the same
+ * file through a compile-time JSON import, so the two answers arrive by
+ * different mechanisms and can disagree.
+ *
+ * @returns The manifest record; thrown when the manifest is not a record.
+ */
+export function readCheckoutManifest(): Readonly<Record<string, unknown>> {
+	const parsed: unknown = JSON.parse(
+		readFileSync(resolvePath(WORKSPACE_ROOT, 'package.json'), 'utf8'),
+	)
+	if (!isRecord(parsed)) throw new Error('The package manifest is not a record')
+	return parsed
+}
+
+/**
+ * Reads the name the checkout manifest declares.
+ *
+ * @returns The package name; thrown when the manifest declares none.
+ */
+export function readCheckoutName(): string {
+	const name = readCheckoutManifest().name
+	if (!isString(name)) throw new Error('The package manifest declares no name')
+	return name
+}
+
+/**
+ * Reads every range the checkout manifest declares in its dependency sections.
+ *
+ * Both sections, because a table row derives from whichever one declares it.
+ *
+ * @returns Each declared name mapped to its range.
+ */
+export function readCheckoutRanges(): Readonly<Record<string, string>> {
+	const manifest = readCheckoutManifest()
+	return Object.fromEntries(
+		[manifest.dependencies, manifest.devDependencies].flatMap((section): Array<[string, string]> =>
+			isRecord(section)
+				? Object.entries(section).flatMap(([name, range]): Array<[string, string]> =>
+						isString(range) ? [[name, range]] : [],
+					)
+				: [],
+		),
+	)
+}
+
+/**
+ * Selects the table rows the manifest does not declare.
+ *
+ * The union of every table, with the self-pin removed: it derives from the
+ * manifest's `version` field rather than from a declaration, so it is not a row
+ * the manifest could declare.
+ *
+ * @returns Each seeded name, sorted.
+ */
+export function selectSeededNames(): readonly string[] {
+	const declared = readCheckoutRanges()
+	const own = readCheckoutName()
+	const seeded = new Set(
+		[...DEPENDENCY_TABLES].flatMap(([, table]) =>
+			Object.keys(table).filter((name) => name !== own && declared[name] === undefined),
+		),
+	)
+	return [...seeded].sort()
+}
+
+/**
+ * Locates the installed directory Node resolves a package to from a directory.
+ *
+ * Node's lookup: the nearest `node_modules` holding the package, climbing from the
+ * directory of the package that depends on it, so a nested install wins over a hoisted one.
+ *
+ * @param from - The directory of the package that depends on the package.
+ * @param name - The package to locate.
+ * @returns The installed package directory; thrown when none resolves.
+ */
+export function locatePackage(from: string, name: string): string {
+	const located = listAncestors(from)
+		.map((directory) => resolvePath(directory, 'node_modules', name))
+		.find((candidate) => existsSync(resolvePath(candidate, 'package.json')))
+	if (located === undefined) throw new Error(`No installed package resolves ${name} from ${from}`)
+	return located
+}
+
+/**
+ * Reads the manifest record of one installed package directory.
+ *
+ * @param directory - The installed package directory.
+ * @returns The manifest record; thrown when it is not a record.
+ */
+export function readInstalledRecord(directory: string): Readonly<Record<string, unknown>> {
+	const parsed: unknown = JSON.parse(readFileSync(resolvePath(directory, 'package.json'), 'utf8'))
+	if (!isRecord(parsed)) throw new Error(`The manifest in ${directory} is not a record`)
+	return parsed
+}
+
+/**
+ * Collects the fleet names a package reaches through installed runtime and peer edges.
+ *
+ * The fleet names `name` reaches through installed runtime and peer edges, walked
+ * through the installed manifests rather than through the constant under test.
+ *
+ * @param name - The package whose closure is read.
+ * @returns Each reached fleet name, sorted.
+ */
+export function collectRuntimeClosure(name: string): readonly string[] {
+	const visited = new Set<string>()
+	// Each entry is a reached package and the directory it resolved to; the root has no name.
+	const pending: Array<{ readonly reached: string | undefined; readonly directory: string }> = [
+		{ reached: undefined, directory: locatePackage(WORKSPACE_ROOT, name) },
+	]
+	// The walk appends to the list it iterates, so each located directory is visited in turn.
+	for (const { directory } of pending) {
+		if (visited.has(directory)) continue
+		visited.add(directory)
+		const manifest = readInstalledRecord(directory)
+		for (const section of [manifest.dependencies, manifest.peerDependencies]) {
+			if (!isRecord(section)) continue
+			for (const dependency of Object.keys(section)) {
+				if (!dependency.startsWith('@orkestrel/')) continue
+				pending.push({ reached: dependency, directory: locatePackage(directory, dependency) })
+			}
+		}
+	}
+	return [
+		...new Set(pending.flatMap(({ reached }) => (reached === undefined ? [] : [reached]))),
+	].sort()
+}
+
+/** Names the checkout-relative path of the dispatch skill's `bench` script. */
+export const BENCH_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/bench.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `brief` script. */
+export const BRIEF_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/brief.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `cite` script. */
+export const CITE_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/cite.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `launch` script. */
+export const LAUNCH_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/launch.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `login` script. */
+export const LOGIN_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/login.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `result` script. */
+export const RESULT_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/result.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `sweep` script. */
+export const SWEEP_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/sweep.ts'
+
+/** Names the checkout-relative path of the publish skill's `compare` script. */
+export const COMPARE_SCRIPT = '.agents/skills/orkestrel-publish/scripts/compare.ts'
+
+/** Names the checkout-relative path of the publish skill's `pins` script. */
+export const PINS_SCRIPT = '.agents/skills/orkestrel-publish/scripts/pins.ts'
+
+/** Names the checkout-relative path of the publish skill's `wave` script. */
+export const WAVE_SCRIPT = '.agents/skills/orkestrel-publish/scripts/wave.ts'
+
+/** Names the checkout-relative path of the publish skill's `window` script. */
+export const WINDOW_SCRIPT = '.agents/skills/orkestrel-publish/scripts/window.ts'
+
+/** Names the checkout-relative path of the harden skill's `discovery` script. */
+export const DISCOVERY_SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
+
+/** Names the checkout-relative path of the scout skill's `map` script. */
+export const MAP_SCRIPT = '.agents/skills/orkestrel-scout/scripts/map.ts'
+
+/** Lists the steps the publish wave runs for each package, in order. */
+export const WAVE_STEPS: readonly string[] = Object.freeze([
+	'pin',
+	'commit',
+	'overwrite',
+	'verify',
+	'install',
+	'pins',
+	'format',
+	'gates',
+	'compare',
+])
+
+/** Holds a Claude stream journal of an init event and a result event answering READY. */
+export const RESULT_STREAM =
+	'{"type":"system","subtype":"init","session_id":"s1"}\n{"type":"result","result":"READY","duration_ms":42}\n'
+
+/** Holds the age in seconds of a launch file old enough for the sweep to delete. */
+export const SWEEP_HOURS_AGO = 3 * 60 * 60
+
+/** Holds the age in seconds of a launch file too recent for the sweep to delete. */
+export const SWEEP_MINUTES_AGO = 10 * 60
+
+/**
+ * Describes the fixture registry that answers `whoami` and records every request it receives.
+ */
+export interface TestWhoamiInterface {
+	readonly url: string
+	readonly port: number
+	readonly requests: readonly string[]
+	destroy(): Promise<void>
+}
+
+/**
+ * Answers one request the fixture registry receives.
+ *
+ * Answers `whoami` with the user it was given, or 401 when it was given none, refuses every upload
+ * with 401 (the shape npm reads as an authentication refusal), and answers every other read 404.
+ *
+ * @param user - The user `whoami` reports, or undefined for none.
+ * @param request - The request to answer.
+ * @param response - The response to write.
+ */
+export function answerWhoami(
+	user: string | undefined,
+	request: IncomingMessage,
+	response: ServerResponse,
+): void {
+	const whoami = request.url === '/-/whoami'
+	if (whoami && user !== undefined) {
+		response.writeHead(200, { 'content-type': 'application/json' })
+		response.end(JSON.stringify({ username: user }))
+		return
+	}
+	const refused = whoami || request.method === 'PUT'
+	response.writeHead(refused ? 401 : 404, { 'content-type': 'application/json' })
+	response.end(JSON.stringify({ error: refused ? 'Unauthorized' : 'Not found' }))
+}
+
+/**
+ * Starts the fixture registry on an ephemeral loopback port.
+ *
+ * @param user - The user `whoami` reports, or undefined for none.
+ * @returns The running registry with its recorded requests, which the caller destroys in a `finally`.
+ */
+export async function createWhoamiRegistry(user: string | undefined): Promise<TestWhoamiInterface> {
+	const requests: string[] = []
+	const loopback = await createLoopback(
+		createServer((request, response) => {
+			requests.push(`${request.method ?? ''} ${request.url ?? ''}`)
+			request.resume()
+			request.on('end', () => {
+				answerWhoami(user, request, response)
+			})
+		}),
+	)
+	return {
+		url: `${loopback.url}/`,
+		port: loopback.port,
+		get requests() {
+			return [...requests]
+		},
+		destroy: loopback.destroy,
+	}
+}
+
+/**
+ * Builds the npm environment that routes every read to the fixture registry.
+ *
+ * npm reads the fixture registry and a scratch cache from the environment, which outranks every
+ * config file npm launched this suite with, and the fixture token from a scratch user config, so no
+ * real credential reaches the fixture and no case reaches the public registry.
+ *
+ * @param root - The scratch root that receives the cache and config files.
+ * @param registry - The fixture registry the environment names.
+ * @returns The `npm_config_*` variables.
+ */
+export function buildWhoamiEnvironment(
+	root: string,
+	registry: TestWhoamiInterface,
+): Readonly<Record<string, string>> {
+	const userconfig = join(root, `npmrc-${String(registry.port)}`)
+	writeFileSync(
+		userconfig,
+		`//127.0.0.1:${String(registry.port)}/:_authToken=fixture-token\nupdate-notifier=false\n`,
+	)
+	return {
+		npm_config_registry: registry.url,
+		npm_config_cache: join(root, 'npm-cache'),
+		npm_config_userconfig: userconfig,
+		npm_config_globalconfig: join(root, 'globalrc'),
+	}
 }
 
 /**

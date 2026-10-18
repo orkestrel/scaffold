@@ -8,7 +8,9 @@ import type {
 	DependencyPinSet,
 	Environment,
 	Finding,
+	ManifestEdit,
 	ManifestScript,
+	ManifestToken,
 	Override,
 	Plan,
 	Question,
@@ -75,9 +77,11 @@ import {
 	artifactToFinding,
 	computeBytes,
 	computeHash,
+	computeTotal,
 	inferGroup,
 	matchesEngines,
 	matchesPrintWidth,
+	scanManifestTokens,
 	serializeTypeScriptString,
 	selectHostPaths,
 	srcToRoot,
@@ -139,24 +143,36 @@ export function blueprintToSheets(blueprint: Blueprint): readonly string[] {
  * ```
  */
 export function blueprintToExports(blueprint: Blueprint): Readonly<Record<string, unknown>> {
-	const exports: Record<string, unknown> = { ...srcToExports(blueprint.src) }
-	for (const extension of blueprintToFaces(blueprint)) {
-		if (extension.surface !== 'browser' || !extension.axes.includes('src')) continue
-		exports[`./${extension.name}`] = pathToCondition(`./dist/src/${extension.name}/index`, ['es'])
-		// Declaration rewrites name the browser subpath even when browser owns the root export.
-		if (blueprint.src.includes('browser')) {
-			exports['./browser'] = pathToCondition('./dist/src/browser/index', ['es'])
-		}
+	// A repeated key keeps its first position and takes its last value, so the browser subpath
+	// written once per face and the package manifest named twice land where assignment put them.
+	const exported: Readonly<Record<string, unknown>> = {
+		...srcToExports(blueprint.src),
+		...Object.fromEntries(
+			blueprintToFaces(blueprint)
+				.filter((extension) => extension.axes.includes('src'))
+				.flatMap((extension): ReadonlyArray<readonly [string, unknown]> => {
+					const face: readonly [string, unknown] = [
+						`./${extension.name}`,
+						pathToCondition(`./dist/src/${extension.name}/index`, ['es']),
+					]
+					// Declaration rewrites name the browser subpath even when browser owns the root export.
+					return blueprint.src.includes('browser')
+						? [face, ['./browser', pathToCondition('./dist/src/browser/index', ['es'])]]
+						: [face]
+				}),
+		),
+		...Object.fromEntries(
+			[...blueprintToSheets(blueprint), ...(blueprint.themes ? ['styles/themes'] : [])].flatMap(
+				(name) => [
+					[`./${name}`, `./dist/src/${name}/index.css`],
+					[`./${name}/scss`, `./src/${name}/index.scss`],
+				],
+			),
+		),
 	}
-	for (const name of [
-		...blueprintToSheets(blueprint),
-		...(blueprint.themes ? ['styles/themes'] : []),
-	]) {
-		exports[`./${name}`] = `./dist/src/${name}/index.css`
-		exports[`./${name}/scss`] = `./src/${name}/index.scss`
-	}
-	if (Object.keys(exports).length > 0) exports['./package.json'] = './package.json'
-	return exports
+	return Object.keys(exported).length > 0
+		? { ...exported, './package.json': './package.json' }
+		: exported
 }
 
 /**
@@ -250,19 +266,21 @@ export function srcToEntry(src: readonly Environment[]): {
  */
 export function srcToExports(src: readonly Environment[]): Readonly<Record<string, unknown>> {
 	if (src.length === 0) return {}
-	const map: Record<string, unknown> = {}
 	const root = srcToRoot(src)
 	const environment = root ?? 'core'
-	map['.'] = pathToCondition(`./dist/src/${environment}/index`, SRC_MATRIX[environment].formats)
-	if (root === undefined) {
-		for (const declared of ENVIRONMENTS) {
-			if (declared === 'core' || !src.includes(declared)) continue
-			const row = SRC_MATRIX[declared]
-			map[row.path] = pathToCondition(`./dist/src/${declared}/index`, row.formats)
-		}
-	}
-	map['./package.json'] = './package.json'
-	return map
+	const entries: ReadonlyArray<readonly [string, unknown]> = [
+		['.', pathToCondition(`./dist/src/${environment}/index`, SRC_MATRIX[environment].formats)],
+		...(root === undefined
+			? ENVIRONMENTS.filter((declared) => declared !== 'core' && src.includes(declared)).map(
+					(declared): readonly [string, unknown] => [
+						SRC_MATRIX[declared].path,
+						pathToCondition(`./dist/src/${declared}/index`, SRC_MATRIX[declared].formats),
+					],
+				)
+			: []),
+		['./package.json', './package.json'],
+	]
+	return Object.fromEntries(entries)
 }
 
 /**
@@ -312,7 +330,7 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 	const sheets = blueprintToSheets(blueprint).length > 0 || blueprint.themes
 	const rendered = blueprint.src.includes('browser') || blueprint.app.includes('browser') || sheets
 	const own = blueprint.src.length > 0 || sheets ? `@orkestrel/${blueprint.name}` : blueprint.name
-	const merged: Record<string, string> = {
+	const prior: Readonly<Record<string, string>> = {
 		...BASE_DEV_DEPENDENCIES,
 		...(rendered && !BROWSE_UPSTREAM.includes(own) ? BROWSE_DEV_DEPENDENCIES : {}),
 		...(sheets ? STYLES_DEV_DEPENDENCIES : {}),
@@ -323,15 +341,27 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
+		...Object.fromEntries(
+			blueprintToMachinery(blueprint).frameworks.flatMap((framework) =>
+				Object.entries(FRAMEWORK_MATRIX[framework].dependencies),
+			),
+		),
+		...Object.fromEntries(blueprint.extras.map((extra) => [extra.name, extra.range])),
+		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 	}
-	for (const framework of blueprintToMachinery(blueprint).frameworks) {
-		Object.assign(merged, FRAMEWORK_MATRIX[framework].dependencies)
-	}
-	for (const extra of blueprint.extras) merged[extra.name] = extra.range
-	if (blueprint.showcase && blueprint.app.includes('browser'))
-		Object.assign(merged, SHOWCASE_DEV_DEPENDENCIES)
-	for (const peer of blueprint.peers) {
-		if (!Object.hasOwn(merged, peer.name)) merged[peer.name] = peer.range
+	// A peer keeps the pin of a development tool already selected, and the first of two peers
+	// naming one package wins, because its floor was the one the workspace declared first.
+	const merged: Readonly<Record<string, string>> = {
+		...prior,
+		...Object.fromEntries(
+			blueprint.peers
+				.filter(
+					(peer, index) =>
+						!Object.hasOwn(prior, peer.name) &&
+						blueprint.peers.findIndex((other) => other.name === peer.name) === index,
+				)
+				.map((peer) => [peer.name, peer.range]),
+		),
 	}
 	const runtime = new Set(blueprint.dependencies.map((dependency) => dependency.name))
 	return Object.fromEntries(
@@ -380,68 +410,117 @@ export function replaceManifestOverrides(
 	overrides: Readonly<Record<string, Readonly<Record<string, string>>>>,
 ): string | undefined {
 	if (!isRecord(parseJSON(manifest))) return undefined
-	let compiled = manifest
-	for (const [selector, children] of Object.entries(overrides)) {
-		for (const [child, range] of Object.entries(children)) {
-			const path = ['overrides', selector, child]
-			let open = compiled.indexOf('{')
-			for (let level = 0; level < path.length; level += 1) {
-				const key = path[level]
-				let depth = 0
-				let close = -1
-				let start = -1
-				let end = -1
-				let count = 0
-				// Native JSON validation owns syntax. This scan locates only the selected
-				// object's immediate keys and treats strings and nested arrays as opaque.
-				for (const token of compiled.slice(open).matchAll(/"(?:\\[\s\S]|[^"\\])*"|[{}[\]]/gu)) {
-					const position = open + token.index
-					const text = token[0]
-					if (text === '{' || text === '[') depth += 1
-					else if (text === '}' || text === ']') {
-						depth -= 1
-						if (depth === 1 && start >= 0 && end < 0) end = position + 1
-						if (depth === 0) {
-							close = position
-							break
-						}
-					} else if (depth === 1) {
-						if (position === start) end = position + text.length
-						let colon = position + text.length
-						while (/\s/u.test(compiled.charAt(colon))) colon += 1
-						if (compiled.charAt(colon) !== ':' || parseJSON(text) !== key) continue
-						count += 1
-						start = colon + 1
-						while (/\s/u.test(compiled.charAt(start))) start += 1
-						end = -1
-					}
-				}
-				if (close < 0 || count > 1) return undefined
-				if (count === 0) {
-					let insertion = JSON.stringify(range)
-					for (const name of path.slice(level).reverse())
-						insertion = `{${JSON.stringify(name)}:${insertion}}`
-					let tail = close - 1
-					while (tail > open && /\s/u.test(compiled.charAt(tail))) tail -= 1
-					compiled =
-						compiled.slice(0, tail + 1) +
-						(tail === open ? '' : ',') +
+	return Object.entries(overrides)
+		.flatMap(([selector, children]) =>
+			Object.entries(children).map(([child, range]) => ({
+				path: ['overrides', selector, child],
+				range,
+			})),
+		)
+		.reduce<string | undefined>(
+			(compiled, leaf) =>
+				compiled === undefined
+					? undefined
+					: replaceManifestOverride(compiled, leaf.path, leaf.range),
+			manifest,
+		)
+}
+
+/**
+ * Replaces one npm override leaf in manifest text, inserting its absent ancestors.
+ *
+ * @param manifest - The JSON package manifest text, already known to be an object.
+ * @param path - The object keys from the manifest root to the leaf, ending at the leaf's key.
+ * @param range - The string the leaf must hold.
+ * @returns The text carrying the leaf, or `undefined` for a duplicate selected key, a malformed
+ * ancestor, or a non-string leaf.
+ *
+ * @remarks
+ * The one step {@link replaceManifestOverrides} repeats per leaf. Absent ancestors and the leaf are
+ * inserted after the last member of the deepest ancestor the text declares, and a leaf already
+ * holding `range` keeps its original spelling. Every byte outside the edited path survives.
+ *
+ * @example
+ * ```ts
+ * import { replaceManifestOverride } from '@orkestrel/scaffold'
+ *
+ * replaceManifestOverride('{}', ['overrides', 'plugin@1.0.0', 'child'], '2.0.0')
+ * // '{"overrides":{"plugin@1.0.0":{"child":"2.0.0"}}}'
+ * ```
+ */
+export function replaceManifestOverride(
+	manifest: string,
+	path: readonly string[],
+	range: string,
+): string | undefined {
+	const tokens = scanManifestTokens(manifest)
+	if (tokens === undefined) return undefined
+	// Each level descends into the object the previous level's value opened, so the fold carries
+	// that object's offset and stops once a level answers.
+	const outcome = path.reduce<{
+		readonly done: boolean
+		readonly open: number
+		readonly text: string | undefined
+	}>(
+		(state, key, level) => {
+			if (state.done) return state
+			const refused = { ...state, done: true, text: undefined }
+			const brace = tokens.find((token) => token.index === state.open && token.text === '{')
+			if (brace === undefined) return refused
+			const close = tokens.find(
+				(token) =>
+					token.text === '}' && token.index > state.open && token.depth === brace.depth - 1,
+			)
+			if (close === undefined) return refused
+			// Only the selected object's immediate keys count; strings and nested values are opaque.
+			const matches = tokens.flatMap((token, at) =>
+				token.index > state.open &&
+				token.index < close.index &&
+				token.depth === brace.depth &&
+				token.value !== undefined &&
+				parseJSON(token.text) === key
+					? [at]
+					: [],
+			)
+			if (matches.length > 1) return refused
+			const at = matches[0]
+			const entry = at === undefined ? undefined : tokens[at]
+			if (at === undefined || entry === undefined) {
+				const insertion = path
+					.slice(level)
+					.reduceRight((inner, name) => `{${JSON.stringify(name)}:${inner}}`, JSON.stringify(range))
+				const tail = state.open + manifest.slice(state.open + 1, close.index).trimEnd().length
+				return {
+					...state,
+					done: true,
+					text:
+						manifest.slice(0, tail + 1) +
+						(tail === state.open ? '' : ',') +
 						insertion.slice(1, -1) +
-						compiled.slice(tail + 1)
-					break
-				}
-				if (level < path.length - 1) {
-					if (compiled.charAt(start) !== '{') return undefined
-					open = start
-				} else {
-					if (compiled.charAt(start) !== '"' || end < 0) return undefined
-					if (parseJSON(compiled.slice(start, end)) !== range)
-						compiled = compiled.slice(0, start) + JSON.stringify(range) + compiled.slice(end)
+						manifest.slice(tail + 1),
 				}
 			}
-		}
-	}
-	return compiled
+			const start = entry.value
+			if (start === undefined) return refused
+			if (level < path.length - 1) {
+				return manifest.charAt(start) === '{' ? { ...state, open: start } : refused
+			}
+			const literal = tokens[at + 1]
+			if (manifest.charAt(start) !== '"' || literal === undefined) return refused
+			return {
+				...state,
+				done: true,
+				text:
+					parseJSON(literal.text) === range
+						? manifest
+						: manifest.slice(0, start) +
+							JSON.stringify(range) +
+							manifest.slice(literal.index + literal.text.length),
+			}
+		},
+		{ done: false, open: manifest.indexOf('{'), text: manifest },
+	)
+	return outcome.text
 }
 
 /**
@@ -457,11 +536,12 @@ export function replaceManifestOverrides(
  * proofs every workspace can pass before it has a public API, and one build per
  * target that actually builds.
  *
- * A publishing workspace isolates its distribution and live-service proofs from
- * `test` and runs them from `prepublishOnly` instead. Publishing is what selects
- * the distribution proof: what that proof measures is the packed tarball, so a
- * workspace that packs no published source has nothing for it to read. A private
- * workspace therefore omits it and runs a live-service proof from `test`.
+ * A publishing workspace isolates its distribution, study, and live-service proofs
+ * from `test` and runs them from `prepublishOnly` instead. Publishing is what
+ * selects the distribution proof: what that proof measures is the packed tarball,
+ * so a workspace that packs no published source has nothing for it to read. A
+ * private workspace therefore omits it and runs a study proof and a live-service
+ * proof from `test`, the study proof first.
  * Integration and conformance stay in `test` because they neither pack nor
  * install the workspace and drive no external service. A conformance run may
  * start a server, but it starts its own and reaches it over loopback, so the run
@@ -498,7 +578,30 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	const checks = [...blueprint.src, ...source, ...sheets, ...(blueprint.bin ? ['bin'] : [])].map(
 		(name) => `npm run check:src:${name}`,
 	)
-	const scripts: Record<string, string> = {
+	const testApplication = [
+		vitest,
+		...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
+		...application.map((name) => `--project app:${name}`),
+	].join(' ')
+	// The aggregate keeps the position its first appearance gave it, with the value the sheet
+	// targets extend, so it is computed once rather than written and then rewritten.
+	const testSource = [
+		...(blueprint.src.length > 0 || blueprint.bin
+			? [
+					[
+						vitest,
+						...blueprint.src.map((environment) => `--project ${SRC_MATRIX[environment].project}`),
+						...source.map((name) => `--project src:${name}`),
+						...(blueprint.bin ? ['--project src:bin'] : []),
+					].join(' '),
+				]
+			: []),
+		...targets.map((name) => `npm run test:src:${name}`),
+	].join(' && ')
+	const journey = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
+	const showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
+	const buildShowcase = `vite build --config ${SHOWCASE_CONFIG_PATH}`
+	return {
 		clean: "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
 		copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
 		format: 'oxfmt --config .oxfmtrc.json --write .',
@@ -511,179 +614,235 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			...(blueprint.app.length > 0 ? ['npm run check:app'] : []),
 			...(blueprint.skills ? ['npm run check:skills'] : []),
 		].join(' && '),
-	}
-	if (checks.length > 0) {
-		scripts['check:src'] = checks.join(' && ')
-		for (const environment of blueprint.src) {
-			scripts[`check:src:${environment}`] =
-				`tsc --noEmit -p configs/src/tsconfig.${environment}.json`
-		}
-		if (blueprint.bin) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
-		for (const name of [...sheets, ...source]) {
-			scripts[`check:src:${name}`] = `tsc --noEmit -p configs/src/tsconfig.${name}.json`
-		}
-	}
-	if (blueprint.app.length > 0) {
-		scripts['check:app'] = [...blueprint.app, ...application]
-			.map((environment) => `npm run check:app:${environment}`)
-			.join(' && ')
-		for (const environment of blueprint.app) {
-			scripts[`check:app:${environment}`] =
-				`tsc --noEmit -p configs/app/tsconfig.${environment}.json`
-		}
-		for (const name of application) {
-			scripts[`check:app:${name}`] =
-				`${FRAMEWORK_MATRIX[name].checker} --noEmit -p configs/app/tsconfig.${name}.json`
-		}
-	}
-	if (blueprint.skills) scripts['check:skills'] = `tsc --noEmit -p ${SKILLS_CONFIG_PATH}`
-	scripts.test = [
-		...(compiles ? ['npm run test:src'] : []),
-		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
-		...(blueprint.journey && blueprint.app.includes('browser')
-			? ['npm run test:journey', ...application.map((name) => `npm run test:journey:${name}`)]
-			: []),
-		'npm run test:policy',
-		'npm run test:config',
-		...(blueprint.setup.includes('node') || blueprint.global ? ['npm run test:setup'] : []),
-		...(blueprint.setup.includes('browser') || targets.length > 0
-			? ['npm run test:setup:browser']
-			: []),
-		...(blueprint.skills ? ['npm run test:skills'] : []),
-		...(blueprint.guides ? ['npm run test:guides'] : []),
-		...(blueprint.conformance ? ['npm run test:conformance'] : []),
-		...(integrates ? ['npm run test:integration'] : []),
-		...(!publishes && blueprint.service ? ['npm run test:service'] : []),
-	].join(' && ')
-	if (compiles) {
-		scripts['test:src'] = [
-			vitest,
-			...blueprint.src.map((environment) => `--project ${SRC_MATRIX[environment].project}`),
-			...source.map((name) => `--project src:${name}`),
-			...(blueprint.bin ? ['--project src:bin'] : []),
-		].join(' ')
-		for (const environment of blueprint.src) {
-			scripts[`test:src:${environment}`] = `${vitest} --project ${SRC_MATRIX[environment].project}`
-		}
-		if (blueprint.bin) scripts['test:src:bin'] = `${vitest} --project src:bin`
-		for (const name of source) scripts[`test:src:${name}`] = `${vitest} --project src:${name}`
-		const javascript = blueprint.src.length > 0 || blueprint.bin ? [scripts['test:src']] : []
-		scripts['test:src'] = [
-			...javascript,
-			...targets.map((name) => `npm run test:src:${name}`),
-		].join(' && ')
-		for (const name of targets) {
-			scripts[`test:src:${name}`] = `npm run build:src:${name} && ${vitest} --project src:${name}`
-		}
-	}
-	if (blueprint.app.length > 0) {
-		scripts['test:app'] = [
-			vitest,
-			...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
-			...application.map((name) => `--project app:${name}`),
-		].join(' ')
-		for (const environment of blueprint.app) {
-			scripts[`test:app:${environment}`] = `${vitest} --project ${APP_MATRIX[environment].project}`
-		}
-		for (const name of application) scripts[`test:app:${name}`] = `${vitest} --project app:${name}`
-	}
-	scripts['test:policy'] = `${vitest} --project policy`
-	scripts['test:config'] = `${vitest} --project config`
-	if (blueprint.setup.includes('node') || blueprint.global)
-		scripts['test:setup'] = `${vitest} --project setup`
-	if (blueprint.setup.includes('browser') || targets.length > 0)
-		scripts['test:setup:browser'] = `${vitest} --project setup:browser`
-	if (blueprint.journey && blueprint.app.includes('browser')) {
-		scripts['test:journey'] = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
-		for (const name of application)
-			scripts[`test:journey:${name}`] = `${scripts['test:journey']} --mode ${name}`
-	}
-	if (blueprint.skills) scripts['test:skills'] = `${vitest} --project skills`
-	if (blueprint.guides) {
-		scripts['test:guides'] = `node --experimental-strip-types ${GUIDES_TEST_PATH}`
-	}
-	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
-	scripts['test:probe'] =
-		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
-	scripts['test:bench'] = 'vitest bench --config vite.config.ts --no-cache --project probe'
-	if (publishes) scripts['test:distribution'] = `${vitest} --project distribution`
-	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
-	if (blueprint.service) scripts['test:service'] = `${vitest} --project service`
-	scripts.build = [
-		'npm run clean',
-		...(compiles ? ['npm run build:src'] : []),
-		...(blueprint.app.length > 0 ? ['npm run build:app'] : []),
-	].join(' && ')
-	if (compiles) {
-		scripts['build:src'] = [
-			...blueprint.src.map((environment) => `npm run build:src:${environment}`),
-			...source.map((name) => `npm run build:src:${name}`),
-			...targets.map((name) => `npm run build:src:${name}`),
-			...(blueprint.bin ? ['npm run build:src:bin'] : []),
-		].join(' && ')
-		for (const environment of blueprint.src) {
-			const build = `vite build --config configs/src/vite.${environment}.config.ts`
-			scripts[`build:src:${environment}`] = SRC_MATRIX[environment].formats.includes('cjs')
-				? `${build} && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
-				: build
-		}
-		if (blueprint.bin) {
-			scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
-		}
-		for (const name of source) {
-			scripts[`build:src:${name}`] = `vite build --config configs/src/vite.${name}.config.ts`
-		}
-		for (const name of targets) {
-			scripts[`build:src:${name}`] = [
-				`vite build --config configs/src/vite.${name}.config.ts`,
-				...(name === 'styles' && blueprint.themes
-					? ['vite build --config configs/src/vite.themes.config.ts']
-					: []),
-			].join(' && ')
-		}
-	}
-	if (blueprint.app.length > 0) {
-		scripts['build:app'] =
-			runtime.length > 0
-				? [...runtime, ...application]
-						.map((environment) => `npm run build:app:${environment}`)
-						.join(' && ')
-				: 'npm run check:app:core'
-		for (const environment of [...runtime, ...application]) {
-			scripts[`build:app:${environment}`] =
-				`vite build --config configs/app/vite.${environment}.config.ts`
-		}
-	}
-	if (blueprint.app.includes('browser')) {
-		scripts.dev = 'vite --config configs/app/vite.browser.config.ts'
-		for (const name of application)
-			scripts[`dev:${name}`] = `vite --config configs/app/vite.${name}.config.ts`
-		if (blueprint.showcase) {
-			scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
-			scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
-			for (const name of application) {
-				scripts[`showcase:${name}`] = `${scripts.showcase} --mode ${name}`
-				scripts[`build:showcase:${name}`] = `${scripts['build:showcase']} --mode ${name}`
-			}
-		}
-	}
-	if (blueprint.app.includes('server')) {
-		scripts.serve = 'node dist/app/server/main.cjs'
-		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
-	}
-	if (publishes) {
-		scripts.prepack = 'npm run build'
-		scripts.prepublishOnly = [
-			'npm run format:check && npm run lint:check && npm run check && npm run build',
-			...(blueprint.showcase && blueprint.app.includes('browser')
-				? ['npm run build:showcase', ...application.map((name) => `npm run build:showcase:${name}`)]
+		...(checks.length > 0
+			? {
+					'check:src': checks.join(' && '),
+					...Object.fromEntries(
+						blueprint.src.map((environment) => [
+							`check:src:${environment}`,
+							`tsc --noEmit -p configs/src/tsconfig.${environment}.json`,
+						]),
+					),
+					...(blueprint.bin
+						? { 'check:src:bin': 'tsc --noEmit -p configs/src/tsconfig.bin.json' }
+						: {}),
+					...Object.fromEntries(
+						[...sheets, ...source].map((name) => [
+							`check:src:${name}`,
+							`tsc --noEmit -p configs/src/tsconfig.${name}.json`,
+						]),
+					),
+				}
+			: {}),
+		...(blueprint.app.length > 0
+			? {
+					'check:app': [...blueprint.app, ...application]
+						.map((environment) => `npm run check:app:${environment}`)
+						.join(' && '),
+					...Object.fromEntries(
+						blueprint.app.map((environment) => [
+							`check:app:${environment}`,
+							`tsc --noEmit -p configs/app/tsconfig.${environment}.json`,
+						]),
+					),
+					...Object.fromEntries(
+						application.map((name) => [
+							`check:app:${name}`,
+							`${FRAMEWORK_MATRIX[name].checker} --noEmit -p configs/app/tsconfig.${name}.json`,
+						]),
+					),
+				}
+			: {}),
+		...(blueprint.skills ? { 'check:skills': `tsc --noEmit -p ${SKILLS_CONFIG_PATH}` } : {}),
+		test: [
+			...(compiles ? ['npm run test:src'] : []),
+			...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
+			...(blueprint.journey && blueprint.app.includes('browser')
+				? ['npm run test:journey', ...application.map((name) => `npm run test:journey:${name}`)]
 				: []),
-			'npm test',
-			RELEASE_PROOF_COMMAND,
-			...(blueprint.service ? ['npm run test:service'] : []),
-		].join(' && ')
+			'npm run test:policy',
+			'npm run test:config',
+			...(blueprint.setup.includes('node') || blueprint.global ? ['npm run test:setup'] : []),
+			...(blueprint.setup.includes('browser') || targets.length > 0
+				? ['npm run test:setup:browser']
+				: []),
+			...(blueprint.skills ? ['npm run test:skills'] : []),
+			...(blueprint.guides ? ['npm run test:guides'] : []),
+			...(blueprint.conformance ? ['npm run test:conformance'] : []),
+			...(integrates ? ['npm run test:integration'] : []),
+			...(!publishes && blueprint.studies ? ['npm run test:studies'] : []),
+			...(!publishes && blueprint.service ? ['npm run test:service'] : []),
+		].join(' && '),
+		...(compiles
+			? {
+					'test:src': testSource,
+					...Object.fromEntries(
+						blueprint.src.map((environment) => [
+							`test:src:${environment}`,
+							`${vitest} --project ${SRC_MATRIX[environment].project}`,
+						]),
+					),
+					...(blueprint.bin ? { 'test:src:bin': `${vitest} --project src:bin` } : {}),
+					...Object.fromEntries(
+						source.map((name) => [`test:src:${name}`, `${vitest} --project src:${name}`]),
+					),
+					...Object.fromEntries(
+						targets.map((name) => [
+							`test:src:${name}`,
+							`npm run build:src:${name} && ${vitest} --project src:${name}`,
+						]),
+					),
+				}
+			: {}),
+		...(blueprint.app.length > 0
+			? {
+					'test:app': testApplication,
+					...Object.fromEntries(
+						blueprint.app.map((environment) => [
+							`test:app:${environment}`,
+							`${vitest} --project ${APP_MATRIX[environment].project}`,
+						]),
+					),
+					...Object.fromEntries(
+						application.map((name) => [`test:app:${name}`, `${vitest} --project app:${name}`]),
+					),
+				}
+			: {}),
+		'test:policy': `${vitest} --project policy`,
+		'test:config': `${vitest} --project config`,
+		...(blueprint.setup.includes('node') || blueprint.global
+			? { 'test:setup': `${vitest} --project setup` }
+			: {}),
+		...(blueprint.setup.includes('browser') || targets.length > 0
+			? { 'test:setup:browser': `${vitest} --project setup:browser` }
+			: {}),
+		...(blueprint.journey && blueprint.app.includes('browser')
+			? {
+					'test:journey': journey,
+					...Object.fromEntries(
+						application.map((name) => [`test:journey:${name}`, `${journey} --mode ${name}`]),
+					),
+				}
+			: {}),
+		...(blueprint.skills ? { 'test:skills': `${vitest} --project skills` } : {}),
+		...(blueprint.guides
+			? { 'test:guides': `node --experimental-strip-types ${GUIDES_TEST_PATH}` }
+			: {}),
+		...(blueprint.conformance ? { 'test:conformance': `${vitest} --project conformance` } : {}),
+		'test:probe':
+			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
+		'test:bench': 'vitest bench --config vite.config.ts --no-cache --project probe',
+		...(publishes ? { 'test:distribution': `${vitest} --project distribution` } : {}),
+		...(integrates ? { 'test:integration': `${vitest} --project integration` } : {}),
+		...(blueprint.service ? { 'test:service': `${vitest} --project service` } : {}),
+		...(blueprint.studies ? { 'test:studies': `${vitest} --project studies` } : {}),
+		build: [
+			'npm run clean',
+			...(compiles ? ['npm run build:src'] : []),
+			...(blueprint.app.length > 0 ? ['npm run build:app'] : []),
+		].join(' && '),
+		...(compiles
+			? {
+					'build:src': [
+						...blueprint.src.map((environment) => `npm run build:src:${environment}`),
+						...source.map((name) => `npm run build:src:${name}`),
+						...targets.map((name) => `npm run build:src:${name}`),
+						...(blueprint.bin ? ['npm run build:src:bin'] : []),
+					].join(' && '),
+					...Object.fromEntries(
+						blueprint.src.map((environment) => [
+							`build:src:${environment}`,
+							SRC_MATRIX[environment].formats.includes('cjs')
+								? `vite build --config configs/src/vite.${environment}.config.ts && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
+								: `vite build --config configs/src/vite.${environment}.config.ts`,
+						]),
+					),
+					...(blueprint.bin
+						? { 'build:src:bin': 'vite build --config configs/src/vite.bin.config.ts' }
+						: {}),
+					...Object.fromEntries(
+						source.map((name) => [
+							`build:src:${name}`,
+							`vite build --config configs/src/vite.${name}.config.ts`,
+						]),
+					),
+					...Object.fromEntries(
+						targets.map((name) => [
+							`build:src:${name}`,
+							[
+								`vite build --config configs/src/vite.${name}.config.ts`,
+								...(name === 'styles' && blueprint.themes
+									? ['vite build --config configs/src/vite.themes.config.ts']
+									: []),
+							].join(' && '),
+						]),
+					),
+				}
+			: {}),
+		...(blueprint.app.length > 0
+			? {
+					'build:app':
+						runtime.length > 0
+							? [...runtime, ...application]
+									.map((environment) => `npm run build:app:${environment}`)
+									.join(' && ')
+							: 'npm run check:app:core',
+					...Object.fromEntries(
+						[...runtime, ...application].map((environment) => [
+							`build:app:${environment}`,
+							`vite build --config configs/app/vite.${environment}.config.ts`,
+						]),
+					),
+				}
+			: {}),
+		...(blueprint.app.includes('browser')
+			? {
+					dev: 'vite --config configs/app/vite.browser.config.ts',
+					...Object.fromEntries(
+						application.map((name) => [
+							`dev:${name}`,
+							`vite --config configs/app/vite.${name}.config.ts`,
+						]),
+					),
+					...(blueprint.showcase
+						? {
+								showcase,
+								'build:showcase': buildShowcase,
+								...Object.fromEntries(
+									application.flatMap((name): ReadonlyArray<readonly [string, string]> => [
+										[`showcase:${name}`, `${showcase} --mode ${name}`],
+										[`build:showcase:${name}`, `${buildShowcase} --mode ${name}`],
+									]),
+								),
+							}
+						: {}),
+				}
+			: {}),
+		...(blueprint.app.includes('server')
+			? {
+					serve: 'node dist/app/server/main.cjs',
+					'serve:build': 'npm run build:app:server && npm run serve',
+				}
+			: {}),
+		...(publishes
+			? {
+					prepack: 'npm run build',
+					prepublishOnly: [
+						'npm run format:check && npm run lint:check && npm run check && npm run build',
+						...(blueprint.showcase && blueprint.app.includes('browser')
+							? [
+									'npm run build:showcase',
+									...application.map((name) => `npm run build:showcase:${name}`),
+								]
+							: []),
+						'npm test',
+						...(blueprint.studies ? ['npm run test:studies'] : []),
+						RELEASE_PROOF_COMMAND,
+						...(blueprint.service ? ['npm run test:service'] : []),
+					].join(' && '),
+				}
+			: {}),
 	}
-	return scripts
 }
 
 /**
@@ -706,7 +865,9 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * guides entry accepts the generated command that invoked the guides project
  * through Vitest alone. The pack hook accepts the build chain emitted before it
  * delegated to `build`. The publication hook accepts the same gate chain without
- * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
+ * {@link RELEASE_PROOF_COMMAND}. A workspace carrying studies also accepts the
+ * chain without its study step and the chain without both its study step and
+ * the release proof. The value being written is always writable, so
  * it is not repeated there. Any other value is a script the workspace author
  * customized, and {@link replaceManifestScripts} retains it while writing the
  * other named scripts independently.
@@ -726,13 +887,13 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 		...blueprintToSheets(blueprint),
 		...(blueprint.themes && !blueprint.styles ? ['themes'] : []),
 	]
-	const writable: ManifestScript[] = []
-	for (const [name, command] of Object.entries(scripts)) {
+	const faces = blueprintToFaces(blueprint)
+	const body = Object.entries(scripts).flatMap(([name, command]): readonly ManifestScript[] => {
 		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
 		const sheet = sheets.some(
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
-		const framework = blueprintToFaces(blueprint).some(
+		const framework = faces.some(
 			(extension) =>
 				extension.surface === 'browser' &&
 				extension.axes.some(
@@ -747,38 +908,52 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 			name.startsWith('showcase:') ||
 			name === 'build:showcase' ||
 			name.startsWith('build:showcase:')
-		if (!direct && !sheet && !framework && !showcase) continue
-		writable.push({
-			name,
-			command,
-			accepted:
-				name === 'test:guides'
-					? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
-					: name === 'build:src:styles' && blueprint.themes
-						? ['vite build --config configs/src/vite.styles.config.ts']
-						: sheets.some((face) => name === `test:src:${face}`)
-							? [command.slice(command.indexOf(' && ') + 4)]
-							: [],
-		})
-	}
+		if (!direct && !sheet && !framework && !showcase) return []
+		return [
+			{
+				name,
+				command,
+				accepted:
+					name === 'test:guides'
+						? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
+						: name === 'build:src:styles' && blueprint.themes
+							? ['vite build --config configs/src/vite.styles.config.ts']
+							: sheets.some((face) => name === `test:src:${face}`)
+								? [command.slice(command.indexOf(' && ') + 4)]
+								: [],
+			},
+		]
+	})
 	const prepack = scripts.prepack
-	if (prepack !== undefined) {
-		const predecessor = scripts.build
-		writable.push({
-			name: 'prepack',
-			command: prepack,
-			accepted: predecessor === undefined ? [] : [predecessor],
-		})
-	}
 	const prepublish = scripts.prepublishOnly
-	if (prepublish !== undefined) {
-		writable.push({
-			name: 'prepublishOnly',
-			command: prepublish,
-			accepted: [prepublish.replace(` && ${RELEASE_PROOF_COMMAND}`, '')],
-		})
-	}
-	return writable
+	const unreleased = prepublish?.replace(` && ${RELEASE_PROOF_COMMAND}`, '')
+	return [
+		...body,
+		...(prepack === undefined
+			? []
+			: [
+					{
+						name: 'prepack',
+						command: prepack,
+						accepted: scripts.build === undefined ? [] : [scripts.build],
+					},
+				]),
+		...(prepublish === undefined || unreleased === undefined
+			? []
+			: [
+					{
+						name: 'prepublishOnly',
+						command: prepublish,
+						accepted: blueprint.studies
+							? [
+									unreleased,
+									prepublish.replace(' && npm run test:studies', ''),
+									unreleased.replace(' && npm run test:studies', ''),
+								]
+							: [unreleased],
+					},
+				]),
+	]
 }
 
 /**
@@ -821,20 +996,16 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 	const targets = [...sheets, ...(blueprint.themes ? ['styles/themes'] : [])]
 	const publishes = blueprint.src.length > 0 || targets.length > 0
 	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
-	const dependencies: Record<string, string> = {}
-	for (const dependency of [...blueprint.dependencies].sort((left, right) =>
-		compareValues(left.name, right.name),
-	)) {
-		dependencies[dependency.name] = dependency.range
-	}
-	const peerDependencies: Record<string, string> = {}
-	const peerDependenciesMeta: Record<string, { readonly optional: true }> = {}
-	for (const peer of [...blueprint.peers].sort((left, right) =>
-		compareValues(left.name, right.name),
-	)) {
-		peerDependencies[peer.name] = peer.range
-		if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
-	}
+	const dependencies = Object.fromEntries(
+		[...blueprint.dependencies]
+			.sort((left, right) => compareValues(left.name, right.name))
+			.map((dependency) => [dependency.name, dependency.range]),
+	)
+	const peers = [...blueprint.peers].sort((left, right) => compareValues(left.name, right.name))
+	const peerDependencies = Object.fromEntries(peers.map((peer) => [peer.name, peer.range]))
+	const peerDependenciesMeta = Object.fromEntries(
+		peers.filter((peer) => peer.optional === true).map((peer) => [peer.name, { optional: true }]),
+	)
 	const entry = srcToEntry(blueprint.src)
 	const manifest: Record<string, unknown> = {
 		name,
@@ -984,43 +1155,57 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
  * ```
  */
 export function blueprintToRootTsconfig(blueprint: Blueprint): string {
-	const aliases: Array<[string, string]> = []
-	for (const extension of blueprintToFaces(blueprint)) {
-		if (extension.surface !== 'browser') continue
-		for (const axis of extension.axes)
-			aliases.push([`@${axis}/${extension.name}`, `./${axis}/${extension.name}/index.ts`])
-		if (extension.axes.includes('src'))
-			aliases.push([
-				`@orkestrel/${blueprint.name}/${extension.name}`,
-				`./src/${extension.name}/index.ts`,
-			])
-	}
-	for (const name of blueprintToSheets(blueprint)) {
-		aliases.push([`@src/${name}`, `./src/${name}/index.ts`])
-	}
-	for (const environment of ENVIRONMENTS) {
-		if (blueprint.src.includes(environment)) {
-			aliases.push([`@src/${environment}`, `./src/${environment}/index.ts`])
-		}
-	}
-	for (const environment of ENVIRONMENTS) {
-		if (blueprint.app.includes(environment)) {
-			aliases.push([`@app/${environment}`, `./app/${environment}/index.ts`])
-		}
-	}
 	const root = srcToRoot(blueprint.src)
-	if (root === undefined) {
-		for (const environment of ENVIRONMENTS) {
-			if (environment === 'core' || !blueprint.src.includes(environment)) continue
-			const subpath = SRC_MATRIX[environment].path.slice(1)
-			aliases.push([`@orkestrel/${blueprint.name}${subpath}`, `./src/${environment}/index.ts`])
-		}
-	}
-	if (blueprint.src.length > 0) {
-		aliases.push([`@orkestrel/${blueprint.name}`, `./src/${root ?? 'core'}/index.ts`])
-	}
+	const aliases = [
+		...blueprintToFaces(blueprint).flatMap((extension) => [
+			...extension.axes.map((axis) => ({
+				specifier: `@${axis}/${extension.name}`,
+				target: `./${axis}/${extension.name}/index.ts`,
+			})),
+			...(extension.axes.includes('src')
+				? [
+						{
+							specifier: `@orkestrel/${blueprint.name}/${extension.name}`,
+							target: `./src/${extension.name}/index.ts`,
+						},
+					]
+				: []),
+		]),
+		...blueprintToSheets(blueprint).map((name) => ({
+			specifier: `@src/${name}`,
+			target: `./src/${name}/index.ts`,
+		})),
+		...ENVIRONMENTS.filter((environment) => blueprint.src.includes(environment)).map(
+			(environment) => ({
+				specifier: `@src/${environment}`,
+				target: `./src/${environment}/index.ts`,
+			}),
+		),
+		...ENVIRONMENTS.filter((environment) => blueprint.app.includes(environment)).map(
+			(environment) => ({
+				specifier: `@app/${environment}`,
+				target: `./app/${environment}/index.ts`,
+			}),
+		),
+		...(root === undefined
+			? ENVIRONMENTS.filter(
+					(environment) => environment !== 'core' && blueprint.src.includes(environment),
+				).map((environment) => ({
+					specifier: `@orkestrel/${blueprint.name}${SRC_MATRIX[environment].path.slice(1)}`,
+					target: `./src/${environment}/index.ts`,
+				}))
+			: []),
+		...(blueprint.src.length > 0
+			? [
+					{
+						specifier: `@orkestrel/${blueprint.name}`,
+						target: `./src/${root ?? 'core'}/index.ts`,
+					},
+				]
+			: []),
+	]
 	const paths = aliases
-		.map(([specifier, target], index) => {
+		.map(({ specifier, target }, index) => {
 			const separator = index === aliases.length - 1 ? '' : ','
 			const line = `\t\t\t"${specifier}": ["${target}"]${separator}`
 			// A published specifier carries the package name, and npm accepts one long
@@ -1053,31 +1238,31 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 	const sheets = blueprintToSheets(blueprint)
 	const styled = sheets.length > 0 || blueprint.themes
 	const faces = blueprintToFaces(blueprint)
-	const projects = sheets.map((name) => `src:${name}`)
-	if (blueprint.themes && !blueprint.styles) projects.push('src:themes')
-	for (const axis of AXES) {
-		for (const environment of ENVIRONMENTS) {
-			if (axis === 'app' && environment === 'server') continue
-			if (blueprint[axis].includes(environment)) projects.push(`${axis}:${environment}`)
-		}
-		for (const face of faces) {
-			if (face.surface === 'browser' && face.axes.includes(axis))
-				projects.push(`${axis}:${face.name}`)
-		}
-		if (axis === 'src' && blueprint.bin) projects.push('src:bin')
-		if (axis === 'app' && blueprint.app.includes('server')) projects.push('app:server')
-	}
-	projects.push('policy', 'config')
-	if (blueprint.setup.includes('node') || blueprint.global) projects.push('setup')
-	if (blueprint.setup.includes('browser') || styled) projects.push('setup:browser')
-	if (blueprint.guides) projects.push('guides')
-	if (blueprint.skills) projects.push('skills')
-	if (blueprint.conformance) projects.push('conformance')
-	if (blueprint.service) projects.push('service')
-	if (blueprint.src.length > 0 || styled) projects.push('distribution')
-	if (blueprint.integration) projects.push('integration')
-	projects.push('probe')
-	return projects
+	return [
+		...sheets.map((name) => `src:${name}`),
+		...(blueprint.themes && !blueprint.styles ? ['src:themes'] : []),
+		...AXES.flatMap((axis) => [
+			...ENVIRONMENTS.filter(
+				(environment) =>
+					(axis !== 'app' || environment !== 'server') && blueprint[axis].includes(environment),
+			).map((environment) => `${axis}:${environment}`),
+			...faces.filter((face) => face.axes.includes(axis)).map((face) => `${axis}:${face.name}`),
+			...(axis === 'src' && blueprint.bin ? ['src:bin'] : []),
+			...(axis === 'app' && blueprint.app.includes('server') ? ['app:server'] : []),
+		]),
+		'policy',
+		'config',
+		...(blueprint.setup.includes('node') || blueprint.global ? ['setup'] : []),
+		...(blueprint.setup.includes('browser') || styled ? ['setup:browser'] : []),
+		...(blueprint.guides ? ['guides'] : []),
+		...(blueprint.skills ? ['skills'] : []),
+		...(blueprint.conformance ? ['conformance'] : []),
+		...(blueprint.service ? ['service'] : []),
+		...(blueprint.studies ? ['studies'] : []),
+		...(blueprint.src.length > 0 || styled ? ['distribution'] : []),
+		...(blueprint.integration ? ['integration'] : []),
+		'probe',
+	]
 }
 
 /**
@@ -1149,22 +1334,26 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	// itself. That is the case a global setup exists for, and it is why
 	// `src:browser`, `setup:browser`, and `integration` take the same span.
 	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
-	const imports: string[] = []
-	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
-	if (machinery.frameworks.includes('vue')) imports.push("import vue from '@vitejs/plugin-vue'")
-	if (machinery.showcase) imports.push("import { viteSingleFile } from 'vite-plugin-singlefile'")
-	if (machinery.showcase) {
-		imports.push("import { renameSync } from 'node:fs'")
-		imports.push("import { resolve as resolvePath } from 'node:path'")
-	}
-
-	const factories: string[] = []
-	const projects: string[] = []
+	const core = blueprint.src.includes('core')
+	const imports = [
+		...(machinery.browser ? ["import { playwright } from '@vitest/browser-playwright'"] : []),
+		...(machinery.frameworks.includes('vue') ? ["import vue from '@vitejs/plugin-vue'"] : []),
+		...(machinery.showcase
+			? [
+					"import { viteSingleFile } from 'vite-plugin-singlefile'",
+					"import { renameSync } from 'node:fs'",
+					"import { resolve as resolvePath } from 'node:path'",
+				]
+			: []),
+	]
 	const external = 'external: resolveSourceExternal,'
-	if (blueprint.src.includes('browser') || blueprint.src.includes('server')) {
-		factories.push(
-			blueprint.src.includes('core')
-				? `function resolveSourceExternal(id: string): boolean {
+	// Each factory and the row that registers it are chosen by the same condition, in the order
+	// the generated configuration declares them.
+	const factories = [
+		...(blueprint.src.includes('browser') || blueprint.src.includes('server')
+			? [
+					core
+						? `function resolveSourceExternal(id: string): boolean {
 	return (
 		id === '@src/core' ||
 		resolveExternal(id, {
@@ -1175,42 +1364,32 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	)
 }
 `
-				: `function resolveSourceExternal(id: string): boolean {
+						: `function resolveSourceExternal(id: string): boolean {
 	return resolveExternal(id, { peers, refused: [], siblings: [] })
 }
 `,
-		)
-	}
-	if (styled) {
-		factories.push(CONFIG_TEMPLATES.factories.sheet)
-		for (const name of sheets) projects.push(`'./configs/src/vite.${name}.config.ts'`)
-		if (planned.has('src:themes')) projects.push("'./configs/src/vite.themes.config.ts'")
-	}
-	if (planned.has('src:core')) {
-		factories.push(CONFIG_TEMPLATES.factories.src.core)
-		projects.push('srcCore')
-	}
-	if (planned.has('src:browser')) {
-		const core = blueprint.src.includes('core')
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
-				external,
-				output: core
-					? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
-					: '\t\t\t\toutput: {},',
-				exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
-				global,
-			}),
-		)
-		projects.push('srcBrowser')
-	}
-	if (planned.has('src:server')) {
-		const core = blueprint.src.includes('core')
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
-				external,
-				output: core
-					? `\t\t\t\toutput: [
+				]
+			: []),
+		...(styled ? [CONFIG_TEMPLATES.factories.sheet] : []),
+		...(planned.has('src:core') ? [CONFIG_TEMPLATES.factories.src.core] : []),
+		...(planned.has('src:browser')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
+						external,
+						output: core
+							? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
+							: '\t\t\t\toutput: {},',
+						exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+						global,
+					}),
+				]
+			: []),
+		...(planned.has('src:server')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
+						external,
+						output: core
+							? `\t\t\t\toutput: [
 					{
 						format: 'es',
 						entryFileNames: 'index.js',
@@ -1222,108 +1401,100 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 						paths: { '@src/core': '../core/index.cjs' },
 					},
 				],`
-					: '\t\t\t\toutput: {},',
-				exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
-			}),
-		)
-		projects.push('srcServer')
-	}
-	if (planned.has('src:vue')) {
-		factories.push(CONFIG_TEMPLATES.factories.src.vue)
-		projects.push('srcVue')
-	}
-	if (planned.has('src:bin')) {
-		factories.push(CONFIG_TEMPLATES.factories.src.bin)
-		projects.push('srcBin')
-	}
-	if (planned.has('app:core')) {
-		factories.push(CONFIG_TEMPLATES.factories.app.core)
-		projects.push('appCore')
-	}
-	if (planned.has('app:browser')) {
-		const showcaseFactory = machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : ''
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
-				showcaseFactory,
-				journeyFactory: blueprint.journey ? CONFIG_TEMPLATES.factories.app.journey : '',
-				journeyExclude: blueprint.journey
-					? "\t\t\texclude: ['tests/app/browser/integration.test.ts'],\n"
-					: '',
-			}),
-		)
-		// The row is the factory itself, never a call of it. Vitest hands the command
-		// line's `--mode` only to a project it calls, and `mergeOverride` sets that mode
-		// on the project it returns, so an evaluated row silently turns the release-mode
-		// publish gate into a skip.
-		projects.push('appBrowser')
-	}
-	if (planned.has('app:vue')) {
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.app.vue, {
-				journeyExclude: blueprint.journey
-					? "\t\t\texclude: ['tests/app/vue/integration.test.ts'],\n"
-					: '\t\t\texclude: [],\n',
-			}),
-		)
-		projects.push('appVue')
-	}
-	if (planned.has('app:server')) {
-		factories.push(CONFIG_TEMPLATES.factories.app.server)
-		projects.push('appServer')
-	}
-	factories.push(CONFIG_TEMPLATES.factories.policy)
-	projects.push('policy')
-	factories.push(CONFIG_TEMPLATES.factories.config)
-	projects.push('config')
-	if (planned.has('setup')) {
-		factories.push(CONFIG_TEMPLATES.factories.setup)
-		projects.push('setup')
-	}
-	if (planned.has('setup:browser')) {
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.browser, {
-				optimization: machinery.frameworks.includes('vue')
-					? "optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }"
-					: 'optimizeDeps',
-				plugins: machinery.frameworks.includes('vue') ? '\t\tplugins: [vue()],\n' : '',
-				global,
-			}),
-		)
-		projects.push('setupBrowser')
-	}
-	if (planned.has('guides')) {
-		factories.push(CONFIG_TEMPLATES.factories.guides)
-		projects.push('guides')
-	}
-	if (planned.has('skills')) {
-		factories.push(CONFIG_TEMPLATES.factories.skills)
-		projects.push('skills')
-	}
-	if (planned.has('conformance')) {
-		factories.push(CONFIG_TEMPLATES.factories.conformance)
-		projects.push('conformance')
-	}
-	if (planned.has('service')) {
-		factories.push(CONFIG_TEMPLATES.factories.service)
-		projects.push('service')
-	}
-	if (planned.has('distribution')) {
-		factories.push(CONFIG_TEMPLATES.factories.distribution)
-		projects.push('distribution')
-	}
-	if (planned.has('integration')) {
-		factories.push(
-			fillTemplate(
-				styled
-					? CONFIG_TEMPLATES.factories.integration.sheet
-					: CONFIG_TEMPLATES.factories.integration.module,
-				{ global },
-			),
-		)
-		projects.push('integration')
-	}
-	factories.push(CONFIG_TEMPLATES.factories.probe)
-	projects.push('probe')
+							: '\t\t\t\toutput: {},',
+						exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+					}),
+				]
+			: []),
+		...(planned.has('src:vue') ? [CONFIG_TEMPLATES.factories.src.vue] : []),
+		...(planned.has('src:bin') ? [CONFIG_TEMPLATES.factories.src.bin] : []),
+		...(planned.has('app:core') ? [CONFIG_TEMPLATES.factories.app.core] : []),
+		...(planned.has('app:browser')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
+						showcaseFactory: machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : '',
+						journeyFactory: blueprint.journey ? CONFIG_TEMPLATES.factories.app.journey : '',
+						journeyExclude: blueprint.journey
+							? "\t\t\texclude: ['tests/app/browser/integration.test.ts'],\n"
+							: '',
+					}),
+				]
+			: []),
+		...(planned.has('app:vue')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.app.vue, {
+						journeyExclude: blueprint.journey
+							? "\t\t\texclude: ['tests/app/vue/integration.test.ts'],\n"
+							: '\t\t\texclude: [],\n',
+					}),
+				]
+			: []),
+		...(planned.has('app:server') ? [CONFIG_TEMPLATES.factories.app.server] : []),
+		CONFIG_TEMPLATES.factories.policy,
+		CONFIG_TEMPLATES.factories.config,
+		...(planned.has('setup') ? [CONFIG_TEMPLATES.factories.setup] : []),
+		...(planned.has('setup:browser')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.browser, {
+						optimization: machinery.frameworks.includes('vue')
+							? "optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }"
+							: 'optimizeDeps',
+						plugins: machinery.frameworks.includes('vue') ? '\t\tplugins: [vue()],\n' : '',
+						global,
+					}),
+				]
+			: []),
+		...(planned.has('guides') ? [CONFIG_TEMPLATES.factories.guides] : []),
+		...(planned.has('skills') ? [CONFIG_TEMPLATES.factories.skills] : []),
+		...(planned.has('conformance') ? [CONFIG_TEMPLATES.factories.conformance] : []),
+		...(planned.has('service') ? [CONFIG_TEMPLATES.factories.service] : []),
+		...(planned.has('studies') ? [CONFIG_TEMPLATES.factories.studies] : []),
+		...(planned.has('distribution') ? [CONFIG_TEMPLATES.factories.distribution] : []),
+		...(planned.has('integration')
+			? [
+					fillTemplate(
+						styled
+							? CONFIG_TEMPLATES.factories.integration.sheet
+							: CONFIG_TEMPLATES.factories.integration.module,
+						{ global },
+					),
+				]
+			: []),
+		CONFIG_TEMPLATES.factories.probe,
+	]
+	// The `app:browser` row is the factory itself, never a call of it. Vitest hands the command
+	// line's `--mode` only to a project it calls, and `mergeOverride` sets that mode on the
+	// project it returns, so an evaluated row silently turns the release-mode publish gate into
+	// a skip.
+	const projects = [
+		...(styled
+			? [
+					...sheets.map((name) => `'./configs/src/vite.${name}.config.ts'`),
+					...(planned.has('src:themes') ? ["'./configs/src/vite.themes.config.ts'"] : []),
+				]
+			: []),
+		...(planned.has('src:core') ? ['srcCore'] : []),
+		...(planned.has('src:browser') ? ['srcBrowser'] : []),
+		...(planned.has('src:server') ? ['srcServer'] : []),
+		...(planned.has('src:vue') ? ['srcVue'] : []),
+		...(planned.has('src:bin') ? ['srcBin'] : []),
+		...(planned.has('app:core') ? ['appCore'] : []),
+		...(planned.has('app:browser') ? ['appBrowser'] : []),
+		...(planned.has('app:vue') ? ['appVue'] : []),
+		...(planned.has('app:server') ? ['appServer'] : []),
+		'policy',
+		'config',
+		...(planned.has('setup') ? ['setup'] : []),
+		...(planned.has('setup:browser') ? ['setupBrowser'] : []),
+		...(planned.has('guides') ? ['guides'] : []),
+		...(planned.has('skills') ? ['skills'] : []),
+		...(planned.has('conformance') ? ['conformance'] : []),
+		...(planned.has('service') ? ['service'] : []),
+		...(planned.has('studies') ? ['studies'] : []),
+		...(planned.has('distribution') ? ['distribution'] : []),
+		...(planned.has('integration') ? ['integration'] : []),
+		'probe',
+	]
 
 	const joinedProjects = `\t\tprojects: [${projects.join(', ')}],`
 	const projectRows = matchesPrintWidth(joinedProjects)
@@ -1401,7 +1572,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
  * ```
  */
 export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artifact[] {
-	const artifacts: Artifact[] = [
+	const roots: readonly Artifact[] = [
 		{
 			path: 'tsconfig.json',
 			group: 'configs',
@@ -1420,71 +1591,76 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 	// The browser resolver is its own leaf rather than a block inside the vendored
 	// `configs/helpers.ts`, because that file is byte-identical in every workspace
 	// and only a browser selection declares the `playwright` it imports.
-	if (blueprintToMachinery(blueprint).browser) {
-		artifacts.push({
-			path: 'configs/browsers.ts',
-			group: 'configs',
-			ownership: 'content',
-			origin: 'template',
-			content: CONFIG_TEMPLATES.browsers,
-		})
-	}
-	for (const name of [
+	const browsers: readonly Artifact[] = blueprintToMachinery(blueprint).browser
+		? [
+				{
+					path: 'configs/browsers.ts',
+					group: 'configs',
+					ownership: 'content',
+					origin: 'template',
+					content: CONFIG_TEMPLATES.browsers,
+				},
+			]
+		: []
+	const sheets: readonly Artifact[] = [
 		...blueprintToSheets(blueprint),
 		...(blueprint.themes ? ['styles/themes'] : []),
-	]) {
-		const label = name === 'styles/themes' ? 'themes' : name
-		artifacts.push({
-			path: `configs/src/vite.${label}.config.ts`,
+	].flatMap((name): readonly Artifact[] => {
+		const wrapper: Artifact = {
+			path: `configs/src/vite.${name === 'styles/themes' ? 'themes' : name}.config.ts`,
 			group: 'configs',
 			ownership: 'content',
 			origin: 'template',
-			content: fillTemplate(CONFIG_TEMPLATES.vites.sheet, { name, label }),
-		})
-		if (name !== 'styles/themes')
-			artifacts.push({
-				path: `configs/src/tsconfig.${name}.json`,
-				group: 'configs',
-				ownership: 'content',
-				origin: 'template',
-				content: fillTemplate(CONFIG_TEMPLATES.tsconfigs.sheet, { name }),
-			})
-	}
-	for (const environment of blueprint.src) {
-		for (const path of SRC_MATRIX[environment].configs) {
-			let content: string = CONFIG_TEMPLATES.vites.src.core
-			if (path === 'configs/src/tsconfig.core.json') content = CONFIG_TEMPLATES.tsconfigs.src.core
-			else if (path === 'configs/src/vite.browser.config.ts') {
-				content = CONFIG_TEMPLATES.vites.src.browser
-			} else if (path === 'configs/src/tsconfig.browser.json') {
-				content = CONFIG_TEMPLATES.tsconfigs.src.browser
-			} else if (path === 'configs/src/vite.server.config.ts') {
-				content = CONFIG_TEMPLATES.vites.src.server
-			} else if (path === 'configs/src/tsconfig.server.json') {
-				content = CONFIG_TEMPLATES.tsconfigs.src.server
-			}
-			artifacts.push({
-				path,
-				group: 'configs',
-				ownership: 'content',
-				origin: 'template',
-				environment,
-				content,
-			})
+			content: fillTemplate(CONFIG_TEMPLATES.vites.sheet, {
+				name,
+				label: name === 'styles/themes' ? 'themes' : name,
+			}),
 		}
-	}
-	if (blueprint.bin) {
-		const paths = blueprint.src.map(
-			(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
-		)
-		const renderedPaths =
-			paths.length === 0
-				? '\t\t\t\t\tpaths: {},'
-				: `\t\t\t\t\tpaths: {
+		return name === 'styles/themes'
+			? [wrapper]
+			: [
+					wrapper,
+					{
+						path: `configs/src/tsconfig.${name}.json`,
+						group: 'configs',
+						ownership: 'content',
+						origin: 'template',
+						content: fillTemplate(CONFIG_TEMPLATES.tsconfigs.sheet, { name }),
+					},
+				]
+	})
+	const sources: readonly Artifact[] = blueprint.src.flatMap((environment) =>
+		SRC_MATRIX[environment].configs.map((path): Artifact => ({
+			path,
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			environment,
+			content:
+				path === 'configs/src/tsconfig.core.json'
+					? CONFIG_TEMPLATES.tsconfigs.src.core
+					: path === 'configs/src/vite.browser.config.ts'
+						? CONFIG_TEMPLATES.vites.src.browser
+						: path === 'configs/src/tsconfig.browser.json'
+							? CONFIG_TEMPLATES.tsconfigs.src.browser
+							: path === 'configs/src/vite.server.config.ts'
+								? CONFIG_TEMPLATES.vites.src.server
+								: path === 'configs/src/tsconfig.server.json'
+									? CONFIG_TEMPLATES.tsconfigs.src.server
+									: CONFIG_TEMPLATES.vites.src.core,
+		})),
+	)
+	const paths = blueprint.src.map(
+		(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
+	)
+	const renderedPaths =
+		paths.length === 0
+			? '\t\t\t\t\tpaths: {},'
+			: `\t\t\t\t\tpaths: {
 ${paths.join('\n')}
 					},`
-		for (const path of BIN_CONFIGS) {
-			artifacts.push({
+	const bins: readonly Artifact[] = blueprint.bin
+		? BIN_CONFIGS.map((path): Artifact => ({
 				path,
 				group: 'configs',
 				ownership: 'content',
@@ -1493,92 +1669,55 @@ ${paths.join('\n')}
 					path === 'configs/src/tsconfig.bin.json'
 						? CONFIG_TEMPLATES.tsconfigs.bin
 						: fillTemplate(CONFIG_TEMPLATES.vites.bin, { paths: renderedPaths }),
-			})
-		}
-	}
-	for (const environment of blueprint.app) {
-		for (const path of APP_MATRIX[environment].configs) {
-			let content: string = CONFIG_TEMPLATES.tsconfigs.app.core
-			if (path === 'configs/app/vite.browser.config.ts') {
-				content = CONFIG_TEMPLATES.vites.app.browser
-			} else if (path === 'configs/app/tsconfig.browser.json') {
-				const include = [
-					'../../app/browser/**/*.cts',
-					'../../app/browser/**/*.mts',
-					'../../app/browser/**/*.ts',
-					'../../app/browser/**/*.tsx',
-				]
-				if (blueprint.app.includes('core')) {
-					include.push(
-						'../../app/core/**/*.cts',
-						'../../app/core/**/*.mts',
-						'../../app/core/**/*.ts',
-						'../../app/core/**/*.tsx',
-					)
-				}
-				include.push(
-					'../../tests/app/browser/**/*.cts',
-					'../../tests/app/browser/**/*.mts',
-					'../../tests/app/browser/**/*.ts',
-					'../../tests/app/browser/**/*.tsx',
-					'../../tests/setup.ts',
-					'../../tests/setupBrowser.ts',
-				)
-				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, {
-					include: include
-						.map(
-							(entry, index) =>
-								`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
-						)
-						.join('\n'),
-				})
-			} else if (path === 'configs/app/vite.server.config.ts') {
-				content = CONFIG_TEMPLATES.vites.app.server
-			} else if (path === 'configs/app/tsconfig.server.json') {
-				const include = [
-					'../../app/server/**/*.cts',
-					'../../app/server/**/*.mts',
-					'../../app/server/**/*.ts',
-					'../../app/server/**/*.tsx',
-				]
-				if (blueprint.app.includes('core')) {
-					include.push(
-						'../../app/core/**/*.cts',
-						'../../app/core/**/*.mts',
-						'../../app/core/**/*.ts',
-						'../../app/core/**/*.tsx',
-					)
-				}
-				include.push(
-					'../../tests/app/server/**/*.cts',
-					'../../tests/app/server/**/*.mts',
-					'../../tests/app/server/**/*.ts',
-					'../../tests/app/server/**/*.tsx',
-					'../../tests/setup.ts',
-					'../../tests/setupServer.ts',
-				)
-				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, {
-					include: include
-						.map(
-							(entry, index) =>
-								`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
-						)
-						.join('\n'),
-				})
-			}
-			artifacts.push({
-				path,
-				group: 'configs',
-				ownership: 'content',
-				origin: 'template',
-				environment,
-				content,
-			})
-		}
-	}
-	for (const extension of blueprintToFaces(blueprint)) {
-		if (extension.surface !== 'browser') continue
-		for (const axis of extension.axes) {
+			}))
+		: []
+	const includeSuffixes = ['cts', 'mts', 'ts', 'tsx']
+	const coreIncludes = blueprint.app.includes('core')
+		? includeSuffixes.map((suffix) => `../../app/core/**/*.${suffix}`)
+		: []
+	const [browserInclude = '', serverInclude = ''] = [
+		[
+			...includeSuffixes.map((suffix) => `../../app/browser/**/*.${suffix}`),
+			...coreIncludes,
+			...includeSuffixes.map((suffix) => `../../tests/app/browser/**/*.${suffix}`),
+			'../../tests/setup.ts',
+			'../../tests/setupBrowser.ts',
+		],
+		[
+			...includeSuffixes.map((suffix) => `../../app/server/**/*.${suffix}`),
+			...coreIncludes,
+			...includeSuffixes.map((suffix) => `../../tests/app/server/**/*.${suffix}`),
+			'../../tests/setup.ts',
+			'../../tests/setupServer.ts',
+		],
+	].map((entries) =>
+		entries
+			.map(
+				(entry, index) => `\t\t${JSON.stringify(entry)}${index === entries.length - 1 ? '' : ','}`,
+			)
+			.join('\n'),
+	)
+	const applications: readonly Artifact[] = blueprint.app.flatMap((environment) =>
+		APP_MATRIX[environment].configs.map((path): Artifact => ({
+			path,
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			environment,
+			content:
+				path === 'configs/app/vite.browser.config.ts'
+					? CONFIG_TEMPLATES.vites.app.browser
+					: path === 'configs/app/tsconfig.browser.json'
+						? fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, { include: browserInclude })
+						: path === 'configs/app/vite.server.config.ts'
+							? CONFIG_TEMPLATES.vites.app.server
+							: path === 'configs/app/tsconfig.server.json'
+								? fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, { include: serverInclude })
+								: CONFIG_TEMPLATES.tsconfigs.app.core,
+		})),
+	)
+	const faces: readonly Artifact[] = blueprintToFaces(blueprint).flatMap((extension) =>
+		extension.axes.flatMap((axis): readonly Artifact[] => {
 			const include = [
 				...['cts', 'mts', 'ts', 'tsx', ...FRAMEWORK_MATRIX[extension.name].suffixes].map(
 					(suffix) => `../../app/${extension.name}/**/*.${suffix}`,
@@ -1602,7 +1741,7 @@ ${paths.join('\n')}
 					}),
 				)
 				.join('\n')
-			artifacts.push(
+			return [
 				{
 					path: `configs/${axis}/vite.${extension.name}.config.ts`,
 					group: 'configs',
@@ -1635,39 +1774,58 @@ ${paths.join('\n')}
 										.join('\n'),
 								}),
 				},
-			)
-		}
-	}
-	if (blueprint.showcase && blueprint.app.includes('browser')) {
-		artifacts.push({
-			path: SHOWCASE_CONFIG_PATH,
-			group: 'configs',
-			ownership: 'content',
-			origin: 'template',
-			environment: 'browser',
-			content: CONFIG_TEMPLATES.vites.app.showcase,
-		})
-	}
-	if (blueprint.journey && blueprint.app.includes('browser')) {
-		artifacts.push({
-			path: JOURNEY_CONFIG_PATH,
-			group: 'configs',
-			ownership: 'birth',
-			origin: 'template',
-			environment: 'browser',
-			content: CONFIG_TEMPLATES.vites.app.journey,
-		})
-	}
-	if (blueprint.skills) {
-		artifacts.push({
-			path: SKILLS_CONFIG_PATH,
-			group: 'configs',
-			ownership: 'content',
-			origin: 'template',
-			content: CONFIG_TEMPLATES.tsconfigs.skills,
-		})
-	}
-	return artifacts
+			]
+		}),
+	)
+	const showcase: readonly Artifact[] =
+		blueprint.showcase && blueprint.app.includes('browser')
+			? [
+					{
+						path: SHOWCASE_CONFIG_PATH,
+						group: 'configs',
+						ownership: 'content',
+						origin: 'template',
+						environment: 'browser',
+						content: CONFIG_TEMPLATES.vites.app.showcase,
+					},
+				]
+			: []
+	const journey: readonly Artifact[] =
+		blueprint.journey && blueprint.app.includes('browser')
+			? [
+					{
+						path: JOURNEY_CONFIG_PATH,
+						group: 'configs',
+						ownership: 'birth',
+						origin: 'template',
+						environment: 'browser',
+						content: CONFIG_TEMPLATES.vites.app.journey,
+					},
+				]
+			: []
+	const skills: readonly Artifact[] = blueprint.skills
+		? [
+				{
+					path: SKILLS_CONFIG_PATH,
+					group: 'configs',
+					ownership: 'content',
+					origin: 'template',
+					content: CONFIG_TEMPLATES.tsconfigs.skills,
+				},
+			]
+		: []
+	return [
+		...roots,
+		...browsers,
+		...sheets,
+		...sources,
+		...bins,
+		...applications,
+		...faces,
+		...showcase,
+		...journey,
+		...skills,
+	]
 }
 
 /**
@@ -1690,87 +1848,91 @@ ${paths.join('\n')}
  * ```
  */
 export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
-	const artifacts: ContentArtifact[] = []
-	if (blueprint.themes && !blueprint.styles) {
-		artifacts.push({
-			path: 'src/styles/_tokens.scss',
-			group: 'source',
-			ownership: 'birth',
-			origin: 'template',
-			content: ARTIFACT_TEMPLATES.source.sheet['_tokens.scss'],
-		})
-	}
-	for (const name of [
+	const tokens: readonly ContentArtifact[] =
+		blueprint.themes && !blueprint.styles
+			? [
+					{
+						path: 'src/styles/_tokens.scss',
+						group: 'source',
+						ownership: 'birth',
+						origin: 'template',
+						content: ARTIFACT_TEMPLATES.source.sheet['_tokens.scss'],
+					},
+				]
+			: []
+	const sheets: readonly ContentArtifact[] = [
 		...blueprintToSheets(blueprint),
 		...(blueprint.themes ? ['styles/themes'] : []),
-	]) {
-		for (const [path, content] of Object.entries(
+	].flatMap((name) =>
+		Object.entries(
 			name === 'styles/themes' ? ARTIFACT_TEMPLATES.source.themes : ARTIFACT_TEMPLATES.source.sheet,
-		)) {
-			artifacts.push({
-				path: `src/${name}/${path}`,
-				group: 'source',
-				ownership: 'birth',
-				origin: 'template',
-				content,
-			})
-		}
-	}
-	for (const environment of blueprint.src) {
-		artifacts.push({
-			path: `src/${environment}/index.ts`,
+		).map(([path, content]): ContentArtifact => ({
+			path: `src/${name}/${path}`,
 			group: 'source',
 			ownership: 'birth',
 			origin: 'template',
-			environment,
-			content: ARTIFACT_TEMPLATES.source.empty,
-		})
-	}
-	for (const environment of blueprint.app) {
-		artifacts.push({
-			path: `app/${environment}/index.ts`,
-			group: 'source',
-			ownership: 'birth',
-			origin: 'template',
-			environment,
-			content: ARTIFACT_TEMPLATES.source.empty,
-		})
-		if (environment === 'browser') {
-			artifacts.push(
-				{
-					path: 'app/browser/main.ts',
-					group: 'source',
-					ownership: 'birth',
-					origin: 'template',
-					environment,
-					content: fillTemplate(ARTIFACT_TEMPLATES.source.main, {
-						heading: `${matchesPrintWidth(`\t.appendChild(document.createElement('h1')).textContent = ${serializeTypeScriptString(blueprint.name)}`) ? ' ' : '\n\t'}${serializeTypeScriptString(blueprint.name)}`,
-					}),
-				},
-				{
-					path: 'app/browser/index.html',
-					group: 'source',
-					ownership: 'birth',
-					origin: 'template',
-					environment,
-					content: ARTIFACT_TEMPLATES.source.browser,
-				},
-			)
-		} else if (environment === 'server') {
-			artifacts.push({
-				path: 'app/server/main.ts',
+			content,
+		})),
+	)
+	const sources: readonly ContentArtifact[] = blueprint.src.map((environment): ContentArtifact => ({
+		path: `src/${environment}/index.ts`,
+		group: 'source',
+		ownership: 'birth',
+		origin: 'template',
+		environment,
+		content: ARTIFACT_TEMPLATES.source.empty,
+	}))
+	const applications: readonly ContentArtifact[] = blueprint.app.flatMap(
+		(environment): readonly ContentArtifact[] => {
+			const entry: ContentArtifact = {
+				path: `app/${environment}/index.ts`,
 				group: 'source',
 				ownership: 'birth',
 				origin: 'template',
 				environment,
 				content: ARTIFACT_TEMPLATES.source.empty,
-			})
-		}
-	}
-	for (const extension of blueprintToFaces(blueprint)) {
-		if (extension.surface !== 'browser') continue
-		for (const axis of extension.axes) {
-			artifacts.push({
+			}
+			if (environment === 'browser') {
+				return [
+					entry,
+					{
+						path: 'app/browser/main.ts',
+						group: 'source',
+						ownership: 'birth',
+						origin: 'template',
+						environment,
+						content: fillTemplate(ARTIFACT_TEMPLATES.source.main, {
+							heading: `${matchesPrintWidth(`\t.appendChild(document.createElement('h1')).textContent = ${serializeTypeScriptString(blueprint.name)}`) ? ' ' : '\n\t'}${serializeTypeScriptString(blueprint.name)}`,
+						}),
+					},
+					{
+						path: 'app/browser/index.html',
+						group: 'source',
+						ownership: 'birth',
+						origin: 'template',
+						environment,
+						content: ARTIFACT_TEMPLATES.source.browser,
+					},
+				]
+			}
+			return environment === 'server'
+				? [
+						entry,
+						{
+							path: 'app/server/main.ts',
+							group: 'source',
+							ownership: 'birth',
+							origin: 'template',
+							environment,
+							content: ARTIFACT_TEMPLATES.source.empty,
+						},
+					]
+				: [entry]
+		},
+	)
+	const faces: readonly ContentArtifact[] = blueprintToFaces(blueprint).flatMap((extension) =>
+		extension.axes.flatMap((axis): readonly ContentArtifact[] => {
+			const barrel: ContentArtifact = {
 				path: `${axis}/${extension.name}/index.ts`,
 				group: 'source',
 				ownership: 'birth',
@@ -1778,42 +1940,48 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 				environment: 'browser',
 				content:
 					axis === 'app' ? ARTIFACT_TEMPLATES.source.empty : ARTIFACT_TEMPLATES.source.barrel,
-			})
-			if (axis !== 'app') continue
-			artifacts.push({
-				path: `app/${extension.name}/index.html`,
-				group: 'source',
-				ownership: 'birth',
-				origin: 'template',
-				environment: 'browser',
-				content: ARTIFACT_TEMPLATES.source.browser,
-			})
-			for (const [path, content] of Object.entries(ARTIFACT_TEMPLATES.source.vue)) {
-				artifacts.push({
-					path: `app/${extension.name}/${path}`,
+			}
+			return axis === 'app'
+				? [
+						barrel,
+						{
+							path: `app/${extension.name}/index.html`,
+							group: 'source',
+							ownership: 'birth',
+							origin: 'template',
+							environment: 'browser',
+							content: ARTIFACT_TEMPLATES.source.browser,
+						},
+						...Object.entries(ARTIFACT_TEMPLATES.source.vue).map(
+							([path, content]): ContentArtifact => ({
+								path: `app/${extension.name}/${path}`,
+								group: 'source',
+								ownership: 'birth',
+								origin: 'template',
+								environment: 'browser',
+								content: fillTemplate(content, {
+									heading: matchesPrintWidth(`\t<h1>${blueprint.name}</h1>`)
+										? blueprint.name
+										: `\n\t\t${blueprint.name}\n\t`,
+								}),
+							}),
+						),
+					]
+				: [barrel]
+		}),
+	)
+	const bin: readonly ContentArtifact[] = blueprint.bin
+		? [
+				{
+					path: BIN_ENTRY_PATH,
 					group: 'source',
 					ownership: 'birth',
 					origin: 'template',
-					environment: 'browser',
-					content: fillTemplate(content, {
-						heading: matchesPrintWidth(`\t<h1>${blueprint.name}</h1>`)
-							? blueprint.name
-							: `\n\t\t${blueprint.name}\n\t`,
-					}),
-				})
-			}
-		}
-	}
-	if (blueprint.bin) {
-		artifacts.push({
-			path: BIN_ENTRY_PATH,
-			group: 'source',
-			ownership: 'birth',
-			origin: 'template',
-			content: ARTIFACT_TEMPLATES.source.empty,
-		})
-	}
-	return artifacts
+					content: ARTIFACT_TEMPLATES.source.empty,
+				},
+			]
+		: []
+	return [...tokens, ...sheets, ...sources, ...applications, ...faces, ...bin]
 }
 
 /**
@@ -1833,7 +2001,8 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * is not: it names an official artifact only the package knows, so a generated
  * placeholder would read as a proof while measuring nothing. `service` emits its
  * readiness setup alone, because the root configuration names that module by
- * path.
+ * path. `studies` emits nothing: the root configuration names no study harness,
+ * so `tests/setupStudy.ts` is the package's own module.
  *
  * The distribution proof is emitted, and the same test separates it from those
  * two: its subject is the packed tarball rather than anything only the package
@@ -1852,55 +2021,44 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * ```
  */
 export function blueprintToTestArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
-	const artifacts: ContentArtifact[] = [
-		{
-			path: 'tests/setup.ts',
+	const sheets = [...blueprintToSheets(blueprint), ...(blueprint.themes ? ['styles/themes'] : [])]
+	const faces: readonly ContentArtifact[] = blueprintToFaces(blueprint).flatMap((extension) =>
+		extension.axes.map((axis): ContentArtifact => ({
+			path: `tests/${axis}/${extension.name}/index.test.ts`,
 			group: 'tests',
 			ownership: 'birth',
 			origin: 'template',
-			content: ARTIFACT_TEMPLATES.tests.setup,
-		},
-	]
-	const sheets = [...blueprintToSheets(blueprint), ...(blueprint.themes ? ['styles/themes'] : [])]
-	for (const extension of blueprintToFaces(blueprint)) {
-		if (extension.surface !== 'browser') continue
-		for (const axis of extension.axes) {
-			artifacts.push({
-				path: `tests/${axis}/${extension.name}/index.test.ts`,
-				group: 'tests',
-				ownership: 'birth',
-				origin: 'template',
-				environment: 'browser',
-				content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
-					specifier: serializeTypeScriptString(`@${axis}/${extension.name}`),
-					label: serializeTypeScriptString(`${axis} ${extension.name} entry`),
-				}),
-			})
-		}
-	}
-	if (sheets.length > 0) {
-		artifacts.push(
-			{
-				path: 'tests/setupStyles.ts',
-				group: 'tests',
-				ownership: 'birth',
-				origin: 'template',
-				content: ARTIFACT_TEMPLATES.tests.styles.module,
-			},
-			{
-				path: 'tests/setupStyles.test.ts',
-				group: 'tests',
-				ownership: 'birth',
-				origin: 'template',
-				content: ARTIFACT_TEMPLATES.tests.styles.proof,
-			},
-		)
-	}
-	for (const name of sheets) {
-		// Oxlint's `import/no-absolute-path` refuses a root-relative specifier, so both imports
-		// climb from `tests/src/<name>/`.
+			environment: 'browser',
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+				specifier: serializeTypeScriptString(`@${axis}/${extension.name}`),
+				label: serializeTypeScriptString(`${axis} ${extension.name} entry`),
+			}),
+		})),
+	)
+	const styles: readonly ContentArtifact[] =
+		sheets.length > 0
+			? [
+					{
+						path: 'tests/setupStyles.ts',
+						group: 'tests',
+						ownership: 'birth',
+						origin: 'template',
+						content: ARTIFACT_TEMPLATES.tests.styles.module,
+					},
+					{
+						path: 'tests/setupStyles.test.ts',
+						group: 'tests',
+						ownership: 'birth',
+						origin: 'template',
+						content: ARTIFACT_TEMPLATES.tests.styles.proof,
+					},
+				]
+			: []
+	// Oxlint's `import/no-absolute-path` refuses a root-relative specifier, so both imports
+	// climb from `tests/src/<name>/`.
+	const sheetTests: readonly ContentArtifact[] = sheets.map((name): ContentArtifact => {
 		const tests = '../'.repeat(name.split('/').length + 1)
-		artifacts.push({
+		return {
 			path: `tests/src/${name}/index.test.ts`,
 			group: 'tests',
 			ownership: 'birth',
@@ -1910,130 +2068,138 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				root: `${tests}../`,
 				setup: `${tests}setupStyles.js`,
 			}),
-		})
-	}
-	if (blueprintToMachinery(blueprint).browser) {
-		artifacts.push({
-			path: 'tests/setupBrowser.ts',
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			environment: 'browser',
-			content: blueprint.journey
-				? ARTIFACT_TEMPLATES.tests.browser
-				: ARTIFACT_TEMPLATES.tests.setup,
-		})
-	}
-	if (
+		}
+	})
+	const browsers: readonly ContentArtifact[] = blueprintToMachinery(blueprint).browser
+		? [
+				{
+					path: 'tests/setupBrowser.ts',
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					environment: 'browser',
+					content: blueprint.journey
+						? ARTIFACT_TEMPLATES.tests.browser
+						: ARTIFACT_TEMPLATES.tests.setup,
+				},
+			]
+		: []
+	const servers: readonly ContentArtifact[] =
 		blueprint.src.includes('server') ||
 		blueprint.app.includes('server') ||
 		blueprint.bin ||
 		blueprint.conformance
-	) {
-		artifacts.push({
-			path: 'tests/setupServer.ts',
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			environment: 'server',
-			content: ARTIFACT_TEMPLATES.tests.setup,
-		})
-	}
+			? [
+					{
+						path: 'tests/setupServer.ts',
+						group: 'tests',
+						ownership: 'birth',
+						origin: 'template',
+						environment: 'server',
+						content: ARTIFACT_TEMPLATES.tests.setup,
+					},
+				]
+			: []
 	// The live-service project names this module in `setupFiles`, so a registered
 	// project whose setup module is absent fails to load at all. The suite beneath
 	// `tests/service` is not emitted beside it: what a live proof drives is the
 	// package's own service, which this package cannot write for it.
-	if (blueprint.service) {
-		artifacts.push({
-			path: SERVICE_SETUP_PATH,
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			content: ARTIFACT_TEMPLATES.tests.setup,
-		})
-	}
-	if (blueprint.global) {
-		artifacts.push({
-			path: GLOBAL_SETUP_PATH,
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			content: ARTIFACT_TEMPLATES.tests.global.module,
-		})
-		artifacts.push({
-			path: 'tests/setupGlobal.test.ts',
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			content: ARTIFACT_TEMPLATES.tests.global.proof,
-		})
-	}
-	if (blueprint.journey && blueprint.app.includes('browser')) {
-		const applications = [
-			'browser',
-			...blueprintToFaces(blueprint).flatMap((extension) =>
-				extension.surface === 'browser' && extension.axes.includes('app') ? [extension.name] : [],
-			),
-		]
-		for (const application of applications) {
-			artifacts.push({
-				path: `tests/app/${application}/integration.test.ts`,
-				group: 'tests',
-				ownership: 'birth',
-				origin: 'template',
-				environment: 'browser',
-				content: fillTemplate(ARTIFACT_TEMPLATES.tests.journey, {
-					application,
-					heading: serializeTypeScriptString(blueprint.name),
-					imports:
-						application === 'vue'
-							? "import { createApp } from 'vue'\nimport App from '../../../app/vue/App.vue'\n"
-							: '',
-					mount:
-						application === 'vue'
-							? "\t\tconst container = document.body.appendChild(document.createElement('main'))\n\t\tconst app = createApp(App)\n"
-							: '',
-					arrival:
-						application === 'vue'
-							? '\t\t\tapp.mount(container)\n'
-							: "\t\t\tawait import('../../../app/browser/main.js')\n",
-					cleanup:
-						application === 'vue'
-							? '\t\t\tapp.unmount()\n\t\t\tcontainer.remove()\n'
-							: "\t\t\tfor (const main of page.getByRole('main').elements()) main.remove()\n",
-				}),
-			})
-		}
-	}
-	for (const environment of blueprint.src) {
-		artifacts.push({
-			path: `tests/src/${environment}/index.test.ts`,
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			environment,
-			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
-				specifier: serializeTypeScriptString(`@src/${environment}`),
-				label: serializeTypeScriptString(`src ${environment} entry`),
-			}),
-		})
-	}
-	if (blueprint.bin) {
-		const specifier = serializeTypeScriptString('../../../src/bin/main.js')
-		const joined = `\t\tconst entry = await import(${specifier})`
-		const statement = matchesPrintWidth(joined)
-			? joined
-			: `\t\tconst entry =\n\t\t\tawait import(${specifier})`
-		artifacts.push({
-			path: 'tests/src/bin/main.test.ts',
-			group: 'tests',
-			ownership: 'birth',
-			origin: 'template',
-			content: fillTemplate(ARTIFACT_TEMPLATES.tests.bin, { import: statement }),
-		})
-	}
-	for (const environment of blueprint.app) {
-		artifacts.push({
+	const services: readonly ContentArtifact[] = blueprint.service
+		? [
+				{
+					path: SERVICE_SETUP_PATH,
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					content: ARTIFACT_TEMPLATES.tests.setup,
+				},
+			]
+		: []
+	const globals: readonly ContentArtifact[] = blueprint.global
+		? [
+				{
+					path: GLOBAL_SETUP_PATH,
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					content: ARTIFACT_TEMPLATES.tests.global.module,
+				},
+				{
+					path: 'tests/setupGlobal.test.ts',
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					content: ARTIFACT_TEMPLATES.tests.global.proof,
+				},
+			]
+		: []
+	const journeys: readonly ContentArtifact[] =
+		blueprint.journey && blueprint.app.includes('browser')
+			? [
+					'browser',
+					...blueprintToFaces(blueprint).flatMap((extension) =>
+						extension.surface === 'browser' && extension.axes.includes('app')
+							? [extension.name]
+							: [],
+					),
+				].map((application): ContentArtifact => ({
+					path: `tests/app/${application}/integration.test.ts`,
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					environment: 'browser',
+					content: fillTemplate(ARTIFACT_TEMPLATES.tests.journey, {
+						application,
+						heading: serializeTypeScriptString(blueprint.name),
+						imports:
+							application === 'vue'
+								? "import { createApp } from 'vue'\nimport App from '../../../app/vue/App.vue'\n"
+								: '',
+						mount:
+							application === 'vue'
+								? "\t\tconst container = document.body.appendChild(document.createElement('main'))\n\t\tconst app = createApp(App)\n"
+								: '',
+						arrival:
+							application === 'vue'
+								? '\t\t\tapp.mount(container)\n'
+								: "\t\t\tawait import('../../../app/browser/main.js')\n",
+						cleanup:
+							application === 'vue'
+								? '\t\t\tapp.unmount()\n\t\t\tcontainer.remove()\n'
+								: "\t\t\tfor (const main of page.getByRole('main').elements()) main.remove()\n",
+					}),
+				}))
+			: []
+	const sources: readonly ContentArtifact[] = blueprint.src.map((environment): ContentArtifact => ({
+		path: `tests/src/${environment}/index.test.ts`,
+		group: 'tests',
+		ownership: 'birth',
+		origin: 'template',
+		environment,
+		content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+			specifier: serializeTypeScriptString(`@src/${environment}`),
+			label: serializeTypeScriptString(`src ${environment} entry`),
+		}),
+	}))
+	const binSpecifier = serializeTypeScriptString('../../../src/bin/main.js')
+	const joinedImport = `\t\tconst entry = await import(${binSpecifier})`
+	const bins: readonly ContentArtifact[] = blueprint.bin
+		? [
+				{
+					path: 'tests/src/bin/main.test.ts',
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					content: fillTemplate(ARTIFACT_TEMPLATES.tests.bin, {
+						import: matchesPrintWidth(joinedImport)
+							? joinedImport
+							: `\t\tconst entry =\n\t\t\tawait import(${binSpecifier})`,
+					}),
+				},
+			]
+		: []
+	const applications: readonly ContentArtifact[] = blueprint.app.map(
+		(environment): ContentArtifact => ({
 			path: `tests/app/${environment}/index.test.ts`,
 			group: 'tests',
 			ownership: 'birth',
@@ -2043,8 +2209,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				specifier: serializeTypeScriptString(`@app/${environment}`),
 				label: serializeTypeScriptString(`app ${environment} entry`),
 			}),
-		})
-	}
+		}),
+	)
 	// The packed artifact is what this proof measures, and that subject is the same
 	// in every publishing workspace: an installed tree, its exports map, and the
 	// declarations beside it. So it is derived rather than named, and a workspace
@@ -2063,61 +2229,87 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// a workspace publishing a browser face later keeps a proof with no branch for it.
 	// The core-only variant therefore carries the guard that reddens on such an entry
 	// rather than skipping it.
-	if (blueprint.src.length > 0 || blueprintToSheets(blueprint).length > 0 || blueprint.themes) {
-		const browser = blueprint.src.includes('browser')
-		const distribution = ARTIFACT_TEMPLATES.tests.distribution
-		artifacts.push({
-			path: DISTRIBUTION_TEST_PATH,
-			group: 'tests',
-			ownership: 'presence',
-			origin: 'template',
-			content: fillTemplate(distribution.proof, {
-				types: browser ? distribution.types : '',
-				transport: browser ? distribution.transport : '',
-				launcher: browser ? distribution.launcher : '',
-				helpers: browser ? distribution.helpers : '',
-				drive: browser ? distribution.drive : '',
-				guard: browser ? '' : distribution.guard,
-			}),
-		})
-	}
-	if (blueprint.integration) {
-		const imports: string[] = []
-		const entries: string[] = []
-		for (const environment of blueprint.src) {
-			const entry =
-				environment === 'core' ? 'srcCore' : environment === 'browser' ? 'srcBrowser' : 'srcServer'
-			imports.push(`import * as ${entry} from '@src/${environment}'`)
-			entries.push(entry)
-		}
-		for (const environment of blueprint.app) {
-			const entry =
-				environment === 'core' ? 'appCore' : environment === 'browser' ? 'appBrowser' : 'appServer'
-			imports.push(`import * as ${entry} from '@app/${environment}'`)
-			entries.push(entry)
-		}
-		const joined = `expect([${entries.map((entry) => `Object.keys(${entry})`).join(', ')}]).toStrictEqual(`
-		const actual = matchesPrintWidth(`\t\t${joined}[`)
-			? joined
-			: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
-		const expectedInline = `[${entries.map(() => '[]').join(', ')}]`
-		const expected =
-			actual !== joined || matchesPrintWidth(`\t\t${joined}${expectedInline})`)
-				? expectedInline
-				: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
-		artifacts.push({
-			path: INTEGRATION_TEST_PATH,
+	const browser = blueprint.src.includes('browser')
+	const distribution = ARTIFACT_TEMPLATES.tests.distribution
+	const distributions: readonly ContentArtifact[] =
+		blueprint.src.length > 0 || blueprintToSheets(blueprint).length > 0 || blueprint.themes
+			? [
+					{
+						path: DISTRIBUTION_TEST_PATH,
+						group: 'tests',
+						ownership: 'presence',
+						origin: 'template',
+						content: fillTemplate(distribution.proof, {
+							types: browser ? distribution.types : '',
+							transport: browser ? distribution.transport : '',
+							launcher: browser ? distribution.launcher : '',
+							helpers: browser ? distribution.helpers : '',
+							drive: browser ? distribution.drive : '',
+							guard: browser ? '' : distribution.guard,
+						}),
+					},
+				]
+			: []
+	const modules = [
+		...blueprint.src.map((environment) => ({
+			entry:
+				environment === 'core' ? 'srcCore' : environment === 'browser' ? 'srcBrowser' : 'srcServer',
+			specifier: `@src/${environment}`,
+		})),
+		...blueprint.app.map((environment) => ({
+			entry:
+				environment === 'core' ? 'appCore' : environment === 'browser' ? 'appBrowser' : 'appServer',
+			specifier: `@app/${environment}`,
+		})),
+	]
+	const entries = modules.map(({ entry }) => entry)
+	const imports = modules.map(({ entry, specifier }) => `import * as ${entry} from '${specifier}'`)
+	const joined = `expect([${entries.map((entry) => `Object.keys(${entry})`).join(', ')}]).toStrictEqual(`
+	const actual = matchesPrintWidth(`\t\t${joined}[`)
+		? joined
+		: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
+	const expectedInline = `[${entries.map(() => '[]').join(', ')}]`
+	const expected =
+		actual !== joined || matchesPrintWidth(`\t\t${joined}${expectedInline})`)
+			? expectedInline
+			: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
+	const integrations: readonly ContentArtifact[] = blueprint.integration
+		? [
+				{
+					path: INTEGRATION_TEST_PATH,
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					content: fillTemplate(ARTIFACT_TEMPLATES.tests.integration, {
+						imports: `${imports.join('\n')}\n`,
+						actual,
+						expected,
+					}),
+				},
+			]
+		: []
+	return [
+		{
+			path: 'tests/setup.ts',
 			group: 'tests',
 			ownership: 'birth',
 			origin: 'template',
-			content: fillTemplate(ARTIFACT_TEMPLATES.tests.integration, {
-				imports: `${imports.join('\n')}\n`,
-				actual,
-				expected,
-			}),
-		})
-	}
-	return artifacts
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		},
+		...faces,
+		...styles,
+		...sheetTests,
+		...browsers,
+		...servers,
+		...services,
+		...globals,
+		...journeys,
+		...sources,
+		...bins,
+		...applications,
+		...distributions,
+		...integrations,
+	]
 }
 
 /**
@@ -2136,43 +2328,36 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
  * ```
  */
 export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
-	const source: string[] = []
-	const tests: string[] = []
-	const directories: string[] = []
 	const guide = `guides/${blueprint.name}.md`
-	for (const environment of [
-		...blueprint.src,
-		...blueprintToFaces(blueprint)
-			.filter((extension) => extension.axes.includes('src'))
-			.map((extension) => extension.name),
-		...blueprintToSheets(blueprint),
-		...(blueprint.themes ? ['styles/themes'] : []),
-	]) {
-		source.push(`    - [\`src/${environment}\`](../src/${environment})`)
-		tests.push(`    - [\`tests/src/${environment}\`](../tests/src/${environment})`)
-		directories.push(
-			`- [\`src/${environment}\`](../src/${environment})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/${environment}\`](../tests/src/${environment})`,
-		)
-	}
-	if (blueprint.bin) {
-		source.push('    - [`src/bin`](../src/bin)')
-		tests.push('    - [`tests/src/bin`](../tests/src/bin)')
-		directories.push(
-			`- [\`src/bin\`](../src/bin)\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/bin\`](../tests/src/bin)`,
-		)
-	}
-	for (const environment of [
-		...blueprint.app,
-		...blueprintToFaces(blueprint)
-			.filter((extension) => extension.axes.includes('app'))
-			.map((extension) => extension.name),
-	]) {
-		source.push(`    - [\`app/${environment}\`](../app/${environment})`)
-		tests.push(`    - [\`tests/app/${environment}\`](../tests/app/${environment})`)
-		directories.push(
-			`- [\`app/${environment}\`](../app/${environment})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/app/${environment}\`](../tests/app/${environment})`,
-		)
-	}
+	const rows = [
+		...[
+			...blueprint.src,
+			...blueprintToFaces(blueprint)
+				.filter((extension) => extension.axes.includes('src'))
+				.map((extension) => extension.name),
+			...blueprintToSheets(blueprint),
+			...(blueprint.themes ? ['styles/themes'] : []),
+		].map((environment) => ({
+			directory: `src/${environment}`,
+			test: `tests/src/${environment}`,
+		})),
+		...(blueprint.bin ? [{ directory: 'src/bin', test: 'tests/src/bin' }] : []),
+		...[
+			...blueprint.app,
+			...blueprintToFaces(blueprint)
+				.filter((extension) => extension.axes.includes('app'))
+				.map((extension) => extension.name),
+		].map((environment) => ({
+			directory: `app/${environment}`,
+			test: `tests/app/${environment}`,
+		})),
+	]
+	const source = rows.map(({ directory }) => `    - [\`${directory}\`](../${directory})`)
+	const tests = rows.map(({ test }) => `    - [\`${test}\`](../${test})`)
+	const directories = rows.map(
+		({ directory, test }) =>
+			`- [\`${directory}\`](../${directory})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`${test}\`](../${test})`,
+	)
 	return [
 		{
 			path: 'guides/README.md',
@@ -2451,151 +2636,75 @@ export function replaceManifestRanges(
 	pins: DependencyPinSet,
 ): string | undefined {
 	if (pins.runtime.length === 0 && pins.development.length === 0) return manifest
+	const tokens = scanManifestTokens(manifest)
+	if (tokens === undefined) return undefined
 	const sectionNames = new Set(['dependencies', 'devDependencies'])
-	const sections: Array<{ name: string; start: number; end: number }> = []
-	let depth = 0
-	let cursor = 0
-	while (cursor < manifest.length) {
-		const character = manifest.charAt(cursor)
-		if (character === '{') {
-			depth += 1
-			cursor += 1
-			continue
+	// A section is the object a top-level `dependencies` or `devDependencies` key holds.
+	const sections = tokens.flatMap((token, at) => {
+		if (token.depth !== 1 || token.value === undefined) return []
+		if (manifest.charAt(token.value) !== '{') return []
+		const key: unknown = parseJSON(token.text)
+		if (!isString(key) || !sectionNames.has(key)) return []
+		const close = tokens.slice(at + 1).find((next) => next.text === '}' && next.depth === 1)
+		return close === undefined ? [] : [{ name: key, start: token.value, end: close.index + 1 }]
+	})
+	// Each section reads its own entries in text order. A step that replaces a value consumes the
+	// literal after its key, so that literal is never read as a key of its own: the log's last
+	// edit names it. A value with no literal after it refuses the whole write.
+	const readings = sections.map((bounds) => {
+		const replacements = new Map(
+			(bounds.name === 'dependencies' ? pins.runtime : pins.development).map(({ name, range }) => [
+				name,
+				range,
+			]),
+		)
+		return {
+			name: bounds.name,
+			log: tokens.reduce<
+				ReadonlyArray<{ readonly name: string; readonly edit: ManifestEdit }> | undefined
+			>((log, token, at) => {
+				if (log === undefined) return undefined
+				if (token.index < bounds.start || token.index >= bounds.end) return log
+				if (log.at(-1)?.edit.start === token.index) return log
+				if (token.depth !== 2 || token.value === undefined) return log
+				const key: unknown = parseJSON(token.text)
+				if (!isString(key) || manifest.charAt(token.value) !== '"') return log
+				const replacement = replacements.get(key)
+				if (replacement === undefined) return log
+				const literal = tokens[at + 1]
+				if (literal === undefined) return undefined
+				return [
+					...log,
+					{
+						name: key,
+						edit: {
+							start: literal.index,
+							end: literal.index + literal.text.length,
+							text: JSON.stringify(replacement),
+						},
+					},
+				]
+			}, []),
 		}
-		if (character === '}') {
-			depth -= 1
-			cursor += 1
-			continue
-		}
-		if (character !== '"') {
-			cursor += 1
-			continue
-		}
-		const start = cursor
-		cursor += 1
-		while (cursor < manifest.length) {
-			if (manifest.charAt(cursor) === '\\') {
-				cursor += 2
-				continue
-			}
-			if (manifest.charAt(cursor) === '"') break
-			cursor += 1
-		}
-		if (cursor >= manifest.length) return undefined
-		const end = cursor + 1
-		if (depth === 1) {
-			const key: unknown = parseJSON(manifest.slice(start, end))
-			let value = end
-			while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
-			if (manifest.charAt(value) === ':') {
-				value += 1
-				while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
-				if (isString(key) && sectionNames.has(key) && manifest.charAt(value) === '{') {
-					let sectionDepth = 0
-					let sectionCursor = value
-					while (sectionCursor < manifest.length) {
-						const sectionCharacter = manifest.charAt(sectionCursor)
-						if (sectionCharacter === '"') {
-							sectionCursor += 1
-							while (sectionCursor < manifest.length) {
-								if (manifest.charAt(sectionCursor) === '\\') {
-									sectionCursor += 2
-									continue
-								}
-								if (manifest.charAt(sectionCursor) === '"') break
-								sectionCursor += 1
-							}
-							if (sectionCursor >= manifest.length) return undefined
-						} else if (sectionCharacter === '{') sectionDepth += 1
-						else if (sectionCharacter === '}') {
-							sectionDepth -= 1
-							if (sectionDepth === 0) {
-								sections.push({ name: key, start: value, end: sectionCursor + 1 })
-								break
-							}
-						}
-						sectionCursor += 1
-					}
-				}
-			}
-		}
-		cursor = end
-	}
-	const runtime = new Set<string>()
-	const development = new Set<string>()
-	let compiled = manifest
-	for (const bounds of sections.reverse()) {
-		const dependencies = bounds.name === 'dependencies' ? pins.runtime : pins.development
-		const replacements = new Map(dependencies.map(({ name, range }) => [name, range]))
-		const declared = bounds.name === 'dependencies' ? runtime : development
-		let section = compiled.slice(bounds.start, bounds.end)
-		let sectionDepth = 0
-		let sectionCursor = 0
-		while (sectionCursor < section.length) {
-			const character = section.charAt(sectionCursor)
-			if (character === '{') {
-				sectionDepth += 1
-				sectionCursor += 1
-				continue
-			}
-			if (character === '}') {
-				sectionDepth -= 1
-				sectionCursor += 1
-				continue
-			}
-			if (character !== '"') {
-				sectionCursor += 1
-				continue
-			}
-			const keyStart = sectionCursor
-			sectionCursor += 1
-			while (sectionCursor < section.length) {
-				if (section.charAt(sectionCursor) === '\\') {
-					sectionCursor += 2
-					continue
-				}
-				if (section.charAt(sectionCursor) === '"') break
-				sectionCursor += 1
-			}
-			if (sectionCursor >= section.length) return undefined
-			const keyEnd = sectionCursor + 1
-			const key: unknown = parseJSON(section.slice(keyStart, keyEnd))
-			let valueStart = keyEnd
-			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
-			if (sectionDepth !== 1 || section.charAt(valueStart) !== ':') {
-				sectionCursor = keyEnd
-				continue
-			}
-			valueStart += 1
-			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
-			if (!isString(key) || section.charAt(valueStart) !== '"') {
-				sectionCursor = keyEnd
-				continue
-			}
-			const replacement = replacements.get(key)
-			if (replacement === undefined) {
-				sectionCursor = keyEnd
-				continue
-			}
-			let valueEnd = valueStart + 1
-			while (valueEnd < section.length) {
-				if (section.charAt(valueEnd) === '\\') {
-					valueEnd += 2
-					continue
-				}
-				if (section.charAt(valueEnd) === '"') break
-				valueEnd += 1
-			}
-			if (valueEnd >= section.length) return undefined
-			const range = JSON.stringify(replacement)
-			section = section.slice(0, valueStart) + range + section.slice(valueEnd + 1)
-			declared.add(key)
-			sectionCursor = valueStart + range.length
-		}
-		compiled = compiled.slice(0, bounds.start) + section + compiled.slice(bounds.end)
-	}
-	const declaredRuntime = pins.runtime.every(({ name }) => runtime.has(name))
-	const declaredDevelopment = pins.development.every(({ name }) => development.has(name))
+	})
+	const settled = readings.flatMap(({ name, log }) => (log === undefined ? [] : [{ name, log }]))
+	if (settled.length < readings.length) return undefined
+	const compiled = settled
+		.flatMap(({ log }) => log.map(({ edit }) => edit))
+		.sort((left, right) => right.start - left.start)
+		.reduce((text, edit) => text.slice(0, edit.start) + edit.text + text.slice(edit.end), manifest)
+	const declaredRuntime = pins.runtime.every(({ name }) =>
+		settled.some(
+			(section) =>
+				section.name === 'dependencies' && section.log.some((entry) => entry.name === name),
+		),
+	)
+	const declaredDevelopment = pins.development.every(({ name }) =>
+		settled.some(
+			(section) =>
+				section.name === 'devDependencies' && section.log.some((entry) => entry.name === name),
+		),
+	)
 	return declaredRuntime && declaredDevelopment ? compiled : undefined
 }
 
@@ -2640,161 +2749,178 @@ export function insertManifestDependencies(
 	if (requested.length === 0) return manifest
 	const parsed = parseJSON(manifest)
 	if (!isRecord(parsed)) return undefined
-	const declared = new Set<string>()
-	for (const section of ['dependencies', 'devDependencies']) {
-		const entries = parsed[section]
-		if (isRecord(entries)) for (const name of Object.keys(entries)) declared.add(name)
-	}
+	const declared = new Set(
+		['dependencies', 'devDependencies'].flatMap((section) => {
+			const entries = parsed[section]
+			return isRecord(entries) ? Object.keys(entries) : []
+		}),
+	)
 	const names = new Set(requested.map(({ name }) => name))
 	if (names.size !== requested.length || [...names].some((name) => declared.has(name))) {
 		return undefined
 	}
-	let compiled = manifest
-	const sections = [
+	const sections: ReadonlyArray<{
+		readonly name: 'dependencies' | 'devDependencies'
+		readonly dependencies: readonly Dependency[]
+	}> = [
 		{ name: 'dependencies', dependencies: additions.runtime },
 		{ name: 'devDependencies', dependencies: additions.development },
 	]
-	for (const section of sections) {
-		if (section.dependencies.length === 0) continue
-		const entries = parsed[section.name]
-		if (entries !== undefined && (!isRecord(entries) || !Object.values(entries).every(isString))) {
-			return undefined
-		}
-		const ordered = [...section.dependencies].sort((left, right) =>
-			compareValues(left.name, right.name),
+	const refused = sections.some(({ name, dependencies }) => {
+		const entries = parsed[name]
+		return (
+			dependencies.length > 0 &&
+			entries !== undefined &&
+			(!isRecord(entries) || !Object.values(entries).every(isString))
 		)
-		const lines = ordered.map(
-			({ name, range }) => `${JSON.stringify(name)}: ${JSON.stringify(range)}`,
-		)
-		// Locate the braces of the section and of its sibling, the first top-level key,
-		// and the manifest object's closing brace. Depth counts objects alone, exactly
-		// as the range writer counts them, so a key nested inside another value never
-		// reads as a top-level one.
-		const sibling = section.name === 'dependencies' ? 'devDependencies' : 'dependencies'
-		const located = new Map<string, { start: number; open: number; close: number }>()
-		let current: { name: string; start: number; open: number } | undefined
-		let head = -1
-		let root = -1
-		let depth = 0
-		let cursor = 0
-		while (cursor < compiled.length && root < 0) {
-			const character = compiled.charAt(cursor)
-			if (character === '"') {
-				const start = cursor
-				let quote = cursor + 1
-				while (quote < compiled.length && compiled.charAt(quote) !== '"') {
-					quote += compiled.charAt(quote) === '\\' ? 2 : 1
-				}
-				if (quote >= compiled.length) return undefined
-				let colon = quote + 1
-				while (/\s/u.test(compiled.charAt(colon))) colon += 1
-				cursor = quote + 1
-				if (depth !== 1 || compiled.charAt(colon) !== ':') continue
-				if (head < 0) head = start
-				const name: unknown = parseJSON(compiled.slice(start, quote + 1))
-				if (!isString(name) || (name !== section.name && name !== sibling)) continue
-				if (located.has(name)) continue
-				let brace = colon + 1
-				while (/\s/u.test(compiled.charAt(brace))) brace += 1
-				if (compiled.charAt(brace) !== '{') {
-					if (name === section.name) return undefined
-					continue
-				}
-				current = { name, start, open: brace }
-				depth += 1
-				cursor = brace + 1
-				continue
-			}
-			if (character === '{') depth += 1
-			else if (character === '}') {
-				depth -= 1
-				if (depth === 1 && current !== undefined) {
-					located.set(current.name, { ...current, close: cursor })
-					current = undefined
-				}
-				if (depth === 0) root = cursor
-			}
-			cursor += 1
-		}
-		const bounds = located.get(section.name)
-		if (bounds === undefined) {
-			if (entries !== undefined || root < 0) return undefined
-			// An absent section becomes one top-level key: `devDependencies` after
-			// `dependencies` and `dependencies` before `devDependencies`, otherwise last.
-			// It copies the indentation of the manifest's first key, and lands on the
-			// same line when that key shares a line with the opening brace.
-			const breaking = head < 0 ? -1 : compiled.lastIndexOf('\n', head)
-			const margin = breaking < 0 ? '' : compiled.slice(breaking + 1, head)
-			const gap = breaking < 0 || /\S/u.test(margin) ? '' : `\n${margin}`
-			const block = `${JSON.stringify(section.name)}: {${lines.map((line) => `${gap === '' ? '' : `${gap}${margin}`}${line}`).join(',')}${gap}}`
-			const neighbor = located.get(sibling)
-			let tail = root - 1
-			while (tail > 0 && /\s/u.test(compiled.charAt(tail))) tail -= 1
-			const [position, insertion] =
-				neighbor === undefined
-					? [tail + 1, compiled.charAt(tail) === '{' ? block : `,${gap}${block}`]
-					: section.name === 'devDependencies'
-						? [neighbor.close + 1, `,${gap}${block}`]
-						: [neighbor.start, `${block},${gap}`]
-			compiled = compiled.slice(0, position) + insertion + compiled.slice(position)
-			continue
-		}
-		const { open, close } = bounds
-		// Every value is a string, so the section's strings alternate key and value and
-		// each entry runs from its key's opening quote to its value's closing quote.
-		const declarations: Array<{ name: string; start: number; end: number }> = []
-		let key: { name: string; start: number } | undefined
-		let scan = open + 1
-		while (scan < close) {
-			if (compiled.charAt(scan) !== '"') {
-				scan += 1
-				continue
-			}
-			let quote = scan + 1
-			while (quote < close && compiled.charAt(quote) !== '"') {
-				quote += compiled.charAt(quote) === '\\' ? 2 : 1
-			}
-			if (quote >= close) return undefined
-			if (key === undefined) {
-				const name: unknown = parseJSON(compiled.slice(scan, quote + 1))
-				if (!isString(name)) return undefined
-				key = { name, start: scan }
-			} else {
-				declarations.push({ ...key, end: quote + 1 })
-				key = undefined
-			}
-			scan = quote + 1
-		}
-		const first = declarations[0]
-		const last = declarations.at(-1)
-		const edits = new Map<number, string>()
-		if (first === undefined || last === undefined) {
-			const opening = compiled.lastIndexOf('\n', open)
-			let column = opening + 1
-			while (column < open && /\s/u.test(compiled.charAt(column))) column += 1
-			const level = opening < 0 ? '' : compiled.slice(opening + 1, column)
-			const separator = opening < 0 ? '' : `\n${level}${level}`
-			const ending = opening < 0 ? '' : `\n${level}`
-			compiled = `${compiled.slice(0, open + 1)}${lines.map((line) => `${separator}${line}`).join(',')}${ending}${compiled.slice(close)}`
-			continue
-		}
-		const newline = compiled.lastIndexOf('\n', first.start)
-		const indent = newline < 0 ? '' : compiled.slice(newline + 1, first.start)
-		const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
-		for (const [index, dependency] of ordered.entries()) {
-			const line = lines[index] ?? ''
-			const anchor = declarations.find(
-				(declaration) => compareValues(declaration.name, dependency.name) > 0,
-			)
-			const position = anchor?.start ?? last.end
-			const text = anchor === undefined ? `,${separator}${line}` : `${line},${separator}`
-			edits.set(position, `${edits.get(position) ?? ''}${text}`)
-		}
-		for (const [position, text] of [...edits].sort(([left], [right]) => right - left)) {
-			compiled = compiled.slice(0, position) + text + compiled.slice(position)
-		}
+	})
+	if (refused) return undefined
+	return sections.reduce<string | undefined>(
+		(compiled, section) =>
+			compiled === undefined || section.dependencies.length === 0
+				? compiled
+				: insertManifestSection(
+						compiled,
+						section.name,
+						section.dependencies,
+						parsed[section.name] !== undefined,
+					),
+		manifest,
+	)
+}
+
+/**
+ * Inserts dependencies into one section of package manifest text.
+ *
+ * @param manifest - The manifest text to compile, already known to be a JSON object.
+ * @param section - The section the additions enter: `dependencies` or `devDependencies`.
+ * @param dependencies - The names and ranges to declare; the section declares none of them.
+ * @param present - If `true`, the manifest declares the section as an object; if `false`, it declares none.
+ * @returns The manifest declaring every addition in the section, or `undefined` when the section
+ * cannot be located as an object the text declares.
+ *
+ * @remarks
+ * The one step {@link insertManifestDependencies} repeats per section. Each addition lands before
+ * the first declared key that sorts after it, or after the last declared key when none does, and
+ * copies the indentation of the section's first entry. An empty section takes its entries one
+ * level inside the indentation of its opening line, and an absent section is created as one
+ * top-level key beside its sibling, or last in the manifest object when the sibling is absent too.
+ *
+ * @example
+ * ```ts
+ * import { insertManifestSection } from '@orkestrel/scaffold'
+ *
+ * insertManifestSection('{"dependencies":{}}', 'dependencies', [{ name: 'vite', range: '^8' }], true)
+ * // '{"dependencies":{"vite": "^8"}}'
+ * ```
+ */
+export function insertManifestSection(
+	manifest: string,
+	section: 'dependencies' | 'devDependencies',
+	dependencies: readonly Dependency[],
+	present: boolean,
+): string | undefined {
+	const tokens = scanManifestTokens(manifest)
+	if (tokens === undefined) return undefined
+	const ordered = [...dependencies].sort((left, right) => compareValues(left.name, right.name))
+	const lines = ordered.map(
+		({ name, range }) => `${JSON.stringify(name)}: ${JSON.stringify(range)}`,
+	)
+	// Locate the braces of the section and of its sibling, the first top-level key,
+	// and the manifest object's closing brace. Depth counts objects alone, exactly
+	// as the range writer counts them, so a key nested inside another value never
+	// reads as a top-level one.
+	const sibling = section === 'dependencies' ? 'devDependencies' : 'dependencies'
+	const occurrences = tokens.flatMap((token, at) => {
+		if (token.depth !== 1 || token.value === undefined) return []
+		const key: unknown = parseJSON(token.text)
+		if (!isString(key) || (key !== section && key !== sibling)) return []
+		const object = manifest.charAt(token.value) === '{'
+		const close = object
+			? tokens.slice(at + 1).find((next) => next.text === '}' && next.depth === 1)
+			: undefined
+		return [{ key, start: token.index, open: token.value, object, close: close?.index }]
+	})
+	// The first occurrence of `section` that is not an unclosed object decides it: a value that is
+	// no object refuses the write, and a closed object locates it. The sibling is located by its
+	// first closed object, and any other value of it is passed over.
+	const decisive = occurrences.find(
+		({ key, object, close }) => key === section && (!object || close !== undefined),
+	)
+	if (decisive !== undefined && !decisive.object) return undefined
+	const closed = occurrences.flatMap(({ key, start, open, close }) =>
+		close === undefined ? [] : [{ key, start, open, close }],
+	)
+	const bounds = closed.find(({ key }) => key === section)
+	const neighbor = closed.find(({ key }) => key === sibling)
+	const head = tokens.find((token) => token.depth === 1 && token.value !== undefined)?.index
+	const root = tokens.find((token) => token.text === '}' && token.depth === 0)?.index
+	if (bounds === undefined) {
+		if (present || root === undefined) return undefined
+		// An absent section becomes one top-level key: `devDependencies` after
+		// `dependencies` and `dependencies` before `devDependencies`, otherwise last.
+		// It copies the indentation of the manifest's first key, and lands on the
+		// same line when that key shares a line with the opening brace.
+		const breaking = head === undefined ? -1 : manifest.lastIndexOf('\n', head)
+		const margin = breaking < 0 ? '' : manifest.slice(breaking + 1, head)
+		const gap = breaking < 0 || /\S/u.test(margin) ? '' : `\n${margin}`
+		const block = `${JSON.stringify(section)}: {${lines.map((line) => `${gap === '' ? '' : `${gap}${margin}`}${line}`).join(',')}${gap}}`
+		const tail = manifest.slice(1, root).trimEnd().length
+		const [position, insertion] =
+			neighbor === undefined
+				? [tail + 1, manifest.charAt(tail) === '{' ? block : `,${gap}${block}`]
+				: section === 'devDependencies'
+					? [neighbor.close + 1, `,${gap}${block}`]
+					: [neighbor.start, `${block},${gap}`]
+		return manifest.slice(0, position) + insertion + manifest.slice(position)
 	}
-	return compiled
+	const { open, close } = bounds
+	// Every value is a string, so the section's strings alternate key and value and
+	// each entry runs from its key's opening quote to its value's closing quote.
+	const literals = tokens.filter(
+		(token) => token.index > open && token.index < close && token.text.startsWith('"'),
+	)
+	const keys = literals.filter((_, index) => index % 2 === 0)
+	if (keys.some((literal) => !isString(parseJSON(literal.text)))) return undefined
+	const declarations = keys.flatMap((literal, position) => {
+		const name: unknown = parseJSON(literal.text)
+		const value = literals[position * 2 + 1]
+		return isString(name) && value !== undefined
+			? [{ name, start: literal.index, end: value.index + value.text.length }]
+			: []
+	})
+	const first = declarations[0]
+	const last = declarations.at(-1)
+	if (first === undefined || last === undefined) {
+		const opening = manifest.lastIndexOf('\n', open)
+		const level = opening < 0 ? '' : (/^\s*/u.exec(manifest.slice(opening + 1, open))?.[0] ?? '')
+		const separator = opening < 0 ? '' : `\n${level}${level}`
+		const ending = opening < 0 ? '' : `\n${level}`
+		return `${manifest.slice(0, open + 1)}${lines.map((line) => `${separator}${line}`).join(',')}${ending}${manifest.slice(close)}`
+	}
+	const newline = manifest.lastIndexOf('\n', first.start)
+	const indent = newline < 0 ? '' : manifest.slice(newline + 1, first.start)
+	const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
+	const placements = ordered.map((dependency, index) => {
+		const line = lines[index] ?? ''
+		const anchor = declarations.find(
+			(declaration) => compareValues(declaration.name, dependency.name) > 0,
+		)
+		return {
+			position: anchor?.start ?? last.end,
+			text: anchor === undefined ? `,${separator}${line}` : `${line},${separator}`,
+		}
+	})
+	return [...Map.groupBy(placements, ({ position }) => position)]
+		.map(([position, group]): [number, string] => [
+			position,
+			group.map(({ text }) => text).join(''),
+		])
+		.sort(([left], [right]) => right - left)
+		.reduce(
+			(text, [position, insertion]) => text.slice(0, position) + insertion + text.slice(position),
+			manifest,
+		)
 }
 
 /**
@@ -2844,207 +2970,135 @@ export function replaceManifestScripts(
 	const declared = parsed.scripts
 	// A non-string planned key makes the region structurally unsafe to edit, so
 	// rule on that shape before locating any byte range.
-	for (const script of scripts) {
-		if (!Object.hasOwn(declared, script.name)) continue
-		const value: unknown = declared[script.name]
-		if (!isString(value)) return undefined
+	if (
+		scripts.some(
+			(script) => Object.hasOwn(declared, script.name) && !isString(declared[script.name]),
+		)
+	) {
+		return undefined
 	}
+	const tokens = scanManifestTokens(manifest)
+	if (tokens === undefined) return undefined
 	// Locate the top-level scripts object. Depth counts objects alone, exactly as
 	// the range writer counts them, so a key nested inside another object never
 	// reads as a top-level one.
-	let depth = 0
-	let cursor = 0
-	let start = -1
-	let end = -1
-	while (cursor < manifest.length && end < 0) {
-		const character = manifest.charAt(cursor)
-		if (character === '{') {
-			depth += 1
-			cursor += 1
-			continue
-		}
-		if (character === '}') {
-			depth -= 1
-			cursor += 1
-			continue
-		}
-		if (character !== '"') {
-			cursor += 1
-			continue
-		}
-		const keyStart = cursor
-		cursor += 1
-		while (cursor < manifest.length) {
-			if (manifest.charAt(cursor) === '\\') {
-				cursor += 2
-				continue
-			}
-			if (manifest.charAt(cursor) === '"') break
-			cursor += 1
-		}
-		if (cursor >= manifest.length) return undefined
-		const keyEnd = cursor + 1
-		cursor = keyEnd
-		if (depth !== 1) continue
-		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
-		if (key !== 'scripts') continue
-		let opening = keyEnd
-		while (opening < manifest.length && /\s/u.test(manifest.charAt(opening))) opening += 1
-		if (manifest.charAt(opening) !== ':') continue
-		opening += 1
-		while (opening < manifest.length && /\s/u.test(manifest.charAt(opening))) opening += 1
-		if (manifest.charAt(opening) !== '{') continue
-		start = opening
-		let nested = 0
-		let scan = opening
-		while (scan < manifest.length) {
-			const inner = manifest.charAt(scan)
-			if (inner === '"') {
-				scan += 1
-				while (scan < manifest.length) {
-					if (manifest.charAt(scan) === '\\') {
-						scan += 2
-						continue
-					}
-					if (manifest.charAt(scan) === '"') break
-					scan += 1
-				}
-				if (scan >= manifest.length) return undefined
-			} else if (inner === '{') nested += 1
-			else if (inner === '}') {
-				nested -= 1
-				if (nested === 0) {
-					end = scan + 1
-					break
-				}
-			}
-			scan += 1
-		}
-	}
-	if (start < 0 || end < 0) return undefined
+	const position = tokens.findIndex(
+		(token, at) =>
+			token.depth === 1 &&
+			token.value !== undefined &&
+			parseJSON(token.text) === 'scripts' &&
+			manifest.charAt(token.value) === '{' &&
+			tokens.slice(at + 1).some((next) => next.text === '}' && next.depth === 1),
+	)
+	const region = tokens[position]
+	const close = tokens.slice(position + 1).find((token) => token.text === '}' && token.depth === 1)
+	if (region?.value === undefined || close === undefined) return undefined
+	const start = region.value
+	const end = close.index + 1
 	// Read the section's own entries for their byte ranges, and remember where the
 	// first key sits: that column is the indentation an appended script copies.
 	// Each string-valued entry also records where it ends, because that offset is
-	// the anchor an appended sibling of the same key family inserts after.
-	const edits: Array<{ start: number; end: number; text: string }> = []
-	const written = new Set<string>()
-	const anchors: Array<{ name: string; end: number }> = []
-	let first = -1
-	let nested = 0
-	let scan = start
-	while (scan < end) {
-		const character = manifest.charAt(scan)
-		if (character === '{') {
-			nested += 1
-			scan += 1
-			continue
+	// the anchor an appended sibling of the same key family inserts after. An entry
+	// whose value is a string consumes the literal after its key, so that literal is
+	// never read as a key of its own: the log's last entry names it. A string value
+	// with no literal after it refuses the write.
+	const entries = tokens.reduce<
+		| ReadonlyArray<{
+				readonly token: ManifestToken
+				readonly value: number
+				readonly literal: ManifestToken | undefined
+		  }>
+		| undefined
+	>((log, token, at) => {
+		if (log === undefined) return undefined
+		if (token.index < start || token.index >= end) return log
+		if (log.at(-1)?.literal?.index === token.index) return log
+		if (token.depth !== 2 || token.value === undefined) return log
+		if (manifest.charAt(token.value) !== '"') {
+			return [...log, { token, value: token.value, literal: undefined }]
 		}
-		if (character === '}') {
-			nested -= 1
-			scan += 1
-			continue
-		}
-		if (character !== '"') {
-			scan += 1
-			continue
-		}
-		const keyStart = scan
-		scan += 1
-		while (scan < end) {
-			if (manifest.charAt(scan) === '\\') {
-				scan += 2
-				continue
-			}
-			if (manifest.charAt(scan) === '"') break
-			scan += 1
-		}
-		if (scan >= end) return undefined
-		const keyEnd = scan + 1
-		scan = keyEnd
-		if (nested !== 1) continue
-		let valueStart = keyEnd
-		while (valueStart < end && /\s/u.test(manifest.charAt(valueStart))) valueStart += 1
-		if (manifest.charAt(valueStart) !== ':') continue
-		valueStart += 1
-		while (valueStart < end && /\s/u.test(manifest.charAt(valueStart))) valueStart += 1
-		if (first < 0) first = keyStart
-		if (manifest.charAt(valueStart) !== '"') continue
-		let valueEnd = valueStart + 1
-		while (valueEnd < end) {
-			if (manifest.charAt(valueEnd) === '\\') {
-				valueEnd += 2
-				continue
-			}
-			if (manifest.charAt(valueEnd) === '"') break
-			valueEnd += 1
-		}
-		if (valueEnd >= end) return undefined
-		scan = valueEnd + 1
-		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
-		if (isString(key)) anchors.push({ name: key, end: valueEnd + 1 })
-		const script = scripts.find((entry) => entry.name === key)
-		if (script === undefined) continue
-		written.add(script.name)
-		const value: unknown = declared[script.name]
-		if (value === script.command || !isString(value) || !script.accepted.includes(value)) continue
-		edits.push({ start: valueStart, end: valueEnd + 1, text: JSON.stringify(script.command) })
-	}
+		const literal = tokens[at + 1]
+		return literal === undefined ? undefined : [...log, { token, value: token.value, literal }]
+	}, [])
+	if (entries === undefined) return undefined
+	const first = entries[0]?.token.index
+	const keyed = entries.flatMap(({ token, value, literal }) =>
+		literal === undefined
+			? []
+			: [{ key: parseJSON(token.text), value, stop: literal.index + literal.text.length }],
+	)
+	const anchors = keyed.flatMap(({ key, stop }) =>
+		isString(key) ? [{ name: key, end: stop }] : [],
+	)
+	const matched = keyed.flatMap((entry) => {
+		const script = scripts.find((candidate) => candidate.name === entry.key)
+		return script === undefined ? [] : [{ script, value: entry.value, stop: entry.stop }]
+	})
+	const written = new Set(matched.map(({ script }) => script.name))
+	const replaced = matched.flatMap(({ script, value, stop }): readonly ManifestEdit[] => {
+		const current: unknown = declared[script.name]
+		return current === script.command || !isString(current) || !script.accepted.includes(current)
+			? []
+			: [{ start: value, end: stop, text: JSON.stringify(script.command) }]
+	})
 	const missing = scripts.filter((script) => !written.has(script.name))
-	if (missing.length > 0) {
-		if (first < 0) {
-			// An empty region declares every named script absent, and an absent script is
-			// always writable, so the region takes them as its first entries rather than
-			// refusing the write. No sibling entry exists to copy a column from, so the
-			// indentation comes from the region's own opening line: `scripts` is a
-			// top-level key, so that line's leading whitespace is one level and an entry
-			// inside the region sits at two. A manifest carrying no line break before the
-			// region is written on one line, which is what the append path does with a
-			// one-line region it finds already populated.
-			const opening = manifest.lastIndexOf('\n', start)
-			let column = opening + 1
-			while (column < start && /\s/u.test(manifest.charAt(column))) column += 1
-			const level = opening < 0 ? '' : manifest.slice(opening + 1, column)
-			const separator = opening < 0 ? '' : `\n${level}${level}`
-			const closing = opening < 0 ? '' : `\n${level}`
-			const entries = missing.map(
-				(script) => `${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
-			)
-			edits.push({ start: start + 1, end: end - 1, text: `${entries.join(',')}${closing}` })
-		} else {
-			// A qualified name joins the family its prefix names, landing after that
-			// family's last declared member so a reader finds it among its siblings
-			// rather than behind the lifecycle scripts that close the section. An
-			// unqualified name has no family, and a family the section never declares
-			// has no member to follow, so each takes the section's own end.
-			let tail = end - 1
-			while (tail > start && /\s/u.test(manifest.charAt(tail - 1))) tail -= 1
-			const newline = manifest.lastIndexOf('\n', first)
-			const indent = newline < 0 ? '' : manifest.slice(newline + 1, first)
-			const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
-			const placed = new Map<number, string[]>()
-			for (const script of missing) {
-				const colon = script.name.indexOf(':')
-				const family = colon < 0 ? undefined : script.name.slice(0, colon + 1)
-				const sibling =
-					family === undefined
-						? undefined
-						: anchors.findLast((entry) => entry.name.startsWith(family))
-				const anchor = sibling?.end ?? tail
-				const text = `,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`
-				const queued = placed.get(anchor)
-				if (queued === undefined) placed.set(anchor, [text])
-				else queued.push(text)
-			}
-			for (const [anchor, queued] of placed) {
-				edits.push({ start: anchor, end: anchor, text: queued.join('') })
-			}
+	// An empty region declares every named script absent, and an absent script is
+	// always writable, so the region takes them as its first entries rather than
+	// refusing the write. No sibling entry exists to copy a column from, so the
+	// indentation comes from the region's own opening line: `scripts` is a
+	// top-level key, so that line's leading whitespace is one level and an entry
+	// inside the region sits at two. A manifest carrying no line break before the
+	// region is written on one line, which is what the append path does with a
+	// one-line region it finds already populated.
+	const opening = manifest.lastIndexOf('\n', start)
+	const level = opening < 0 ? '' : (/^\s*/u.exec(manifest.slice(opening + 1, start))?.[0] ?? '')
+	const emptySeparator = opening < 0 ? '' : `\n${level}${level}`
+	const emptyClosing = opening < 0 ? '' : `\n${level}`
+	// A qualified name joins the family its prefix names, landing after that
+	// family's last declared member so a reader finds it among its siblings
+	// rather than behind the lifecycle scripts that close the section. An
+	// unqualified name has no family, and a family the section never declares
+	// has no member to follow, so each takes the section's own end.
+	const tail = start + manifest.slice(start, end - 1).trimEnd().length
+	const newline = first === undefined ? -1 : manifest.lastIndexOf('\n', first)
+	const indent = first === undefined || newline < 0 ? '' : manifest.slice(newline + 1, first)
+	const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
+	const placements = missing.map((script) => {
+		const colon = script.name.indexOf(':')
+		const family = colon < 0 ? undefined : script.name.slice(0, colon + 1)
+		const sibling =
+			family === undefined ? undefined : anchors.findLast((entry) => entry.name.startsWith(family))
+		return {
+			anchor: sibling?.end ?? tail,
+			text: `,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
 		}
-	}
-	let compiled = manifest
-	for (const edit of edits.sort((left, right) => right.start - left.start)) {
-		compiled = compiled.slice(0, edit.start) + edit.text + compiled.slice(edit.end)
-	}
-	return compiled
+	})
+	const appended: readonly ManifestEdit[] =
+		missing.length === 0
+			? []
+			: first === undefined
+				? [
+						{
+							start: start + 1,
+							end: end - 1,
+							text: `${missing
+								.map(
+									(script) =>
+										`${emptySeparator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
+								)
+								.join(',')}${emptyClosing}`,
+						},
+					]
+				: [...Map.groupBy(placements, ({ anchor }) => anchor)].map(
+						([anchor, group]): ManifestEdit => ({
+							start: anchor,
+							end: anchor,
+							text: group.map(({ text }) => text).join(''),
+						}),
+					)
+	return [...replaced, ...appended]
+		.sort((left, right) => right.start - left.start)
+		.reduce((text, edit) => text.slice(0, edit.start) + edit.text + text.slice(edit.end), manifest)
 }
 
 /**
@@ -3069,19 +3123,26 @@ export function replaceManifestScripts(
  * ```
  */
 export function replacePlanRanges(plan: Plan, pins: DependencyPinSet): Plan | undefined {
-	let replaced = false
-	let refused = false
-	const artifacts = plan.artifacts.map((artifact): Artifact => {
-		if (artifact.path !== 'package.json' || artifact.origin === 'host') return artifact
-		const content = replaceManifestRanges(artifact.content, pins)
-		if (content === undefined) {
-			refused = true
-			return artifact
-		}
-		replaced = true
-		return { ...artifact, content }
-	})
-	if (!replaced || refused) return undefined
+	const outcomes = plan.artifacts.map(
+		(
+			artifact,
+		): { readonly artifact: Artifact; readonly manifest: boolean; readonly refused: boolean } => {
+			if (artifact.path !== 'package.json' || artifact.origin === 'host') {
+				return { artifact, manifest: false, refused: false }
+			}
+			const content = replaceManifestRanges(artifact.content, pins)
+			return content === undefined
+				? { artifact, manifest: true, refused: true }
+				: { artifact: { ...artifact, content }, manifest: true, refused: false }
+		},
+	)
+	if (
+		!outcomes.some((outcome) => outcome.manifest) ||
+		outcomes.some((outcome) => outcome.refused)
+	) {
+		return undefined
+	}
+	const artifacts = outcomes.map((outcome) => outcome.artifact)
 	const compiled: Plan = { ...plan, artifacts }
 	const hash = planToHash(compiled)
 	return hash === undefined ? undefined : { ...compiled, hash }
@@ -3154,19 +3215,15 @@ export function planToHash(plan: Plan): string | undefined {
  * ```
  */
 export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
-	const findings: Finding[] = []
-	const planned = new Set<string>()
-	for (const artifact of plan.artifacts) {
-		planned.add(artifact.path)
-		findings.push(artifactToFinding(artifact, current[artifact.path]))
-	}
-	for (const [path, observed] of Object.entries(current)) {
-		if (planned.has(path)) continue
-		const group = inferGroup(path)
-		if (!plan.groups.includes(group)) continue
-		findings.push({ path, group, drift: 'foreign', observed })
-	}
-	return findings
+	const planned = new Set(plan.artifacts.map((artifact) => artifact.path))
+	return [
+		...plan.artifacts.map((artifact) => artifactToFinding(artifact, current[artifact.path])),
+		...Object.entries(current).flatMap(([path, observed]): readonly Finding[] => {
+			if (planned.has(path)) return []
+			const group = inferGroup(path)
+			return plan.groups.includes(group) ? [{ path, group, drift: 'foreign', observed }] : []
+		}),
+	]
 }
 
 /**
@@ -3209,32 +3266,34 @@ export function dependenciesToQuestions(
 	name: RegExp,
 	range: RegExp,
 ): readonly Question[] {
-	const questions: Question[] = []
-	const seen = new Set<string>()
-	for (const dependency of dependencies) {
-		if (!name.test(dependency.name)) {
-			questions.push({
-				field,
-				message: `${dependency.name} is not a package name ${field} accepts.`,
-				blocking: true,
-			})
-		} else if (seen.has(dependency.name)) {
-			questions.push({
-				field,
-				message: `${dependency.name} is declared more than once on ${field}.`,
-				blocking: true,
-			})
-		}
-		seen.add(dependency.name)
-		if (!range.test(dependency.range)) {
-			questions.push({
-				field,
-				message: `${dependency.name} declares the range ${dependency.range}, which ${field} does not accept.`,
-				blocking: true,
-			})
-		}
-	}
-	return questions
+	return dependencies.flatMap((dependency, index): readonly Question[] => [
+		...(!name.test(dependency.name)
+			? [
+					{
+						field,
+						message: `${dependency.name} is not a package name ${field} accepts.`,
+						blocking: true,
+					},
+				]
+			: dependencies.findIndex((other) => other.name === dependency.name) < index
+				? [
+						{
+							field,
+							message: `${dependency.name} is declared more than once on ${field}.`,
+							blocking: true,
+						},
+					]
+				: []),
+		...(!range.test(dependency.range)
+			? [
+					{
+						field,
+						message: `${dependency.name} declares the range ${dependency.range}, which ${field} does not accept.`,
+						blocking: true,
+					},
+				]
+			: []),
+	])
 }
 
 /**
@@ -3283,146 +3342,188 @@ export function dependenciesToQuestions(
  * ```
  */
 export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
-	const questions: Question[] = []
-	if (!NAME_PATTERN.test(blueprint.name)) {
-		questions.push({
-			field: 'name',
-			message: `${blueprint.name} is not a lowercase alphanumeric name starting with a letter.`,
-			blocking: true,
-		})
-	}
-	if (!VERSION_PATTERN.test(blueprint.version)) {
-		questions.push({
-			field: 'version',
-			message: `${blueprint.version} is not an exact three-component version.`,
-			blocking: true,
-		})
-	}
-	if (!matchesEngines(blueprint.engines)) {
-		questions.push({
-			field: 'engines',
-			message: `${blueprint.engines} is not a supported minimum-Node floor.`,
-			blocking: true,
-		})
-	}
-	if (
-		blueprint.src.length === 0 &&
+	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
+		['dependencies', blueprint.dependencies],
+		['peers', blueprint.peers],
+		['extras', blueprint.extras],
+	]
+	// The field that first declared a name, in the order the lists are measured: the pairs are
+	// reversed so the first declaration is the one a `Map` keeps.
+	const firstField = new Map(
+		lists
+			.flatMap(([field, list]) =>
+				list.map((dependency): readonly [string, string] => [dependency.name, field]),
+			)
+			.reverse(),
+	)
+	const own = `@orkestrel/${blueprint.name}`
+	return [
+		...(!NAME_PATTERN.test(blueprint.name)
+			? [
+					{
+						field: 'name',
+						message: `${blueprint.name} is not a lowercase alphanumeric name starting with a letter.`,
+						blocking: true,
+					},
+				]
+			: []),
+		...(!VERSION_PATTERN.test(blueprint.version)
+			? [
+					{
+						field: 'version',
+						message: `${blueprint.version} is not an exact three-component version.`,
+						blocking: true,
+					},
+				]
+			: []),
+		...(!matchesEngines(blueprint.engines)
+			? [
+					{
+						field: 'engines',
+						message: `${blueprint.engines} is not a supported minimum-Node floor.`,
+						blocking: true,
+					},
+				]
+			: []),
+		...(blueprint.src.length === 0 &&
 		blueprint.app.length === 0 &&
 		blueprintToSheets(blueprint).length === 0 &&
 		!blueprint.themes
-	) {
-		questions.push({
-			field: 'src',
-			message: 'A workspace declares at least one environment on src or app.',
-			blocking: true,
-			candidates: ENVIRONMENTS,
-		})
-	}
-	if (blueprint.src.length > 1 && !blueprint.src.includes('core')) {
-		questions.push({
-			field: 'src',
-			message:
-				'Several published environments put core at the package root, so this manifest names a core build the workspace never runs. Declare core on src, or publish one environment.',
-			blocking: false,
-			candidates: ENVIRONMENTS,
-		})
-	}
-	for (const environment of ENVIRONMENTS) {
-		if (blueprint.src.filter((declared) => declared === environment).length > 1) {
-			questions.push({
-				field: 'src',
-				message: `src declares ${environment} more than once.`,
-				blocking: true,
-				candidates: ENVIRONMENTS,
-			})
-		}
-		if (blueprint.app.filter((declared) => declared === environment).length > 1) {
-			questions.push({
-				field: 'app',
-				message: `app declares ${environment} more than once.`,
-				blocking: true,
-				candidates: ENVIRONMENTS,
-			})
-		}
-	}
-	const extensions = new Set<string>()
-	for (const extension of blueprint.extensions) {
-		const selection = `${extension.surface}:${extension.name}`
-		if (extensions.has(selection)) {
-			questions.push({
-				field: 'extensions',
-				message: `${selection} is declared more than once on extensions.`,
-				blocking: true,
-			})
-		}
-		extensions.add(selection)
-		if (extension.surface === 'browser') {
-			if (extension.axes.length === 0) {
-				questions.push({
-					field: 'extensions',
-					message: `${selection} occupies no axis.`,
-					blocking: false,
-				})
-			}
-			for (const axis of extension.axes) {
-				if (!blueprint[axis].includes('browser')) {
-					questions.push({
-						field: 'extensions',
-						message: `${selection} occupies ${axis}, whose selection lacks browser.`,
+			? [
+					{
+						field: 'src',
+						message: 'A workspace declares at least one environment on src or app.',
+						blocking: true,
+						candidates: ENVIRONMENTS,
+					},
+				]
+			: []),
+		...(blueprint.src.length > 1 && !blueprint.src.includes('core')
+			? [
+					{
+						field: 'src',
+						message:
+							'Several published environments put core at the package root, so this manifest names a core build the workspace never runs. Declare core on src, or publish one environment.',
 						blocking: false,
-					})
-				}
-			}
-		} else if (!blueprint.styles) {
-			questions.push({
-				field: 'extensions',
-				message: `${selection} extends a styles surface this workspace does not declare.`,
-				blocking: false,
-			})
-		}
-	}
-	if (blueprint.integration && blueprint.src.length + blueprint.app.length < 2) {
-		questions.push({
-			field: 'integration',
-			message:
-				'integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.',
-			blocking: false,
-		})
-	}
-	const vendors = new Set<string>()
-	for (const vendor of blueprint.vendors) {
-		if (!NAME_PATTERN.test(vendor)) {
-			questions.push({
-				field: 'vendors',
-				message: `${vendor} is not a lowercase alphanumeric vendor name starting with a letter.`,
-				blocking: true,
-			})
-		} else if (vendors.has(vendor)) {
-			questions.push({
-				field: 'vendors',
-				message: `${vendor} is declared more than once on vendors.`,
-				blocking: true,
-			})
-		}
-		vendors.add(vendor)
-	}
-	if (blueprint.showcase && !blueprint.app.includes('browser')) {
-		questions.push({
-			field: 'showcase',
-			message:
-				'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
-			blocking: false,
-		})
-	}
-	if (blueprint.journey && !blueprint.app.includes('browser')) {
-		questions.push({
-			field: 'journey',
-			message:
-				'journey projects a browser app, and this workspace declares none, so it emits nothing.',
-			blocking: false,
-		})
-	}
-	questions.push(
+						candidates: ENVIRONMENTS,
+					},
+				]
+			: []),
+		...ENVIRONMENTS.flatMap((environment) => [
+			...(blueprint.src.filter((declared) => declared === environment).length > 1
+				? [
+						{
+							field: 'src',
+							message: `src declares ${environment} more than once.`,
+							blocking: true,
+							candidates: ENVIRONMENTS,
+						},
+					]
+				: []),
+			...(blueprint.app.filter((declared) => declared === environment).length > 1
+				? [
+						{
+							field: 'app',
+							message: `app declares ${environment} more than once.`,
+							blocking: true,
+							candidates: ENVIRONMENTS,
+						},
+					]
+				: []),
+		]),
+		...blueprint.extensions.flatMap((extension, index): readonly Question[] => {
+			const selection = `${extension.surface}:${extension.name}`
+			return [
+				...(blueprint.extensions.findIndex(
+					(other) => `${other.surface}:${other.name}` === selection,
+				) < index
+					? [
+							{
+								field: 'extensions',
+								message: `${selection} is declared more than once on extensions.`,
+								blocking: true,
+							},
+						]
+					: []),
+				...(extension.surface === 'browser'
+					? [
+							...(extension.axes.length === 0
+								? [
+										{
+											field: 'extensions',
+											message: `${selection} occupies no axis.`,
+											blocking: false,
+										},
+									]
+								: []),
+							...extension.axes
+								.filter((axis) => !blueprint[axis].includes('browser'))
+								.map((axis) => ({
+									field: 'extensions',
+									message: `${selection} occupies ${axis}, whose selection lacks browser.`,
+									blocking: false,
+								})),
+						]
+					: !blueprint.styles
+						? [
+								{
+									field: 'extensions',
+									message: `${selection} extends a styles surface this workspace does not declare.`,
+									blocking: false,
+								},
+							]
+						: []),
+			]
+		}),
+		...(blueprint.integration && blueprint.src.length + blueprint.app.length < 2
+			? [
+					{
+						field: 'integration',
+						message:
+							'integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.',
+						blocking: false,
+					},
+				]
+			: []),
+		...blueprint.vendors.flatMap((vendor, index): readonly Question[] =>
+			!NAME_PATTERN.test(vendor)
+				? [
+						{
+							field: 'vendors',
+							message: `${vendor} is not a lowercase alphanumeric vendor name starting with a letter.`,
+							blocking: true,
+						},
+					]
+				: blueprint.vendors.indexOf(vendor) < index
+					? [
+							{
+								field: 'vendors',
+								message: `${vendor} is declared more than once on vendors.`,
+								blocking: true,
+							},
+						]
+					: [],
+		),
+		...(blueprint.showcase && !blueprint.app.includes('browser')
+			? [
+					{
+						field: 'showcase',
+						message:
+							'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
+						blocking: false,
+					},
+				]
+			: []),
+		...(blueprint.journey && !blueprint.app.includes('browser')
+			? [
+					{
+						field: 'journey',
+						message:
+							'journey projects a browser app, and this workspace declares none, so it emits nothing.',
+						blocking: false,
+					},
+				]
+			: []),
 		...dependenciesToQuestions(
 			blueprint.dependencies,
 			'dependencies',
@@ -3447,44 +3548,39 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			FOREIGN_NAME_PATTERN,
 			EXTRA_RANGE_PATTERN,
 		),
-	)
-	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
-		['dependencies', blueprint.dependencies],
-		['peers', blueprint.peers],
-		['extras', blueprint.extras],
-	]
-	const declared = new Map<string, string>()
-	const own = `@orkestrel/${blueprint.name}`
-	for (const [field, list] of lists) {
-		for (const dependency of list) {
-			if (dependency.name === own || dependency.name === blueprint.name) {
-				questions.push({
-					field,
-					message: `${dependency.name} is the workspace itself.`,
-					blocking: true,
-				})
-			}
-			const first = declared.get(dependency.name)
-			if (first === undefined) declared.set(dependency.name, field)
-			else if (first !== field) {
-				questions.push({
-					field,
-					message: `${dependency.name} is declared on both ${first} and ${field}.`,
-					blocking: true,
-				})
-			}
-		}
-	}
-	for (const extra of blueprint.extras) {
-		if (Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name)) {
-			questions.push({
+		...lists.flatMap(([field, list]) =>
+			list.flatMap((dependency): readonly Question[] => {
+				const first = firstField.get(dependency.name)
+				return [
+					...(dependency.name === own || dependency.name === blueprint.name
+						? [
+								{
+									field,
+									message: `${dependency.name} is the workspace itself.`,
+									blocking: true,
+								},
+							]
+						: []),
+					...(first !== undefined && first !== field
+						? [
+								{
+									field,
+									message: `${dependency.name} is declared on both ${first} and ${field}.`,
+									blocking: true,
+								},
+							]
+						: []),
+				]
+			}),
+		),
+		...blueprint.extras
+			.filter((extra) => Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name))
+			.map((extra) => ({
 				field: 'extras',
 				message: `${extra.name} is pinned by the shared toolchain, which every workspace carries at one version.`,
 				blocking: true,
-			})
-		}
-	}
-	return questions
+			})),
+	]
 }
 
 /**
@@ -3514,48 +3610,57 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
  * ```
  */
 export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Question[] {
-	const questions: Question[] = []
-	const claimed = new Set<string>()
-	let total = 0
-	for (const artifact of artifacts) {
-		if (claimed.has(artifact.path)) {
-			questions.push({
-				field: 'artifacts',
-				message: `Two artifacts claim ${artifact.path}.`,
-				blocking: true,
-			})
-		}
-		claimed.add(artifact.path)
-		const bytes =
-			artifact.origin === 'host'
-				? artifact.hex === undefined
-					? 0
-					: artifact.hex.length / 2
-				: computeBytes(artifact.content)
-		if (bytes > MAX_ARTIFACT_BYTES) {
-			questions.push({
-				field: 'artifacts',
-				message: `${artifact.path} carries ${bytes} bytes, above the ${MAX_ARTIFACT_BYTES} one artifact admits.`,
-				blocking: true,
-			})
-		}
-		total += bytes
-	}
-	if (artifacts.length > MAX_COLLECTION_ITEMS) {
-		questions.push({
-			field: 'artifacts',
-			message: `A plan of ${artifacts.length} artifacts is above the ${MAX_COLLECTION_ITEMS} one collection admits.`,
-			blocking: true,
-		})
-	}
-	if (total > MAX_TOTAL_ARTIFACT_BYTES) {
-		questions.push({
-			field: 'artifacts',
-			message: `A plan of ${total} bytes is above the ${MAX_TOTAL_ARTIFACT_BYTES} one plan retains.`,
-			blocking: true,
-		})
-	}
-	return questions
+	const sizes = artifacts.map((artifact) =>
+		artifact.origin === 'host'
+			? artifact.hex === undefined
+				? 0
+				: artifact.hex.length / 2
+			: computeBytes(artifact.content),
+	)
+	const total = computeTotal(sizes)
+	return [
+		...artifacts.flatMap((artifact, index): readonly Question[] => {
+			const bytes = sizes[index] ?? 0
+			return [
+				...(artifacts.findIndex((other) => other.path === artifact.path) < index
+					? [
+							{
+								field: 'artifacts',
+								message: `Two artifacts claim ${artifact.path}.`,
+								blocking: true,
+							},
+						]
+					: []),
+				...(bytes > MAX_ARTIFACT_BYTES
+					? [
+							{
+								field: 'artifacts',
+								message: `${artifact.path} carries ${bytes} bytes, above the ${MAX_ARTIFACT_BYTES} one artifact admits.`,
+								blocking: true,
+							},
+						]
+					: []),
+			]
+		}),
+		...(artifacts.length > MAX_COLLECTION_ITEMS
+			? [
+					{
+						field: 'artifacts',
+						message: `A plan of ${artifacts.length} artifacts is above the ${MAX_COLLECTION_ITEMS} one collection admits.`,
+						blocking: true,
+					},
+				]
+			: []),
+		...(total > MAX_TOTAL_ARTIFACT_BYTES
+			? [
+					{
+						field: 'artifacts',
+						message: `A plan of ${total} bytes is above the ${MAX_TOTAL_ARTIFACT_BYTES} one plan retains.`,
+						blocking: true,
+					},
+				]
+			: []),
+	]
 }
 
 /**
@@ -3587,45 +3692,48 @@ export function overridesToQuestions(
 	overrides: readonly Override[],
 	artifacts: readonly Artifact[],
 ): readonly Question[] {
-	const questions: Question[] = []
-	const planned = new Map<string, Artifact>()
-	for (const artifact of artifacts) {
-		if (!planned.has(artifact.path)) planned.set(artifact.path, artifact)
-	}
-	const seen = new Set<string>()
-	for (const override of overrides) {
-		if (seen.has(override.path)) {
-			questions.push({
-				field: 'overrides',
-				message: `${override.path} is overridden more than once.`,
-				blocking: true,
-			})
-		}
-		seen.add(override.path)
+	// The first artifact planned at a path is the one an override addresses, so the pairs are
+	// reversed for a `Map` to keep it.
+	const planned = new Map(
+		artifacts.map((artifact): readonly [string, Artifact] => [artifact.path, artifact]).reverse(),
+	)
+	return overrides.flatMap((override, index): readonly Question[] => {
 		const artifact = planned.get(override.path)
-		if (artifact === undefined) {
-			questions.push({
-				field: 'overrides',
-				message: `${override.path} is not a path this plan carries.`,
-				blocking: true,
-			})
-			continue
-		}
-		if (artifact.origin === 'host') {
-			questions.push({
-				field: 'overrides',
-				message: `${override.path} is byte-copied from the vendored data root.`,
-				blocking: true,
-			})
-			continue
-		}
-		if (artifact.group === 'manifest') {
-			questions.push({
-				field: 'overrides',
-				message: `${override.path} is the manifest, which the blueprint's own fields decide.`,
-				blocking: true,
-			})
-		}
-	}
-	return questions
+		return [
+			...(overrides.findIndex((other) => other.path === override.path) < index
+				? [
+						{
+							field: 'overrides',
+							message: `${override.path} is overridden more than once.`,
+							blocking: true,
+						},
+					]
+				: []),
+			...(artifact === undefined
+				? [
+						{
+							field: 'overrides',
+							message: `${override.path} is not a path this plan carries.`,
+							blocking: true,
+						},
+					]
+				: artifact.origin === 'host'
+					? [
+							{
+								field: 'overrides',
+								message: `${override.path} is byte-copied from the vendored data root.`,
+								blocking: true,
+							},
+						]
+					: artifact.group === 'manifest'
+						? [
+								{
+									field: 'overrides',
+									message: `${override.path} is the manifest, which the blueprint's own fields decide.`,
+									blocking: true,
+								},
+							]
+						: []),
+		]
+	})
 }
