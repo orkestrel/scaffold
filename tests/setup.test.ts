@@ -36,6 +36,7 @@ import {
 	countEmitters,
 	createClosableList,
 	createObservedList,
+	createServedList,
 	DEPENDENCY_TABLES,
 	DIFFERING_HEX,
 	DOCUMENTED_OPTIONS,
@@ -254,6 +255,61 @@ describe('the inert value builders', () => {
 		expect(Iterator.from(serving.list).toArray()).toStrictEqual(['a'])
 		expect(() => Iterator.from(serving.list)).toThrow(RangeError)
 		expect(serving.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'iter'])
+	})
+
+	it('serves the entries a case names, not the entries the list holds', () => {
+		const longer = createServedList([1], [7, 8, 9])
+		const shorter = createServedList([1, 2, 3], [9])
+		const reordered = createServedList(['a', 'b'], ['b', 'a'])
+
+		expect(Array.from(longer.list)).toStrictEqual([7, 8, 9])
+		expect(Array.from(shorter.list)).toStrictEqual([9])
+		expect(Array.from(reordered.list)).toStrictEqual(['b', 'a'])
+		// The list itself still holds the base entries, so an index read separates a reader that
+		// followed the iterator from one that followed the length.
+		expect(longer.list).toHaveLength(1)
+		expect(longer.list[0]).toBe(1)
+		expect(shorter.list).toHaveLength(3)
+		expect(shorter.list.map((entry) => entry)).toStrictEqual([1, 2, 3])
+	})
+
+	it('logs each iterator, step and close in order, one step beyond the entries served', () => {
+		const served = createServedList([1], [7, 8])
+		const before = served.calls
+
+		expect(Array.from(served.list)).toStrictEqual([7, 8])
+		expect(before).toStrictEqual([])
+		expect(served.calls).toStrictEqual(['iter', 'next', 'next', 'next'])
+		// The log copies on every access, so an earlier answer never changes.
+		expect(before).toStrictEqual([])
+		const stopped = createServedList<number>([], [7, 8])
+		expect(Iterator.from(stopped.list).some((entry) => entry === 7)).toBe(true)
+		expect(stopped.calls).toStrictEqual(['iter', 'next', 'return'])
+		const empty = createServedList([1, 2], [])
+		expect(Array.from(empty.list)).toStrictEqual([])
+		expect(empty.calls).toStrictEqual(['iter', 'next'])
+	})
+
+	it('records the close of a reader that stops early or throws, and not one that ends', () => {
+		const thrown = createServedList<number>([], [7, 8])
+		const ended = createServedList<number>([], [7])
+
+		expect(() =>
+			Iterator.from(thrown.list).forEach(() => {
+				throw new EvalError('body')
+			}),
+		).toThrow(EvalError)
+		expect(thrown.calls).toStrictEqual(['iter', 'next', 'return'])
+		expect(Iterator.from(ended.list).toArray()).toStrictEqual([7])
+		expect(ended.calls).toStrictEqual(['iter', 'next', 'next'])
+	})
+
+	it('resumes a second pass where the first stopped, over the one cursor it serves', () => {
+		const served = createServedList<number>([], [7, 8, 9])
+
+		expect(Iterator.from(served.list).some((entry) => entry === 7)).toBe(true)
+		expect(Array.from(served.list)).toStrictEqual([8, 9])
+		expect(served.calls).toStrictEqual(['iter', 'next', 'return', 'iter', 'next', 'next', 'next'])
 	})
 
 	it('revokes the object a producer makes, anew for each call', () => {

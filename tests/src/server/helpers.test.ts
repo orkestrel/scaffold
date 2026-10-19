@@ -87,6 +87,7 @@ import {
 	buildPlan,
 	buildSparse,
 	createClosableList,
+	createServedList,
 	readLazily,
 	refuseObject,
 	refuseText,
@@ -3663,34 +3664,9 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	const missing = (): HostFile => ({ path: 'scripts/codex.sh', lookup: 'missing', note: 'none' })
 	const declaration = (destination: string) =>
 		requireValue(manifest.entries.find((one) => one.destination === destination))
-	const serve = <T>(base: readonly T[], served: readonly T[]) => {
-		const recorder = createRecorder<readonly [string]>()
-		const cursor = served.values()
-		const list = Object.defineProperty([...base], Symbol.iterator, {
-			value: () => {
-				recorder.handler('iter')
-				return {
-					next: () => {
-						recorder.handler('next')
-						return cursor.next()
-					},
-					return: () => {
-						recorder.handler('return')
-						return { done: true, value: undefined }
-					},
-				}
-			},
-		})
-		return {
-			list,
-			get calls() {
-				return recorder.calls.map(([call]) => call)
-			},
-		}
-	}
 
 	it('holds the later row of an iterator that yields more rows than the list is long', () => {
-		const rows = serve<HostFile>([], [live('first\n'), live('second\n')])
+		const rows = createServedList<HostFile>([], [live('first\n'), live('second\n')])
 		const assembled = filesToHost(rows.list, floor)
 
 		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('second\n'))
@@ -3701,14 +3677,17 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	})
 
 	it('reaches the refusal of an iterator that yields it beyond the list length and closes once', () => {
-		const rows = serve<HostFile>([], [live('first\n'), live('second\n'), missing()])
+		const rows = createServedList<HostFile>([], [live('first\n'), live('second\n'), missing()])
 
 		expect(filesToHost(rows.list, floor)).toBeUndefined()
 		expect(rows.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'return'])
 	})
 
 	it('holds the row of an iterator that yields fewer rows than the list is long', () => {
-		const rows = serve<HostFile>([live('one\n'), live('two\n'), live('three\n')], [live('only\n')])
+		const rows = createServedList<HostFile>(
+			[live('one\n'), live('two\n'), live('three\n')],
+			[live('only\n')],
+		)
 		const assembled = filesToHost(rows.list, floor)
 
 		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('only\n'))
@@ -3716,7 +3695,7 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	})
 
 	it('holds the row an iterator yields last when it yields the rows in another order', () => {
-		const rows = serve<HostFile>(
+		const rows = createServedList<HostFile>(
 			[live('first\n'), live('second\n')],
 			[live('second\n'), live('first\n')],
 		)
@@ -3732,7 +3711,7 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 			declaration('.claude/agents/orkestrel.md'),
 			declaration('.claude/rules/names.md'),
 		]
-		const entries = serve([declaration('AGENTS.md')], served)
+		const entries = createServedList([declaration('AGENTS.md')], served)
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },
 			bytes: floor.bytes,
@@ -3746,7 +3725,10 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	})
 
 	it('reaches the entry with no bytes an iterator yields beyond the list length and closes once', () => {
-		const entries = serve([], [declaration('AGENTS.md'), declaration('scripts/codex.sh')])
+		const entries = createServedList(
+			[],
+			[declaration('AGENTS.md'), declaration('scripts/codex.sh')],
+		)
 
 		expect(
 			filesToHost([], { manifest: { ...manifest, entries: entries.list }, bytes: floor.bytes }),
@@ -3755,7 +3737,7 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	})
 
 	it('digests the entry an iterator yields when it yields fewer entries than the list is long', () => {
-		const entries = serve(manifest.entries, [declaration('guides/guide.md')])
+		const entries = createServedList(manifest.entries, [declaration('guides/guide.md')])
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },
 			bytes: floor.bytes,
@@ -3769,7 +3751,7 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 
 	it('digests the entries in the order an iterator yields them when it yields another order', () => {
 		const forward = manifest.entries.slice(0, 3)
-		const entries = serve(forward, [...forward].reverse())
+		const entries = createServedList(forward, [...forward].reverse())
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },
 			bytes: floor.bytes,

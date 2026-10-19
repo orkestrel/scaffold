@@ -13,7 +13,7 @@ import {
 	ScaffoldError,
 } from '@src/core'
 import { MAX_INVENTORY_PATHS } from '@src/server'
-import { captureError, createRecorder, requireValue } from '@orkestrel/test'
+import { captureError, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 
 import {
@@ -76,6 +76,7 @@ import {
 	buildMissingCase,
 	buildSparse,
 	createClosableList,
+	createServedList,
 	DOCUMENTED_OPTIONS,
 	readLazily,
 	refuseObject,
@@ -1648,34 +1649,9 @@ describe('dependenciesToFloors reads the entries the iterator of its list yields
 	const vite = { name: 'vite', range: '~8.2.0' }
 	const typescript = { name: 'typescript', range: '^5.9.0' }
 	const floorless = { name: 'vite', range: '^8' }
-	const serve = <T>(base: readonly T[], served: readonly T[]) => {
-		const recorder = createRecorder<readonly [string]>()
-		const cursor = served.values()
-		const list = Object.defineProperty([...base], Symbol.iterator, {
-			value: () => {
-				recorder.handler('iter')
-				return {
-					next: () => {
-						recorder.handler('next')
-						return cursor.next()
-					},
-					return: () => {
-						recorder.handler('return')
-						return { done: true, value: undefined }
-					},
-				}
-			},
-		})
-		return {
-			list,
-			get calls() {
-				return recorder.calls.map(([call]) => call)
-			},
-		}
-	}
 
 	it('reads every declaration of an iterator that yields more than the list is long', () => {
-		const declarations = serve([], [vite, typescript])
+		const declarations = createServedList([], [vite, typescript])
 
 		expect(dependenciesToFloors(declarations.list)?.map(({ name }) => name)).toStrictEqual([
 			'vite',
@@ -1685,14 +1661,14 @@ describe('dependenciesToFloors reads the entries the iterator of its list yields
 	})
 
 	it('reaches the declaration of an iterator that names no version beyond the list length', () => {
-		const declarations = serve([], [vite, typescript, floorless])
+		const declarations = createServedList([], [vite, typescript, floorless])
 
 		expect(dependenciesToFloors(declarations.list)).toBeUndefined()
 		expect(declarations.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'return'])
 	})
 
 	it('reads the declaration of an iterator that yields fewer than the list is long', () => {
-		const declarations = serve([vite, typescript, vite], [typescript])
+		const declarations = createServedList([vite, typescript, vite], [typescript])
 
 		expect(dependenciesToFloors(declarations.list)?.map(({ name }) => name)).toStrictEqual([
 			'typescript',
@@ -1701,7 +1677,7 @@ describe('dependenciesToFloors reads the entries the iterator of its list yields
 	})
 
 	it('reads the declarations in the order an iterator yields them when it yields another order', () => {
-		const declarations = serve([vite, typescript], [typescript, vite])
+		const declarations = createServedList([vite, typescript], [typescript, vite])
 
 		expect(dependenciesToFloors(declarations.list)?.map(({ name }) => name)).toStrictEqual([
 			'typescript',

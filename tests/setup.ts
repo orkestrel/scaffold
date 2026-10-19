@@ -424,6 +424,56 @@ export function createClosableList<T>(
 }
 
 /**
+ * Creates a list whose iterator serves the entries a case names, whatever the list holds itself.
+ *
+ * @param base - The entries the list holds, which its `length` and its indexes read.
+ * @param served - The entries its replaced iterator yields, in order, before it reports done.
+ * @returns The list and the ordered calls made on its iterator.
+ *
+ * @remarks
+ * A `for…of` loop reads the entries the iterator yields, however long the list says it is, where an
+ * index loop reads `base`. A case therefore gives the iterator more entries than `base` holds, fewer,
+ * or the same entries in another order, and reads which of the two a reader followed. `calls` holds
+ * `iter` for each iterator the list serves, `next` for each step, and `return` for each close, in the
+ * order they happened, and copies on every access. The entries come from `served`, not from the
+ * list, so the log holds no `get:<index>`; a case that orders reads of the list's own entries uses
+ * `createClosableList`. The iterator closes cleanly, and it hands every pass the one cursor over
+ * `served`, so a second pass resumes where the first stopped.
+ *
+ * @example
+ * ```ts
+ * const served = createServedList([1, 2, 3], [9])
+ * Array.from(served.list) // [9]
+ * served.calls // ['iter', 'next', 'next']
+ * ```
+ */
+export function createServedList<T>(base: readonly T[], served: readonly T[]): TestClosableList<T> {
+	const recorder = createRecorder<readonly [string]>()
+	const cursor = served.values()
+	const list = Object.defineProperty([...base], Symbol.iterator, {
+		value: () => {
+			recorder.handler('iter')
+			return {
+				next: () => {
+					recorder.handler('next')
+					return cursor.next()
+				},
+				return: () => {
+					recorder.handler('return')
+					return { done: true, value: undefined }
+				},
+			}
+		},
+	})
+	return {
+		list,
+		get calls() {
+			return recorder.calls.map(([call]) => call)
+		},
+	}
+}
+
+/**
  * Throws the error a getter raises when its entry refuses to be read.
  *
  * @returns Never.
