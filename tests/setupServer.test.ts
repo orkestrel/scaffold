@@ -1,5 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { chmodSync, existsSync, readFileSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { chmodSync, existsSync, readFileSync, renameSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { basename, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -32,6 +33,7 @@ import {
 } from './setup.js'
 import {
 	ALIGNED_MANIFEST_TEXT,
+	appendSwapLedgerRow,
 	AUDIT_EXIT_CASES,
 	AUDIT_REPLIES,
 	BENCH_SCRIPT,
@@ -60,6 +62,13 @@ import {
 	buildReleaseScenarios,
 	buildServerGuardCases,
 	buildStagedManifest,
+	buildSwapEnvironment,
+	buildSwapInvalidNames,
+	buildSwapLocalSpecs,
+	buildSwapPackument,
+	buildSwapRefusals,
+	buildSwapRemoteSpecs,
+	buildSwapValidNames,
 	buildTargetAudit,
 	buildTargetManifest,
 	buildUpstreamOptions,
@@ -75,6 +84,7 @@ import {
 	CATALOG_AGENT_ROWS_TEXT,
 	CATALOG_AGENT_TEXT,
 	CHECKOUT_GUIDE_PATHS,
+	checkFormatting,
 	checkTypes,
 	CITE_SCRIPT,
 	CLAIM_ABSENT,
@@ -101,6 +111,8 @@ import {
 	createRepository,
 	createSink,
 	createStagedHost,
+	createSwapRegistry,
+	createSwapSession,
 	createUpstreamServer,
 	createWhoamiRegistry,
 	DECLARATION_CASES,
@@ -123,11 +135,13 @@ import {
 	HOST_DIRECTORY_PATHS,
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
+	installSwapFixture,
 	LAUNCH_SCRIPT,
 	linkPackage,
 	listExecutablePaths,
 	locateClaimOpening,
 	locatePackage,
+	lockManifest,
 	LOGIN_SCRIPT,
 	MAP_SCRIPT,
 	matchesBalance,
@@ -139,6 +153,7 @@ import {
 	parseOllamaOrigin,
 	parseVitestReport,
 	PINS_SCRIPT,
+	probeManifestLock,
 	PROTECTED_PATH_CASES,
 	provisionNpm,
 	readCheckoutManifest,
@@ -150,9 +165,11 @@ import {
 	readNpmVersion,
 	readSpecifiers,
 	readStatements,
+	readSwapEntry,
 	REFUSED_MANIFEST_TEXT,
 	RELEASE_MODE,
 	renderLauncher,
+	renderPackageManifest,
 	resolveNpmEntry,
 	resolveOllamaShell,
 	resolveTool,
@@ -171,6 +188,8 @@ import {
 	stageRootConfig,
 	STORAGE_PATH_CASES,
 	supportsMappedLoopback,
+	SWAP_RANGE,
+	SWAP_SCRIPT,
 	SWEEP_HOURS_AGO,
 	SWEEP_MINUTES_AGO,
 	SWEEP_SCRIPT,
@@ -178,6 +197,7 @@ import {
 	TARGET_MANIFEST_TEXT,
 	TestRegistry,
 	trackFiles,
+	unlockManifest,
 	UPSTREAM_ENDPOINT_CASES,
 	UPSTREAM_PATHS,
 	USAGE_CASES,
@@ -186,6 +206,9 @@ import {
 	WAVE_STEPS,
 	WINDOW_SCRIPT,
 	WORKSPACE_ROOT,
+	writeSwapFixture,
+	writeSwapPackage,
+	writeSwapSource,
 } from './setupServer.js'
 
 describe('createDistributionScratch', () => {
@@ -2386,6 +2409,7 @@ describe('the skill script fixtures', () => {
 			MAP_SCRIPT,
 			PINS_SCRIPT,
 			RESULT_SCRIPT,
+			SWAP_SCRIPT,
 			SWEEP_SCRIPT,
 			WAVE_SCRIPT,
 			WINDOW_SCRIPT,
@@ -2462,4 +2486,285 @@ describe('the whoami registry', () => {
 			scratch.destroy()
 		}
 	})
+})
+
+describe('the swap fixtures', () => {
+	it('writes three built sources and a consumer whose manifests are tab-indented and format-clean', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fixture = writeSwapFixture(scratch.path)
+			expect(fixture.root).toBe(scratch.path)
+			for (const directory of [fixture.alpha, fixture.beta, fixture.gamma, fixture.consumer]) {
+				const manifest = join(directory, 'package.json')
+				expect(readFileSync(manifest, 'utf8')).toBe(
+					`${JSON.stringify(readInstalledRecord(directory), null, '\t')}\n`,
+				)
+				expect([directory, checkFormatting(manifest)]).toStrictEqual([directory, 0])
+				expect(existsSync(join(directory, 'dist', 'index.js'))).toBe(true)
+			}
+			expect(readInstalledRecord(fixture.alpha)).toMatchObject({
+				name: '@orkestrel/swapfix-alpha',
+				version: '1.0.0',
+				scripts: { build: 'node build.js' },
+				dependencies: { '@orkestrel/swapfix-beta': SWAP_RANGE },
+			})
+			expect(readInstalledRecord(fixture.beta).dependencies).toBeUndefined()
+			expect(readInstalledRecord(fixture.consumer)).toMatchObject({
+				dependencies: { '@orkestrel/swapfix-alpha': SWAP_RANGE },
+				devDependencies: { '@orkestrel/swapfix-gamma': SWAP_RANGE },
+			})
+			expect(readFileSync(join(fixture.gamma, 'src.js'), 'utf8')).toBe(
+				"export const name = 'gamma'\n",
+			)
+			const source = writeSwapSource(scratch.path, 'delta')
+			expect(readInstalledRecord(source).name).toBe('@orkestrel/swapfix-delta')
+			const renamed = writeSwapSource(scratch.path, 'epsilon', {
+				name: '@orkestrel/swapfix-delta',
+				version: '2.0.0',
+				devDependencies: { '@orkestrel/swapfix-beta': SWAP_RANGE },
+			})
+			expect(readInstalledRecord(renamed)).toMatchObject({
+				name: '@orkestrel/swapfix-delta',
+				version: '2.0.0',
+				scripts: { build: 'node build.js' },
+				devDependencies: { '@orkestrel/swapfix-beta': SWAP_RANGE },
+			})
+			expect(Object.keys(readInstalledRecord(renamed))).toStrictEqual([
+				'name',
+				'version',
+				'files',
+				'type',
+				'scripts',
+				'devDependencies',
+			])
+			const plain = writeSwapPackage(scratch.path, 'plain', { private: true })
+			expect(readInstalledRecord(plain)).toMatchObject({ private: true, files: ['dist'] })
+			expect(existsSync(join(plain, 'build.js'))).toBe(false)
+			expect(renderPackageManifest({ name: 'x' })).toBe('{\n\t"name": "x"\n}\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('builds an offline scratch npm environment, a registry environment, and the refusal table', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const environment = buildSwapEnvironment(scratch.path)
+			expect(environment).toMatchObject({
+				npm_config_offline: 'true',
+				npm_config_install_links: 'false',
+				npm_config_cache: join(scratch.path, 'npm-cache'),
+				npm_config_userconfig: join(scratch.path, 'npmrc'),
+			})
+			expect(environment.npm_config_registry).toBeUndefined()
+			const served = buildSwapEnvironment(scratch.path, 'http://127.0.0.1:1/')
+			expect(served).toMatchObject({
+				npm_config_registry: 'http://127.0.0.1:1/',
+				npm_config_cache: join(scratch.path, 'npm-cache'),
+			})
+			expect(served.npm_config_offline).toBeUndefined()
+			const refusals = buildSwapRefusals(writeSwapFixture(scratch.path), scratch.ensure('empty'))
+			const lines = refusals.map(([args]) => args.join(' '))
+			expect(new Set(lines).size).toBe(lines.length)
+			expect(lines).toContain('')
+			expect(refusals.every(([, message]) => message.length > 0)).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads a ledger row and refuses an absent ledger or an unrecorded package', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(() => readSwapEntry(scratch.path, '@orkestrel/swapfix-alpha')).toThrow('ENOENT')
+			scratch.write(
+				'tmp/tarballs/pins.json',
+				JSON.stringify({
+					packages: { '@orkestrel/swapfix-alpha': { tarball: 'a.tgz' } },
+					overrides: {},
+				}),
+			)
+			expect(readSwapEntry(scratch.path, '@orkestrel/swapfix-alpha')).toStrictEqual({
+				tarball: 'a.tgz',
+			})
+			expect(() => readSwapEntry(scratch.path, '@orkestrel/swapfix-beta')).toThrow(
+				'records no row for @orkestrel/swapfix-beta',
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports a nonzero formatter exit for a manifest the formatter would rewrite', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const sorted = scratch.write(
+				'sorted/package.json',
+				renderPackageManifest({ name: 'x', version: '1.0.0' }),
+			)
+			const unsorted = scratch.write(
+				'unsorted/package.json',
+				renderPackageManifest({ version: '1.0.0', name: 'x' }),
+			)
+			expect(checkFormatting(sorted)).toBe(0)
+			expect(checkFormatting(unsorted)).not.toBe(0)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('serves packuments and archives for the packages it publishes, and answers every other read 404', async () => {
+		const session = await createSwapSession(SCRATCH_PREFIX, (root) => [
+			writeSwapSource(root, 'beta2', { name: '@orkestrel/swapfix-beta', version: '2.0.0' }),
+		])
+		try {
+			const base = session.registry.url
+			expect(base.startsWith('http://127.0.0.1:')).toBe(true)
+			const missing = await fetch(`${base}@orkestrel%2fswapfix-absent`)
+			expect(missing.status).toBe(404)
+			const response = await fetch(`${base}@orkestrel%2fswapfix-beta`)
+			expect(response.status).toBe(200)
+			const packument: unknown = await response.json()
+			expect(packument).toMatchObject({
+				name: '@orkestrel/swapfix-beta',
+				'dist-tags': { latest: '2.0.0' },
+				versions: {
+					'1.0.0': { version: '1.0.0', dependencies: {} },
+					'2.0.0': { version: '2.0.0' },
+				},
+			})
+			const alpha: unknown = await (await fetch(`${base}@orkestrel%2fswapfix-alpha`)).json()
+			const archiveUrl = `${base}@orkestrel/swapfix-alpha/-/swapfix-alpha-1.0.0.tgz`
+			const archive = new Uint8Array(await (await fetch(archiveUrl)).arrayBuffer())
+			expect(archive.byteLength).toBeGreaterThan(0)
+			expect(alpha).toMatchObject({
+				versions: {
+					'1.0.0': {
+						dependencies: { '@orkestrel/swapfix-beta': SWAP_RANGE },
+						dist: {
+							tarball: archiveUrl,
+							shasum: createHash('sha1').update(archive).digest('hex'),
+							integrity: `sha512-${createHash('sha512').update(archive).digest('base64')}`,
+						},
+					},
+				},
+			})
+			expect(
+				buildSwapPackument([], '@orkestrel/swapfix-alpha', 'http://127.0.0.1:1'),
+			).toBeUndefined()
+			expect(existsSync(join(session.scratch.path, 'registry'))).toBe(true)
+		} finally {
+			await session.destroy()
+		}
+		expect(existsSync(session.scratch.path)).toBe(false)
+		const failing = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			await expect(
+				createSwapRegistry(failing.path, [join(failing.path, 'absent')]),
+			).rejects.toThrow('The swap fixture pack in')
+		} finally {
+			failing.destroy()
+		}
+	}, 60_000)
+
+	it('lists the local dependency specs npm resolves on the host apart from the remote specs it fetches', () => {
+		const local = buildSwapLocalSpecs()
+		const remote = buildSwapRemoteSpecs()
+		const localSpecs = local.map(([, spec]) => spec)
+		const remoteSpecs = remote.map(([, spec]) => spec)
+		expect(new Set(local.map(([field, spec]) => `${field} ${spec}`)).size).toBe(local.length)
+		expect(new Set(remote.map(([field, spec]) => `${field} ${spec}`)).size).toBe(remote.length)
+		expect(localSpecs.filter((spec) => remoteSpecs.includes(spec))).toStrictEqual([])
+		expect(localSpecs).toEqual(
+			expect.arrayContaining([
+				'file:tmp/tarballs/missing.tgz',
+				'tmp/tarballs/missing.tgz',
+				'missing.tgz',
+				'vendor/archives/pack.tar.gz',
+				'archive.tar',
+				'~/other',
+				'.hidden',
+				'D:other',
+			]),
+		)
+		expect(remoteSpecs).toEqual(
+			expect.arrayContaining([
+				'orkestrel/other',
+				'orkestrel/other.tgz',
+				'github:orkestrel/other',
+				'git+https://example.invalid/other.git',
+				'npm:other@^1.0.0',
+				'latest',
+				'https://registry.invalid/other/-/other-1.0.0.tgz',
+			]),
+		)
+		expect(local.map(([field]) => field)).toContain('overrides')
+		expect(remote.map(([field]) => field)).toContain('peerDependencies')
+	})
+
+	it('lists ledger keys the restore must refuse as package names apart from keys it must accept', () => {
+		const invalid = buildSwapInvalidNames('/scratch')
+		const valid = buildSwapValidNames()
+		expect(new Set(invalid).size).toBe(invalid.length)
+		expect(new Set(valid).size).toBe(valid.length)
+		expect(invalid.filter((name) => valid.includes(name))).toStrictEqual([])
+		expect(invalid).toEqual(
+			expect.arrayContaining([
+				'../closure-sentinel',
+				'..\\closure-sentinel',
+				'/scratch/consumer/closure-sentinel',
+				'C:/closure-sentinel',
+				'@orkestrel/../../closure-sentinel',
+				'',
+			]),
+		)
+		expect(valid).toEqual(expect.arrayContaining(['left-pad', '@orkestrel/other.js']))
+	})
+
+	it('adds a row to one ledger block and refuses a text that holds no such block', () => {
+		const text = `${JSON.stringify({ packages: { a: { tarball: 'a.tgz' } }, overrides: {} }, null, '\t')}\n`
+		const added = appendSwapLedgerRow(text, 'overrides', '../x', { value: '*' })
+		expect(added).toBe(
+			`${JSON.stringify({ packages: { a: { tarball: 'a.tgz' } }, overrides: { '../x': { value: '*' } } }, null, '\t')}\n`,
+		)
+		expect(appendSwapLedgerRow(text, 'packages', 'b', { tarball: 'b.tgz' })).toContain('"b"')
+		expect(() => appendSwapLedgerRow('{}', 'overrides', 'x', {})).toThrow(
+			'The swap ledger holds no overrides block',
+		)
+		expect(() => appendSwapLedgerRow('[]', 'packages', 'x', {})).toThrow(
+			'The swap ledger holds no packages block',
+		)
+	})
+
+	it('locks a manifest against replacement, reports whether the host honors the lock, and unlocks it', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = scratch.write('lock/package.json', '{}\n')
+			const locked = lockManifest(manifest)
+			expect(locked).toBe(probeManifestLock())
+			unlockManifest(manifest)
+			const temporary = scratch.write('lock/package.json.next', '{"name":"x"}\n')
+			renameSync(temporary, manifest)
+			expect(readFileSync(manifest, 'utf8')).toBe('{"name":"x"}\n')
+			expect(existsSync(`${manifest}.lock.tmp`)).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('throws with the install error when a fixture install fails', async () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const broken = writeSwapPackage(scratch.path, 'broken', {
+				dependencies: {
+					'@orkestrel/swapfix-absent': `file:${join(scratch.path, 'absent').split('\\').join('/')}.tgz`,
+				},
+			})
+			await expect(installSwapFixture(broken, buildSwapEnvironment(scratch.path))).rejects.toThrow(
+				`The swap fixture install in ${broken} failed`,
+			)
+		} finally {
+			scratch.destroy()
+		}
+	}, 60_000)
 })

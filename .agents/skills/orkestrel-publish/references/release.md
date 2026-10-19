@@ -10,17 +10,19 @@
 
 ## Fix a dependency before it publishes
 
-When a consumer meets a defect that lives in a package it only has from the registry, build the dependency from source, pack it, and install the tarball into the consumer. Do not wait for the release and do not work around it in the consumer.
+When a consumer needs a dependency's unpublished source, to meet a defect that lives in a package it only has from the registry or to work on fresh local builds, pin the consumer to a tarball of that source. Do not wait for the release and do not work around it in the consumer.
 
-- Install the tarball; never link it. A link skips packing, the `files` list, and the exports map.
-- Write the build, pack, and install to a script and run the file.
-- Record the range you replaced in the same step that replaces it.
-- Rebuild and repack whenever the dependency's source moves; a stale tarball is a stale `dist/`.
-- Delete the consumer's `node_modules/.vite` directory after every tarball install, or install into a fresh worktree; Vite keys its pre-bundle on the installed version.
+- Pin with `node .agents/skills/orkestrel-publish/scripts/swap.ts --pin --consumer <consumer> --source <dependency>`, repeating `--source` for each dependency. The script refuses a source whose packed manifest names a local dependency in any dependency field, as npm reads one: a `file:` or `link:` prefix, a spec that starts like a path (`.`, `~/`, `/`, `\`, or a drive letter), or an archive name ending in `.tgz`, `.tar.gz`, or `.tar` that carries no protocol and is not a `user/repo` shorthand. A registry range, a dist-tag, an `npm:` alias, a `user/repo` shorthand, a git spec, and a URL stay remote. The script then builds and packs each source, installs the tarball, and proves the installed bytes. Never link a source instead: a link skips packing, the `files` list, and the exports map.
+- Read the ledger `<consumer>/tmp/tarballs/pins.json` as the record of which build the consumer runs. Each row names the tarball and its SHA-256, the range the pin replaced, the source with its commit and dirty flag, the digest of the proved install, and the time; the ledger also records whether the manifest held an `overrides` block before the first pin. The script writes the replaced range before it writes the manifest and keeps the first pin's range across re-pins, so edit neither the ledger nor a pinned spec by hand.
+- Keep the absolute `file:` spec the script writes. npm resolves a relative spec against the installed package's own directory, so a packed consumer installed elsewhere, as the `distribution` proof installs it, cannot find a relative tarball.
+- Pass `--override <name>` for each pinned package that another installed package also requires. The override is `$<name>` when the consumer declares the package and the tarball spec when it does not. The proof fails a pin that leaves a pinned package, an override-only one included, uninstalled at the top level, that leaves a second copy of a pinned package, or that moves an unpinned `@orkestrel` package; an override that selects no installed dependency is such a failure and exits 1.
+- Run `scripts/swap.ts --status --consumer <consumer>` before relying on any gate run against a pinned consumer. Exit 3 names each drift: a manifest entry that no longer names the full location of its ledger tarball (a relative spec that resolves to that location holds it), a missing or changed tarball, installed bytes that differ from the proved pin, a pin with no proved install, or a source whose commit moved. Re-pin to clear it.
+- Re-pin whenever the dependency's source moves; a stale tarball is a stale `dist/`. Fetch and merge the dependency's default branch before packing it.
+- Delete the consumer's `node_modules/.vite` directory after every tarball install the script does not run, or install into a fresh worktree; Vite keys its pre-bundle on the installed version, and the script deletes it after its own installs.
 - Run one unit per checkout, at that checkout's catalog layer.
-- Fetch and merge the dependency's default branch before packing it.
-- Restore the registry copy before any gate that must prove the published artifact, and before publishing anything. The release still follows layer order: the dependency publishes first, then the consumer re-pins and re-runs its gates.
-- Keep tarballs under `tmp/`; sweep them at acceptance; never commit them.
+- Restore with `scripts/swap.ts --restore --consumer <consumer>` before any `scaffold` verb, before any gate that must see a registry range or prove the published artifact, and before publishing anything. The restore puts back each recorded range, keeps an `overrides` block that existed before the pin and removes one the pin created, removes the lock entry and installed copy of each restored package and dropped override so the install resolves them again from the registry, and proves the registry source in the lockfile. The restore refuses with exit 64, before it writes anything, a ledger whose package or override keys are not package names or whose removal would leave `node_modules`. [wave.md](wave.md) § Visit a repository orders a verb run around the pins.
+- Re-pin after the verb or gate with the arguments the restore receipt's `repin` member lists, then run `--status`. The release still follows layer order: the dependency publishes first, then the consumer takes the registry range and re-runs its gates.
+- Keep pins uncommitted: commit neither a pinned `package.json` nor its `package-lock.json`. Keep tarballs, the ledger, and receipts under `tmp/`; sweep them at acceptance; never commit them.
 
 ## What a bump obliges
 

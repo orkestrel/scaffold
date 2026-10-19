@@ -14,6 +14,7 @@ import type { ResolveHookSync } from 'node:module'
 import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { once } from 'node:events'
 import {
 	chmodSync,
@@ -22,6 +23,8 @@ import {
 	mkdirSync,
 	readFileSync,
 	realpathSync,
+	renameSync,
+	rmSync,
 	symlinkSync,
 	writeFileSync,
 } from 'node:fs'
@@ -5170,6 +5173,9 @@ export const COMPARE_SCRIPT = '.agents/skills/orkestrel-publish/scripts/compare.
 /** Names the checkout-relative path of the publish skill's `pins` script. */
 export const PINS_SCRIPT = '.agents/skills/orkestrel-publish/scripts/pins.ts'
 
+/** Names the checkout-relative path of the publish skill's `swap` script. */
+export const SWAP_SCRIPT = '.agents/skills/orkestrel-publish/scripts/swap.ts'
+
 /** Names the checkout-relative path of the publish skill's `wave` script. */
 export const WAVE_SCRIPT = '.agents/skills/orkestrel-publish/scripts/wave.ts'
 
@@ -5181,6 +5187,628 @@ export const DISCOVERY_SCRIPT = '.agents/skills/orkestrel-harden/scripts/discove
 
 /** Names the checkout-relative path of the scout skill's `map` script. */
 export const MAP_SCRIPT = '.agents/skills/orkestrel-scout/scripts/map.ts'
+
+/** Holds the registry range every swap fixture declaration uses. */
+export const SWAP_RANGE = '^1.0.0'
+
+/**
+ * Describes the swap fixture: three source checkouts and the consumer that declares two of them.
+ *
+ * `alpha` depends on `beta`, the consumer declares `alpha` under `dependencies` and `gamma` under
+ * `devDependencies`, and every declaration is the registry range {@link SWAP_RANGE}, which the
+ * fixture registry {@link createSwapRegistry} serves from the loopback interface.
+ */
+export interface TestSwapFixture {
+	readonly root: string
+	readonly alpha: string
+	readonly beta: string
+	readonly gamma: string
+	readonly consumer: string
+}
+
+/**
+ * Describes one package version the swap fixture registry serves.
+ *
+ * @remarks
+ * The integrity and the shasum are those of the archive bytes, as a packument carries them.
+ */
+export interface TestSwapPublished {
+	readonly name: string
+	readonly version: string
+	readonly dependencies: Readonly<Record<string, string>>
+	readonly archive: Uint8Array
+	readonly integrity: string
+	readonly shasum: string
+}
+
+/** Describes the running swap fixture registry. */
+export interface TestSwapRegistryInterface {
+	readonly url: string
+	destroy(): Promise<void>
+}
+
+/**
+ * Renders a package manifest as every Orkestrel manifest is written.
+ *
+ * @param manifest - The manifest record.
+ * @returns Tab-indented JSON with a trailing newline.
+ */
+export function renderPackageManifest(manifest: Readonly<Record<string, unknown>>): string {
+	return `${JSON.stringify(manifest, null, '\t')}\n`
+}
+
+/**
+ * Builds the npm environment that keeps every swap fixture install inside the scratch root.
+ *
+ * @param root - The scratch root that receives the cache and config paths.
+ * @param registry - The loopback registry URL {@link createSwapRegistry} returned. Default: none,
+ * which keeps npm offline.
+ * @returns The `npm_config_*` variables: the registry or offline mode, a scratch cache, and scratch
+ * user and global config paths, so no read reaches the public registry.
+ */
+export function buildSwapEnvironment(
+	root: string,
+	registry?: string,
+): Readonly<Record<string, string>> {
+	return {
+		...(registry === undefined
+			? { npm_config_offline: 'true' }
+			: { npm_config_registry: registry }),
+		npm_config_install_links: 'false',
+		npm_config_cache: join(root, 'npm-cache'),
+		npm_config_userconfig: join(root, 'npmrc'),
+		npm_config_globalconfig: join(root, 'globalrc'),
+		npm_config_update_notifier: 'false',
+		npm_config_audit: 'false',
+		npm_config_fund: 'false',
+	}
+}
+
+/**
+ * Writes one swap fixture package directory with a built `dist/index.js`.
+ *
+ * @param root - The scratch root.
+ * @param directory - The package directory name, which also names the package
+ * `@orkestrel/swapfix-<directory>`.
+ * @param fields - The manifest fields that follow the name, version, `files` list, and module type,
+ * in the order oxfmt sorts them.
+ * @returns The package directory.
+ */
+export function writeSwapPackage(
+	root: string,
+	directory: string,
+	fields: Readonly<Record<string, unknown>>,
+): string {
+	const path = join(root, directory)
+	mkdirSync(join(path, 'dist'), { recursive: true })
+	writeFileSync(
+		join(path, 'package.json'),
+		renderPackageManifest({
+			name: `@orkestrel/swapfix-${directory}`,
+			version: '1.0.0',
+			files: ['dist'],
+			type: 'module',
+			...fields,
+		}),
+	)
+	writeFileSync(join(path, 'dist', 'index.js'), `export const name = '${directory}'\n`)
+	return path
+}
+
+/**
+ * Writes one swap fixture source whose `build` script copies `src.js` to `dist/index.js`.
+ *
+ * @param root - The scratch root.
+ * @param directory - The source directory name.
+ * @param fields - The manifest fields that follow the `build` script, such as `dependencies`.
+ * Default: none.
+ * @returns The source directory.
+ */
+export function writeSwapSource(
+	root: string,
+	directory: string,
+	fields: Readonly<Record<string, unknown>> = {},
+): string {
+	const path = writeSwapPackage(root, directory, {
+		scripts: { build: 'node build.js' },
+		...fields,
+	})
+	writeFileSync(
+		join(path, 'build.js'),
+		"import { copyFileSync, mkdirSync } from 'node:fs'\nmkdirSync('dist', { recursive: true })\ncopyFileSync('src.js', 'dist/index.js')\n",
+	)
+	writeFileSync(join(path, 'src.js'), `export const name = '${directory}'\n`)
+	return path
+}
+
+/**
+ * Writes the swap fixture under a scratch root.
+ *
+ * @param root - The scratch root.
+ * @returns The fixture's directories.
+ */
+export function writeSwapFixture(root: string): TestSwapFixture {
+	return {
+		root,
+		alpha: writeSwapSource(root, 'alpha', {
+			dependencies: { '@orkestrel/swapfix-beta': SWAP_RANGE },
+		}),
+		beta: writeSwapSource(root, 'beta'),
+		gamma: writeSwapSource(root, 'gamma'),
+		consumer: writeSwapPackage(root, 'consumer', {
+			dependencies: { '@orkestrel/swapfix-alpha': SWAP_RANGE },
+			devDependencies: { '@orkestrel/swapfix-gamma': SWAP_RANGE },
+			engines: { node: '>=24' },
+		}),
+	}
+}
+
+/**
+ * Builds the packument the swap fixture registry serves for one package name.
+ *
+ * @param published - Every version the registry serves, of any package.
+ * @param name - The package name the packument describes.
+ * @param base - The origin the archive URLs address, such as `http://127.0.0.1:4873`.
+ * @returns The packument record, or undefined when the registry serves no version of the name.
+ */
+export function buildSwapPackument(
+	published: readonly TestSwapPublished[],
+	name: string,
+	base: string,
+): Readonly<Record<string, unknown>> | undefined {
+	const versions = published.filter((candidate) => candidate.name === name)
+	const latest = versions.at(-1)
+	if (latest === undefined) return undefined
+	return {
+		name,
+		'dist-tags': { latest: latest.version },
+		versions: Object.fromEntries(
+			versions.map((version) => [
+				version.version,
+				{
+					name,
+					version: version.version,
+					dependencies: version.dependencies,
+					dist: {
+						tarball: `${base}/${name}/-/${name.split('/').at(-1) ?? name}-${version.version}.tgz`,
+						integrity: version.integrity,
+						shasum: version.shasum,
+					},
+				},
+			]),
+		),
+	}
+}
+
+/**
+ * Answers one request the swap fixture registry receives.
+ *
+ * Serves each package's packument at its escaped name and each archive at the standard
+ * `/<name>/-/<file>.tgz` path, and answers every other read 404.
+ *
+ * @param published - Every version the registry serves.
+ * @param request - The request to answer.
+ * @param response - The response to write.
+ */
+export function answerSwapRegistry(
+	published: readonly TestSwapPublished[],
+	request: IncomingMessage,
+	response: ServerResponse,
+): void {
+	const path = decodeURIComponent(request.url ?? '').slice(1)
+	const base = `http://${request.headers.host ?? '127.0.0.1'}`
+	const archive = published.find(
+		(candidate) =>
+			path ===
+			`${candidate.name}/-/${candidate.name.split('/').at(-1) ?? ''}-${candidate.version}.tgz`,
+	)
+	if (archive !== undefined) {
+		response.writeHead(200, { 'content-type': 'application/octet-stream' })
+		response.end(archive.archive)
+		return
+	}
+	const packument = buildSwapPackument(published, path, base)
+	response.writeHead(packument === undefined ? 404 : 200, { 'content-type': 'application/json' })
+	response.end(JSON.stringify(packument ?? { error: 'Not found' }))
+}
+
+/**
+ * Starts the swap fixture registry on an ephemeral loopback port.
+ *
+ * Packs each package directory with `npm pack` and serves the archives it wrote, so an install
+ * resolves a registry range and fetches a registry archive without reaching beyond the loopback
+ * interface.
+ *
+ * @param root - The scratch root that receives the archives and the npm cache.
+ * @param directories - The package directories to publish, each at the name and version its
+ * manifest declares.
+ * @returns The running registry, which the caller destroys in a `finally`.
+ * @throws Thrown when a pack exits nonzero or prints no archive name.
+ */
+export async function createSwapRegistry(
+	root: string,
+	directories: readonly string[],
+): Promise<TestSwapRegistryInterface> {
+	const archives = join(root, 'registry')
+	mkdirSync(archives, { recursive: true })
+	const published = await Promise.all(
+		directories.map(async (directory): Promise<TestSwapPublished> => {
+			const packed = await spawnNpm(
+				['pack', '--ignore-scripts', '--json', '--pack-destination', archives],
+				{ workspace: directory, environment: buildSwapEnvironment(root) },
+			)
+			const report: unknown = parseJSON(packed.stdout)
+			// npm 11 prints an array and npm 12 an object keyed by package name.
+			const entry: unknown = isArray(report)
+				? report[0]
+				: isRecord(report)
+					? Object.values(report)[0]
+					: undefined
+			if (packed.code !== 0 || !isRecord(entry) || !isString(entry.filename)) {
+				throw new Error(`The swap fixture pack in ${directory} failed: ${packed.stderr}`)
+			}
+			const archive = readFileSync(join(archives, entry.filename))
+			const manifest = readInstalledRecord(directory)
+			return {
+				name: String(manifest.name),
+				version: String(manifest.version),
+				dependencies: isRecord(manifest.dependencies)
+					? Object.fromEntries(
+							Object.entries(manifest.dependencies).map(([name, range]) => [name, String(range)]),
+						)
+					: {},
+				archive,
+				integrity: `sha512-${createHash('sha512').update(archive).digest('base64')}`,
+				shasum: createHash('sha1').update(archive).digest('hex'),
+			}
+		}),
+	)
+	const loopback = await createLoopback(
+		createServer((request, response) => {
+			request.resume()
+			request.on('end', () => {
+				answerSwapRegistry(published, request, response)
+			})
+		}),
+	)
+	return { url: `${loopback.url}/`, destroy: loopback.destroy }
+}
+
+/**
+ * Lists each command line the swap script refuses as a usage error, with the message it names.
+ *
+ * @param fixture - The swap fixture the command lines name.
+ * @param empty - A directory that holds no package manifest.
+ * @returns Each command line and a fragment of its refusal, in the order the script checks them.
+ */
+export function buildSwapRefusals(
+	fixture: TestSwapFixture,
+	empty: string,
+): ReadonlyArray<readonly [readonly string[], string]> {
+	const consumer = ['--consumer', fixture.consumer]
+	return [
+		[[], 'Give one of --pin, --restore, and --status'],
+		[['--pin', '--status', ...consumer], 'Give one mode, not --pin and --status'],
+		[['--status', ...consumer, '--package', 'x'], '--status does not read --package, x'],
+		[['--status', '--consumer'], '--consumer given with no value'],
+		[['--status'], '--consumer DIR is required'],
+		[['--pin', ...consumer], '--pin takes at least one --source DIR'],
+		[
+			['--pin', ...consumer, '--source', fixture.beta, '--no-build'],
+			'@orkestrel/swapfix-beta is declared by no dependencies field and named by no --override',
+		],
+		[
+			[
+				'--pin',
+				...consumer,
+				'--source',
+				fixture.alpha,
+				'--override',
+				'@orkestrel/swapfix-delta',
+				'--no-build',
+			],
+			'override @orkestrel/swapfix-delta is declared by the consumer and built by no --source',
+		],
+		[
+			['--pin', ...consumer, '--source', fixture.alpha, '--source', fixture.alpha, '--no-build'],
+			'@orkestrel/swapfix-alpha is named by more than one --source',
+		],
+		[['--pin', ...consumer, '--source', empty, '--no-build'], 'No package name and version in'],
+		[['--restore', ...consumer], 'The ledger records no pin to restore'],
+		[
+			['--restore', ...consumer, '--package', '@orkestrel/swapfix-alpha'],
+			'The ledger records no pin for @orkestrel/swapfix-alpha',
+		],
+		[['--status', '--consumer', empty], 'has no readable package.json'],
+	]
+}
+
+/**
+ * Describes one swap session: the fixture, the registry that serves it, and the npm environment
+ * that reads that registry.
+ */
+export interface TestSwapSession {
+	readonly scratch: ScratchInterface
+	readonly fixture: TestSwapFixture
+	readonly registry: TestSwapRegistryInterface
+	readonly environment: Readonly<Record<string, string>>
+	destroy(): Promise<void>
+}
+
+/**
+ * Writes the swap fixture under a new scratch directory and publishes it to a loopback registry.
+ *
+ * @param prefix - The scratch directory's name prefix.
+ * @param extras - Writes further package directories under the scratch root and returns them, to
+ * publish beside the fixture's `alpha`, `beta`, `gamma`, and `consumer`. Default: none.
+ * @returns The session, which the caller destroys in a `finally`.
+ * @remarks
+ * The registry shares the caller's event loop, so a script that reads it runs through
+ * `spawnSkillScript`: the synchronous runner blocks the loop and the install behind it never
+ * receives an answer.
+ */
+export async function createSwapSession(
+	prefix: string,
+	extras?: (root: string) => readonly string[],
+): Promise<TestSwapSession> {
+	const scratch = createScratch({ prefix })
+	try {
+		const fixture = writeSwapFixture(scratch.path)
+		const registry = await createSwapRegistry(scratch.path, [
+			fixture.alpha,
+			fixture.beta,
+			fixture.gamma,
+			fixture.consumer,
+			...(extras?.(scratch.path) ?? []),
+		])
+		return {
+			scratch,
+			fixture,
+			registry,
+			environment: buildSwapEnvironment(scratch.path, registry.url),
+			destroy: async () => {
+				await registry.destroy()
+				scratch.destroy()
+			},
+		}
+	} catch (error) {
+		scratch.destroy()
+		throw error
+	}
+}
+
+/**
+ * Lists a dependency field and a local spec the swap script must refuse to pack, one pair per form.
+ *
+ * @returns Each manifest field and a spec that npm resolves on the packing host instead of from a
+ * registry: a `file:` or `link:` prefix, a path start (`.`, `~/`, `/`, `\`, or a drive letter), or
+ * an archive name ending in `.tgz`, `.tar.gz`, or `.tar` that carries no protocol and is not a
+ * `user/repo` shorthand.
+ */
+export function buildSwapLocalSpecs(): ReadonlyArray<readonly [string, string]> {
+	return [
+		['dependencies', 'file:../other'],
+		['dependencies', 'file:tmp/tarballs/missing.tgz'],
+		['devDependencies', 'link:../other'],
+		['peerDependencies', './other'],
+		['optionalDependencies', '../other'],
+		['dependencies', '/srv/other'],
+		['devDependencies', 'C:/other'],
+		['overrides', 'file:../other'],
+		['dependencies', 'tmp/tarballs/missing.tgz'],
+		['devDependencies', 'missing.tgz'],
+		['optionalDependencies', 'vendor/archives/pack.tar.gz'],
+		['peerDependencies', 'archive.tar'],
+		['dependencies', 'Pack.TGZ'],
+		['dependencies', '~/other'],
+		['devDependencies', '\\srv\\other'],
+		['optionalDependencies', '.hidden'],
+		['dependencies', 'C:\\other'],
+		['devDependencies', 'D:other'],
+		['overrides', 'tmp/tarballs/missing.tgz'],
+	]
+}
+
+/**
+ * Lists a dependency spec the swap script must accept in a packed manifest, one pair per form.
+ *
+ * @returns Each manifest field and a spec that npm resolves from a registry, a hosted repository, or
+ * a remote archive: a range, a version, a dist-tag, an `npm:` alias, a `user/repo` shorthand
+ * (whatever it ends in), a `github:` or `git+` repository, or a URL.
+ */
+export function buildSwapRemoteSpecs(): ReadonlyArray<readonly [string, string]> {
+	return [
+		['dependencies', '^1.0.0'],
+		['dependencies', '*'],
+		['devDependencies', 'latest'],
+		['peerDependencies', 'npm:other@^1.0.0'],
+		['optionalDependencies', 'github:orkestrel/other'],
+		['dependencies', 'https://registry.invalid/other/-/other-1.0.0.tgz'],
+		['dependencies', '1.0.0'],
+		['devDependencies', '>=1.0.0 <2.0.0'],
+		['peerDependencies', '~1.2.3'],
+		['optionalDependencies', '1.x'],
+		['dependencies', 'next'],
+		['dependencies', 'orkestrel/other'],
+		['devDependencies', 'orkestrel/other.tgz'],
+		['dependencies', 'orkestrel/other#semver:^1.0.0'],
+		['optionalDependencies', 'git+https://example.invalid/other.git'],
+		['peerDependencies', 'git+ssh://git@example.invalid/other.git#v1'],
+		['overrides', 'npm:@orkestrel/other@^1.0.0'],
+	]
+}
+
+/**
+ * Lists a ledger key the swap script's restore must refuse as a package name.
+ *
+ * @param root - The directory that holds the consumer, whose `closure-sentinel` sibling an escaping
+ * key would reach.
+ * @returns Each key that climbs out of `node_modules`, or is an absolute or drive path, a bare
+ * scope, an empty name, or otherwise not an optional `@scope/` and a name.
+ */
+export function buildSwapInvalidNames(root: string): readonly string[] {
+	const sentinel = join(root, 'consumer', 'closure-sentinel').split('\\').join('/')
+	return [
+		'../closure-sentinel',
+		'../../consumer/closure-sentinel',
+		'@orkestrel/../../closure-sentinel',
+		'..\\closure-sentinel',
+		sentinel,
+		'/closure-sentinel',
+		'C:/closure-sentinel',
+		'C:\\closure-sentinel',
+		'..',
+		'.hidden',
+		'_private',
+		'@orkestrel',
+		'@orkestrel/',
+		'a/b',
+		'a//b',
+		'Spaced Name',
+		'',
+	]
+}
+
+/**
+ * Lists a ledger key the swap script's restore must accept as a package name.
+ *
+ * @returns Scoped and unscoped names with dashes, dots, digits, and capitals.
+ */
+export function buildSwapValidNames(): readonly string[] {
+	return ['left-pad', '@orkestrel/other.js', 'Base64', '@scope-1/pkg_2', 'a.b']
+}
+
+/**
+ * Adds one row to the packages or overrides block of a swap ledger's text.
+ *
+ * @param text - The ledger file's text.
+ * @param block - The ledger block that receives the row.
+ * @param name - The key of the added row.
+ * @param row - The row the key names.
+ * @returns The ledger text, tab-indented with a trailing newline, holding the row beside the others.
+ * @throws Thrown when the text is not a ledger record or holds no such block.
+ */
+export function appendSwapLedgerRow(
+	text: string,
+	block: 'packages' | 'overrides',
+	name: string,
+	row: Readonly<Record<string, unknown>>,
+): string {
+	const ledger = parseJSON(text)
+	const rows = isRecord(ledger) ? ledger[block] : undefined
+	if (!isRecord(ledger) || !isRecord(rows))
+		throw new Error(`The swap ledger holds no ${block} block`)
+	return renderPackageManifest({ ...ledger, [block]: { ...rows, [name]: row } })
+}
+
+/**
+ * Makes a manifest refuse the replacement the swap script writes, and reports whether it does.
+ *
+ * @param manifest - The manifest path.
+ * @returns True if a temporary file renamed onto the manifest then fails; false otherwise.
+ *
+ * @remarks
+ * The lock is platform-defined. A read-only target refuses a rename onto it on Windows
+ * (`EPERM`), and a read-only directory refuses a temporary file beside the target on POSIX; a
+ * privileged POSIX user passes both, so the report is probed rather than assumed.
+ */
+export function lockManifest(manifest: string): boolean {
+	chmodSync(manifest, 0o444)
+	chmodSync(dirname(manifest), 0o555)
+	const temporary = `${manifest}.lock.tmp`
+	try {
+		writeFileSync(temporary, readFileSync(manifest))
+		renameSync(temporary, manifest)
+		return false
+	} catch {
+		return true
+	}
+}
+
+/**
+ * Restores the write access {@link lockManifest} removed, so a scratch directory can be removed.
+ *
+ * @param manifest - The manifest path.
+ * @returns Nothing.
+ */
+export function unlockManifest(manifest: string): void {
+	chmodSync(dirname(manifest), 0o755)
+	chmodSync(manifest, 0o644)
+	rmSync(`${manifest}.lock.tmp`, { force: true })
+}
+
+/**
+ * Probes whether {@link lockManifest} refuses a replacement on this host.
+ *
+ * @returns True if a locked manifest refuses a replacement; false on a host that lets it through.
+ */
+export function probeManifestLock(): boolean {
+	const scratch = createScratch({ prefix: 'orkestrel-swap-lock-' })
+	try {
+		const manifest = scratch.write('probe/package.json', '{}\n')
+		const locked = lockManifest(manifest)
+		unlockManifest(manifest)
+		return locked
+	} finally {
+		scratch.destroy()
+	}
+}
+
+/**
+ * Installs one swap fixture package directory against the session registry, as its baseline before
+ * a pin.
+ *
+ * @param directory - The package directory to install.
+ * @param environment - The npm environment {@link buildSwapEnvironment} built.
+ * @returns Nothing.
+ * @throws Thrown when the install exits nonzero, with its standard error.
+ */
+export async function installSwapFixture(
+	directory: string,
+	environment: Readonly<Record<string, string>>,
+): Promise<void> {
+	const installed = await spawnNpm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], {
+		workspace: directory,
+		environment,
+	})
+	if (installed.code !== 0) {
+		throw new Error(`The swap fixture install in ${directory} failed: ${installed.stderr}`)
+	}
+}
+
+/**
+ * Reads one package row of a consumer's swap ledger.
+ *
+ * @param consumer - The consumer directory.
+ * @param name - The package name.
+ * @returns The ledger row.
+ * @throws Thrown when the ledger is absent or malformed or records no row for the package.
+ */
+export function readSwapEntry(consumer: string, name: string): Readonly<Record<string, unknown>> {
+	const ledger = parseJSON(readFileSync(join(consumer, 'tmp', 'tarballs', 'pins.json'), 'utf8'))
+	const packages = isRecord(ledger) ? ledger.packages : undefined
+	const entry = isRecord(packages) ? packages[name] : undefined
+	if (!isRecord(entry)) throw new Error(`The swap ledger in ${consumer} records no row for ${name}`)
+	return entry
+}
+
+/**
+ * Checks one file with this checkout's formatter and configuration, writing nothing.
+ *
+ * @param path - The file to check.
+ * @returns The formatter's exit code: 0 when the file is formatted, nonzero otherwise.
+ */
+export function checkFormatting(path: string): number | null {
+	const directory = locatePackage(WORKSPACE_ROOT, 'oxfmt')
+	const bin = readInstalledRecord(directory).bin
+	const entry = isRecord(bin) ? bin.oxfmt : undefined
+	if (!isString(entry)) throw new Error('The installed oxfmt declares no oxfmt bin entry')
+	return spawnSync(
+		process.execPath,
+		[join(directory, entry), '--config', join(WORKSPACE_ROOT, '.oxfmtrc.json'), '--check', path],
+		{ cwd: WORKSPACE_ROOT, encoding: 'utf8', windowsHide: true },
+	).status
+}
 
 /** Lists the steps the publish wave runs for each package, in order. */
 export const WAVE_STEPS: readonly string[] = Object.freeze([

@@ -45,11 +45,18 @@ by hand only to repair it, then resume with `--from <step>`.
    against the published tarball for material content. An exit of 2 is an unanswered comparison,
    never a moved dist: fetch and re-run rather than ruling a bump owed.
 
-Restore any unpublished tarball the target is holding before the quality gates run, per
-`release.md` § Fix a dependency before it publishes. A distribution proof run
-against a local tarball proves the local tarball. Stage an unpublished tarball with
-`npm install --no-save`, because a `file:` pin refuses the blueprint and the manifest keeps a
-registry range.
+Restore every pin the target holds with `scripts/swap.ts --restore` before the visit's first step, per
+[release.md](release.md) § Fix a dependency before it publishes, because the visit reads and
+proves registry ranges. A distribution proof run against a local tarball proves the local tarball.
+Where a `scaffold` verb must run against a target that works on local builds, run it in this order:
+
+1. Restore the pins with `scripts/swap.ts --restore --consumer <target>`.
+2. Stage the unpublished scaffold tarball with `npm install --no-save`, which leaves the
+   manifest's registry range in place. The blueprint refuses an `@orkestrel` `file:` spec under
+   `dependencies`, so `--no-save` is the staging route a verb admits.
+3. Run the verb.
+4. Re-pin with the arguments the restore receipt's `repin` member lists, then run
+   `scripts/swap.ts --status --consumer <target>` and clear any drift it reports before the gates.
 
 Where a visit runs before scaffold itself publishes, run the visit with `--offline`; the runner
 performs the offline overwrite and proves the sweep with `scaffold audit --offline`. The online verbs read vendored bytes from the published
