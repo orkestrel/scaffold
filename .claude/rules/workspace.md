@@ -311,12 +311,9 @@ Build/check config alignment:
 
 - Typechecker: `vue-tsc` only where Vue SFCs are checked; `tsc` elsewhere.
 - Linter: Oxlint with `.oxlintrc.json`, independent from typechecking.
-- Place caller-selected local build inspection in `tools/artifacts/` or
-  `.orkestrel/<package>/instruments/**/tools/artifacts/`, and published runtime artifact
-  loaders in `src/server/artifacts/`. Permit computed ESM imports at those boundaries in
-  `.js`, `.mjs`, `.ts`, and `.mts` modules, and keep ordinary implementation dependencies
-  statically named. A source adapter admitted by a runtime loader remains a separately
-  selected inventory; it does not widen the loader's built-package admission.
+- Permit computed `import()` in every module, and refuse dynamic `require`. Name ordinary
+  implementation dependencies statically. In a module that imports a computed specifier,
+  document what selects it in the module's TSDoc.
 - Formatter: Oxfmt with `.oxfmtrc.json`.
 - Bundler: Vite.
 - Tests: Vitest; `@vitest/browser-playwright` for browser projects.

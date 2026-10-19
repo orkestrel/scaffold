@@ -303,6 +303,38 @@ describe('configuration infrastructure', () => {
 			scratch.destroy()
 		}
 	})
+	it('distinguishes computed-import and dynamic-require diagnostics from their collection sentinels', () => {
+		const scratch = createPolicyScratch({ prefix: 'scaffold-computed-diagnostics-' })
+		try {
+			scratch.write(
+				'.oxlintrc.json',
+				JSON.stringify({
+					plugins: ['import'],
+					rules: {
+						'no-debugger': 'error',
+						'import/no-dynamic-require': ['error', { esmodule: false }],
+					},
+				}),
+			)
+			scratch.write(
+				'import.ts',
+				'const selected = process.argv[2]\nvoid import(selected)\ndebugger\n',
+			)
+			scratch.write(
+				'require.ts',
+				'const selected = process.argv[2]\nvoid require(selected)\ndebugger\n',
+			)
+			expect(readImportDiagnostics(scratch.path, ['import.ts', 'require.ts'])).toEqual(
+				new Set([
+					'eslint(no-debugger) import.ts',
+					'eslint(no-debugger) require.ts',
+					'import(no-dynamic-require) require.ts',
+				]),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
 })
 
 describe('inspectPolicySetup', () => {
