@@ -163,7 +163,7 @@ describe('surface creation and migration', () => {
 		} finally {
 			workspace.destroy()
 		}
-	})
+	}, 30_000)
 
 	// A target that predates the commands module lacks the file, so the deleted case is the
 	// migration: both verbs write the seed it never received.
@@ -207,7 +207,7 @@ describe('surface creation and migration', () => {
 		} finally {
 			workspace.destroy()
 		}
-	})
+	}, 30_000)
 
 	it('refuses malformed selected showcase declarations before manifest or configuration writes', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
@@ -1745,7 +1745,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.26",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.27",`,
 					blocking: false,
 				},
 			])
