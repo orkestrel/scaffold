@@ -77,10 +77,10 @@ Give every selected environment and every face an alias: `src/styles`, each `src
   composition in the root config.
 - Register the package's own Vitest browser commands in the `commands` record of
   `configs/commands.ts`, the presence-owned seed scaffold plans beside `configs/browsers.ts`.
-  Import only a `node:` module or an installed package there: the root config bundles the file
-  into every config load, builds included, and the bundle resolves no workspace alias. Load
-  workspace source inside a command body through `context.project.vitest.import`, never through a
-  static import.
+  Import only a `node:` module or a package the manifest declares in `dependencies` or
+  `devDependencies` there: the root config bundles the file into every config load, builds
+  included, and the bundle resolves no workspace alias. Load workspace source inside a command
+  body through `context.project.vitest.import`, never through a static import.
 - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
   vendored byte-identical to every workspace, so an import there must resolve in all of them.
   `configs/browsers.ts` exists for that reason: it imports `playwright` and

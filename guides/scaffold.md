@@ -2185,11 +2185,11 @@ Nothing is fixed except the manifest.
 - The root configuration bundles `configs/commands.ts` into every configuration load, builds
   included, and the bundle resolves no workspace alias. A native import of `src/server/index.ts`
   from a command body fails with `ERR_MODULE_NOT_FOUND` on that module's own `@src/core` import.
-  Import only a `node:` module or an installed package at the top of the file. Load workspace
-  source inside the command body through `context.project.vitest.import`, which runs on the root
-  Vite server and its `resolve.alias`, and narrow the module it returns as `unknown`. The
-  following module registers a `greeting` command that returns the `message` export of
-  `src/server/index.ts`:
+  Import only a `node:` module or a package the manifest declares in `dependencies` or
+  `devDependencies` at the top of the file. Load workspace source inside the command body through
+  `context.project.vitest.import`, which runs on the root Vite server and its `resolve.alias`, and
+  narrow the module it returns as `unknown`. The following module registers a `greeting` command
+  that returns the `message` export of `src/server/index.ts`:
 
   ```ts
   import type { BrowserCommandContext, BrowserConfigOptions } from 'vitest/node'

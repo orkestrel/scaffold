@@ -25,7 +25,6 @@ import {
 	buildResolveCall,
 	buildSelections,
 	CLASSIFIER_CASES,
-	COMMANDS_PROBE_TEXT,
 	countEmitters,
 	findStrays,
 	findUnassigned,
@@ -994,12 +993,27 @@ describe('emitted workspaces under their own gates', () => {
 			const application = requireValue(workspace.read('application/vite.config.ts'))
 			const showcase = requireValue(workspace.read('showcase/vite.config.ts'))
 			// The root configuration imports the commands record, so the stage writes the seed
-			// beside it. The showcase stage holds a registered command instead, which
-			// typechecks against Vitest's own record type.
+			// beside it. The showcase stage holds a registered command instead: the seed's own
+			// text with only its empty record body replaced by a command taking Vitest's
+			// `BrowserCommandContext` and a typed payload, so the declaration line that
+			// typechecks it is the seed's, not a copy. A seed typed narrower than a real
+			// command, such as `() => unknown`, refuses this command where it is registered.
 			expect(requireValue(workspace.read('application/configs/commands.ts'))).toBe(
 				CONFIG_TEMPLATES.commands,
 			)
-			workspace.write('showcase/configs/commands.ts', COMMANDS_PROBE_TEXT)
+			const emptyRecord = 'Object.freeze({})'
+			expect(CONFIG_TEMPLATES.commands.split(emptyRecord)).toHaveLength(2)
+			const typedCommands = `import type { BrowserCommandContext } from 'vitest/node'\n${CONFIG_TEMPLATES.commands.replace(
+				emptyRecord,
+				[
+					'Object.freeze({',
+					'\tgreeting: (context: BrowserCommandContext, name: string): Promise<string> =>',
+					'\t\tPromise.resolve(`${context.project.name}: ${name}`),',
+					'})',
+				].join('\n'),
+			)}`
+			expect(typedCommands).not.toContain(emptyRecord)
+			workspace.write('showcase/configs/commands.ts', typedCommands)
 			expect(checkTypes(applicationRoot)).toBe('')
 			expect(checkTypes(showcaseRoot)).toBe('')
 

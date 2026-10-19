@@ -604,7 +604,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "085e9a26baeb50b215d715a349532b44866f7e0446776e21e9402b26e6b34eb1"
+			"digest": "2d48495981e0fa29c5db11807c64d01e4e463cddb0e45b1345cfa96b34a7e647"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "e9eb459d433def12be87feae79ad70c3a0ef840f87f21a38bde714b7a757bc82"
+			"digest": "cf0949511fea178749bf017965ea0672c157117c7b1ae2078ae8206301459141"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2126,5 +2126,5 @@
 			]
 		}
 	],
-	"digest": "5307ef71e60a690f3b0fe947e31af266e053ce2888c9347c2ee995997ac97a63"
+	"digest": "0b8273c6d80ce1316e405dbc3275e0ce8a505717e415ba767caf791390e58bf0"
 }
