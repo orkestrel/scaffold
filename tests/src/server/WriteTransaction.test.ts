@@ -7,6 +7,7 @@ import {
 	readFileSync,
 	renameSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
@@ -443,12 +444,13 @@ for (;;) {
 			const target = workspace.ensure('project')
 			const control = workspace.ensure('control')
 			const child = join(control, 'child')
+			const original = statSync(control).mode & 0o7777
 			chmodSync(control, 0o477)
 			const controlRefusal = captureError(() => {
 				try {
 					mkdirSync(child)
 				} finally {
-					chmodSync(control, 0o700)
+					chmodSync(control, original)
 				}
 			})
 			const transaction = new WriteTransaction(target, ['a/b'])

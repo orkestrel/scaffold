@@ -63,6 +63,7 @@ await new GuideCommand({
 	const { CLI } = await import('../src/bin/CLI.js')
 	const { buildTargetManifest, createSink, createStagedHost, driveClassifier, readStatements } =
 		await import('./setupServer.js')
+	const { collectGuideStatements, POLICY_STUDIES_POPULATION } = await import('./setupPolicy.js')
 
 	describe('guides', () => {
 		it('applies the documented showcase metadata through both public projections', () => {
@@ -395,12 +396,27 @@ await new GuideCommand({
 		})
 
 		it('states the exclusions of the studies selector wherever the guide states its population', () => {
-			const markdown = requireValue(files['guides/scaffold.md']).replaceAll(/\s+/gu, ' ')
 			// `tests/src/bin/CLI.test.ts` executes the selector against a `node_modules` and a `.git`
-			// directory; this guards that each sentence stating the population carries the exclusion.
-			const phrase =
-				"outside any `node_modules` or `.git` directory, which Vitest's default exclude never collects"
-			expect(markdown.split(phrase)).toHaveLength(3)
+			// directory; this guards that each prose sentence stating the population carries the exclusion.
+			const statements = collectGuideStatements(
+				requireValue(files['guides/scaffold.md']),
+				POLICY_STUDIES_POPULATION,
+			)
+			// The members the guide must state it in: the creation list, the reading of a target, the
+			// structural fact, the fixed proof projects, and the summary cell of the include's constant.
+			const sites = [
+				'Add a root `tests/setup*.test.ts` proof for `setup`',
+				'The remaining facts come from exact-case files',
+				'`studies` says the workspace holds at least one',
+				'The optional proof projects are fixed',
+				'Names the include the study project covers',
+			]
+			expect(
+				sites.filter((site) => !statements.some((sentence) => sentence.includes(site))),
+			).toStrictEqual([])
+			expect(
+				statements.filter((sentence) => !sentence.includes(POLICY_STUDIES_POPULATION.exclusion)),
+			).toStrictEqual([])
 		})
 
 		it('derives every structural fact and extension from its own markers', () => {

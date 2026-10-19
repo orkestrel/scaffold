@@ -16,14 +16,19 @@ import {
 	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
+import type { ManifestEntry } from '@src/server'
 import { computeDigest, pathToStorage, readHostFloor } from '@src/server'
 import packageManifest from '../package.json' with { type: 'json' }
 import {
 	buildBlueprint,
+	buildLazyCase,
+	buildMissingCase,
 	buildSnapshot,
 	buildSparse,
 	ENTRY_FILES,
 	PLANNED_SETUP_SEED,
+	readLazily,
+	refuseObject,
 } from './setup.js'
 import {
 	ALIGNED_MANIFEST_TEXT,
@@ -1025,15 +1030,39 @@ describe('the upstream fixtures', () => {
 		}
 	})
 
-	it('refuses a hole in the floor entries as the entry it reads as', () => {
-		const entries = buildSparse(2, new Map([[1, requireValue(buildStagedManifest().entries[0])]]))
+	// The manifest is serialized first, which reads each entry once, and the loop then reads each entry
+	// once more, so a hole or a refusal fails the loop after the serialization has read the list.
+	it('reads the floor entries as the serialization and the loop did, and refuses what they refuse', () => {
+		const entry = (): ManifestEntry => requireValue(buildStagedManifest().entries[0])
+		const serve = (entries: ManifestEntry[]) =>
+			buildInstalledHostReplies({ manifest: { ...buildStagedManifest(), entries }, bytes: {} })
+		const lazy = buildLazyCase('the entries a floor serves', (shape) =>
+			readLazily(shape, entry, serve, refuseObject(entry)),
+		)
+		const missing = buildMissingCase('the entries a floor serves', entry, serve, [0, 1])
 
-		expect(() =>
-			buildInstalledHostReplies({
-				manifest: { ...buildStagedManifest(), entries },
-				bytes: {},
-			}),
-		).toThrow(TypeError)
+		expect(lazy.read('hole-before-entry')).toStrictEqual({ outcome: 'TypeError', reads: [1] })
+		expect(lazy.read('hole-before-refusal')).toStrictEqual({ outcome: 'RangeError', reads: [1] })
+		expect(lazy.read('refusal-before-entry')).toStrictEqual({ outcome: 'TypeError', reads: [0] })
+		expect(lazy.read('dense-pair')).toStrictEqual({ outcome: 'return', reads: [0, 1, 0, 1] })
+		expect(missing.read()).toStrictEqual({ outcome: 'TypeError', reads: [0, 1] })
+	})
+
+	it('refuses a list of paths without an iterator before it reads a path', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const target = workspace.ensure('target')
+			workspace.write('target/AGENTS.md', '# Agents\n')
+			const missing = buildMissingCase(
+				'the paths an audit lists',
+				() => 'AGENTS.md',
+				(paths) => buildTargetAudit(target, paths, []),
+			)
+
+			expect(missing.read()).toStrictEqual({ outcome: 'TypeError', reads: [] })
+		} finally {
+			workspace.destroy()
+		}
 	})
 
 	it('answers a listed path with its scripted status, body, headers, and declared length', async () => {

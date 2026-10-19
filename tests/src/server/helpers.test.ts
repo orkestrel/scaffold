@@ -78,8 +78,19 @@ import {
 	stageHost,
 	stageInventory,
 } from '@src/server'
-import { describe, expect, it } from 'vitest'
-import { buildHostArtifact, buildHostileCases, buildPlan, buildSparse } from '../../setup.js'
+import { afterAll, describe, expect, it } from 'vitest'
+import {
+	buildHostArtifact,
+	buildHostileCases,
+	buildLazyCase,
+	buildMissingCase,
+	buildPlan,
+	buildSparse,
+	createClosableList,
+	readLazily,
+	refuseObject,
+	refuseText,
+} from '../../setup.js'
 import {
 	buildCheckoutManifest,
 	buildVendoredPlan,
@@ -3389,6 +3400,385 @@ describe('write preconditions', () => {
 		} finally {
 			workspace.destroy()
 		}
+	})
+})
+
+// A `for…of` loop reads one entry, works on it, and stops at the first failure, where a copy of the
+// list reads every entry first. Each case runs the helper over a list of two recorded entries and
+// pins the constructor it raised and the entries it read, as the loop the helper replaced gave them.
+describe('server helpers over a caller-supplied list read one entry at a time', () => {
+	const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+	const manifest = buildVendoredManifest()
+	const floor = {
+		manifest,
+		bytes: Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		),
+	}
+	const row = (): HostFile => ({
+		path: 'scripts/codex.sh',
+		lookup: 'found',
+		hex: contentToHex('live script\n'),
+	})
+
+	const declared = () =>
+		buildManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' })
+
+	afterAll(() => {
+		workspace.destroy()
+	})
+
+	it.each([
+		buildLazyCase('the removed paths whose directories are pruned', (shape) =>
+			readLazily(
+				shape,
+				() => 'notes/entry.md',
+				(removed) => pruneEmptiedDirectories(workspace.path, removed),
+				refuseText,
+			),
+		),
+		buildLazyCase('the rows a host is assembled from', (shape) =>
+			readLazily(shape, row, (files) => filesToHost(files, floor), refuseObject(row)),
+		),
+		buildLazyCase(
+			'the entries a floor host declares',
+			(shape) =>
+				readLazily(
+					shape,
+					declared,
+					(entries) =>
+						filesToHost([row()], { manifest: { ...manifest, entries }, bytes: floor.bytes }),
+					refuseObject(declared),
+				),
+			{
+				hole: { outcome: 'TypeError', reads: [1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				dense: { outcome: 'return', reads: [0, 1, 0, 1] },
+			},
+		),
+		buildLazyCase(
+			'the paths a snapshot is read over',
+			(shape) =>
+				readLazily(
+					shape,
+					() => 'AGENTS.md',
+					(paths) => readSnapshot(workspace.path, paths),
+					refuseText,
+				),
+			{
+				hole: { outcome: 'ScaffoldError', reads: [1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				refusal: { outcome: 'ScaffoldError', reads: [0] },
+				dense: { outcome: 'return', reads: [0, 1, 0, 1] },
+			},
+		),
+	])('reads $label one entry at a time', ({ read, hole, refused, refusal, dense }) => {
+		expect(read('hole-before-entry')).toStrictEqual(hole)
+		expect(read('hole-before-refusal')).toStrictEqual(refused)
+		expect(read('refusal-before-entry')).toStrictEqual(refusal)
+		expect(read('dense-pair')).toStrictEqual(dense)
+	})
+})
+
+// A `for…of` loop takes the iterator a list names and refuses a list that names none, where
+// `Array.from` and `values()` fall back to the indexes and answer. Each case runs the helper over a
+// list whose `Symbol.iterator` is `undefined` and pins the constructor and the entries read before
+// the iterator was taken, as the loop the helper replaced gave them.
+describe('server helpers over a list without an iterator refuse it as the loop did', () => {
+	const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+	const manifest = buildVendoredManifest()
+	const floor = {
+		manifest,
+		bytes: Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		),
+	}
+	const row = (): HostFile => ({
+		path: 'scripts/codex.sh',
+		lookup: 'found',
+		hex: contentToHex('live script\n'),
+	})
+	const declared = () =>
+		buildManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' })
+
+	afterAll(() => {
+		workspace.destroy()
+	})
+
+	it.each([
+		buildMissingCase(
+			'the removed paths whose directories are pruned',
+			() => 'notes/entry.md',
+			(removed) => pruneEmptiedDirectories(workspace.path, removed),
+		),
+		buildMissingCase('the rows a host is assembled from', row, (files) =>
+			filesToHost(files, floor),
+		),
+		// The declared entries are mapped to their destinations before the iterator is taken.
+		buildMissingCase(
+			'the entries a floor host declares',
+			declared,
+			(entries) => filesToHost([row()], { manifest: { ...manifest, entries }, bytes: floor.bytes }),
+			[0, 1],
+		),
+		// The paths are checked as plannable before the iterator is taken.
+		buildMissingCase(
+			'the paths a snapshot is read over',
+			() => 'AGENTS.md',
+			(paths) => readSnapshot(workspace.path, paths),
+			[0, 1],
+		),
+		buildMissingCase(
+			'the destinations a host stages',
+			() => 'AGENTS.md',
+			(destinations) => stageBytes(floor, workspace.path, destinations),
+		),
+	])('refuses $label after the reads it names', ({ read, reads }) => {
+		expect(read()).toStrictEqual({ outcome: 'TypeError', reads })
+	})
+})
+
+// A `for…of` loop closes its iterator when it returns early and when its body throws, and it leaves
+// an iterator that ended alone. A close that raises surfaces when the loop returned, and gives way to
+// the body's own error when the body threw. Each case hands the helper a list whose iterator records
+// its steps and its closes, and pins the log and the constructor the loop the helper replaced gave.
+describe('filesToHost closes the iterators of the lists it stops reading as the loop did', () => {
+	const manifest = buildVendoredManifest()
+	const floor = {
+		manifest,
+		bytes: Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		),
+	}
+	const found = (path: string): HostFile => ({
+		path,
+		lookup: 'found',
+		hex: contentToHex('live script\n'),
+	})
+	const missing = (): HostFile => ({ path: 'scripts/codex.sh', lookup: 'missing', note: 'none' })
+	const smuggled = (): HostFile => found('smuggled.md')
+	const declared = (destination: string) => () =>
+		buildManifestEntry({ storage: destination, destination })
+	const raise = (): never => {
+		throw new EvalError('close')
+	}
+	const rows = new Map<number, () => HostFile>([
+		[0, () => found('scripts/codex.sh')],
+		[1, () => found('guides/guide.md')],
+	])
+
+	it.each([
+		['a row that is not found', missing],
+		['a row that names an undeclared path', smuggled],
+	])('closes the files once at %s and answers undefined', (_label, refusing) => {
+		const closable = createClosableList(
+			2,
+			new Map([
+				[0, refusing],
+				[1, () => found('guides/guide.md')],
+			]),
+		)
+
+		expect(filesToHost(closable.list, floor)).toBeUndefined()
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+	})
+
+	it('closes the files once when a row throws, as the loop closed them for a body that threw', () => {
+		const closable = createClosableList(2, new Map([[1, () => found('scripts/codex.sh')]]))
+
+		expect(() => filesToHost(closable.list, floor)).toThrow(TypeError)
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'return'])
+	})
+
+	it('leaves the files alone when they end and reads the step that finds them done', () => {
+		const closable = createClosableList(2, rows)
+
+		expect(filesToHost(closable.list, floor)).toBeDefined()
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'get:1', 'next'])
+	})
+
+	it('surfaces the close of the files when the loop returned and drops it when a row threw', () => {
+		const stopped = createClosableList(1, new Map([[0, missing]]), { close: raise })
+		const thrown = createClosableList(1, new Map<number, () => HostFile>(), { close: raise })
+		const answered = createClosableList(1, new Map([[0, missing]]), { close: () => 5 })
+
+		expect(() => filesToHost(stopped.list, floor)).toThrow(EvalError)
+		expect(() => filesToHost(thrown.list, floor)).toThrow(TypeError)
+		expect(() => filesToHost(answered.list, floor)).toThrow(TypeError)
+		expect(stopped.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+		expect(thrown.calls).toStrictEqual(['iter', 'next', 'return'])
+	})
+
+	it('closes the floor entries once at an entry with no bytes and answers undefined', () => {
+		const closable = createClosableList(
+			2,
+			new Map([
+				[0, declared('scripts/codex.sh')],
+				[1, declared('scripts/npm.sh')],
+			]),
+		)
+
+		expect(
+			filesToHost([], { manifest: { ...manifest, entries: closable.list }, bytes: floor.bytes }),
+		).toBeUndefined()
+		// The declared destinations are mapped by index before the iterator is taken.
+		expect(closable.calls).toStrictEqual(['get:0', 'get:1', 'iter', 'next', 'get:0', 'return'])
+	})
+
+	it('closes the floor entries once when an entry throws and surfaces a close only on a return', () => {
+		const thrown = createClosableList(2, new Map([[1, declared('scripts/codex.sh')]]), {
+			close: raise,
+		})
+		const stopped = createClosableList(1, new Map([[0, declared('scripts/codex.sh')]]), {
+			close: raise,
+		})
+
+		expect(() =>
+			filesToHost([], { manifest: { ...manifest, entries: thrown.list }, bytes: floor.bytes }),
+		).toThrow(TypeError)
+		expect(() =>
+			filesToHost([], { manifest: { ...manifest, entries: stopped.list }, bytes: floor.bytes }),
+		).toThrow(EvalError)
+		expect(thrown.calls).toStrictEqual(['get:1', 'iter', 'next', 'return'])
+	})
+})
+
+// A `for…of` loop reads every entry the iterator of a list yields, however long the list says it is.
+// A list whose iterator is replaced can yield more entries than its `length`, fewer, or the same
+// number in another order. Each case hands the helper such a list, whose iterator records its steps
+// and its closes, and pins the answer and the log the loop the helper replaced gave.
+describe('filesToHost reads the entries the iterators of its lists yield, not the lists’ lengths', () => {
+	const manifest = buildVendoredManifest()
+	const floor = {
+		manifest,
+		bytes: Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		),
+	}
+	const live = (text: string): HostFile => ({
+		path: 'scripts/codex.sh',
+		lookup: 'found',
+		hex: contentToHex(text),
+	})
+	const missing = (): HostFile => ({ path: 'scripts/codex.sh', lookup: 'missing', note: 'none' })
+	const declaration = (destination: string) =>
+		requireValue(manifest.entries.find((one) => one.destination === destination))
+	const serve = <T>(base: readonly T[], served: readonly T[]) => {
+		const recorder = createRecorder<readonly [string]>()
+		const cursor = served.values()
+		const list = Object.defineProperty([...base], Symbol.iterator, {
+			value: () => {
+				recorder.handler('iter')
+				return {
+					next: () => {
+						recorder.handler('next')
+						return cursor.next()
+					},
+					return: () => {
+						recorder.handler('return')
+						return { done: true, value: undefined }
+					},
+				}
+			},
+		})
+		return {
+			list,
+			get calls() {
+				return recorder.calls.map(([call]) => call)
+			},
+		}
+	}
+
+	it('holds the later row of an iterator that yields more rows than the list is long', () => {
+		const rows = serve<HostFile>([], [live('first\n'), live('second\n')])
+		const assembled = filesToHost(rows.list, floor)
+
+		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('second\n'))
+		expect(
+			assembled?.manifest.entries.find((one) => one.destination === 'scripts/codex.sh')?.digest,
+		).toBe(computeDigest('second\n'))
+		expect(rows.calls).toStrictEqual(['iter', 'next', 'next', 'next'])
+	})
+
+	it('reaches the refusal of an iterator that yields it beyond the list length and closes once', () => {
+		const rows = serve<HostFile>([], [live('first\n'), live('second\n'), missing()])
+
+		expect(filesToHost(rows.list, floor)).toBeUndefined()
+		expect(rows.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'return'])
+	})
+
+	it('holds the row of an iterator that yields fewer rows than the list is long', () => {
+		const rows = serve<HostFile>([live('one\n'), live('two\n'), live('three\n')], [live('only\n')])
+		const assembled = filesToHost(rows.list, floor)
+
+		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('only\n'))
+		expect(rows.calls).toStrictEqual(['iter', 'next', 'next'])
+	})
+
+	it('holds the row an iterator yields last when it yields the rows in another order', () => {
+		const rows = serve<HostFile>(
+			[live('first\n'), live('second\n')],
+			[live('second\n'), live('first\n')],
+		)
+		const assembled = filesToHost(rows.list, floor)
+
+		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('first\n'))
+		expect(rows.calls).toStrictEqual(['iter', 'next', 'next', 'next'])
+	})
+
+	it('digests every floor entry an iterator yields beyond the list length', () => {
+		const served = [
+			declaration('AGENTS.md'),
+			declaration('.claude/agents/orkestrel.md'),
+			declaration('.claude/rules/names.md'),
+		]
+		const entries = serve([declaration('AGENTS.md')], served)
+		const assembled = filesToHost([], {
+			manifest: { ...manifest, entries: entries.list },
+			bytes: floor.bytes,
+		})
+
+		expect(assembled?.manifest.entries.map((one) => one.destination)).toStrictEqual(
+			served.map((one) => one.destination),
+		)
+		expect(Object.keys(assembled?.bytes ?? {})).toStrictEqual(served.map((one) => one.destination))
+		expect(entries.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'next'])
+	})
+
+	it('reaches the entry with no bytes an iterator yields beyond the list length and closes once', () => {
+		const entries = serve([], [declaration('AGENTS.md'), declaration('scripts/codex.sh')])
+
+		expect(
+			filesToHost([], { manifest: { ...manifest, entries: entries.list }, bytes: floor.bytes }),
+		).toBeUndefined()
+		expect(entries.calls).toStrictEqual(['iter', 'next', 'next', 'return'])
+	})
+
+	it('digests the entry an iterator yields when it yields fewer entries than the list is long', () => {
+		const entries = serve(manifest.entries, [declaration('guides/guide.md')])
+		const assembled = filesToHost([], {
+			manifest: { ...manifest, entries: entries.list },
+			bytes: floor.bytes,
+		})
+
+		expect(assembled?.manifest.entries.map((one) => one.destination)).toStrictEqual([
+			'guides/guide.md',
+		])
+		expect(entries.calls).toStrictEqual(['iter', 'next', 'next'])
+	})
+
+	it('digests the entries in the order an iterator yields them when it yields another order', () => {
+		const forward = manifest.entries.slice(0, 3)
+		const entries = serve(forward, [...forward].reverse())
+		const assembled = filesToHost([], {
+			manifest: { ...manifest, entries: entries.list },
+			bytes: floor.bytes,
+		})
+
+		expect(assembled?.manifest.entries.map((one) => one.destination)).toStrictEqual(
+			[...forward].reverse().map((one) => one.destination),
+		)
+		expect(entries.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'next'])
 	})
 })
 

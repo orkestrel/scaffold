@@ -19,9 +19,10 @@ import {
 	readFileSync,
 	readdirSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from 'node:fs'
-import { tmpdir, userInfo } from 'node:os'
+import { tmpdir } from 'node:os'
 import { basename, dirname, join, matchesGlob, relative as relativePath, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseAst, parseSync } from 'vite'
@@ -243,29 +244,490 @@ export function createPolicySparse<T>(length: number, entries: ReadonlyMap<numbe
 }
 
 /**
+ * Creates a list whose entries are getters, so a reader's every read of an entry is recorded.
+ *
+ * @remarks
+ * Only the indexes in `entries` hold a getter, and every other index stays a hole. A getter reports
+ * its index to `record` and then produces its value, which may throw, so a case sees which entries
+ * a reader touched before it stopped. An iterator reads an entry once as it yields it, where a copy
+ * of the list reads every entry before the reader sees the first.
+ *
+ * @param length - The length of the list, holes included.
+ * @param entries - The producer behind each getter, by index.
+ * @param record - The function that receives an index each time its getter runs.
+ * @param iterable - If `true`, the list keeps the iterator every array has; if `false`, its
+ * `Symbol.iterator` is `undefined`, which a loop refuses and `Array.from` and `values()` do not.
+ * Default: `true`.
+ * @returns The list.
+ */
+export function createPolicyReads<T>(
+	length: number,
+	entries: ReadonlyMap<number, () => T>,
+	record: (index: number) => void,
+	iterable = true,
+): T[] {
+	const list = createPolicySparse<T>(length, new Map())
+	for (const [index, produce] of entries) {
+		Object.defineProperty(list, index, {
+			configurable: true,
+			enumerable: true,
+			get() {
+				record(index)
+				return produce()
+			},
+		})
+	}
+	if (!iterable) Object.defineProperty(list, Symbol.iterator, { value: undefined })
+	return list
+}
+
+/**
+ * Throws the error a getter raises when its entry refuses to be read.
+ *
+ * @returns Never.
+ * @throws RangeError - Thrown when called.
+ */
+export function failPolicyRead(): never {
+	throw new RangeError('The entry refused its read')
+}
+
+/**
+ * Settles one action into text a case compares for equality.
+ *
+ * @param action - The action to run.
+ * @returns `return` and the JSON of the returned value, or `throw` and the constructor name.
+ */
+export function settlePolicyOutcome(action: () => unknown): string {
+	try {
+		return `return ${JSON.stringify(action())}`
+	} catch (error) {
+		return `throw ${error instanceof Error ? error.constructor.name : typeof error}`
+	}
+}
+
+/** Describes one reader run over a recorded list, with the outcome and entry reads it must show. */
+export interface PolicyLazyCase {
+	readonly label: string
+	readonly outcome: string
+	readonly reads: readonly number[]
+	readonly observe: (record: (index: number) => void) => string
+}
+
+/**
+ * Creates one case that runs a reader over a recorded list.
+ *
+ * @param label - The text naming the reader and the list.
+ * @param reader - The reader to run over the list.
+ * @param list - The length of the list and the producer behind each getter, by index.
+ * @param expected - The settled outcome and the indexes the reader must read, in order.
+ * @returns The case.
+ */
+export function createPolicyLazyCase<T>(
+	label: string,
+	reader: (list: T[]) => unknown,
+	list: {
+		readonly length: number
+		readonly entries: ReadonlyMap<number, () => T>
+		readonly iterable?: boolean
+	},
+	expected: { readonly outcome: string; readonly reads: readonly number[] },
+): PolicyLazyCase {
+	return {
+		label,
+		outcome: expected.outcome,
+		reads: expected.reads,
+		observe: (record) =>
+			settlePolicyOutcome(() =>
+				reader(createPolicyReads(list.length, list.entries, record, list.iterable)),
+			),
+	}
+}
+
+/**
+ * Describes the entries of one recorded list.
+ *
+ * @remarks
+ * An index in `entries` produces a value the reader accepts, an index in `refusals` produces a
+ * value the reader fails on once it has the value, and an index in `failures` fails when the
+ * getter runs. Every other index is a hole. A list with `iterable` set to `false` has no iterator,
+ * which a loop refuses and `Array.from` and `values()` do not; it is an iterator list otherwise.
+ */
+export interface PolicyLazyShape {
+	readonly label: string
+	readonly length: number
+	readonly entries: readonly number[]
+	readonly refusals: readonly number[]
+	readonly failures: readonly number[]
+	readonly iterable?: boolean
+}
+
+/** Holds the list shapes that tell one-entry-at-a-time reading from a copy that reads ahead. */
+export const POLICY_LAZY_SHAPES = Object.freeze({
+	empty: { label: 'an empty list', length: 0, entries: [], refusals: [], failures: [] },
+	dense: { label: 'one entry', length: 1, entries: [0], refusals: [], failures: [] },
+	hole: { label: 'a hole, then an entry', length: 2, entries: [1], refusals: [], failures: [] },
+	holeFailure: {
+		label: 'a hole, then a failing entry',
+		length: 2,
+		entries: [],
+		refusals: [],
+		failures: [1],
+	},
+	failureFirst: {
+		label: 'a failing entry, then an entry',
+		length: 2,
+		entries: [1],
+		refusals: [],
+		failures: [0],
+	},
+	refusalFirst: {
+		label: 'a refused entry, then an entry',
+		length: 2,
+		entries: [1],
+		refusals: [0],
+		failures: [],
+	},
+	holeBetween: {
+		label: 'an entry, a hole, then an entry',
+		length: 3,
+		entries: [0, 2],
+		refusals: [],
+		failures: [],
+	},
+	unlisted: {
+		label: 'two entries on a list without an iterator',
+		length: 2,
+		entries: [0, 1],
+		refusals: [],
+		failures: [],
+		iterable: false,
+	},
+} satisfies Record<string, PolicyLazyShape>)
+
+/** Holds values a reader's signature refuses, which a case feeds it to make processing fail. */
+export const POLICY_REFUSALS = Object.freeze({ number: 7, symbol: Symbol('refused') })
+
+/**
+ * Creates a revoked proxy, which refuses every guard that inspects it.
+ *
+ * @returns The proxy, whose `Array.isArray` check throws a `TypeError`.
+ */
+export function createPolicyRevoked(): object {
+	const { proxy, revoke } = Proxy.revocable({}, {})
+	revoke()
+	return proxy
+}
+
+/**
+ * Creates one case per list shape for a reader of a caller-supplied list.
+ *
+ * @param subject - The text naming the reader.
+ * @param reader - The reader to run over each list.
+ * @param producers - The producer behind each entry the reader accepts, and behind each it refuses.
+ * @param rows - Each shape with the settled outcome and the indexes the reader must read, in order.
+ * @returns One case per row.
+ */
+export function createPolicyLazyCases<T>(
+	subject: string,
+	reader: (list: T[]) => unknown,
+	producers: { readonly valid: () => T; readonly refusal: () => T },
+	rows: ReadonlyArray<readonly [PolicyLazyShape, string, readonly number[]]>,
+): readonly PolicyLazyCase[] {
+	return rows.map(([shape, outcome, reads]) =>
+		createPolicyLazyCase(
+			`${subject}: ${shape.label}`,
+			reader,
+			{
+				length: shape.length,
+				entries: new Map<number, () => T>([
+					...shape.entries.map((index): [number, () => T] => [index, producers.valid]),
+					...shape.refusals.map((index): [number, () => T] => [index, producers.refusal]),
+					...shape.failures.map((index): [number, () => T] => [index, failPolicyRead]),
+				]),
+				iterable: shape.iterable ?? true,
+			},
+			{ outcome, reads },
+		),
+	)
+}
+
+/**
+ * Holds one case per reader and list shape for the readers that take a caller-supplied list.
+ *
+ * @remarks
+ * Each outcome and read list is what the loop each reader replaced produced. A hole is visited as
+ * `undefined`, an entry after a failing one is never read, a refusal names its constructor, and a
+ * list without an iterator is refused with a `TypeError` before any entry is read.
+ */
+export const POLICY_LAZY_CASES: readonly PolicyLazyCase[] = Object.freeze([
+	...createPolicyLazyCases(
+		'inspectPolicyMirrorPaths',
+		(list: string[]) => inspectPolicyMirrorPaths(list, new Set()).map(({ path }) => path),
+		{
+			valid: () => 'tests/src/core/A.test.ts',
+			// The descriptor read answers `any`, so a value the signature refuses reaches the reader.
+			refusal: () => Object.getOwnPropertyDescriptor(POLICY_REFUSALS, 'symbol')?.value,
+		},
+		[
+			[POLICY_LAZY_SHAPES.empty, 'return []', []],
+			[POLICY_LAZY_SHAPES.dense, 'return ["tests/src/core/A.test.ts"]', [0]],
+			[POLICY_LAZY_SHAPES.hole, 'throw TypeError', []],
+			[POLICY_LAZY_SHAPES.holeFailure, 'throw TypeError', []],
+			[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+			[POLICY_LAZY_SHAPES.refusalFirst, 'throw TypeError', [0]],
+			[POLICY_LAZY_SHAPES.holeBetween, 'throw TypeError', [0]],
+			[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+		],
+	),
+	...createPolicyLazyCases(
+		'inspectPolicyWiring rules',
+		(list: string[]) => inspectPolicyWiring({}, list, []),
+		{
+			valid: () => 'a',
+			refusal: () => Object.getOwnPropertyDescriptor(POLICY_REFUSALS, 'symbol')?.value,
+		},
+		[
+			[POLICY_LAZY_SHAPES.empty, 'return []', []],
+			[
+				POLICY_LAZY_SHAPES.dense,
+				'return ["a is enabled by no top-level or override rules record"]',
+				[0],
+			],
+			[
+				POLICY_LAZY_SHAPES.hole,
+				'return ["undefined is enabled by no top-level or override rules record","a is enabled by no top-level or override rules record"]',
+				[1],
+			],
+			[POLICY_LAZY_SHAPES.holeFailure, 'throw RangeError', [1]],
+			[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+			[POLICY_LAZY_SHAPES.refusalFirst, 'throw TypeError', [0]],
+			[
+				POLICY_LAZY_SHAPES.holeBetween,
+				'return ["a is enabled by no top-level or override rules record","undefined is enabled by no top-level or override rules record","a is enabled by no top-level or override rules record"]',
+				[0, 2],
+			],
+			[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+		],
+	),
+	...createPolicyLazyCases(
+		'inspectPolicyWiring populations',
+		(list: Array<readonly string[]>) => inspectPolicyWiring({}, [], list),
+		{
+			valid: () => ['a'],
+			refusal: () => Object.getOwnPropertyDescriptor(POLICY_REFUSALS, 'number')?.value,
+		},
+		[
+			[POLICY_LAZY_SHAPES.empty, 'return []', []],
+			[
+				POLICY_LAZY_SHAPES.dense,
+				'return ["no override files list declares the population exactly: a"]',
+				[0],
+			],
+			[POLICY_LAZY_SHAPES.hole, 'throw TypeError', []],
+			[POLICY_LAZY_SHAPES.holeFailure, 'throw TypeError', []],
+			[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+			[POLICY_LAZY_SHAPES.refusalFirst, 'throw TypeError', [0]],
+			[POLICY_LAZY_SHAPES.holeBetween, 'throw TypeError', [0]],
+			[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+		],
+	),
+	...createPolicyLazyCases(
+		'inspectPolicyWiring overrides',
+		(list: unknown[]) => inspectPolicyWiring({ overrides: list }, [], []),
+		{ valid: () => ({ files: ['a'] }), refusal: createPolicyRevoked },
+		[
+			[POLICY_LAZY_SHAPES.empty, 'return []', []],
+			[POLICY_LAZY_SHAPES.dense, 'return []', [0]],
+			[POLICY_LAZY_SHAPES.hole, 'return []', [1]],
+			[POLICY_LAZY_SHAPES.holeFailure, 'throw RangeError', [1]],
+			[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+			[POLICY_LAZY_SHAPES.refusalFirst, 'throw TypeError', [0]],
+			[POLICY_LAZY_SHAPES.holeBetween, 'return []', [0, 2]],
+			[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+		],
+	),
+	...createPolicyLazyCases(
+		'inspectPolicyConfiguration overrides',
+		(list: unknown[]) =>
+			inspectPolicyConfiguration({
+				rules: Object.fromEntries(POLICY_WIRING_RULES.map((rule) => [rule, 'error'])),
+				overrides: list,
+			}),
+		{ valid: () => ({}), refusal: createPolicyRevoked },
+		[
+			[POLICY_LAZY_SHAPES.empty, 'return []', []],
+			[POLICY_LAZY_SHAPES.dense, 'return []', [0]],
+			[POLICY_LAZY_SHAPES.hole, 'return ["override entries must be records"]', [1]],
+			[POLICY_LAZY_SHAPES.holeFailure, 'throw RangeError', [1]],
+			[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+			[POLICY_LAZY_SHAPES.refusalFirst, 'throw TypeError', [0]],
+			[POLICY_LAZY_SHAPES.holeBetween, 'return ["override entries must be records"]', [0, 2]],
+			[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+		],
+	),
+	...createPolicyLazyCases(
+		'inspectPolicyConfiguration ignorePatterns',
+		(list: unknown[]) =>
+			inspectPolicyConfiguration({
+				rules: Object.fromEntries(POLICY_WIRING_RULES.map((rule) => [rule, 'error'])),
+				ignorePatterns: list,
+			}),
+		// The reader skips every entry that is not a string, so no entry refuses it and no row uses the
+		// refusal.
+		{ valid: () => 'src', refusal: createPolicyRevoked },
+		[
+			[POLICY_LAZY_SHAPES.empty, 'return []', []],
+			[POLICY_LAZY_SHAPES.dense, 'return ["ignorePatterns must not reach src"]', [0]],
+			[POLICY_LAZY_SHAPES.hole, 'return ["ignorePatterns must not reach src"]', [1]],
+			[POLICY_LAZY_SHAPES.holeFailure, 'throw RangeError', [1]],
+			[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+			[
+				POLICY_LAZY_SHAPES.holeBetween,
+				'return ["ignorePatterns must not reach src","ignorePatterns must not reach src"]',
+				[0, 2],
+			],
+			[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+		],
+	),
+	...createPolicyLazyCases(
+		'inspectPolicyFilenamePaths',
+		(list: string[]) => inspectPolicyFilenamePaths(list).map(({ path }) => path),
+		{
+			valid: () => 'src/a.ts',
+			refusal: () => Object.getOwnPropertyDescriptor(POLICY_REFUSALS, 'symbol')?.value,
+		},
+		[[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []]],
+	),
+])
+
+/** Describes a population a guide states, the words that mark a sentence stating it, and its exclusion. */
+export interface PolicyPopulation {
+	readonly subject: string
+	readonly markers: readonly string[]
+	readonly exclusion: string
+}
+
+/** Describes the population of test files that selects the `studies` fact, and what it leaves out. */
+export const POLICY_STUDIES_POPULATION: PolicyPopulation = Object.freeze({
+	subject: '`studies`',
+	markers: Object.freeze(['`*.test.ts`', 'test files']),
+	exclusion: 'outside any `node_modules` or `.git` directory',
+})
+
+/**
+ * Collects the guide prose sentences that state one population.
+ *
+ * @remarks
+ * A sentence states the population when it names the subject and one marker. A fenced code block
+ * is not prose. The lines of a block that are not table rows are joined into one text, and each
+ * cell of a table row is a text of its own, so a `Summary` cell that equals its export's
+ * description is held to the same sentences as the prose: the source doc block is where that cell's
+ * wording is decided.
+ *
+ * @param markdown - The guide Markdown.
+ * @param population - The subject, markers, and exclusion that describe the population.
+ * @returns Each sentence that states the population, in document order.
+ */
+export function collectGuideStatements(
+	markdown: string,
+	population: PolicyPopulation,
+): readonly string[] {
+	return markdown
+		.replaceAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gmu, '')
+		.split(/(?:\r\n|\n){2,}/u)
+		.flatMap((block) => {
+			const lines = block.split(/\r\n|\n/u)
+			return [
+				lines.filter((line) => !line.startsWith('|')).join(' '),
+				...lines.filter((line) => line.startsWith('|')).flatMap((row) => row.split(/(?<!\\)\|/u)),
+			].flatMap((text) =>
+				text
+					.replaceAll(/\s+/gu, ' ')
+					.trim()
+					.split(/(?<=[.!?])\s+/u),
+			)
+		})
+		.filter(
+			(sentence) =>
+				sentence.includes(population.subject) &&
+				population.markers.some((marker) => sentence.includes(marker)),
+		)
+}
+
+/** Names the security identifier of the group every access token holds, in the form `icacls` accepts. */
+export const POLICY_DENY_PRINCIPAL = '*S-1-1-0'
+
+/**
+ * Runs one executable to completion and returns what it printed.
+ *
+ * @param file - The executable to run, resolved by name.
+ * @param args - The arguments, passed without a shell.
+ * @returns The standard output.
+ * @throws Error - Thrown when the executable cannot start or exits with a non-zero status.
+ */
+export function runPolicyCommand(file: string, args: readonly string[]): string {
+	const result = spawnSync(file, args, { encoding: 'utf8', windowsHide: true })
+	if (result.error !== undefined) throw result.error
+	if (result.status !== 0)
+		throw new Error(
+			`${file} ${args.join(' ')} exited with ${result.status}: ${result.stdout}${result.stderr}`,
+		)
+	return result.stdout
+}
+
+/**
+ * Reads the permission state of one file as text two readings compare for equality.
+ *
+ * @remarks
+ * Permission state is platform-defined. A POSIX file carries a mode, read as its octal digits
+ * through `statSync`, and a Windows file carries an access-control list, read as the `icacls`
+ * listing of the path, so the text holds every explicit and inherited entry in order.
+ *
+ * @param path - The absolute path of an existing file.
+ * @returns The octal mode on POSIX, and the `icacls` listing on Windows.
+ * @throws Error - Thrown when the Windows listing command exits with a non-zero status.
+ */
+export function readPolicyPermissions(path: string): string {
+	return process.platform === 'win32'
+		? runPolicyCommand('icacls', [path])
+		: (statSync(path).mode & 0o7777).toString(8)
+}
+
+/**
  * Withholds read access to one file from the current user.
  *
  * @remarks
  * Read permission is platform-defined. A POSIX mode of zero withholds it from every user but root,
- * and a Windows access-control entry that denies read withholds it from the named user, an
- * administrator included. A `package.json` that is a directory cannot stand in for this: the
- * regular-file check refuses it before any read starts, so only a file the host refuses to open
- * reaches the read boundary.
+ * and a Windows access-control entry that denies read withholds it from the holder of every token.
+ * A `package.json` that is a directory cannot stand in for this: the regular-file check refuses it
+ * before any read starts, so only a file the host refuses to open reaches the read boundary.
+ *
+ * The restore returns the permission state it found. A POSIX restore writes back the mode read
+ * before the change. A Windows restore removes the deny entries of the one principal the denial
+ * names, because `icacls /restore` of a saved list needs a restore privilege a standard token does
+ * not hold, and `/remove:d` of the user would also strip a deny entry the file already carried. A
+ * restore that leaves the state different, as an earlier deny entry for that principal would,
+ * throws rather than report success.
  *
  * @param path - The absolute path of an existing file.
  * @returns A function that restores the access, to run before the owning directory is removed.
+ * @throws Error - Thrown when a command exits with a non-zero status or the restore differs.
  */
 export function denyPolicyRead(path: string): () => void {
-	const user = userInfo().username
+	const before = readPolicyPermissions(path)
 	if (process.platform === 'win32') {
-		spawnSync('icacls', [path, '/deny', `${user}:(R)`], { stdio: 'ignore' })
-		return () => {
-			spawnSync('icacls', [path, '/remove:d', user], { stdio: 'ignore' })
-		}
+		runPolicyCommand('icacls', [path, '/deny', `${POLICY_DENY_PRINCIPAL}:(R)`])
+	} else {
+		chmodSync(path, 0o000)
 	}
-	chmodSync(path, 0o000)
 	return () => {
-		chmodSync(path, 0o600)
+		if (process.platform === 'win32') {
+			runPolicyCommand('icacls', [path, '/remove:d', POLICY_DENY_PRINCIPAL])
+		} else {
+			chmodSync(path, before)
+		}
+		if (readPolicyPermissions(path) !== before)
+			throw new Error(`The permissions of ${path} did not restore exactly`)
 	}
 }
 
@@ -606,22 +1068,25 @@ export function inspectPolicyMirrorPaths(
 	tests: readonly string[],
 	modules: ReadonlySet<string>,
 ): readonly PolicyViolation[] {
-	// The spread visits a hole as `undefined`, which normalization refuses, as the loop it replaced did.
-	return [...tests].flatMap((test) => {
-		const path = normalizePolicyPath(test)
-		const stem = testToPolicyStem(path)
-		if (stem === undefined) return []
-		const candidates = stemToPolicyCandidates(stem)
-		return candidates.some((candidate) => modules.has(candidate))
-			? []
-			: [
-					createPolicyViolation(
-						'mirror',
-						path,
-						`module test requires one matching module: ${candidates.join(', ')}`,
-					),
-				]
-	})
+	// The mapper runs on each entry as the iterator yields it, so a hole reaches normalization as
+	// `undefined` and no entry after a failing one is read, as in the loop this replaced.
+	return Iterator.from(tests)
+		.flatMap((test) => {
+			const path = normalizePolicyPath(test)
+			const stem = testToPolicyStem(path)
+			if (stem === undefined) return []
+			const candidates = stemToPolicyCandidates(stem)
+			return candidates.some((candidate) => modules.has(candidate))
+				? []
+				: [
+						createPolicyViolation(
+							'mirror',
+							path,
+							`module test requires one matching module: ${candidates.join(', ')}`,
+						),
+					]
+		})
+		.toArray()
 }
 
 /**
@@ -740,30 +1205,38 @@ export function inspectPolicyConfiguration(configuration: unknown): readonly str
 		}),
 		...(ignorePatterns !== undefined && !Array.isArray(ignorePatterns)
 			? ['ignorePatterns must be an array when declared']
-			: (Array.isArray(ignorePatterns) ? ignorePatterns : []).flatMap((pattern) => {
-					if (typeof pattern !== 'string' || pattern.startsWith('!')) return []
-					const normalized = normalizePolicyPath(pattern).replace(/^\.\//u, '').replace(/^\//u, '')
-					const [first = ''] = normalized.split('/')
-					return POLICY_WIRING_ROOTS.some(
-						(root) => first === root || (first !== '' && matchesGlob(root, first)),
-					)
-						? [`ignorePatterns must not reach ${pattern}`]
-						: []
-				})),
+			: // The mapper runs on each pattern as the iterator yields it, as the loop it replaced did.
+				Iterator.from(Array.isArray(ignorePatterns) ? ignorePatterns : [])
+					.flatMap((pattern) => {
+						if (typeof pattern !== 'string' || pattern.startsWith('!')) return []
+						const normalized = normalizePolicyPath(pattern)
+							.replace(/^\.\//u, '')
+							.replace(/^\//u, '')
+						const [first = ''] = normalized.split('/')
+						return POLICY_WIRING_ROOTS.some(
+							(root) => first === root || (first !== '' && matchesGlob(root, first)),
+						)
+							? [`ignorePatterns must not reach ${pattern}`]
+							: []
+					})
+					.toArray()),
 		...(overrides !== undefined && !Array.isArray(overrides)
 			? ['overrides must be an array when declared']
-			: // The spread visits a hole as `undefined`, so a hole is a malformed entry as it was in the loop.
-				[...(Array.isArray(overrides) ? overrides : [])].flatMap((override) => {
-					if (!isPolicyRecord(override)) return ['override entries must be records']
-					const overrideRules: unknown = Object.getOwnPropertyDescriptor(override, 'rules')?.value
-					return isPolicyRecord(overrideRules)
-						? POLICY_WIRING_RULES.flatMap((rule) =>
-								Object.getOwnPropertyDescriptor(overrideRules, rule) === undefined
-									? []
-									: [`overrides must not configure ${rule}`],
-							)
-						: []
-				})),
+			: // The mapper runs on each entry as the iterator yields it, so a hole is a malformed entry as it
+				// was in the loop, and no entry after a failing one is read.
+				Iterator.from(Array.isArray(overrides) ? overrides : [])
+					.flatMap((override) => {
+						if (!isPolicyRecord(override)) return ['override entries must be records']
+						const overrideRules: unknown = Object.getOwnPropertyDescriptor(override, 'rules')?.value
+						return isPolicyRecord(overrideRules)
+							? POLICY_WIRING_RULES.flatMap((rule) =>
+									Object.getOwnPropertyDescriptor(overrideRules, rule) === undefined
+										? []
+										: [`overrides must not configure ${rule}`],
+								)
+							: []
+					})
+					.toArray()),
 	]
 }
 
@@ -784,30 +1257,38 @@ export function inspectPolicyWiring(
 		return ['Oxlint configuration must be a record']
 	}
 
+	const topRules: unknown = Object.getOwnPropertyDescriptor(configuration, 'rules')?.value
 	const overrides: unknown = Object.getOwnPropertyDescriptor(configuration, 'overrides')?.value
-	const entries = (Array.isArray(overrides) ? overrides : []).filter(isPolicyRecord)
-	const records: readonly unknown[] = [
-		Object.getOwnPropertyDescriptor(configuration, 'rules')?.value,
-		...entries.map((entry) => Object.getOwnPropertyDescriptor(entry, 'rules')?.value),
-	]
-	const declaredPopulations = entries.flatMap((entry) => {
-		const files: unknown = Object.getOwnPropertyDescriptor(entry, 'files')?.value
-		return Array.isArray(files) ? [files.join(' ')] : []
-	})
+	// Each mapper runs on an entry as the iterator yields it, so a hole reaches the guard as
+	// `undefined` and no entry after a failing one is read, as in the loops these replaced.
+	const entries = Iterator.from(Array.isArray(overrides) ? overrides : [])
+		.flatMap((entry) => {
+			if (!isPolicyRecord(entry)) return []
+			const record: unknown = Object.getOwnPropertyDescriptor(entry, 'rules')?.value
+			const files: unknown = Object.getOwnPropertyDescriptor(entry, 'files')?.value
+			return [{ record, declared: Array.isArray(files) ? [files.join(' ')] : [] }]
+		})
+		.toArray()
 	const enabled = new Set(
-		records.filter(isPolicyRecord).flatMap((record) => Object.getOwnPropertyNames(record)),
-	)
-	// Each spread visits a hole as `undefined`, as the loops these replaced did.
-	return [
-		...[...rules].flatMap((rule) =>
-			enabled.has(rule) ? [] : [`${rule} is enabled by no top-level or override rules record`],
+		[topRules, ...entries.map(({ record }) => record)].flatMap((record) =>
+			isPolicyRecord(record) ? Object.getOwnPropertyNames(record) : [],
 		),
-		...[...populations].flatMap((population) => {
-			const joined = population.join(' ')
-			return declaredPopulations.includes(joined)
-				? []
-				: [`no override files list declares the population exactly: ${joined}`]
-		}),
+	)
+	const declaredPopulations = entries.flatMap(({ declared }) => declared)
+	return [
+		...Iterator.from(rules)
+			.flatMap((rule) =>
+				enabled.has(rule) ? [] : [`${rule} is enabled by no top-level or override rules record`],
+			)
+			.toArray(),
+		...Iterator.from(populations)
+			.flatMap((population) => {
+				const joined = population.join(' ')
+				return declaredPopulations.includes(joined)
+					? []
+					: [`no override files list declares the population exactly: ${joined}`]
+			})
+			.toArray(),
 	]
 }
 
@@ -1085,11 +1566,14 @@ export function parseSkillPrompt(content: string): string | undefined {
  */
 export function matchesSkillToken(prompt: string, name: string): boolean {
 	const token = `$${name}`
-	// A name that carries `$` makes the token overlap itself, so every start index is tried.
-	return Array.from({ length: prompt.length }, (_, index) => index).some(
-		(index) =>
-			prompt.startsWith(token, index) && !/[a-z-]/u.test(prompt.charAt(index + token.length)),
-	)
+	// The token opens with `$`, so each `$` in the prompt is a start to try, and a name that carries
+	// `$` makes the token overlap itself.
+	return prompt
+		.matchAll(/\$/gu)
+		.some(
+			({ index }) =>
+				prompt.startsWith(token, index) && !/[a-z-]/u.test(prompt.charAt(index + token.length)),
+		)
 }
 
 /**
@@ -2036,8 +2520,8 @@ export function inspectPolicyRuleMap(root: string): readonly PolicyViolation[] {
  * @returns Every unusable-name and case-collision violation in path order.
  */
 export function inspectPolicyFilenamePaths(paths: readonly string[]): readonly PolicyViolation[] {
-	// `Array.from` visits a hole as `undefined`, which normalization refuses, as the loop did.
-	const normalized = Array.from(paths, normalizePolicyPath)
+	// The iterator visits a hole as `undefined`, which normalization refuses, as the loop did.
+	const normalized = Iterator.from(paths).map(normalizePolicyPath).toArray()
 	// Built from the reversed list, so the first path that folds to a key is the spelling a collision reports.
 	const folded = new Map(normalized.toReversed().map((path) => [path.toLowerCase(), path]))
 	return normalized.flatMap((path) => {

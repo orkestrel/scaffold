@@ -59,11 +59,15 @@ import {
 	buildBlueprint,
 	buildContentArtifact,
 	buildDependency,
+	buildLazyCase,
+	buildMissingCase,
 	buildOverride,
 	buildPlan,
 	buildSparse,
 	buildTrailingHole,
 	collectWrappers,
+	createClosableList,
+	createObservedList,
 	ENTRY_AUTHORED_TEST,
 	ENTRY_AUTHORED_VITE,
 	ENTRY_FAILING_TEST,
@@ -89,6 +93,9 @@ import {
 	ENTRY_UNINDEXED,
 	ENTRY_UNOWNED,
 	INSERTION_MANIFEST,
+	readLazily,
+	refuseObject,
+	refuseText,
 	SCRIPT_MANIFEST,
 	SCRIPT_PROOF,
 	SCRIPT_REGION,
@@ -4755,5 +4762,469 @@ describe('compilers over a caller-supplied list with a hole', () => {
 		const plan = buildPlan({ artifacts: buildTrailingHole(buildContentArtifact()) })
 
 		expect(() => planToFindings(plan, {})).toThrow(TypeError)
+	})
+})
+
+// A `for…of` loop reads one entry, works on it, and stops at the first failure, so it never reads
+// the entries behind a hole or a refusal. A copy of the list reads them all first. Each case runs
+// the compiler over a list of two recorded entries and pins the constructor it raised and the
+// entries it read, as the loop the compiler replaced gave them.
+describe('compilers over a caller-supplied list read one entry at a time', () => {
+	const extension = { surface: 'browser', name: 'vue', axes: ['src'] } as const
+	const dependency = () => buildDependency({ name: 'vue', range: '^3.5.0' })
+	const script = () => ({ name: 'test', command: 'vitest run', accepted: ['vitest'] })
+	const manifest = '{\n\t"name": "x",\n\t"scripts": {\n\t\t"test": "vitest"\n\t}\n}\n'
+
+	it.each([
+		buildLazyCase('the peers the development dependencies read', (shape) =>
+			readLazily(
+				shape,
+				dependency,
+				(peers) => blueprintToDevDependencies(buildBlueprint({ peers })),
+				refuseObject(dependency),
+			),
+		),
+		buildLazyCase('the extras the development dependencies read', (shape) =>
+			readLazily(
+				shape,
+				dependency,
+				(extras) => blueprintToDevDependencies(buildBlueprint({ extras })),
+				refuseObject(dependency),
+			),
+		),
+		buildLazyCase('the artifacts a plan carries when reading its findings', (shape) =>
+			readLazily(
+				shape,
+				buildContentArtifact,
+				(artifacts) => planToFindings(buildPlan({ artifacts }), {}),
+				refuseObject(buildContentArtifact),
+			),
+		),
+		buildLazyCase('the declarations a package list is measured over', (shape) =>
+			readLazily(
+				shape,
+				buildDependency,
+				(declared) =>
+					dependenciesToQuestions(
+						declared,
+						'dependencies',
+						DEPENDENCY_NAME_PATTERN,
+						ORKESTREL_RANGE_PATTERN,
+					),
+				refuseObject(buildDependency),
+			),
+		),
+		buildLazyCase('the artifacts a drafted list is measured over', (shape) =>
+			readLazily(
+				shape,
+				buildContentArtifact,
+				(artifacts) => artifactsToQuestions(artifacts),
+				refuseObject(buildContentArtifact),
+			),
+		),
+		buildLazyCase('the overrides a draft is measured against', (shape) =>
+			readLazily(
+				shape,
+				buildOverride,
+				(overrides) => overridesToQuestions(overrides, [buildContentArtifact()]),
+				refuseObject(buildOverride),
+			),
+		),
+		buildLazyCase('the artifacts the overrides are measured against', (shape) =>
+			readLazily(
+				shape,
+				buildContentArtifact,
+				(artifacts) => overridesToQuestions([buildOverride()], artifacts),
+				refuseObject(buildContentArtifact),
+			),
+		),
+		buildLazyCase('the extensions a blueprint declares', (shape) =>
+			readLazily(
+				shape,
+				() => extension,
+				(extensions) => blueprintToQuestions(buildBlueprint({ extensions })),
+				refuseObject(() => extension),
+			),
+		),
+		buildLazyCase('the axes of an extension', (shape) =>
+			readLazily<Axis>(
+				shape,
+				() => 'src',
+				(axes) => blueprintToQuestions(buildBlueprint({ extensions: [{ ...extension, axes }] })),
+				refuseText,
+			),
+		),
+		buildLazyCase(
+			'the scripts a manifest region is replaced with',
+			(shape) =>
+				readLazily(
+					shape,
+					script,
+					(scripts) => replaceManifestScripts(manifest, scripts),
+					refuseObject(script),
+				),
+			{ dense: { outcome: 'return', reads: [0, 1, 0, 0, 1] } },
+		),
+		buildLazyCase(
+			'the src a config plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'core',
+					(src) => blueprintToConfigArtifacts(buildBlueprint({ src })),
+					refuseText,
+				),
+			{
+				hole: { outcome: 'TypeError', reads: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				refusal: {
+					outcome: 'TypeError',
+					reads: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+				},
+				dense: {
+					outcome: 'return',
+					reads: [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+				},
+			},
+		),
+		buildLazyCase(
+			'the app a config plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'core',
+					(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+					refuseText,
+				),
+			{
+				hole: { outcome: 'TypeError', reads: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				refusal: {
+					outcome: 'TypeError',
+					reads: [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0],
+				},
+				dense: {
+					outcome: 'return',
+					reads: [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+				},
+			},
+		),
+		buildLazyCase(
+			'the app a browser config plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'browser',
+					(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+					refuseText,
+				),
+			{
+				hole: { outcome: 'TypeError', reads: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				refusal: {
+					outcome: 'TypeError',
+					reads: [
+						0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+					],
+				},
+				dense: {
+					outcome: 'return',
+					reads: [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+				},
+			},
+		),
+		buildLazyCase(
+			'the src a source plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'core',
+					(src) => blueprintToSourceArtifacts(buildBlueprint({ src })),
+					refuseText,
+				),
+			{ hole: { outcome: 'return', reads: [1] }, refused: { outcome: 'RangeError', reads: [1] } },
+		),
+		buildLazyCase(
+			'the app a source plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'core',
+					(app) => blueprintToSourceArtifacts(buildBlueprint({ app })),
+					refuseText,
+				),
+			{ hole: { outcome: 'return', reads: [1] }, refused: { outcome: 'RangeError', reads: [1] } },
+		),
+		buildLazyCase(
+			'the src a test plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'core',
+					(src) => blueprintToTestArtifacts(buildBlueprint({ src })),
+					refuseText,
+				),
+			{
+				hole: { outcome: 'return', reads: [1, 1, 1, 1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				refusal: { outcome: 'TypeError', reads: [0, 1, 0, 1, 0] },
+				dense: { outcome: 'return', reads: [0, 1, 0, 1, 0, 1, 0, 1] },
+			},
+		),
+		buildLazyCase(
+			'the app a test plan is read over',
+			(shape) =>
+				readLazily<Environment>(
+					shape,
+					() => 'core',
+					(app) => blueprintToTestArtifacts(buildBlueprint({ app })),
+					refuseText,
+				),
+			{
+				hole: { outcome: 'return', reads: [1, 1, 1, 1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				refusal: { outcome: 'TypeError', reads: [0, 0, 1, 0, 1, 0] },
+				dense: { outcome: 'return', reads: [0, 1, 0, 1, 0, 1, 0, 1] },
+			},
+		),
+		buildLazyCase(
+			'the vendors a blueprint declares',
+			(shape) =>
+				readLazily(
+					shape,
+					() => 'alpha',
+					(vendors) => blueprintToQuestions(buildBlueprint({ vendors })),
+					refuseText,
+				),
+			{ hole: { outcome: 'return', reads: [1] }, refused: { outcome: 'RangeError', reads: [1] } },
+		),
+		buildLazyCase(
+			'the dependencies a blueprint declares',
+			(shape) =>
+				readLazily(
+					shape,
+					dependency,
+					(dependencies) => blueprintToQuestions(buildBlueprint({ dependencies })),
+					refuseObject(dependency),
+				),
+			{ dense: { outcome: 'return', reads: [0, 1, 0, 1] } },
+		),
+		buildLazyCase(
+			'the peers a blueprint declares',
+			(shape) =>
+				readLazily(
+					shape,
+					dependency,
+					(peers) => blueprintToQuestions(buildBlueprint({ peers })),
+					refuseObject(dependency),
+				),
+			{
+				hole: { outcome: 'TypeError', reads: [1, 1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				dense: { outcome: 'return', reads: [0, 1, 0, 1, 0, 1] },
+			},
+		),
+		buildLazyCase(
+			'the extras a blueprint declares',
+			(shape) =>
+				readLazily(
+					shape,
+					dependency,
+					(extras) => blueprintToQuestions(buildBlueprint({ extras })),
+					refuseObject(dependency),
+				),
+			{ dense: { outcome: 'return', reads: [0, 1, 0, 1, 0, 1] } },
+		),
+	])('reads $label one entry at a time', ({ read, hole, refused, refusal, dense }) => {
+		expect(read('hole-before-entry')).toStrictEqual(hole)
+		expect(read('hole-before-refusal')).toStrictEqual(refused)
+		expect(read('refusal-before-entry')).toStrictEqual(refusal)
+		expect(read('dense-pair')).toStrictEqual(dense)
+	})
+})
+
+// A `for…of` loop takes the iterator a list names and refuses a list that names none, where
+// `Array.from` and `values()` fall back to the indexes and answer. Each case runs the compiler over a
+// list whose `Symbol.iterator` is `undefined` and pins the constructor and the entries it read before
+// the iterator was taken, as the loop the compiler replaced gave them.
+describe('compilers over a list without an iterator refuse it as the loop did', () => {
+	const extension = { surface: 'browser', name: 'vue', axes: ['src'] } as const
+	const dependency = () => buildDependency({ name: 'vue', range: '^3.5.0' })
+	const script = () => ({ name: 'test', command: 'vitest run', accepted: ['vitest'] })
+	const manifest = '{\n\t"name": "x",\n\t"scripts": {\n\t\t"test": "vitest"\n\t}\n}\n'
+
+	it.each([
+		buildMissingCase('the peers the development dependencies read', dependency, (peers) =>
+			blueprintToDevDependencies(buildBlueprint({ peers })),
+		),
+		buildMissingCase('the extras the development dependencies read', dependency, (extras) =>
+			blueprintToDevDependencies(buildBlueprint({ extras })),
+		),
+		buildMissingCase(
+			'the artifacts a plan carries when reading its findings',
+			buildContentArtifact,
+			(artifacts) => planToFindings(buildPlan({ artifacts }), {}),
+		),
+		buildMissingCase(
+			'the declarations a package list is measured over',
+			buildDependency,
+			(declared) =>
+				dependenciesToQuestions(
+					declared,
+					'dependencies',
+					DEPENDENCY_NAME_PATTERN,
+					ORKESTREL_RANGE_PATTERN,
+				),
+		),
+		buildMissingCase(
+			'the artifacts a drafted list is measured over',
+			buildContentArtifact,
+			(artifacts) => artifactsToQuestions(artifacts),
+		),
+		buildMissingCase('the overrides a draft is measured against', buildOverride, (overrides) =>
+			overridesToQuestions(overrides, [buildContentArtifact()]),
+		),
+		buildMissingCase(
+			'the artifacts the overrides are measured against',
+			buildContentArtifact,
+			(artifacts) => overridesToQuestions([buildOverride()], artifacts),
+		),
+		buildMissingCase(
+			'the extensions a blueprint declares',
+			() => extension,
+			(extensions) => blueprintToQuestions(buildBlueprint({ extensions })),
+		),
+		buildMissingCase(
+			'the axes of an extension',
+			(): Axis => 'src',
+			(axes) => blueprintToQuestions(buildBlueprint({ extensions: [{ ...extension, axes }] })),
+		),
+		buildMissingCase(
+			'the vendors a blueprint declares',
+			() => 'alpha',
+			(vendors) => blueprintToQuestions(buildBlueprint({ vendors })),
+		),
+		buildMissingCase('the dependencies a blueprint declares', dependency, (dependencies) =>
+			blueprintToQuestions(buildBlueprint({ dependencies })),
+		),
+		buildMissingCase(
+			'the peers a blueprint declares',
+			dependency,
+			(peers) => blueprintToQuestions(buildBlueprint({ peers })),
+			[0, 1, 0, 1],
+		),
+		buildMissingCase('the extras a blueprint declares', dependency, (extras) =>
+			blueprintToQuestions(buildBlueprint({ extras })),
+		),
+		buildMissingCase('the scripts a manifest region is replaced with', script, (scripts) =>
+			replaceManifestScripts(manifest, scripts),
+		),
+		buildMissingCase(
+			'the src a script plan is read over',
+			(): Environment => 'core',
+			(src) => blueprintToScripts(buildBlueprint({ src })),
+		),
+		// The environments the plan drops from the runtime are filtered before the iterator is taken.
+		buildMissingCase(
+			'the app a script plan is read over',
+			(): Environment => 'core',
+			(app) => blueprintToScripts(buildBlueprint({ app })),
+			[0, 1],
+		),
+		// The config plan reads each list through its index methods many times before the iterator.
+		buildMissingCase(
+			'the src a config plan is read over',
+			(): Environment => 'core',
+			(src) => blueprintToConfigArtifacts(buildBlueprint({ src })),
+			[0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+		),
+		buildMissingCase(
+			'the app a config plan is read over',
+			(): Environment => 'core',
+			(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+			[0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+		),
+		buildMissingCase(
+			'the app a browser config plan is read over',
+			(): Environment => 'browser',
+			(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+			[0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+		),
+		buildMissingCase(
+			'the src a source plan is read over',
+			(): Environment => 'core',
+			(src) => blueprintToSourceArtifacts(buildBlueprint({ src })),
+		),
+		buildMissingCase(
+			'the app a source plan is read over',
+			(): Environment => 'core',
+			(app) => blueprintToSourceArtifacts(buildBlueprint({ app })),
+		),
+		buildMissingCase(
+			'the src a test plan is read over',
+			(): Environment => 'core',
+			(src) => blueprintToTestArtifacts(buildBlueprint({ src })),
+			[0, 1, 0, 1],
+		),
+		buildMissingCase(
+			'the app a test plan is read over',
+			(): Environment => 'core',
+			(app) => blueprintToTestArtifacts(buildBlueprint({ app })),
+			[0, 1, 0, 1, 0, 1],
+		),
+	])('refuses $label after the reads it names', ({ read, reads }) => {
+		expect(read()).toStrictEqual({ outcome: 'TypeError', reads })
+	})
+})
+
+// A reader that takes the iterator of one list for several passes and the index methods for others
+// reads in an order the passes fix. A list that serves one iterator ends the reader at the second
+// pass, so every index read the reader made before that pass is in the log, and a read hoisted ahead
+// of an earlier pass shows there. The logs are the ones the loops the compiler replaced gave.
+describe('compilers over a list that serves one iterator read it where the loops did', () => {
+	const served = (): Environment => 'core'
+
+	it.each([
+		[
+			'src',
+			(src: Environment[]) => blueprintToScripts(buildBlueprint({ src })),
+			['iter', 'next', 'get:0', 'next', 'get:1', 'next', 'iter'],
+		],
+		[
+			'app',
+			(app: Environment[]) => blueprintToScripts(buildBlueprint({ app })),
+			['get:0', 'get:1', 'iter', 'next', 'get:0', 'next', 'get:1', 'next', 'iter'],
+		],
+	])(
+		'plans the scripts over the %s environments in the order of their passes',
+		(_label, plan, calls) => {
+			const closable = createClosableList(
+				2,
+				new Map([
+					[0, served],
+					[1, served],
+				]),
+				{ serves: 1 },
+			)
+
+			expect(() => plan(closable.list)).toThrow(RangeError)
+			expect(closable.calls).toStrictEqual(calls)
+		},
+	)
+
+	it('reads the extensions once for each script the writable scripts list', () => {
+		const extension = { surface: 'browser', name: 'vue', axes: ['src', 'app'] } as const
+		const writable = createObservedList(2, new Map([[1, () => extension]]))
+		const planned = createObservedList(2, new Map([[1, () => extension]]))
+		const sheeted = createObservedList(2, new Map([[1, () => extension]]))
+		const names = Object.keys(
+			blueprintToScripts(buildBlueprint({ extensions: planned.list, app: ['browser'] })),
+		)
+		blueprintToSheets(buildBlueprint({ extensions: sheeted.list, app: ['browser'] }))
+
+		blueprintToWritableScripts(buildBlueprint({ extensions: writable.list, app: ['browser'] }))
+
+		// The plan's own reads, the sheets it names, and one read of the faces for each script.
+		expect(writable.reads.length - planned.reads.length - sheeted.reads.length).toBe(names.length)
 	})
 })

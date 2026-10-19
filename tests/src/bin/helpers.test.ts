@@ -13,7 +13,7 @@ import {
 	ScaffoldError,
 } from '@src/core'
 import { MAX_INVENTORY_PATHS } from '@src/server'
-import { captureError, requireValue } from '@orkestrel/test'
+import { captureError, createRecorder, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 
 import {
@@ -71,7 +71,16 @@ import {
 	verbToSyntax,
 	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
-import { buildSparse, DOCUMENTED_OPTIONS, UNDOCUMENTED_OPTIONS } from '../../setup.js'
+import {
+	buildLazyCase,
+	buildMissingCase,
+	buildSparse,
+	createClosableList,
+	DOCUMENTED_OPTIONS,
+	readLazily,
+	refuseObject,
+	UNDOCUMENTED_OPTIONS,
+} from '../../setup.js'
 import {
 	AUDIT_EXIT_CASES,
 	buildOptionArgv,
@@ -1520,5 +1529,208 @@ describe('findGitRefusal', () => {
 				pending: 'p'.repeat(MAX_PATH_LENGTH + 4),
 			}),
 		).toBe(inventory)
+	})
+})
+
+// A `for…of` loop reads one entry, works on it, and stops at the first failure, where a copy of the
+// list reads every entry first. Each case runs the helper over a list of two recorded entries and
+// pins the constructor it raised and the entries it read, as the loop the helper replaced gave them.
+describe('release helpers over a caller-supplied list read one entry at a time', () => {
+	const release = (): Release => ({
+		name: 'vite',
+		range: '^8.2.2',
+		lookup: 'found',
+		latest: '8.2.2',
+	})
+	const declaration = () => ({ name: 'vite', range: '~8.2.0' })
+
+	it.each([
+		buildLazyCase('the declarations a floor is read over', (shape) =>
+			readLazily(
+				shape,
+				declaration,
+				(dependencies) => dependenciesToFloors(dependencies),
+				refuseObject(declaration),
+			),
+		),
+		buildLazyCase(
+			'the releases a foreign floor is measured over',
+			(shape) =>
+				readLazily(
+					shape,
+					release,
+					(releases) => releasesToQuestions(releases),
+					refuseObject(release),
+				),
+			{ dense: { outcome: 'return', reads: [0, 0, 1, 0] } },
+		),
+		buildLazyCase(
+			'the served releases a newer major is read from',
+			(shape) =>
+				readLazily(
+					shape,
+					release,
+					(served) => releasesToQuestions([release()], served),
+					refuseObject(release),
+				),
+			{ dense: { outcome: 'return', reads: [0] } },
+		),
+	])('reads $label one entry at a time', ({ read, hole, refused, refusal, dense }) => {
+		expect(read('hole-before-entry')).toStrictEqual(hole)
+		expect(read('hole-before-refusal')).toStrictEqual(refused)
+		expect(read('refusal-before-entry')).toStrictEqual(refusal)
+		expect(read('dense-pair')).toStrictEqual(dense)
+	})
+})
+
+// A `for…of` loop stops at the first declaration whose range names no version and closes its iterator
+// there, closes it when its body throws, and leaves an iterator that ended alone. A close that raises
+// surfaces when the loop returned, and gives way to the body's own error when the body threw. Each
+// case hands the helper a list whose iterator records its steps and closes, and pins the log and the
+// constructor the loop the helper replaced gave.
+describe('dependenciesToFloors closes the iterator of the list it stops reading as the loop did', () => {
+	const floored = () => ({ name: 'vite', range: '~8.2.0' })
+	const floorless = () => ({ name: 'vite', range: '^8' })
+	const raise = (): never => {
+		throw new EvalError('close')
+	}
+
+	it('stops at the first declaration naming no version, reads no further and closes once', () => {
+		const closable = createClosableList(
+			2,
+			new Map([
+				[0, floorless],
+				[1, floored],
+			]),
+		)
+
+		expect(dependenciesToFloors(closable.list)).toBeUndefined()
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+	})
+
+	it('closes the iterator once when a declaration throws', () => {
+		const closable = createClosableList(2, new Map([[1, floored]]))
+
+		expect(() => dependenciesToFloors(closable.list)).toThrow(TypeError)
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'return'])
+	})
+
+	it('leaves the iterator alone when it ends and reads the step that finds it done', () => {
+		const closable = createClosableList(
+			2,
+			new Map([
+				[0, floored],
+				[1, floored],
+			]),
+		)
+
+		expect(dependenciesToFloors(closable.list)).toHaveLength(2)
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'get:1', 'next'])
+	})
+
+	it('surfaces the close when the loop returned and drops it when a declaration threw', () => {
+		const stopped = createClosableList(1, new Map([[0, floorless]]), { close: raise })
+		const thrown = createClosableList(1, new Map<number, () => never>(), { close: raise })
+		const answered = createClosableList(1, new Map([[0, floorless]]), { close: () => 5 })
+
+		expect(() => dependenciesToFloors(stopped.list)).toThrow(EvalError)
+		expect(() => dependenciesToFloors(thrown.list)).toThrow(TypeError)
+		expect(() => dependenciesToFloors(answered.list)).toThrow(TypeError)
+		expect(thrown.calls).toStrictEqual(['iter', 'next', 'return'])
+	})
+})
+
+// A `for…of` loop reads every entry the iterator of a list yields, however long the list says it is.
+// A list whose iterator is replaced can yield more entries than its `length`, fewer, or the same
+// number in another order. Each case hands the helper such a list, whose iterator records its steps
+// and its closes, and pins the answer and the log the loop the helper replaced gave.
+describe('dependenciesToFloors reads the entries the iterator of its list yields, not its length', () => {
+	const vite = { name: 'vite', range: '~8.2.0' }
+	const typescript = { name: 'typescript', range: '^5.9.0' }
+	const floorless = { name: 'vite', range: '^8' }
+	const serve = <T>(base: readonly T[], served: readonly T[]) => {
+		const recorder = createRecorder<readonly [string]>()
+		const cursor = served.values()
+		const list = Object.defineProperty([...base], Symbol.iterator, {
+			value: () => {
+				recorder.handler('iter')
+				return {
+					next: () => {
+						recorder.handler('next')
+						return cursor.next()
+					},
+					return: () => {
+						recorder.handler('return')
+						return { done: true, value: undefined }
+					},
+				}
+			},
+		})
+		return {
+			list,
+			get calls() {
+				return recorder.calls.map(([call]) => call)
+			},
+		}
+	}
+
+	it('reads every declaration of an iterator that yields more than the list is long', () => {
+		const declarations = serve([], [vite, typescript])
+
+		expect(dependenciesToFloors(declarations.list)?.map(({ name }) => name)).toStrictEqual([
+			'vite',
+			'typescript',
+		])
+		expect(declarations.calls).toStrictEqual(['iter', 'next', 'next', 'next'])
+	})
+
+	it('reaches the declaration of an iterator that names no version beyond the list length', () => {
+		const declarations = serve([], [vite, typescript, floorless])
+
+		expect(dependenciesToFloors(declarations.list)).toBeUndefined()
+		expect(declarations.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'return'])
+	})
+
+	it('reads the declaration of an iterator that yields fewer than the list is long', () => {
+		const declarations = serve([vite, typescript, vite], [typescript])
+
+		expect(dependenciesToFloors(declarations.list)?.map(({ name }) => name)).toStrictEqual([
+			'typescript',
+		])
+		expect(declarations.calls).toStrictEqual(['iter', 'next', 'next'])
+	})
+
+	it('reads the declarations in the order an iterator yields them when it yields another order', () => {
+		const declarations = serve([vite, typescript], [typescript, vite])
+
+		expect(dependenciesToFloors(declarations.list)?.map(({ name }) => name)).toStrictEqual([
+			'typescript',
+			'vite',
+		])
+		expect(declarations.calls).toStrictEqual(['iter', 'next', 'next', 'next'])
+	})
+})
+
+// A `for…of` loop takes the iterator a list names and refuses a list that names none, where
+// `Array.from` falls back to the indexes and answers. Each case runs the helper over a list whose
+// `Symbol.iterator` is `undefined` and pins the constructor and the entries read before it was taken.
+describe('release helpers over a list without an iterator refuse it as the loop did', () => {
+	const release = (): Release => ({
+		name: 'vite',
+		range: '^8.2.2',
+		lookup: 'found',
+		latest: '8.2.2',
+	})
+	const declaration = () => ({ name: 'vite', range: '~8.2.0' })
+
+	it.each([
+		buildMissingCase('the declarations a floor is read over', declaration, (dependencies) =>
+			dependenciesToFloors(dependencies),
+		),
+		buildMissingCase('the releases a foreign floor is measured over', release, (releases) =>
+			releasesToQuestions(releases),
+		),
+	])('refuses $label after the reads it names', ({ read, reads }) => {
+		expect(read()).toStrictEqual({ outcome: 'TypeError', reads })
 	})
 })

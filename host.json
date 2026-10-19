@@ -772,7 +772,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "60350ded550d78a27554f211ff0280e3479279f082f6ee951b4a25f2657fa4a4"
+			"digest": "adddece9800a1f12731314cc183368b69254b0d8202103f173ae2dfa4b158f80"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "f7e906343c48ed0bb50c31b98459bc12597c9d243cc8951c8c5d721974849501"
+			"digest": "d2dcba3daf237be7708175e87a3b6d86ad2237602925b6530b3510e706e25188"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1180,7 +1180,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "8a11d2f47174d147b735f01708dd56e0722764e5fcb9a0854e0c48b1cc5976bf"
+			"digest": "fffb80a5ce6f4beabe32edf0df6c605c093a87f6d4cb5d9d4acffd32b48bd50d"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1192,7 +1192,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "7b188a88122d276363dbd462126254509956a2c13c9fe2be1098bc56ffc15b00"
+			"digest": "97de92603cb37f8b5f2981c7f98c2cd856f509b862f6e163a364a7950bf6d03e"
 		}
 	],
 	"roots": [
@@ -2120,5 +2120,5 @@
 			]
 		}
 	],
-	"digest": "cfd8c1d10b8edb01ba8097036df1b8a963c2245cecdf3c8d77dabd43b8162f4f"
+	"digest": "9d04ecf5166ebfc5bce7cd85dea4d331a2aaa4394fc9686abd965356062f8898"
 }

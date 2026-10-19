@@ -15,6 +15,8 @@ import {
 	buildHostArtifact,
 	buildHostileCases,
 	buildHydratedArtifact,
+	buildLazyCase,
+	buildMissingCase,
 	buildModules,
 	buildOverride,
 	buildParserCases,
@@ -32,6 +34,8 @@ import {
 	CLASSIFIER_DECLARATIONS,
 	collectWrappers,
 	countEmitters,
+	createClosableList,
+	createObservedList,
 	DEPENDENCY_TABLES,
 	DIFFERING_HEX,
 	DOCUMENTED_OPTIONS,
@@ -95,6 +99,11 @@ import {
 	PUBLISHED_FACES,
 	RANGE_CASES,
 	readKeyCount,
+	readLazily,
+	REFUSED_VALUES,
+	refuseObject,
+	refuseRead,
+	refuseText,
 	SCRIPT_MANIFEST,
 	SCRIPT_PROOF,
 	SCRIPT_REGION,
@@ -161,6 +170,207 @@ describe('the inert value builders', () => {
 		expect(Object.keys(list)).toStrictEqual(['0'])
 		expect(list.indexOf('a')).toBe(0)
 		expect(Array.from(list)).toStrictEqual(['a', undefined])
+	})
+
+	it('records each read of an observed entry, in order and as often as it happens', () => {
+		const observed = createObservedList(
+			3,
+			new Map([
+				[2, () => 'c'],
+				[0, () => 'a'],
+			]),
+		)
+		const before = observed.reads
+
+		expect(observed.list).toHaveLength(3)
+		expect(Object.keys(observed.list)).toStrictEqual(['0', '2'])
+		expect(before).toStrictEqual([])
+		expect(observed.list[2]).toBe('c')
+		expect(observed.list[0]).toBe('a')
+		expect(observed.list[2]).toBe('c')
+		expect(observed.reads).toStrictEqual([2, 0, 2])
+		// Reads copy on every access, so an earlier answer never changes.
+		expect(before).toStrictEqual([])
+		expect(Array.from(createObservedList(2, new Map()).list)).toStrictEqual([undefined, undefined])
+	})
+
+	it('records a read whose producer refuses, and raises the producer error', () => {
+		const observed = createObservedList(2, new Map([[1, refuseRead]]))
+
+		expect(() => observed.list[1]).toThrow(RangeError)
+		expect(() => observed.list[1]).toThrow('The entry refused its read')
+		expect(observed.reads).toStrictEqual([1, 1])
+		expect(() => refuseRead()).toThrow(RangeError)
+	})
+
+	it('orders the reads, steps and closes a reader makes on a closable list', () => {
+		const closable = createClosableList(
+			3,
+			new Map([
+				[0, () => 'a'],
+				[2, () => 'c'],
+			]),
+		)
+
+		expect(closable.calls).toStrictEqual([])
+		// A hole is a step that yields nothing to read, and an iterator that ends is not closed.
+		expect(Iterator.from(closable.list).some((entry) => entry === 'b')).toBe(false)
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'next', 'get:2', 'next'])
+		expect(closable.list[2]).toBe('c')
+		expect(closable.calls.at(-1)).toBe('get:2')
+		const stopped = createClosableList(2, new Map([[0, () => 'a']]))
+		expect(Iterator.from(stopped.list).some((entry) => entry === 'a')).toBe(true)
+		expect(stopped.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+	})
+
+	it('closes the iterator when a reader throws and not when it ends', () => {
+		const refusing = createClosableList(1, new Map([[0, refuseRead]]))
+		const ended = createClosableList(1, new Map([[0, () => 'a']]))
+
+		expect(() => Iterator.from(refusing.list).toArray()).toThrow(RangeError)
+		expect(refusing.calls).toStrictEqual(['iter', 'next', 'get:0'])
+		expect(Iterator.from(ended.list).toArray()).toStrictEqual(['a'])
+		expect(ended.calls).toStrictEqual(['iter', 'next', 'get:0', 'next'])
+		const thrown = createClosableList(1, new Map([[0, () => 'a']]))
+		expect(() =>
+			Iterator.from(thrown.list).forEach(() => {
+				throw new EvalError('body')
+			}),
+		).toThrow(EvalError)
+		expect(thrown.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+	})
+
+	it('lets a close answer as the case chooses and ends a reader between two passes', () => {
+		const raising = createClosableList(1, new Map([[0, () => 'a']]), {
+			close: () => {
+				throw new EvalError('close')
+			},
+		})
+		const answering = createClosableList(1, new Map([[0, () => 'a']]), { close: () => 5 })
+		const serving = createClosableList(1, new Map([[0, () => 'a']]), { serves: 1 })
+
+		expect(() => Iterator.from(raising.list).some(() => true)).toThrow(EvalError)
+		expect(() => Iterator.from(answering.list).some(() => true)).toThrow(TypeError)
+		expect(Iterator.from(serving.list).toArray()).toStrictEqual(['a'])
+		expect(() => Iterator.from(serving.list)).toThrow(RangeError)
+		expect(serving.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'iter'])
+	})
+
+	it('revokes the object a producer makes, anew for each call', () => {
+		const produce = refuseObject(() => ({ length: 1 }))
+		const first = produce()
+
+		expect(() => first.length).toThrow(TypeError)
+		expect(() => produce().length).toThrow(TypeError)
+		// A revoked proxy refuses every read, so identity is compared without a matcher that inspects it.
+		expect(Object.is(first, produce())).toBe(false)
+	})
+
+	it('produces the one symbol a text reader refuses', () => {
+		const refused: string = refuseText()
+
+		expect(typeof refused).toBe('symbol')
+		expect(refused).toBe(REFUSED_VALUES.symbol)
+		expect(refuseText()).toBe(refused)
+		expect(() => `${refused}`).toThrow(TypeError)
+	})
+
+	it('runs a reader over each recorded list and reports the constructor and the reads', () => {
+		const entry = () => ({ length: 1 })
+		const refusal = refuseObject(entry)
+		// An iterator reader takes one entry at a time and takes the iterator the list names.
+		const iterate = (list: Array<{ readonly length: number }>) =>
+			Iterator.from(list)
+				.map((item) => item.length)
+				.toArray()
+		// An index reader skips a hole, reads every entry ahead of the work, and needs no iterator.
+		const index = (list: Array<{ readonly length: number }>) => list.map((item) => item.length)
+
+		expect(readLazily('hole-before-entry', entry, iterate, refusal)).toStrictEqual({
+			outcome: 'TypeError',
+			reads: [],
+		})
+		expect(readLazily('hole-before-entry', entry, index, refusal)).toStrictEqual({
+			outcome: 'return',
+			reads: [1],
+		})
+		expect(readLazily('hole-before-refusal', entry, iterate, refusal)).toStrictEqual({
+			outcome: 'TypeError',
+			reads: [],
+		})
+		expect(readLazily('hole-before-refusal', entry, index, refusal)).toStrictEqual({
+			outcome: 'RangeError',
+			reads: [1],
+		})
+		expect(readLazily('refusal-before-entry', entry, iterate, refusal)).toStrictEqual({
+			outcome: 'TypeError',
+			reads: [0],
+		})
+		expect(readLazily('dense-pair', entry, iterate, refusal)).toStrictEqual({
+			outcome: 'return',
+			reads: [0, 1],
+		})
+		expect(readLazily('missing-iterator', entry, iterate, refusal)).toStrictEqual({
+			outcome: 'TypeError',
+			reads: [],
+		})
+		expect(readLazily('missing-iterator', entry, index, refusal)).toStrictEqual({
+			outcome: 'return',
+			reads: [0, 1],
+		})
+	})
+
+	it('names a thrown value that is not an error by its type', () => {
+		const text = (): never => {
+			throw 'refused'
+		}
+
+		expect(
+			readLazily(
+				'dense-pair',
+				() => 'a',
+				text,
+				() => 'b',
+			),
+		).toStrictEqual({
+			outcome: 'string',
+			reads: [],
+		})
+	})
+
+	it('builds a lazy case whose defaults are the loop answers and whose fields can be replaced', () => {
+		const read = () => ({ outcome: 'return', reads: [] })
+		const base = buildLazyCase('a reader', read)
+
+		expect(base.label).toBe('a reader')
+		expect(base.read).toBe(read)
+		expect(base.hole).toStrictEqual({ outcome: 'TypeError', reads: [] })
+		expect(base.refused).toStrictEqual({ outcome: 'TypeError', reads: [] })
+		expect(base.refusal).toStrictEqual({ outcome: 'TypeError', reads: [0] })
+		expect(base.dense).toStrictEqual({ outcome: 'return', reads: [0, 1] })
+		expect(
+			buildLazyCase('a reader', read, { hole: { outcome: 'return', reads: [1] } }),
+		).toStrictEqual({ ...base, hole: { outcome: 'return', reads: [1] } })
+	})
+
+	it('builds a missing-iterator case that runs the reader over a list without an iterator', () => {
+		const entry = () => 'a'
+		const iterate = buildMissingCase('an iterating reader', entry, (list) =>
+			Iterator.from(list).toArray(),
+		)
+		const index = buildMissingCase(
+			'an index reader',
+			entry,
+			(list) => list.map((item) => item),
+			[0, 1],
+		)
+
+		expect(iterate.label).toBe('an iterating reader')
+		expect(iterate.reads).toStrictEqual([])
+		expect(iterate.read()).toStrictEqual({ outcome: 'TypeError', reads: [] })
+		// An index reader answers over the same list, which is the answer a case must refuse.
+		expect(index.reads).toStrictEqual([0, 1])
+		expect(index.read()).toStrictEqual({ outcome: 'return', reads: [0, 1] })
 	})
 
 	it('replaces only the named fields on the dependency, override, and question builders', () => {

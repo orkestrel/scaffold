@@ -1,8 +1,9 @@
-import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { chmodSync, existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { userInfo } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { requireValue } from '@orkestrel/test'
+import { createRecorder, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { execute } from '@orkestrel/process/server'
 import {
@@ -20,16 +21,20 @@ import {
 	readConfigRecord,
 	readConfigScript,
 	collectFaceWrappers,
+	collectGuideStatements,
 	inspectSheetConfiguration,
 	readSheetPrelude,
 	SHEET_POLICY_BARREL_PATTERN,
 	SHEET_POLICY_ORDER_PATTERN,
 	readImportDiagnostics,
 	collectPolicyDeclarations,
+	createPolicyLazyCase,
+	createPolicyReads,
 	createPolicyScratch,
 	createPolicySparse,
 	createPolicySurfaceFixture,
 	denyPolicyRead,
+	failPolicyRead,
 	inspectBridge,
 	inspectPolicyConfiguration,
 	inspectPolicyFilenamePaths,
@@ -48,9 +53,12 @@ import {
 	normalizePolicyPath,
 	parsePolicyJSON,
 	parseSkillFrontmatter,
+	POLICY_DENY_PRINCIPAL,
 	POLICY_EXTRACTOR,
+	POLICY_LAZY_CASES,
 	POLICY_PUBLISHES,
 	POLICY_ROOT,
+	POLICY_STUDIES_POPULATION,
 	POLICY_SURFACE_HOST,
 	POLICY_SURFACE_EXPORT_CASES,
 	POLICY_WIRING_RULES,
@@ -58,12 +66,15 @@ import {
 	readPolicyDeclarations,
 	readPolicyJSON,
 	readPolicyPackage,
+	readPolicyPermissions,
 	readPolicySurface,
 	readSkillExports,
 	readSkillDeclarations,
 	readSkillManifest,
 	resolvePolicyPackage,
 	resolveSkillDeclaration,
+	runPolicyCommand,
+	settlePolicyOutcome,
 	SKILL_DECLARATION_MESSAGES,
 	SKILL_DECLARATION_REFUSALS,
 	SKILL_REFUSAL_CASES,
@@ -1332,6 +1343,23 @@ describe('the policy readers', () => {
 		// A name carrying `$` makes the token overlap itself: `$a$` occurs at index 0 and at index 2.
 		expect(matchesSkillToken('$a$a$', 'a$')).toBe(true)
 		expect(matchesSkillToken('$a$a', 'a$')).toBe(false)
+		// Repeated `$` signs start a candidate each, and only the occurrence that ends the prompt or
+		// meets a character outside the name alphabet is complete.
+		expect(matchesSkillToken('$$$', '$')).toBe(true)
+		expect(matchesSkillToken('$$a', '$a')).toBe(true)
+		expect(matchesSkillToken('$$ab', '$a')).toBe(false)
+		expect(matchesSkillToken('$$a-$a ', '$a')).toBe(false)
+		expect(matchesSkillToken('$$a-$$a ', '$a')).toBe(true)
+		expect(matchesSkillToken('', 'a')).toBe(false)
+	})
+
+	it('finds a token in a prompt far longer than the token', () => {
+		const filler = 'x'.repeat(200_000)
+		expect(matchesSkillToken(`${filler}$demo`, 'demo')).toBe(true)
+		expect(matchesSkillToken(`$demo ${filler}`, 'demo')).toBe(true)
+		// The controls: the same prompt without the token, and with only an extended name, matches nothing.
+		expect(matchesSkillToken(filler, 'demo')).toBe(false)
+		expect(matchesSkillToken(`${filler}$demo-two`, 'demo')).toBe(false)
 	})
 
 	it('reports each template TODO outside code spans and fences, in line order', () => {
@@ -1458,6 +1486,249 @@ describe('the inspectors over caller-supplied lists with holes', () => {
 		expect(inspectPolicyFilenamePaths(['a/b.ts', 'a/B.ts']).map(({ path }) => path)).toStrictEqual([
 			'a/B.ts',
 		])
+	})
+})
+
+describe('the inspectors consume a caller-supplied list one entry at a time', () => {
+	it.each(POLICY_LAZY_CASES)('$label', (lazy) => {
+		const reads = createRecorder<[number]>()
+		expect(lazy.observe(reads.handler)).toBe(lazy.outcome)
+		expect(reads.calls).toStrictEqual(lazy.reads.map((index) => [index]))
+	})
+
+	it('separates a reader that copies the list first from one that consumes it', () => {
+		// The control: a spread reads entry 1 before it reads entry 0's hole, so the failing entry
+		// that the lazy case never reads is read and its constructor replaces the hole's.
+		const copying = createPolicyLazyCase(
+			'copying reader',
+			(list: string[]) => [...list].map((entry) => entry.length),
+			{ length: 2, entries: new Map([[1, failPolicyRead]]) },
+			{ outcome: 'throw TypeError', reads: [] },
+		)
+		const reads = createRecorder<[number]>()
+		expect(copying.observe(reads.handler)).toBe('throw RangeError')
+		expect(reads.calls).toStrictEqual([[1]])
+		const consuming = createPolicyLazyCase(
+			'consuming reader',
+			(list: string[]) => Array.from(list, (entry) => entry.length),
+			{ length: 2, entries: new Map([[1, failPolicyRead]]) },
+			{ outcome: 'throw TypeError', reads: [] },
+		)
+		const stopped = createRecorder<[number]>()
+		expect(consuming.observe(stopped.handler)).toBe(consuming.outcome)
+		expect(stopped.calls).toStrictEqual([])
+	})
+
+	it('builds a list whose getters record each read and leave every other index a hole', () => {
+		const reads = createRecorder<[number]>()
+		const list = createPolicyReads(
+			3,
+			new Map([
+				[0, () => 'a'],
+				[2, failPolicyRead],
+			]),
+			reads.handler,
+		)
+		expect(list.length).toBe(3)
+		expect(Object.keys(list)).toStrictEqual(['0', '2'])
+		expect(1 in list).toBe(false)
+		expect(reads.calls).toStrictEqual([])
+		expect(list[0]).toBe('a')
+		expect(list[0]).toBe('a')
+		expect(() => list[2]).toThrow(RangeError)
+		expect(reads.calls).toStrictEqual([[0], [0], [2]])
+		// The control: an empty map builds a list of holes that records nothing.
+		const empty = createRecorder<[number]>()
+		expect(
+			Object.keys(createPolicyReads(2, new Map<number, () => string>(), empty.handler)),
+		).toStrictEqual([])
+		expect(empty.calls).toStrictEqual([])
+	})
+
+	it('settles a return, an error, and a thrown non-error into text', () => {
+		expect(settlePolicyOutcome(() => [1, 'a'])).toBe('return [1,"a"]')
+		expect(settlePolicyOutcome(() => undefined)).toBe('return undefined')
+		expect(
+			settlePolicyOutcome(() => {
+				throw new TypeError('refused')
+			}),
+		).toBe('throw TypeError')
+		expect(settlePolicyOutcome(failPolicyRead)).toBe('throw RangeError')
+		expect(
+			settlePolicyOutcome(() => {
+				throw 'refused'
+			}),
+		).toBe('throw string')
+	})
+})
+
+describe('collectGuideStatements', () => {
+	const exclusion = POLICY_STUDIES_POPULATION.exclusion
+
+	it('collects each prose sentence that names the subject with a marker, across line breaks', () => {
+		const markdown = [
+			'# Guide',
+			'',
+			'Add an exact-case `*.test.ts` file beneath `tests/studies`,',
+			`${exclusion}, for \`studies\`. A sibling sentence names no marker for \`studies\`.`,
+			'',
+			'The `studies` project collects test files. Another subject has test files too.',
+		].join('\n')
+		expect(collectGuideStatements(markdown, POLICY_STUDIES_POPULATION)).toStrictEqual([
+			`Add an exact-case \`*.test.ts\` file beneath \`tests/studies\`, ${exclusion}, for \`studies\`.`,
+			'The `studies` project collects test files.',
+		])
+	})
+
+	it('reads each table cell as a text of its own and a fenced block as no prose', () => {
+		const markdown = [
+			'| `STUDIES_TEST_INCLUDE` | const | The `studies` test files. |',
+			'',
+			'```text',
+			'The `studies` test files are here.',
+			'```',
+			'',
+			'Prose names the `studies` test files.',
+		].join('\n')
+		expect(collectGuideStatements(markdown, POLICY_STUDIES_POPULATION)).toStrictEqual([
+			'The `studies` test files.',
+			'Prose names the `studies` test files.',
+		])
+		// A subject in one cell and a marker in another state nothing together, and a pipe the cell
+		// escapes stays inside it.
+		expect(
+			collectGuideStatements('| `studies` | a `*.test.ts` file |', POLICY_STUDIES_POPULATION),
+		).toStrictEqual([])
+		expect(
+			collectGuideStatements(
+				'| name | The `studies` test files \\| and more. |',
+				POLICY_STUDIES_POPULATION,
+			),
+		).toStrictEqual(['The `studies` test files \\| and more.'])
+	})
+
+	it('separates a sentence that carries the exclusion from one that omits it', () => {
+		// The control: the instrument tells the two apart, so an empty list of offenders is a result.
+		const markdown = [
+			`The \`studies\` fact reads a \`*.test.ts\` file ${exclusion}.`,
+			'',
+			'The `studies` fact reads a `*.test.ts` file beneath `tests/studies`.',
+		].join('\n')
+		const statements = collectGuideStatements(markdown, POLICY_STUDIES_POPULATION)
+		expect(statements.length).toBe(2)
+		expect(statements.filter((sentence) => !sentence.includes(exclusion))).toStrictEqual([
+			'The `studies` fact reads a `*.test.ts` file beneath `tests/studies`.',
+		])
+		expect(collectGuideStatements('', POLICY_STUDIES_POPULATION)).toStrictEqual([])
+	})
+})
+
+describe('runPolicyCommand', () => {
+	it('returns what the command printed, and refuses a failing or absent command', () => {
+		expect(runPolicyCommand(process.execPath, ['-p', '6*7']).trim()).toBe('42')
+		expect(() => runPolicyCommand(process.execPath, ['-e', 'process.exit(3)'])).toThrow(
+			/exited with 3/u,
+		)
+		expect(() => runPolicyCommand('orkestrel-absent-command', [])).toThrow(/ENOENT/u)
+	})
+})
+
+describe('denyPolicyRead', () => {
+	it('refuses the read while it holds and restores the permission state it found', (context) => {
+		context.skip(
+			process.getuid?.() === 0,
+			'a POSIX root user reads a file whose mode withholds read, so no denial reaches the read',
+		)
+		const scratch = createScratch({ prefix: 'policy-deny-' })
+		try {
+			const file = scratch.write('package.json', '{"name":"@orkestrel/control"}')
+			const before = readPolicyPermissions(file)
+			const restore = denyPolicyRead(file)
+			try {
+				expect(readPolicyPermissions(file)).not.toBe(before)
+				expect(() => readFileSync(file, 'utf8')).toThrow(/EPERM|EACCES/u)
+			} finally {
+				restore()
+			}
+			expect(readPolicyPermissions(file)).toBe(before)
+			expect(readFileSync(file, 'utf8')).toBe('{"name":"@orkestrel/control"}')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps a deny entry the file already carried', (context) => {
+		context.skip(
+			process.platform !== 'win32',
+			'an access-control entry that denies one right is a Windows list entry; the POSIX state is the mode the next case keeps',
+		)
+		const scratch = createScratch({ prefix: 'policy-deny-entry-' })
+		try {
+			const file = scratch.write('package.json', '{}')
+			const user = userInfo().username
+			runPolicyCommand('icacls', [file, '/deny', `${user}:(W)`])
+			try {
+				const before = readPolicyPermissions(file)
+				expect(before).toContain('(DENY)(W)')
+				denyPolicyRead(file)()
+				expect(readPolicyPermissions(file)).toBe(before)
+			} finally {
+				runPolicyCommand('icacls', [file, '/remove:d', user])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses to report a restore that left the state different', (context) => {
+		context.skip(
+			process.platform !== 'win32',
+			'a POSIX mode restore writes back the exact mode it read, so only a Windows list can hold an entry the restore also removes',
+		)
+		const scratch = createScratch({ prefix: 'policy-deny-differs-' })
+		try {
+			const file = scratch.write('package.json', '{}')
+			runPolicyCommand('icacls', [file, '/deny', `${POLICY_DENY_PRINCIPAL}:(R)`])
+			try {
+				const restore = denyPolicyRead(file)
+				expect(restore).toThrow(/did not restore exactly/u)
+			} finally {
+				runPolicyCommand('icacls', [file, '/remove:d', POLICY_DENY_PRINCIPAL])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('restores the mode the file carried rather than a fixed one', (context) => {
+		context.skip(
+			process.platform === 'win32',
+			'Windows maps a written mode onto the read-only attribute alone, so a mode does not round-trip there',
+		)
+		const scratch = createScratch({ prefix: 'policy-deny-mode-' })
+		try {
+			const file = scratch.write('package.json', '{}')
+			chmodSync(file, 0o640)
+			expect(readPolicyPermissions(file)).toBe('640')
+			const restore = denyPolicyRead(file)
+			expect(readPolicyPermissions(file)).toBe('0')
+			restore()
+			expect(readPolicyPermissions(file)).toBe('640')
+			expect(statSync(file).mode & 0o7777).toBe(0o640)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a file the host cannot read the permissions of', () => {
+		const scratch = createScratch({ prefix: 'policy-deny-absent-' })
+		try {
+			expect(() => denyPolicyRead(join(scratch.path, 'absent.json'))).toThrow(
+				process.platform === 'win32' ? /icacls .* exited with/u : /ENOENT/u,
+			)
+		} finally {
+			scratch.destroy()
+		}
 	})
 })
 

@@ -31,6 +31,7 @@ import {
 	isFinding,
 	isFloorPath,
 	isRetainedPath,
+	iterateAnswers,
 	manifestToDependencies,
 	manifestToName,
 	matchesDriftReachability,
@@ -54,17 +55,22 @@ import {
 	buildContentArtifact,
 	buildHostArtifact,
 	buildHydratedArtifact,
+	buildLazyCase,
+	buildMissingCase,
 	buildPlan,
 	buildPurityCases,
 	buildSparse,
+	createClosableList,
 	DIFFERING_HEX,
 	MANIFEST_SAMPLE,
 	MATCHING_HEX,
 	OWNERSHIPS,
 	PLANNED_TEXT,
 	RANGE_CASES,
+	readLazily,
+	refuseObject,
 } from '../../setup.js'
-import { waitForDelay } from '@orkestrel/test'
+import { createRecorder, waitForDelay } from '@orkestrel/test'
 
 describe('purity', () => {
 	for (const purityCase of buildPurityCases()) {
@@ -137,6 +143,133 @@ describe('computeTotal', () => {
 		const values = [1, 2, 3]
 		computeTotal(values)
 		expect(values).toStrictEqual([1, 2, 3])
+	})
+})
+
+// The generator is the body of a `for…of` loop that yields each answer and returns after the first
+// refusal, so its reads and closes are the loop's. Each case hands it a list whose iterator records
+// its steps and its closes beside the reads of its entries.
+describe('iterateAnswers', () => {
+	const double = (value: number): number | undefined => value * 2
+	const refuse = (): undefined => undefined
+	const raise = (): never => {
+		throw new EvalError('close')
+	}
+
+	it('yields the answer to each value in source order and leaves an iterator that ended alone', () => {
+		const closable = createClosableList(
+			2,
+			new Map([
+				[0, () => 1],
+				[1, () => 2],
+			]),
+		)
+
+		expect(Array.from(iterateAnswers(closable.list, double))).toStrictEqual([2, 4])
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'get:1', 'next'])
+		expect(Array.from(iterateAnswers([], double))).toStrictEqual([])
+	})
+
+	it('requests the iterator once, when the first answer is read, and steps it only as answers are read', () => {
+		const closable = createClosableList(
+			3,
+			new Map([
+				[0, () => 1],
+				[1, () => 2],
+				[2, () => 3],
+			]),
+		)
+		const answers = iterateAnswers(closable.list, double)
+
+		expect(closable.calls).toStrictEqual([])
+		expect(answers.next()).toStrictEqual({ done: false, value: 2 })
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0'])
+		expect(answers.next()).toStrictEqual({ done: false, value: 4 })
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'get:1'])
+	})
+
+	it('yields the first refusal, reads no further and closes the iterator once', () => {
+		const closable = createClosableList(
+			3,
+			new Map([
+				[0, () => 1],
+				[1, () => 2],
+				[2, () => 3],
+			]),
+		)
+
+		expect(
+			Array.from(iterateAnswers(closable.list, (value) => (value === 2 ? undefined : value))),
+		).toStrictEqual([1, undefined])
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'get:1', 'return'])
+	})
+
+	it('surfaces a close that raises or answers a non-object after a refusal', () => {
+		const raising = createClosableList(1, new Map([[0, () => 1]]), { close: raise })
+		const answering = createClosableList(1, new Map([[0, () => 1]]), { close: () => 5 })
+
+		expect(() => Array.from(iterateAnswers(raising.list, refuse))).toThrow(EvalError)
+		expect(() => Array.from(iterateAnswers(answering.list, refuse))).toThrow(TypeError)
+		expect(raising.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+	})
+
+	it('keeps the error of an answer that throws over a close that raises, and closes once', () => {
+		const closable = createClosableList(2, new Map([[0, () => 1]]), { close: raise })
+
+		expect(() =>
+			Array.from(
+				iterateAnswers(closable.list, () => {
+					throw new RangeError('answer')
+				}),
+			),
+		).toThrow(RangeError)
+		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+	})
+
+	it('reads a hole as an undefined value and a list without an iterator as a refusal to start', () => {
+		const sparse = buildSparse<number>(2, new Map([[1, 5]]))
+		const missing = [1, 2]
+		Object.defineProperty(missing, Symbol.iterator, { value: undefined })
+
+		expect(Array.from(iterateAnswers(sparse, (value) => [value]))).toStrictEqual([[undefined], [5]])
+		expect(() => Array.from(iterateAnswers(missing, double))).toThrow(TypeError)
+	})
+
+	it('follows an iterator that yields more or fewer values than the list length reports', () => {
+		const longer = Object.defineProperty([1], Symbol.iterator, {
+			value: function* () {
+				yield 1
+				yield 2
+				yield 3
+			},
+		})
+		const shorter = Object.defineProperty([1, 2, 3], Symbol.iterator, {
+			value: function* () {
+				yield 9
+			},
+		})
+
+		expect(Array.from(iterateAnswers(longer, double))).toStrictEqual([2, 4, 6])
+		expect(Array.from(iterateAnswers(shorter, double))).toStrictEqual([18])
+	})
+
+	it('reads an infinite source only as far as its first refusal', () => {
+		const seen = createRecorder<readonly [number]>()
+		const endless: Iterable<number> = {
+			*[Symbol.iterator]() {
+				for (;;) yield 7
+			},
+		}
+
+		expect(
+			Array.from(
+				iterateAnswers(endless, (value) => {
+					seen.handler(value)
+					return seen.count < 3 ? value : undefined
+				}),
+			),
+		).toStrictEqual([7, 7, undefined])
+		expect(seen.count).toBe(3)
 	})
 })
 
@@ -626,6 +759,47 @@ describe('planToSummary', () => {
 
 		expect(() => planToSummary(plan)).toThrow(TypeError)
 	})
+
+	// A `for…of` loop tallied every artifact the iterator of the list yielded, however long the list
+	// said it was, so the computed tally is what the iterator yielded beyond host and template.
+	it.each([
+		[
+			'more artifacts than the list is long',
+			Object.defineProperty([], Symbol.iterator, {
+				value: function* () {
+					yield buildHostArtifact()
+					yield buildHostArtifact()
+					yield buildContentArtifact()
+				},
+			}),
+			{ host: 2, template: 0, computed: 1 },
+		],
+		[
+			'fewer artifacts than the list is long',
+			Object.defineProperty(
+				[buildHostArtifact(), buildHostArtifact(), buildHostArtifact()],
+				Symbol.iterator,
+				{
+					value: function* () {
+						yield buildContentArtifact()
+					},
+				},
+			),
+			{ host: 0, template: 0, computed: 1 },
+		],
+		[
+			'the same artifacts in another order',
+			Object.defineProperty([buildHostArtifact(), buildContentArtifact()], Symbol.iterator, {
+				value: function* () {
+					yield buildContentArtifact({ path: 'README.md', origin: 'template' })
+					yield buildContentArtifact()
+				},
+			}),
+			{ host: 0, template: 1, computed: 1 },
+		],
+	])('tallies what the iterator yields when it yields %s', (_label, artifacts, tally) => {
+		expect(planToSummary(buildPlan({ artifacts }))).toMatchObject(tally)
+	})
 })
 
 describe('extractVersion and compareVersions', () => {
@@ -954,5 +1128,92 @@ describe('renderSkillPointer', () => {
 		expect(
 			renderSkillPointer('\n---\nname: orkestrel-harden\n---\n', 'orkestrel-harden'),
 		).toBeUndefined()
+	})
+})
+
+// A `for…of` loop reads one entry, works on it, and stops at the first failure, where a copy of the
+// list reads every entry first. Each case runs the helper over a list of two recorded entries and
+// pins the constructor it raised and the entries it read, as the loop the helper replaced gave them.
+describe('helpers over a caller-supplied list read one entry at a time', () => {
+	const catalogEntry = (): CatalogEntry => ({
+		name: '@orkestrel/free',
+		lookup: 'found',
+		version: '1.0.0',
+		dependencies: [],
+		peers: [],
+	})
+
+	it.each([
+		buildLazyCase(
+			'the entries a catalog is layered over',
+			(shape) =>
+				readLazily(
+					shape,
+					catalogEntry,
+					(entries) => catalogToLayers(entries),
+					refuseObject(catalogEntry),
+				),
+			{
+				hole: { outcome: 'TypeError', reads: [1] },
+				refused: { outcome: 'RangeError', reads: [1] },
+				dense: { outcome: 'return', reads: [0, 1, 0, 1] },
+			},
+		),
+		buildLazyCase('the artifacts a plan is summarized over', (shape) =>
+			readLazily(
+				shape,
+				buildContentArtifact,
+				(artifacts) => planToSummary(buildPlan({ artifacts })),
+				refuseObject(buildContentArtifact),
+			),
+		),
+	])('reads $label one entry at a time', ({ read, hole, refused, refusal, dense }) => {
+		expect(read('hole-before-entry')).toStrictEqual(hole)
+		expect(read('hole-before-refusal')).toStrictEqual(refused)
+		expect(read('refusal-before-entry')).toStrictEqual(refusal)
+		expect(read('dense-pair')).toStrictEqual(dense)
+	})
+})
+
+// A `for…of` loop takes the iterator a list names and refuses a list that names none, where
+// `Array.from` and `values()` fall back to the indexes and answer. Each case runs the helper over a
+// list whose `Symbol.iterator` is `undefined` and pins the constructor and the entries read first.
+describe('helpers over a list without an iterator refuse it as the loop did', () => {
+	const catalogEntry = (): CatalogEntry => ({
+		name: '@orkestrel/free',
+		lookup: 'found',
+		version: '1.0.0',
+		dependencies: [],
+		peers: [],
+	})
+
+	it.each([
+		// The first pass filters the entries, which reads each one, before the iterator is taken.
+		buildMissingCase(
+			'the entries a catalog is layered over',
+			catalogEntry,
+			(entries) => catalogToLayers(entries),
+			[0, 1],
+		),
+		buildMissingCase('the artifacts a plan is summarized over', buildContentArtifact, (artifacts) =>
+			planToSummary(buildPlan({ artifacts })),
+		),
+	])('refuses $label after the reads it names', ({ read, reads }) => {
+		expect(read()).toStrictEqual({ outcome: 'TypeError', reads })
+	})
+
+	it('refuses bytes without an iterator and follows bytes with another', () => {
+		const missing = new Uint8Array([0x68, 0x69])
+		Object.defineProperty(missing, Symbol.iterator, { value: undefined })
+		const replaced = new Uint8Array([0x68, 0x69])
+		Object.defineProperty(replaced, Symbol.iterator, {
+			value: function* () {
+				yield 0xab
+			},
+		})
+
+		expect(() => bytesToHex(missing)).toThrow(TypeError)
+		expect(bytesToHex(replaced)).toBe('ab')
+		expect(bytesToHex(new Uint8Array([0x68, 0x69]))).toBe('6869')
 	})
 })

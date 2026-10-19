@@ -451,7 +451,8 @@ export const SERVICE_SETUP_PATH = 'tests/setupService.ts'
 export const SERVICE_TEST_INCLUDE = 'tests/service/**/*.test.ts'
 
 /**
- * Names the include the study project covers, a directory whose test files make a workspace `studies`.
+ * Names the include the study project covers, where an exact-case `*.test.ts` file beneath
+ * `tests/studies`, outside any `node_modules` or `.git` directory, makes a workspace `studies`.
  *
  * @remarks
  * The selector reads the include's population less Vitest's default exclude: an exact-case file

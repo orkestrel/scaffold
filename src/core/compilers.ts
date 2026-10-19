@@ -346,23 +346,28 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 				Object.entries(FRAMEWORK_MATRIX[framework].dependencies),
 			),
 		),
-		...Object.fromEntries(blueprint.extras.map((extra) => [extra.name, extra.range])),
+		// The iterator consumes one extra at a time and reads a hole as an `undefined` extra, which the
+		// name read refuses before a later extra is read. It takes the list through its iterator
+		// protocol alone, so a list without one is refused as the loop refused it.
+		...Object.fromEntries(
+			Iterator.from(blueprint.extras)
+				.map((extra) => [extra.name, extra.range])
+				.toArray(),
+		),
 		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 	}
 	// A peer keeps the pin of a development tool already selected, and the first of two peers
-	// naming one package wins, because its floor was the one the workspace declared first. The spread
-	// reads a hole as an `undefined` peer, which the name read refuses.
-	const peers = [...blueprint.peers]
+	// naming one package wins, because its floor was the one the workspace declared first. Each peer is
+	// read once, in order, and only a peer the selection lacks has its range read.
+	const peers = Iterator.from(blueprint.peers)
+		.flatMap((peer): ReadonlyArray<readonly [string, string]> =>
+			Object.hasOwn(prior, peer.name) ? [] : [[peer.name, peer.range]],
+		)
+		.toArray()
 	const merged: Readonly<Record<string, string>> = {
 		...prior,
 		...Object.fromEntries(
-			peers
-				.filter(
-					(peer, index) =>
-						!Object.hasOwn(prior, peer.name) &&
-						peers.findIndex((other) => other.name === peer.name) === index,
-				)
-				.map((peer) => [peer.name, peer.range]),
+			peers.filter(([name], index) => peers.findIndex(([other]) => other === name) === index),
 		),
 	}
 	const runtime = new Set(blueprint.dependencies.map((dependency) => dependency.name))
@@ -580,26 +585,6 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	const checks = [...blueprint.src, ...source, ...sheets, ...(blueprint.bin ? ['bin'] : [])].map(
 		(name) => `npm run check:src:${name}`,
 	)
-	const testApplication = [
-		vitest,
-		...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
-		...application.map((name) => `--project app:${name}`),
-	].join(' ')
-	// The aggregate keeps the position its first appearance gave it, with the value the sheet
-	// targets extend, so it is computed once rather than written and then rewritten.
-	const testSource = [
-		...(blueprint.src.length > 0 || blueprint.bin
-			? [
-					[
-						vitest,
-						...blueprint.src.map((environment) => `--project ${SRC_MATRIX[environment].project}`),
-						...source.map((name) => `--project src:${name}`),
-						...(blueprint.bin ? ['--project src:bin'] : []),
-					].join(' '),
-				]
-			: []),
-		...targets.map((name) => `npm run test:src:${name}`),
-	].join(' && ')
 	const journey = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
 	const showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
 	const buildShowcase = `vite build --config ${SHOWCASE_CONFIG_PATH}`
@@ -620,10 +605,12 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			? {
 					'check:src': checks.join(' && '),
 					...Object.fromEntries(
-						blueprint.src.map((environment) => [
-							`check:src:${environment}`,
-							`tsc --noEmit -p configs/src/tsconfig.${environment}.json`,
-						]),
+						Iterator.from(blueprint.src)
+							.map((environment) => [
+								`check:src:${environment}`,
+								`tsc --noEmit -p configs/src/tsconfig.${environment}.json`,
+							])
+							.toArray(),
 					),
 					...(blueprint.bin
 						? { 'check:src:bin': 'tsc --noEmit -p configs/src/tsconfig.bin.json' }
@@ -642,10 +629,12 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 						.map((environment) => `npm run check:app:${environment}`)
 						.join(' && '),
 					...Object.fromEntries(
-						blueprint.app.map((environment) => [
-							`check:app:${environment}`,
-							`tsc --noEmit -p configs/app/tsconfig.${environment}.json`,
-						]),
+						Iterator.from(blueprint.app)
+							.map((environment) => [
+								`check:app:${environment}`,
+								`tsc --noEmit -p configs/app/tsconfig.${environment}.json`,
+							])
+							.toArray(),
 					),
 					...Object.fromEntries(
 						application.map((name) => [
@@ -677,12 +666,31 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		].join(' && '),
 		...(compiles
 			? {
-					'test:src': testSource,
+					// The aggregate keeps the position its first appearance gave it, with the value the sheet
+					// targets extend, so it is computed once rather than written and then rewritten. It is
+					// computed here, after the checks, so the environments are read where the baseline read them.
+					'test:src': [
+						...(blueprint.src.length > 0 || blueprint.bin
+							? [
+									[
+										vitest,
+										...blueprint.src.map(
+											(environment) => `--project ${SRC_MATRIX[environment].project}`,
+										),
+										...source.map((name) => `--project src:${name}`),
+										...(blueprint.bin ? ['--project src:bin'] : []),
+									].join(' '),
+								]
+							: []),
+						...targets.map((name) => `npm run test:src:${name}`),
+					].join(' && '),
 					...Object.fromEntries(
-						blueprint.src.map((environment) => [
-							`test:src:${environment}`,
-							`${vitest} --project ${SRC_MATRIX[environment].project}`,
-						]),
+						Iterator.from(blueprint.src)
+							.map((environment) => [
+								`test:src:${environment}`,
+								`${vitest} --project ${SRC_MATRIX[environment].project}`,
+							])
+							.toArray(),
 					),
 					...(blueprint.bin ? { 'test:src:bin': `${vitest} --project src:bin` } : {}),
 					...Object.fromEntries(
@@ -698,12 +706,18 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			: {}),
 		...(blueprint.app.length > 0
 			? {
-					'test:app': testApplication,
+					'test:app': [
+						vitest,
+						...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
+						...application.map((name) => `--project app:${name}`),
+					].join(' '),
 					...Object.fromEntries(
-						blueprint.app.map((environment) => [
-							`test:app:${environment}`,
-							`${vitest} --project ${APP_MATRIX[environment].project}`,
-						]),
+						Iterator.from(blueprint.app)
+							.map((environment) => [
+								`test:app:${environment}`,
+								`${vitest} --project ${APP_MATRIX[environment].project}`,
+							])
+							.toArray(),
 					),
 					...Object.fromEntries(
 						application.map((name) => [`test:app:${name}`, `${vitest} --project app:${name}`]),
@@ -752,12 +766,14 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 						...(blueprint.bin ? ['npm run build:src:bin'] : []),
 					].join(' && '),
 					...Object.fromEntries(
-						blueprint.src.map((environment) => [
-							`build:src:${environment}`,
-							SRC_MATRIX[environment].formats.includes('cjs')
-								? `vite build --config configs/src/vite.${environment}.config.ts && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
-								: `vite build --config configs/src/vite.${environment}.config.ts`,
-						]),
+						Iterator.from(blueprint.src)
+							.map((environment) => [
+								`build:src:${environment}`,
+								SRC_MATRIX[environment].formats.includes('cjs')
+									? `vite build --config configs/src/vite.${environment}.config.ts && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
+									: `vite build --config configs/src/vite.${environment}.config.ts`,
+							])
+							.toArray(),
 					),
 					...(blueprint.bin
 						? { 'build:src:bin': 'vite build --config configs/src/vite.bin.config.ts' }
@@ -889,13 +905,13 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 		...blueprintToSheets(blueprint),
 		...(blueprint.themes && !blueprint.styles ? ['themes'] : []),
 	]
-	const faces = blueprintToFaces(blueprint)
 	const body = Object.entries(scripts).flatMap(([name, command]): readonly ManifestScript[] => {
 		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
 		const sheet = sheets.some(
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
-		const framework = faces.some(
+		// The faces are read for each script, so the extensions are read as many times as before.
+		const framework = blueprintToFaces(blueprint).some(
 			(extension) =>
 				extension.surface === 'browser' &&
 				extension.axes.some(
@@ -1336,7 +1352,6 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	// itself. That is the case a global setup exists for, and it is why
 	// `src:browser`, `setup:browser`, and `integration` take the same span.
 	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
-	const core = blueprint.src.includes('core')
 	const imports = [
 		...(machinery.browser ? ["import { playwright } from '@vitest/browser-playwright'"] : []),
 		...(machinery.frameworks.includes('vue') ? ["import vue from '@vitejs/plugin-vue'"] : []),
@@ -1354,7 +1369,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	const factories = [
 		...(blueprint.src.includes('browser') || blueprint.src.includes('server')
 			? [
-					core
+					blueprint.src.includes('core')
 						? `function resolveSourceExternal(id: string): boolean {
 	return (
 		id === '@src/core' ||
@@ -1374,8 +1389,9 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			: []),
 		...(styled ? [CONFIG_TEMPLATES.factories.sheet] : []),
 		...(planned.has('src:core') ? [CONFIG_TEMPLATES.factories.src.core] : []),
+		// Each of the two source factories asks the axis for core once, where it renders.
 		...(planned.has('src:browser')
-			? [
+			? [blueprint.src.includes('core')].map((core) =>
 					fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
 						external,
 						output: core
@@ -1384,10 +1400,10 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 						exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 						global,
 					}),
-				]
+				)
 			: []),
 		...(planned.has('src:server')
-			? [
+			? [blueprint.src.includes('core')].map((core) =>
 					fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
 						external,
 						output: core
@@ -1406,7 +1422,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 							: '\t\t\t\toutput: {},',
 						exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 					}),
-				]
+				)
 			: []),
 		...(planned.has('src:vue') ? [CONFIG_TEMPLATES.factories.src.vue] : []),
 		...(planned.has('src:bin') ? [CONFIG_TEMPLATES.factories.src.bin] : []),
@@ -1631,31 +1647,37 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 					},
 				]
 	})
-	// The spread reads a hole in `src` or `app` as an `undefined` environment, which the matrix refuses.
-	const sources: readonly Artifact[] = [...blueprint.src].flatMap((environment) =>
-		SRC_MATRIX[environment].configs.map((path): Artifact => ({
-			path,
-			group: 'configs',
-			ownership: 'content',
-			origin: 'template',
-			environment,
-			content:
-				path === 'configs/src/tsconfig.core.json'
-					? CONFIG_TEMPLATES.tsconfigs.src.core
-					: path === 'configs/src/vite.browser.config.ts'
-						? CONFIG_TEMPLATES.vites.src.browser
-						: path === 'configs/src/tsconfig.browser.json'
-							? CONFIG_TEMPLATES.tsconfigs.src.browser
-							: path === 'configs/src/vite.server.config.ts'
-								? CONFIG_TEMPLATES.vites.src.server
-								: path === 'configs/src/tsconfig.server.json'
-									? CONFIG_TEMPLATES.tsconfigs.src.server
-									: CONFIG_TEMPLATES.vites.src.core,
-		})),
-	)
-	const paths = blueprint.src.map(
-		(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
-	)
+	// The iterator consumes one environment at a time, and reads a hole in `src` or `app` as an
+	// `undefined` environment, which the matrix refuses before a later environment is read.
+	const sources: readonly Artifact[] = Iterator.from(blueprint.src)
+		.flatMap((environment) =>
+			SRC_MATRIX[environment].configs.map((path): Artifact => ({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment,
+				content:
+					path === 'configs/src/tsconfig.core.json'
+						? CONFIG_TEMPLATES.tsconfigs.src.core
+						: path === 'configs/src/vite.browser.config.ts'
+							? CONFIG_TEMPLATES.vites.src.browser
+							: path === 'configs/src/tsconfig.browser.json'
+								? CONFIG_TEMPLATES.tsconfigs.src.browser
+								: path === 'configs/src/vite.server.config.ts'
+									? CONFIG_TEMPLATES.vites.src.server
+									: path === 'configs/src/tsconfig.server.json'
+										? CONFIG_TEMPLATES.tsconfigs.src.server
+										: CONFIG_TEMPLATES.vites.src.core,
+			})),
+		)
+		.toArray()
+	// The paths are read only for a bin selection, once, after the sources.
+	const paths = blueprint.bin
+		? blueprint.src.map(
+				(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
+			)
+		: []
 	const renderedPaths =
 		paths.length === 0
 			? '\t\t\t\t\tpaths: {},'
@@ -1675,50 +1697,59 @@ ${paths.join('\n')}
 			}))
 		: []
 	const includeSuffixes = ['cts', 'mts', 'ts', 'tsx']
-	const coreIncludes = blueprint.app.includes('core')
-		? includeSuffixes.map((suffix) => `../../app/core/**/*.${suffix}`)
-		: []
-	const [browserInclude = '', serverInclude = ''] = [
-		[
-			...includeSuffixes.map((suffix) => `../../app/browser/**/*.${suffix}`),
-			...coreIncludes,
-			...includeSuffixes.map((suffix) => `../../tests/app/browser/**/*.${suffix}`),
-			'../../tests/setup.ts',
-			'../../tests/setupBrowser.ts',
-		],
-		[
-			...includeSuffixes.map((suffix) => `../../app/server/**/*.${suffix}`),
-			...coreIncludes,
-			...includeSuffixes.map((suffix) => `../../tests/app/server/**/*.${suffix}`),
-			'../../tests/setup.ts',
-			'../../tests/setupServer.ts',
-		],
-	].map((entries) =>
-		entries
-			.map(
-				(entry, index) => `\t\t${JSON.stringify(entry)}${index === entries.length - 1 ? '' : ','}`,
-			)
-			.join('\n'),
-	)
-	const applications: readonly Artifact[] = [...blueprint.app].flatMap((environment) =>
-		APP_MATRIX[environment].configs.map((path): Artifact => ({
-			path,
-			group: 'configs',
-			ownership: 'content',
-			origin: 'template',
-			environment,
-			content:
-				path === 'configs/app/vite.browser.config.ts'
-					? CONFIG_TEMPLATES.vites.app.browser
-					: path === 'configs/app/tsconfig.browser.json'
-						? fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, { include: browserInclude })
-						: path === 'configs/app/vite.server.config.ts'
-							? CONFIG_TEMPLATES.vites.app.server
-							: path === 'configs/app/tsconfig.server.json'
-								? fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, { include: serverInclude })
-								: CONFIG_TEMPLATES.tsconfigs.app.core,
-		})),
-	)
+	// Each browser and server tsconfig asks the application axis for core where it renders its own
+	// include list, so the axis is read once per such config and never for another.
+	const applications: readonly Artifact[] = Iterator.from(blueprint.app)
+		.flatMap((environment) =>
+			APP_MATRIX[environment].configs.map((path): Artifact => ({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment,
+				content:
+					path === 'configs/app/vite.browser.config.ts'
+						? CONFIG_TEMPLATES.vites.app.browser
+						: path === 'configs/app/tsconfig.browser.json'
+							? fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, {
+									include: [
+										...includeSuffixes.map((suffix) => `../../app/browser/**/*.${suffix}`),
+										...(blueprint.app.includes('core')
+											? includeSuffixes.map((suffix) => `../../app/core/**/*.${suffix}`)
+											: []),
+										...includeSuffixes.map((suffix) => `../../tests/app/browser/**/*.${suffix}`),
+										'../../tests/setup.ts',
+										'../../tests/setupBrowser.ts',
+									]
+										.map(
+											(entry, index, entries) =>
+												`\t\t${JSON.stringify(entry)}${index === entries.length - 1 ? '' : ','}`,
+										)
+										.join('\n'),
+								})
+							: path === 'configs/app/vite.server.config.ts'
+								? CONFIG_TEMPLATES.vites.app.server
+								: path === 'configs/app/tsconfig.server.json'
+									? fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, {
+											include: [
+												...includeSuffixes.map((suffix) => `../../app/server/**/*.${suffix}`),
+												...(blueprint.app.includes('core')
+													? includeSuffixes.map((suffix) => `../../app/core/**/*.${suffix}`)
+													: []),
+												...includeSuffixes.map((suffix) => `../../tests/app/server/**/*.${suffix}`),
+												'../../tests/setup.ts',
+												'../../tests/setupServer.ts',
+											]
+												.map(
+													(entry, index, entries) =>
+														`\t\t${JSON.stringify(entry)}${index === entries.length - 1 ? '' : ','}`,
+												)
+												.join('\n'),
+										})
+									: CONFIG_TEMPLATES.tsconfigs.app.core,
+			})),
+		)
+		.toArray()
 	const faces: readonly Artifact[] = blueprintToFaces(blueprint).flatMap((extension) =>
 		extension.axes.flatMap((axis): readonly Artifact[] => {
 			const include = [
@@ -1878,19 +1909,18 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 		})),
 	)
 	// A hole in `src` or `app` reads as an `undefined` environment, as a `for…of` over it would.
-	const sources: readonly ContentArtifact[] = Array.from(
-		blueprint.src,
-		(environment): ContentArtifact => ({
+	const sources: readonly ContentArtifact[] = Iterator.from(blueprint.src)
+		.map((environment): ContentArtifact => ({
 			path: `src/${environment}/index.ts`,
 			group: 'source',
 			ownership: 'birth',
 			origin: 'template',
 			environment,
 			content: ARTIFACT_TEMPLATES.source.empty,
-		}),
-	)
-	const applications: readonly ContentArtifact[] = [...blueprint.app].flatMap(
-		(environment): readonly ContentArtifact[] => {
+		}))
+		.toArray()
+	const applications: readonly ContentArtifact[] = Iterator.from(blueprint.app)
+		.flatMap((environment): readonly ContentArtifact[] => {
 			const entry: ContentArtifact = {
 				path: `app/${environment}/index.ts`,
 				group: 'source',
@@ -1935,8 +1965,8 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 						},
 					]
 				: [entry]
-		},
-	)
+		})
+		.toArray()
 	const faces: readonly ContentArtifact[] = blueprintToFaces(blueprint).flatMap((extension) =>
 		extension.axes.flatMap((axis): readonly ContentArtifact[] => {
 			const barrel: ContentArtifact = {
@@ -2178,9 +2208,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				}))
 			: []
 	// A hole in `src` or `app` reads as an `undefined` environment, as a `for…of` over it would.
-	const sources: readonly ContentArtifact[] = Array.from(
-		blueprint.src,
-		(environment): ContentArtifact => ({
+	const sources: readonly ContentArtifact[] = Iterator.from(blueprint.src)
+		.map((environment): ContentArtifact => ({
 			path: `tests/src/${environment}/index.test.ts`,
 			group: 'tests',
 			ownership: 'birth',
@@ -2190,8 +2219,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				specifier: serializeTypeScriptString(`@src/${environment}`),
 				label: serializeTypeScriptString(`src ${environment} entry`),
 			}),
-		}),
-	)
+		}))
+		.toArray()
 	const binSpecifier = serializeTypeScriptString('../../../src/bin/main.js')
 	const joinedImport = `\t\tconst entry = await import(${binSpecifier})`
 	const bins: readonly ContentArtifact[] = blueprint.bin
@@ -2209,9 +2238,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				},
 			]
 		: []
-	const applications: readonly ContentArtifact[] = Array.from(
-		blueprint.app,
-		(environment): ContentArtifact => ({
+	const applications: readonly ContentArtifact[] = Iterator.from(blueprint.app)
+		.map((environment): ContentArtifact => ({
 			path: `tests/app/${environment}/index.test.ts`,
 			group: 'tests',
 			ownership: 'birth',
@@ -2221,8 +2249,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				specifier: serializeTypeScriptString(`@app/${environment}`),
 				label: serializeTypeScriptString(`app ${environment} entry`),
 			}),
-		}),
-	)
+		}))
+		.toArray()
 	// The packed artifact is what this proof measures, and that subject is the same
 	// in every publishing workspace: an installed tree, its exports map, and the
 	// declarations beside it. So it is derived rather than named, and a workspace
@@ -2241,53 +2269,67 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// a workspace publishing a browser face later keeps a proof with no branch for it.
 	// The core-only variant therefore carries the guard that reddens on such an entry
 	// rather than skipping it.
-	const browser = blueprint.src.includes('browser')
+	// The `src` axis is asked for a browser face only when the proof is planned, and the integration
+	// proof reads both axes only when it is planned, so each read stays where the condition puts it.
 	const distribution = ARTIFACT_TEMPLATES.tests.distribution
 	const distributions: readonly ContentArtifact[] =
 		blueprint.src.length > 0 || blueprintToSheets(blueprint).length > 0 || blueprint.themes
-			? [
-					{
-						path: DISTRIBUTION_TEST_PATH,
-						group: 'tests',
-						ownership: 'presence',
-						origin: 'template',
-						content: fillTemplate(distribution.proof, {
-							types: browser ? distribution.types : '',
-							transport: browser ? distribution.transport : '',
-							launcher: browser ? distribution.launcher : '',
-							helpers: browser ? distribution.helpers : '',
-							drive: browser ? distribution.drive : '',
-							guard: browser ? '' : distribution.guard,
-						}),
-					},
-				]
+			? [blueprint.src.includes('browser')].map((browser): ContentArtifact => ({
+					path: DISTRIBUTION_TEST_PATH,
+					group: 'tests',
+					ownership: 'presence',
+					origin: 'template',
+					content: fillTemplate(distribution.proof, {
+						types: browser ? distribution.types : '',
+						transport: browser ? distribution.transport : '',
+						launcher: browser ? distribution.launcher : '',
+						helpers: browser ? distribution.helpers : '',
+						drive: browser ? distribution.drive : '',
+						guard: browser ? '' : distribution.guard,
+					}),
+				}))
 			: []
-	const modules = [
-		...Array.from(blueprint.src, (environment) => ({
-			entry:
-				environment === 'core' ? 'srcCore' : environment === 'browser' ? 'srcBrowser' : 'srcServer',
-			specifier: `@src/${environment}`,
-		})),
-		...Array.from(blueprint.app, (environment) => ({
-			entry:
-				environment === 'core' ? 'appCore' : environment === 'browser' ? 'appBrowser' : 'appServer',
-			specifier: `@app/${environment}`,
-		})),
-	]
-	const entries = modules.map(({ entry }) => entry)
-	const imports = modules.map(({ entry, specifier }) => `import * as ${entry} from '${specifier}'`)
-	const joined = `expect([${entries.map((entry) => `Object.keys(${entry})`).join(', ')}]).toStrictEqual(`
-	const actual = matchesPrintWidth(`\t\t${joined}[`)
-		? joined
-		: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
-	const expectedInline = `[${entries.map(() => '[]').join(', ')}]`
-	const expected =
-		actual !== joined || matchesPrintWidth(`\t\t${joined}${expectedInline})`)
-			? expectedInline
-			: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
 	const integrations: readonly ContentArtifact[] = blueprint.integration
 		? [
-				{
+				[
+					...Iterator.from(blueprint.src)
+						.map((environment) => ({
+							entry:
+								environment === 'core'
+									? 'srcCore'
+									: environment === 'browser'
+										? 'srcBrowser'
+										: 'srcServer',
+							specifier: `@src/${environment}`,
+						}))
+						.toArray(),
+					...Iterator.from(blueprint.app)
+						.map((environment) => ({
+							entry:
+								environment === 'core'
+									? 'appCore'
+									: environment === 'browser'
+										? 'appBrowser'
+										: 'appServer',
+							specifier: `@app/${environment}`,
+						}))
+						.toArray(),
+				],
+			].map((modules): ContentArtifact => {
+				const entries = modules.map(({ entry }) => entry)
+				const imports = modules.map(
+					({ entry, specifier }) => `import * as ${entry} from '${specifier}'`,
+				)
+				const joined = `expect([${entries.map((entry) => `Object.keys(${entry})`).join(', ')}]).toStrictEqual(`
+				const actual = matchesPrintWidth(`\t\t${joined}[`)
+					? joined
+					: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
+				const expectedInline = `[${entries.map(() => '[]').join(', ')}]`
+				const expected =
+					actual !== joined || matchesPrintWidth(`\t\t${joined}${expectedInline})`)
+						? expectedInline
+						: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
+				return {
 					path: INTEGRATION_TEST_PATH,
 					group: 'tests',
 					ownership: 'birth',
@@ -2297,8 +2339,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 						actual,
 						expected,
 					}),
-				},
-			]
+				}
+			})
 		: []
 	return [
 		{
@@ -2981,9 +3023,11 @@ export function replaceManifestScripts(
 	if (!isRecord(parsed) || !isRecord(parsed.scripts)) return undefined
 	const declared = parsed.scripts
 	// A non-string planned key makes the region structurally unsafe to edit, so
-	// rule on that shape before locating any byte range.
+	// rule on that shape before locating any byte range. The iterator reads one script at a time,
+	// stops at the first that refuses, and reads a hole as an `undefined` script, as a `for…of`
+	// over the list would. It takes the list through its iterator protocol alone.
 	if (
-		scripts.some(
+		Iterator.from(scripts).some(
 			(script) => Object.hasOwn(declared, script.name) && !isString(declared[script.name]),
 		)
 	) {
@@ -3224,11 +3268,17 @@ export function planToHash(plan: Plan): string | undefined {
  * ```
  */
 export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
-	// The spread reads a hole as an `undefined` artifact, as a `for…of` over the list would.
-	const artifacts = [...plan.artifacts]
-	const planned = new Set(artifacts.map((artifact) => artifact.path))
+	// The iterator consumes one artifact at a time and reads a hole as an `undefined` artifact, as a
+	// `for…of` over the list would. The path is read for the plan before the finding reads it.
+	const listed = Iterator.from(plan.artifacts)
+		.map((artifact) => ({
+			path: artifact.path,
+			finding: artifactToFinding(artifact, current[artifact.path]),
+		}))
+		.toArray()
+	const planned = new Set(listed.map(({ path }) => path))
 	return [
-		...artifacts.map((artifact) => artifactToFinding(artifact, current[artifact.path])),
+		...listed.map(({ finding }) => finding),
 		...Object.entries(current).flatMap(([path, observed]): readonly Finding[] => {
 			if (planned.has(path)) return []
 			const group = inferGroup(path)
@@ -3277,31 +3327,39 @@ export function dependenciesToQuestions(
 	name: RegExp,
 	range: RegExp,
 ): readonly Question[] {
-	// The spread reads a hole as an `undefined` entry, as a `for…of` over the list would.
-	const listed = [...dependencies]
-	return listed.flatMap((dependency, index): readonly Question[] => [
-		...(!name.test(dependency.name)
+	// The iterator consumes one entry at a time and reads a hole as an `undefined` entry, which the
+	// name read refuses before a later entry is read.
+	const listed = Iterator.from(dependencies)
+		.map((dependency) => {
+			const declared = dependency.name
+			const valid = name.test(declared)
+			const pinned = dependency.range
+			return { declared, valid, pinned, accepted: range.test(pinned) }
+		})
+		.toArray()
+	return listed.flatMap(({ declared, valid, pinned, accepted }, index): readonly Question[] => [
+		...(!valid
 			? [
 					{
 						field,
-						message: `${dependency.name} is not a package name ${field} accepts.`,
+						message: `${declared} is not a package name ${field} accepts.`,
 						blocking: true,
 					},
 				]
-			: listed.findIndex((other) => other.name === dependency.name) < index
+			: listed.findIndex((other) => other.declared === declared) < index
 				? [
 						{
 							field,
-							message: `${dependency.name} is declared more than once on ${field}.`,
+							message: `${declared} is declared more than once on ${field}.`,
 							blocking: true,
 						},
 					]
 				: []),
-		...(!range.test(dependency.range)
+		...(!accepted
 			? [
 					{
 						field,
-						message: `${dependency.name} declares the range ${dependency.range}, which ${field} does not accept.`,
+						message: `${declared} declares the range ${pinned}, which ${field} does not accept.`,
 						blocking: true,
 					},
 				]
@@ -3355,24 +3413,8 @@ export function dependenciesToQuestions(
  * ```
  */
 export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
-	// Each spread reads a hole in a list as an `undefined` entry, as a `for…of` over it would.
-	const extensions = [...blueprint.extensions]
-	const vendors = [...blueprint.vendors]
-	const extras = [...blueprint.extras]
-	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
-		['dependencies', blueprint.dependencies],
-		['peers', [...blueprint.peers]],
-		['extras', extras],
-	]
-	// The field that first declared a name, in the order the lists are measured: the pairs are
-	// reversed so the first declaration is the one a `Map` keeps.
-	const firstField = new Map(
-		lists
-			.flatMap(([field, list]) =>
-				list.map((dependency): readonly [string, string] => [dependency.name, field]),
-			)
-			.reverse(),
-	)
+	// Each list is read where the sections below reach it, one entry at a time and once per pass, and
+	// The iterator reads a hole in a list as an `undefined` entry, as a `for…of` over it would.
 	const own = `@orkestrel/${blueprint.name}`
 	return [
 		...(!NAME_PATTERN.test(blueprint.name)
@@ -3448,10 +3490,53 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					]
 				: []),
 		]),
-		...extensions.flatMap((extension, index): readonly Question[] => {
-			const selection = `${extension.surface}:${extension.name}`
-			return [
-				...(extensions.findIndex((other) => `${other.surface}:${other.name}` === selection) < index
+		// An extension's own questions are read with the extension, and the repeat of an earlier
+		// selection is judged once every extension has been read.
+		...Iterator.from(blueprint.extensions)
+			.map((extension) => {
+				const selection = `${extension.surface}:${extension.name}`
+				return {
+					selection,
+					questions:
+						extension.surface === 'browser'
+							? [
+									...(extension.axes.length === 0
+										? [
+												{
+													field: 'extensions',
+													message: `${selection} occupies no axis.`,
+													blocking: false,
+												},
+											]
+										: []),
+									...Iterator.from(extension.axes)
+										.flatMap((axis) =>
+											blueprint[axis].includes('browser')
+												? []
+												: [
+														{
+															field: 'extensions',
+															message: `${selection} occupies ${axis}, whose selection lacks browser.`,
+															blocking: false,
+														},
+													],
+										)
+										.toArray(),
+								]
+							: !blueprint.styles
+								? [
+										{
+											field: 'extensions',
+											message: `${selection} extends a styles surface this workspace does not declare.`,
+											blocking: false,
+										},
+									]
+								: [],
+				}
+			})
+			.toArray()
+			.flatMap(({ selection, questions }, index, selected): readonly Question[] => [
+				...(selected.findIndex((other) => other.selection === selection) < index
 					? [
 							{
 								field: 'extensions',
@@ -3460,36 +3545,8 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 							},
 						]
 					: []),
-				...(extension.surface === 'browser'
-					? [
-							...(extension.axes.length === 0
-								? [
-										{
-											field: 'extensions',
-											message: `${selection} occupies no axis.`,
-											blocking: false,
-										},
-									]
-								: []),
-							...[...extension.axes]
-								.filter((axis) => !blueprint[axis].includes('browser'))
-								.map((axis) => ({
-									field: 'extensions',
-									message: `${selection} occupies ${axis}, whose selection lacks browser.`,
-									blocking: false,
-								})),
-						]
-					: !blueprint.styles
-						? [
-								{
-									field: 'extensions',
-									message: `${selection} extends a styles surface this workspace does not declare.`,
-									blocking: false,
-								},
-							]
-						: []),
-			]
-		}),
+				...questions,
+			]),
 		...(blueprint.integration && blueprint.src.length + blueprint.app.length < 2
 			? [
 					{
@@ -3500,25 +3557,31 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					},
 				]
 			: []),
-		...vendors.flatMap((vendor, index): readonly Question[] =>
-			!NAME_PATTERN.test(vendor)
-				? [
-						{
-							field: 'vendors',
-							message: `${vendor} is not a lowercase alphanumeric vendor name starting with a letter.`,
-							blocking: true,
-						},
-					]
-				: vendors.indexOf(vendor) < index
+		...Iterator.from(blueprint.vendors)
+			.map((vendor) => ({
+				vendor,
+				valid: NAME_PATTERN.test(vendor),
+			}))
+			.toArray()
+			.flatMap(({ vendor, valid }, index, declared): readonly Question[] =>
+				!valid
 					? [
 							{
 								field: 'vendors',
-								message: `${vendor} is declared more than once on vendors.`,
+								message: `${vendor} is not a lowercase alphanumeric vendor name starting with a letter.`,
 								blocking: true,
 							},
 						]
-					: [],
-		),
+					: declared.findIndex((other) => other.vendor === vendor) < index
+						? [
+								{
+									field: 'vendors',
+									message: `${vendor} is declared more than once on vendors.`,
+									blocking: true,
+								},
+							]
+						: [],
+			),
 		...(blueprint.showcase && !blueprint.app.includes('browser')
 			? [
 					{
@@ -3557,16 +3620,34 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			FOREIGN_NAME_PATTERN,
 			FLOOR_RANGE_PATTERN,
 		),
-		...dependenciesToQuestions(extras, 'extras', FOREIGN_NAME_PATTERN, EXTRA_RANGE_PATTERN),
-		...lists.flatMap(([field, list]) =>
-			list.flatMap((dependency): readonly Question[] => {
-				const first = firstField.get(dependency.name)
+		...dependenciesToQuestions(
+			blueprint.extras,
+			'extras',
+			FOREIGN_NAME_PATTERN,
+			EXTRA_RANGE_PATTERN,
+		),
+		// The three lists are read in field order, and the field that first declared a name is the
+		// field of the first entry that carries it.
+		...(
+			[
+				['dependencies', blueprint.dependencies],
+				['peers', blueprint.peers],
+				['extras', blueprint.extras],
+			] as const
+		)
+			.flatMap(([field, list]) =>
+				Iterator.from(list)
+					.map((dependency) => ({ field, name: dependency.name }))
+					.toArray(),
+			)
+			.flatMap(({ field, name }, _, declared): readonly Question[] => {
+				const first = declared.find((other) => other.name === name)?.field
 				return [
-					...(dependency.name === own || dependency.name === blueprint.name
+					...(name === own || name === blueprint.name
 						? [
 								{
 									field,
-									message: `${dependency.name} is the workspace itself.`,
+									message: `${name} is the workspace itself.`,
 									blocking: true,
 								},
 							]
@@ -3575,21 +3656,26 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 						? [
 								{
 									field,
-									message: `${dependency.name} is declared on both ${first} and ${field}.`,
+									message: `${name} is declared on both ${first} and ${field}.`,
 									blocking: true,
 								},
 							]
 						: []),
 				]
 			}),
-		),
-		...extras
-			.filter((extra) => Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name))
-			.map((extra) => ({
-				field: 'extras',
-				message: `${extra.name} is pinned by the shared toolchain, which every workspace carries at one version.`,
-				blocking: true,
-			})),
+		...Iterator.from(blueprint.extras)
+			.flatMap((extra) =>
+				Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name)
+					? [
+							{
+								field: 'extras',
+								message: `${extra.name} is pinned by the shared toolchain, which every workspace carries at one version.`,
+								blocking: true,
+							},
+						]
+					: [],
+			)
+			.toArray(),
 	]
 }
 
@@ -3620,40 +3706,41 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
  * ```
  */
 export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Question[] {
-	// The spread reads a hole as an `undefined` artifact, as a `for…of` over the list would.
-	const listed = [...artifacts]
-	const sizes = listed.map((artifact) =>
-		artifact.origin === 'host'
-			? artifact.hex === undefined
-				? 0
-				: artifact.hex.length / 2
-			: computeBytes(artifact.content),
-	)
-	const total = computeTotal(sizes)
+	// The iterator consumes one artifact at a time and reads a hole as an `undefined` artifact, as a
+	// `for…of` over the list would.
+	const listed = Iterator.from(artifacts)
+		.map((artifact) => ({
+			path: artifact.path,
+			bytes:
+				artifact.origin === 'host'
+					? artifact.hex === undefined
+						? 0
+						: artifact.hex.length / 2
+					: computeBytes(artifact.content),
+		}))
+		.toArray()
+	const total = computeTotal(listed.map(({ bytes }) => bytes))
 	return [
-		...listed.flatMap((artifact, index): readonly Question[] => {
-			const bytes = sizes[index] ?? 0
-			return [
-				...(listed.findIndex((other) => other.path === artifact.path) < index
-					? [
-							{
-								field: 'artifacts',
-								message: `Two artifacts claim ${artifact.path}.`,
-								blocking: true,
-							},
-						]
-					: []),
-				...(bytes > MAX_ARTIFACT_BYTES
-					? [
-							{
-								field: 'artifacts',
-								message: `${artifact.path} carries ${bytes} bytes, above the ${MAX_ARTIFACT_BYTES} one artifact admits.`,
-								blocking: true,
-							},
-						]
-					: []),
-			]
-		}),
+		...listed.flatMap(({ path, bytes }, index): readonly Question[] => [
+			...(listed.findIndex((other) => other.path === path) < index
+				? [
+						{
+							field: 'artifacts',
+							message: `Two artifacts claim ${path}.`,
+							blocking: true,
+						},
+					]
+				: []),
+			...(bytes > MAX_ARTIFACT_BYTES
+				? [
+						{
+							field: 'artifacts',
+							message: `${path} carries ${bytes} bytes, above the ${MAX_ARTIFACT_BYTES} one artifact admits.`,
+							blocking: true,
+						},
+					]
+				: []),
+		]),
 		...(artifacts.length > MAX_COLLECTION_ITEMS
 			? [
 					{
@@ -3705,20 +3792,25 @@ export function overridesToQuestions(
 	artifacts: readonly Artifact[],
 ): readonly Question[] {
 	// The first artifact planned at a path is the one an override addresses, so the pairs are
-	// reversed for a `Map` to keep it. The spread reads a hole in the overrides as an `undefined`
-	// override, as a `for…of` over the list would.
+	// reversed for a `Map` to keep it. The iterators consume one artifact and then one override at a
+	// time, and reads a hole as an `undefined` entry, as a `for…of` over the list would.
 	const planned = new Map(
-		artifacts.map((artifact): readonly [string, Artifact] => [artifact.path, artifact]).reverse(),
+		Iterator.from(artifacts)
+			.map((artifact): readonly [string, Artifact] => [artifact.path, artifact])
+			.toArray()
+			.reverse(),
 	)
-	const listed = [...overrides]
-	return listed.flatMap((override, index): readonly Question[] => {
-		const artifact = planned.get(override.path)
+	const listed = Iterator.from(overrides)
+		.map((override) => override.path)
+		.toArray()
+	return listed.flatMap((path, index): readonly Question[] => {
+		const artifact = planned.get(path)
 		return [
-			...(listed.findIndex((other) => other.path === override.path) < index
+			...(listed.indexOf(path) < index
 				? [
 						{
 							field: 'overrides',
-							message: `${override.path} is overridden more than once.`,
+							message: `${path} is overridden more than once.`,
 							blocking: true,
 						},
 					]
@@ -3727,7 +3819,7 @@ export function overridesToQuestions(
 				? [
 						{
 							field: 'overrides',
-							message: `${override.path} is not a path this plan carries.`,
+							message: `${path} is not a path this plan carries.`,
 							blocking: true,
 						},
 					]
@@ -3735,7 +3827,7 @@ export function overridesToQuestions(
 					? [
 							{
 								field: 'overrides',
-								message: `${override.path} is byte-copied from the vendored data root.`,
+								message: `${path} is byte-copied from the vendored data root.`,
 								blocking: true,
 							},
 						]
@@ -3743,7 +3835,7 @@ export function overridesToQuestions(
 						? [
 								{
 									field: 'overrides',
-									message: `${override.path} is the manifest, which the blueprint's own fields decide.`,
+									message: `${path} is the manifest, which the blueprint's own fields decide.`,
 									blocking: true,
 								},
 							]

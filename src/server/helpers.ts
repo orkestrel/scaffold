@@ -34,7 +34,15 @@ import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { basename, dirname, extname, join, parse, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { attempt, compareValues, holds, isError, isNumber, parseJSONAs } from '@orkestrel/contract'
+import {
+	attempt,
+	compareValues,
+	holds,
+	isDefined,
+	isError,
+	isNumber,
+	parseJSONAs,
+} from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
 	bytesToHex,
@@ -50,6 +58,7 @@ import {
 	isFloorPath,
 	isHex,
 	isPath,
+	iterateAnswers,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_MANIFEST_BYTES,
@@ -1033,9 +1042,13 @@ export function pruneEmptiedDirectories(
 	removed: readonly string[],
 ): readonly string[] {
 	// Every ancestor of a removed path except the path itself and the root of its form
-	// (`.` or a filesystem root), which stands whatever was removed beneath it. The spread reads a
-	// hole as an `undefined` path, as a `for…of` over the list would.
-	const candidates = new Set([...removed].flatMap((path) => listAncestors(path).slice(1, -1)))
+	// (`.` or a filesystem root), which stands whatever was removed beneath it. The iterator consumes
+	// one path at a time and reads a hole as an `undefined` path, as a `for…of` over the list would.
+	const candidates = new Set(
+		Iterator.from(removed)
+			.flatMap((path) => listAncestors(path).slice(1, -1))
+			.toArray(),
+	)
 	const ordered = [...candidates].sort(
 		(left, right) =>
 			compareValues(right.split('/').length, left.split('/').length) || compareValues(left, right),
@@ -1201,9 +1214,9 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
 		})
 	}
 	// Each path reads with what the earlier ones left of the total budget, so the fold carries the
-	// bytes spent beside the entries read. `paths` is bounded by `isCollection` above, and the spread
-	// reads a hole the `every` above skipped as an `undefined` path, as a `for…of` over the list would.
-	const read = [...paths].reduce<{
+	// bytes spent beside the entries read. The iterator fold consumes one path at a time and reads a
+	// hole the `every` above skipped as an `undefined` path, as a `for…of` over the list would.
+	const read = Iterator.from(paths).reduce<{
 		readonly entries: ReadonlyArray<readonly [string, string]>
 		readonly spent: readonly number[]
 	}>(
@@ -1443,35 +1456,48 @@ export function readManifestEntry(destination: string, source: string): Manifest
  */
 export function filesToHost(files: readonly HostFile[], floor: Host): Host | undefined {
 	const declared = new Set(floor.manifest.entries.map((entry) => entry.destination))
-	// The spread reads a hole as an `undefined` row, which the lookup read refuses, as a `for…of`
-	// over the files would.
-	const listed = [...files]
-	if (listed.some((file) => file.lookup !== 'found' || !declared.has(file.path))) return undefined
-	// A later row of one path replaces an earlier one, as a keyed write does.
-	const held = new Map(
-		listed.flatMap((file): ReadonlyArray<readonly [string, string]> =>
-			file.lookup === 'found' && !isFloorPath(file.path) ? [[file.path, file.hex]] : [],
+	// The iterator the files name serves every row, however many entries the list's length reports,
+	// and the read stops at the first row that is not found or names an undeclared path. A hole reads
+	// as an `undefined` row, which the lookup read refuses. A floor path contributes no row, and a
+	// later row of one path replaces an earlier one, as a keyed write does.
+	const rows = [
+		...iterateAnswers(files, (file): ReadonlyArray<readonly [string, string]> | undefined =>
+			file.lookup !== 'found' || !declared.has(file.path)
+				? undefined
+				: isFloorPath(file.path)
+					? []
+					: [[file.path, file.hex]],
 		),
-	)
-	const rows = floor.manifest.entries.map((entry) => ({
-		entry,
-		hex: isFloorPath(entry.destination)
-			? floor.bytes[entry.destination]
-			: held.get(entry.destination),
-	}))
-	// An entry with no bytes ends the fill, and each entry before it is digested first, in order.
-	const ending = rows.findIndex(({ hex }) => hex === undefined)
-	const filled = rows
-		.slice(0, ending === -1 ? rows.length : ending)
-		.flatMap(({ entry, hex }) => (hex === undefined ? [] : [{ entry, hex }]))
-	const entries = filled.map(({ entry, hex }): ManifestEntry => ({
-		storage: entry.storage,
-		destination: entry.destination,
-		executable: entry.executable,
-		digest: hexToDigest(hex),
-	}))
-	if (ending !== -1) return undefined
-	const bytes = Object.fromEntries(filled.map(({ entry, hex }) => [entry.destination, hex]))
+	]
+	if (!rows.every(isDefined)) return undefined
+	const held = new Map(rows.flat())
+	// The floor's entries are served by their own iterator the same way: an entry with no bytes ends
+	// the fill, each entry before it is digested as it is read, and a hole reads as an `undefined`
+	// entry, which the destination read refuses.
+	const filled = [
+		...iterateAnswers(
+			floor.manifest.entries,
+			(entry): readonly [ManifestEntry, string] | undefined => {
+				const hex = isFloorPath(entry.destination)
+					? floor.bytes[entry.destination]
+					: held.get(entry.destination)
+				return hex === undefined
+					? undefined
+					: [
+							{
+								storage: entry.storage,
+								destination: entry.destination,
+								executable: entry.executable,
+								digest: hexToDigest(hex),
+							},
+							hex,
+						]
+			},
+		),
+	]
+	if (!filled.every(isDefined)) return undefined
+	const entries = filled.map(([entry]) => entry)
+	const bytes = Object.fromEntries(filled.map(([entry, hex]) => [entry.destination, hex]))
 	return {
 		manifest: {
 			entries,
@@ -1527,48 +1553,54 @@ export function stageBytes(
 	}
 	const declared = new Map(host.manifest.entries.map((entry) => [entry.destination, entry]))
 	// A hole reads as an `undefined` destination, which the host carries no bytes for.
-	return Array.from(destinations, (destination): ManifestEntry => {
-		const entry = declared.get(destination)
-		const hex = host.bytes[destination]
-		if (entry === undefined || hex === undefined) {
-			throw new ScaffoldError('TARGET', `The host carries no bytes for ${destination}`, {
-				host: root,
-				destination,
+	return Iterator.from(destinations)
+		.map((destination): ManifestEntry => {
+			const entry = declared.get(destination)
+			const hex = host.bytes[destination]
+			if (entry === undefined || hex === undefined) {
+				throw new ScaffoldError('TARGET', `The host carries no bytes for ${destination}`, {
+					host: root,
+					destination,
+				})
+			}
+			if (hexToDigest(hex) !== entry.digest) {
+				throw new ScaffoldError('TARGET', `The host bytes for ${destination} miss its digest`, {
+					host: root,
+					destination,
+				})
+			}
+			const full = resolveContainedPath(root, entry.storage)
+			if (full === undefined) {
+				throw new ScaffoldError('INVALID', `Host storage leaves its root at ${entry.storage}`, {
+					host: root,
+					storage: entry.storage,
+				})
+			}
+			const written = attempt(() => {
+				mkdirSync(dirname(full), { recursive: true })
+				writeFileSync(full, Buffer.from(hex, 'hex'), { flag: 'wx' })
+				if (entry.executable) chmodSync(full, 0o755)
 			})
-		}
-		if (hexToDigest(hex) !== entry.digest) {
-			throw new ScaffoldError('TARGET', `The host bytes for ${destination} miss its digest`, {
-				host: root,
-				destination,
-			})
-		}
-		const full = resolveContainedPath(root, entry.storage)
-		if (full === undefined) {
-			throw new ScaffoldError('INVALID', `Host storage leaves its root at ${entry.storage}`, {
-				host: root,
-				storage: entry.storage,
-			})
-		}
-		const written = attempt(() => {
-			mkdirSync(dirname(full), { recursive: true })
-			writeFileSync(full, Buffer.from(hex, 'hex'), { flag: 'wx' })
-			if (entry.executable) chmodSync(full, 0o755)
+			if (!written.success) {
+				throw new ScaffoldError('WRITE', `Host bytes could not be staged at ${entry.storage}`, {
+					host: root,
+					storage: entry.storage,
+					error: written.error,
+				})
+			}
+			if (computeFileDigest(full) !== entry.digest) {
+				throw new ScaffoldError(
+					'WRITE',
+					`Staged host bytes at ${entry.storage} did not read back`,
+					{
+						host: root,
+						storage: entry.storage,
+					},
+				)
+			}
+			return entry
 		})
-		if (!written.success) {
-			throw new ScaffoldError('WRITE', `Host bytes could not be staged at ${entry.storage}`, {
-				host: root,
-				storage: entry.storage,
-				error: written.error,
-			})
-		}
-		if (computeFileDigest(full) !== entry.digest) {
-			throw new ScaffoldError('WRITE', `Staged host bytes at ${entry.storage} did not read back`, {
-				host: root,
-				storage: entry.storage,
-			})
-		}
-		return entry
-	})
+		.toArray()
 }
 
 /**

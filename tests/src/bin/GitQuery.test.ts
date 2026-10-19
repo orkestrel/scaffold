@@ -19,10 +19,10 @@ describe('GitQuery', () => {
 			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 			try {
 				const repository = workspace.ensure('repository')
-				// Each path is three-byte characters throughout, led by one that numbers it, so any chunk
-				// boundary the host chooses inside a path falls inside a UTF-8 sequence. This catches a
-				// decoder that drops the split bytes whenever the host splits a sequence, and it cannot
-				// force one: `GitQuery.#collect` records that gap.
+				// Each path is three-byte characters throughout, led by one that numbers it, so a chunk
+				// boundary the host chooses inside a path splits a UTF-8 sequence unless it lands between
+				// two characters. This catches a decoder that drops the split bytes whenever the host does
+				// split a sequence, and it cannot force one: `GitQuery.#collect` records that gap.
 				const paths = Array.from(
 					{ length: Math.floor(MAX_INVENTORY_PATHS / 5) },
 					(_, index) => `${String.fromCodePoint(0x4e00 + index)}${'日本語'.repeat(8)}`,

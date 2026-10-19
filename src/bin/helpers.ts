@@ -28,7 +28,15 @@ import type {
 } from './types.js'
 import type { Host, MaterializeResult, UpstreamOptions } from '@src/server'
 import { align, strip, stripControls, width } from '@orkestrel/console'
-import { attempt, isArray, isError, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import {
+	attempt,
+	isArray,
+	isDefined,
+	isError,
+	isRecord,
+	isString,
+	parseJSON,
+} from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
 	AXES,
@@ -45,6 +53,7 @@ import {
 	GROUPS,
 	isScaffoldError,
 	isSheetName,
+	iterateAnswers,
 	manifestToDependencies,
 	MAX_PATH_LENGTH,
 	parseExtension,
@@ -547,20 +556,21 @@ export function dependenciesToFleet(dependencies: readonly Dependency[]): readon
 export function dependenciesToFloors(
 	dependencies: readonly Dependency[],
 ): readonly Release[] | undefined {
-	// A hole reads as an `undefined` declaration, which the range read refuses.
-	const floors = Array.from(dependencies, (dependency) => ({
-		dependency,
-		version:
-			dependency.range.startsWith('^') || dependency.range.startsWith('~')
-				? dependency.range.slice(1)
-				: dependency.range,
-	}))
-	if (floors.some(({ version }) => extractVersion(version) === undefined)) return undefined
-	return floors.map(({ dependency, version }): Release => ({
-		...dependency,
-		lookup: 'found',
-		latest: version,
-	}))
+	// The iterator the list names serves every declaration, however many entries the list's length
+	// reports, and the read stops at the first range naming no version. A hole reads as an
+	// `undefined` declaration, which the range read refuses.
+	const floors = [
+		...iterateAnswers(dependencies, (dependency): Release | undefined => {
+			const version =
+				dependency.range.startsWith('^') || dependency.range.startsWith('~')
+					? dependency.range.slice(1)
+					: dependency.range
+			return extractVersion(version) === undefined
+				? undefined
+				: { ...dependency, lookup: 'found', latest: version }
+		}),
+	]
+	return floors.every(isDefined) ? floors : undefined
 }
 
 /**
@@ -590,47 +600,50 @@ export function releasesToQuestions(
 	releases: readonly Release[],
 	served: readonly Release[] = releases,
 ): readonly Question[] {
-	// The spread reads a hole as an `undefined` release, which the name read refuses.
-	return [...releases].flatMap((release): readonly Question[] => {
-		if (release.name.startsWith('@orkestrel/')) return []
-		const declared = extractRangeMajor(release.range)
-		const current = release.lookup === 'found' ? release.latest : undefined
-		const resolved = current === undefined ? undefined : extractVersion(current)
-		const floor = extractVersion(
-			release.range.startsWith('^') || release.range.startsWith('~')
-				? release.range.slice(1)
-				: release.range,
-		)
-		const alternate = served.find((candidate) => candidate.name === release.name)
-		const published =
-			release.major ??
-			(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
-		return [
-			...(declared !== undefined &&
-			current !== undefined &&
-			resolved !== undefined &&
-			floor !== undefined &&
-			resolved[0] === declared &&
-			compareVersions(current, floor.join('.')) > 0
-				? [
-						{
-							field: 'dependencies',
-							message: `${release.name} declares the floor ${release.range}, while the registry serves ${current} within major ${String(declared)}.`,
-							blocking: false,
-						},
-					]
-				: []),
-			...(declared !== undefined && published !== undefined && declared < published
-				? [
-						{
-							field: 'dependencies',
-							message: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
-							blocking: false,
-						},
-					]
-				: []),
-		]
-	})
+	// The iterator consumes one release at a time, and reads a hole as an `undefined` release, which
+	// the name read refuses before a later release is read.
+	return Iterator.from(releases)
+		.flatMap((release): readonly Question[] => {
+			if (release.name.startsWith('@orkestrel/')) return []
+			const declared = extractRangeMajor(release.range)
+			const current = release.lookup === 'found' ? release.latest : undefined
+			const resolved = current === undefined ? undefined : extractVersion(current)
+			const floor = extractVersion(
+				release.range.startsWith('^') || release.range.startsWith('~')
+					? release.range.slice(1)
+					: release.range,
+			)
+			const alternate = served.find((candidate) => candidate.name === release.name)
+			const published =
+				release.major ??
+				(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
+			return [
+				...(declared !== undefined &&
+				current !== undefined &&
+				resolved !== undefined &&
+				floor !== undefined &&
+				resolved[0] === declared &&
+				compareVersions(current, floor.join('.')) > 0
+					? [
+							{
+								field: 'dependencies',
+								message: `${release.name} declares the floor ${release.range}, while the registry serves ${current} within major ${String(declared)}.`,
+								blocking: false,
+							},
+						]
+					: []),
+				...(declared !== undefined && published !== undefined && declared < published
+					? [
+							{
+								field: 'dependencies',
+								message: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
+								blocking: false,
+							},
+						]
+					: []),
+			]
+		})
+		.toArray()
 }
 
 /**

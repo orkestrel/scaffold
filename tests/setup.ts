@@ -1,4 +1,4 @@
-import { createRecorder } from '@orkestrel/test'
+import { captureError, createRecorder, readProperty } from '@orkestrel/test'
 import type { EmitterHooks } from '@orkestrel/emitter'
 import type {
 	Audit,
@@ -269,6 +269,357 @@ export function buildSparse<T>(length: number, entries: ReadonlyMap<number, T>):
  */
 export function buildTrailingHole<T>(entry: T): T[] {
 	return buildSparse(2, new Map([[0, entry]]))
+}
+
+/**
+ * Describes a list whose entries are getters, and the indexes those getters have run for.
+ *
+ * @remarks
+ * `reads` lists one index per getter run, in the order the runs happened, so a case sees which
+ * entries a reader touched and how often. It copies on every access.
+ */
+export interface TestObservedList<T> {
+	readonly list: T[]
+	readonly reads: readonly number[]
+}
+
+/**
+ * Creates a list whose entries are getters, so a reader's every read of an entry is recorded.
+ *
+ * @param length - The length of the list, holes included.
+ * @param entries - The producer behind each getter, by index; every other index stays a hole.
+ * @returns The list and the reads it records.
+ *
+ * @remarks
+ * A getter reports its index and then produces its value, which may throw, so a case sees which
+ * entries a reader touched before it stopped. An iterator reads an entry once as it yields it, where
+ * a copy of the list reads every entry before the reader sees the first.
+ *
+ * @example
+ * ```ts
+ * const observed = createObservedList(2, new Map([[1, () => 'b']]))
+ * observed.list[1] // 'b'
+ * observed.reads // [1]
+ * ```
+ */
+export function createObservedList<T>(
+	length: number,
+	entries: ReadonlyMap<number, () => T>,
+): TestObservedList<T> {
+	const recorder = createRecorder<readonly [number]>()
+	const list = buildSparse<T>(length, new Map())
+	for (const [index, produce] of entries) {
+		Object.defineProperty(list, index, {
+			configurable: true,
+			enumerable: true,
+			get() {
+				recorder.handler(index)
+				return produce()
+			},
+		})
+	}
+	return {
+		list,
+		get reads() {
+			return recorder.calls.map(([index]) => index)
+		},
+	}
+}
+
+/**
+ * Describes a list whose entries and iterator record every call made on them, in one ordered log.
+ *
+ * @remarks
+ * `calls` holds `get:<index>` for each read of an entry, `iter` for each iterator the list serves,
+ * `next` for each step, and `return` for each close, in the order they happened. It copies on every
+ * access, so an earlier answer never changes.
+ */
+export interface TestClosableList<T> {
+	readonly list: T[]
+	readonly calls: readonly string[]
+}
+
+/**
+ * Configures how the iterator of a closable list answers a close and a further request.
+ *
+ * @remarks
+ * `close` produces what `return()` answers, so a case can make a close raise or answer a value that
+ * is not an iterator result. `serves` caps how many iterators the list hands out before the next
+ * request raises a `RangeError`, so a case can end a reader between two of its passes.
+ */
+export interface TestClosableOptions {
+	readonly close?: () => unknown
+	readonly serves?: number
+}
+
+/**
+ * Creates a list whose iterator records each step and each close beside the reads of its entries.
+ *
+ * @param length - The length of the list, holes included.
+ * @param entries - The producer behind each entry, by index; every other index stays a hole.
+ * @param options - How the iterator answers a close and a further request. Default: it closes
+ * cleanly and serves every request.
+ * @returns The list and the ordered calls made on it.
+ *
+ * @remarks
+ * A `for…of` loop closes its iterator when it stops early or when its body throws, and never when
+ * the iterator ends. The iterator yields each entry through the same getter an index read uses, so
+ * one log orders the reads of a reader that mixes both against the steps and the closes.
+ *
+ * @example
+ * ```ts
+ * const closable = createClosableList(1, new Map([[0, () => 'a']]))
+ * for (const entry of closable.list) break
+ * closable.calls // ['iter', 'next', 'get:0', 'return']
+ * ```
+ */
+export function createClosableList<T>(
+	length: number,
+	entries: ReadonlyMap<number, () => T>,
+	options: TestClosableOptions = {},
+): TestClosableList<T> {
+	const { close = () => ({ done: true, value: undefined }), serves = Infinity } = options
+	const recorder = createRecorder<readonly [string]>()
+	const observed = createObservedList(
+		length,
+		new Map(
+			Iterator.from(entries)
+				.map(([index, produce]): [number, () => T] => [
+					index,
+					() => {
+						recorder.handler(`get:${String(index)}`)
+						return produce()
+					},
+				])
+				.toArray(),
+		),
+	)
+	Object.defineProperty(observed.list, Symbol.iterator, {
+		configurable: true,
+		value: () => {
+			recorder.handler('iter')
+			if (recorder.calls.filter(([call]) => call === 'iter').length > serves) {
+				throw new RangeError('The list serves no further iterator')
+			}
+			const cursor = observed.list.keys()
+			return {
+				next: () => {
+					recorder.handler('next')
+					const step = cursor.next()
+					return step.done ? step : { done: false, value: observed.list[step.value] }
+				},
+				return: () => {
+					recorder.handler('return')
+					return close()
+				},
+			}
+		},
+	})
+	return {
+		list: observed.list,
+		get calls() {
+			return recorder.calls.map(([call]) => call)
+		},
+	}
+}
+
+/**
+ * Throws the error a getter raises when its entry refuses to be read.
+ *
+ * @returns Never.
+ * @throws RangeError - Thrown when called.
+ */
+export function refuseRead(): never {
+	throw new RangeError('The entry refused its read')
+}
+
+/** Names the lists a lazy reader is run over, each of length two. */
+export type TestReadShape =
+	| 'hole-before-entry'
+	| 'hole-before-refusal'
+	| 'refusal-before-entry'
+	| 'dense-pair'
+	| 'missing-iterator'
+
+/** Holds what one reader did over one list: the constructor it raised, and the entries it read. */
+export interface TestReadResult {
+	readonly outcome: string
+	readonly reads: readonly number[]
+}
+
+/**
+ * Creates the producer of an object a reader fails on once it holds it.
+ *
+ * @param entry - The producer of an object the reader accepts.
+ * @returns A producer of that object revoked, whose every property read raises a `TypeError`.
+ */
+export function refuseObject<T extends object>(entry: () => T): () => T {
+	return () => {
+		const { proxy, revoke } = Proxy.revocable(entry(), {})
+		revoke()
+		return proxy
+	}
+}
+
+/** Holds a value no text reader accepts, which a case feeds a reader that expects text. */
+export const REFUSED_VALUES = Object.freeze({ symbol: Symbol('refused') })
+
+/**
+ * Produces a symbol where a reader expects text, so the reader fails once it holds the entry.
+ *
+ * @returns The symbol, typed as the text the reader expects.
+ */
+export function refuseText<T extends string = string>(): T {
+	// The property read answers the claimed type, so a value the signature refuses reaches the reader.
+	return readProperty<T>(REFUSED_VALUES, 'symbol')
+}
+
+/**
+ * Runs a reader over one recorded list of two entries and reports what it did.
+ *
+ * @param shape - The list to run over: a hole before an entry, a hole before a getter that fails, a
+ * value the reader refuses before an entry, two entries, or two entries whose list has no iterator.
+ * @param entry - The producer of every entry the reader accepts.
+ * @param run - The reader, called with the list.
+ * @param refusal - The producer of a value the reader fails on once it holds it.
+ * @returns `return` or the constructor name the reader raised, and the indexes it read in order.
+ *
+ * @remarks
+ * A `for…of` loop reads one entry, works on it, and stops at the first failure, where a copy of the
+ * list reads every entry first. The reads therefore separate a reader that consumes one entry at a
+ * time from one that reads ahead, and the constructor separates a hole from the failure behind it.
+ * A list whose `Symbol.iterator` is `undefined` is one a loop refuses with a `TypeError`, where
+ * `Array.from` and `values()` fall back to the indexes, so that shape separates a reader that takes
+ * the iterator protocol from one that does not.
+ *
+ * @example
+ * ```ts
+ * readLazily('hole-before-entry', () => 'b', (list) => list.map((entry) => entry.length), refuseText)
+ * // { outcome: 'return', reads: [1] }
+ * ```
+ */
+export function readLazily<T>(
+	shape: TestReadShape,
+	entry: () => T,
+	run: (list: T[]) => unknown,
+	refusal: () => T,
+): TestReadResult {
+	const entries: ReadonlyMap<TestReadShape, ReadonlyMap<number, () => T>> = new Map([
+		['hole-before-entry', new Map([[1, entry]])],
+		['hole-before-refusal', new Map([[1, refuseRead]])],
+		[
+			'refusal-before-entry',
+			new Map([
+				[0, refusal],
+				[1, entry],
+			]),
+		],
+		[
+			'dense-pair',
+			new Map([
+				[0, entry],
+				[1, entry],
+			]),
+		],
+		[
+			'missing-iterator',
+			new Map([
+				[0, entry],
+				[1, entry],
+			]),
+		],
+	])
+	const observed = createObservedList(2, entries.get(shape) ?? new Map())
+	if (shape === 'missing-iterator') {
+		Object.defineProperty(observed.list, Symbol.iterator, { value: undefined })
+	}
+	const error = captureError(() => run(observed.list))
+	return {
+		outcome:
+			error === undefined
+				? 'return'
+				: error instanceof Error
+					? error.constructor.name
+					: typeof error,
+		reads: observed.reads,
+	}
+}
+
+/**
+ * Describes one reader run over each recorded list, with the result each list must show.
+ *
+ * @remarks
+ * `hole` is a hole before an entry, `refused` is a hole before a getter that fails, `refusal` is a
+ * value the reader fails on before an entry, and `dense` is two entries.
+ */
+export interface TestLazyCase {
+	readonly label: string
+	readonly read: (shape: TestReadShape) => TestReadResult
+	readonly hole: TestReadResult
+	readonly refused: TestReadResult
+	readonly refusal: TestReadResult
+	readonly dense: TestReadResult
+}
+
+/**
+ * Builds one lazy-reader case, with focused result replacements.
+ *
+ * @param label - The text naming the reader and the list it reads.
+ * @param read - The reader, run over the list a shape names.
+ * @param fields - The results to replace on the returned case.
+ * @returns A case whose defaults are a refusal of the hole, at the hole and at the entry behind it
+ * alike, with no entry read, a refusal of the first entry after one read, and a return after one
+ * read of each entry in order.
+ */
+export function buildLazyCase(
+	label: string,
+	read: (shape: TestReadShape) => TestReadResult,
+	fields?: Partial<Omit<TestLazyCase, 'label' | 'read'>>,
+): TestLazyCase {
+	return {
+		label,
+		read,
+		hole: { outcome: 'TypeError', reads: [] },
+		refused: { outcome: 'TypeError', reads: [] },
+		refusal: { outcome: 'TypeError', reads: [0] },
+		dense: { outcome: 'return', reads: [0, 1] },
+		...fields,
+	}
+}
+
+/**
+ * Describes one reader run over a list that has no iterator, with the entries it may read first.
+ *
+ * @remarks
+ * `reads` lists the indexes the reader reads, in order, before it takes the iterator and is refused.
+ */
+export interface TestMissingCase {
+	readonly label: string
+	readonly read: () => TestReadResult
+	readonly reads: readonly number[]
+}
+
+/**
+ * Builds one case that runs a reader over a list whose `Symbol.iterator` is `undefined`.
+ *
+ * @param label - The text naming the reader and the list it reads.
+ * @param entry - The producer of the two entries the list holds.
+ * @param run - The reader, called with the list.
+ * @param reads - The indexes the reader reads before it takes the iterator. Default: none.
+ * @returns A case whose result must be a `TypeError` after exactly those reads.
+ *
+ * @example
+ * ```ts
+ * buildMissingCase('the names a reader lists', () => 'a', (names) => listNames(names)).reads // []
+ * ```
+ */
+export function buildMissingCase<T>(
+	label: string,
+	entry: () => T,
+	run: (list: T[]) => unknown,
+	reads: readonly number[] = [],
+): TestMissingCase {
+	return { label, reads, read: () => readLazily('missing-iterator', entry, run, entry) }
 }
 
 /**

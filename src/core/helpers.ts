@@ -56,7 +56,10 @@ import { ARTIFACT_TEMPLATES } from './templates.js'
  */
 export function bytesToHex(bytes: Uint8Array): string {
 	const digits = Array.from({ length: 256 }, (_, value) => value.toString(16).padStart(2, '0'))
-	return Array.from(bytes, (byte) => digits[byte] ?? '').join('')
+	return Iterator.from(bytes)
+		.map((byte) => digits[byte] ?? '')
+		.toArray()
+		.join('')
 }
 
 /**
@@ -130,6 +133,46 @@ export function computeBytes(content: string): number {
  */
 export function computeTotal(values: readonly number[]): number {
 	return values.reduce((total, value) => total + value, 0)
+}
+
+/**
+ * Yields the answer to each value of a source and ends after the first refused answer.
+ *
+ * @param source - The values to answer, requested one at a time as the answers are read.
+ * @param answer - Answers one value, or returns `undefined` to refuse it.
+ * @returns A generator of the answers in source order, whose last answer is the first refusal when
+ * the source holds one.
+ * @throws Thrown when `answer` throws for a value, with that error, or when closing `source` after
+ * a refusal throws, with the close's error.
+ *
+ * @remarks
+ * The body is a `for…of` loop, so the source's iterator is requested once, when the first answer
+ * is read, and stepped only as the answers are read: a length the source reports never bounds the
+ * read, a hole reads as an `undefined` value, and an infinite source is read as far as the first
+ * refusal. The iterator is closed after a refusal with a normal completion, so a raising close
+ * surfaces, and is closed when `answer` throws with a throw completion, so the error from `answer`
+ * wins. An iterator that ends is left alone. A caller that stops at a refusal and keeps what came
+ * before it reads the answers into a list and checks that none is `undefined`.
+ *
+ * @example
+ * ```ts
+ * import { iterateAnswers } from '@orkestrel/scaffold'
+ *
+ * const halve = (value: number): number | undefined => (value % 2 === 0 ? value / 2 : undefined)
+ *
+ * Array.from(iterateAnswers([2, 4, 5, 6], halve)).length // 3
+ * Array.from(iterateAnswers([2, 4], halve)) // [1, 2]
+ * ```
+ */
+export function* iterateAnswers<TValue, TAnswer>(
+	source: Iterable<TValue>,
+	answer: (value: TValue) => TAnswer | undefined,
+): Generator<TAnswer | undefined, void, undefined> {
+	for (const value of source) {
+		const answered = answer(value)
+		yield answered
+		if (answered === undefined) return
+	}
 }
 
 /**
@@ -708,19 +751,29 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
 export function catalogToLayers(
 	entries: readonly CatalogEntry[],
 ): ReadonlyArray<readonly string[]> {
-	// The spread reads a hole as an `undefined` entry, as a `for…of` over the list would.
-	const found = [...entries].filter((entry) => entry.lookup === 'found')
-	const published = new Set(found.map((entry) => entry.name))
+	// The names come from a first pass that skips a hole. The edges come from a second pass, whose
+	// iterator consumes one entry at a time and which reads a hole as an `undefined` entry, as a
+	// `for…of` over the list would.
+	const published = new Set(
+		entries.filter((entry) => entry.lookup === 'found').map((entry) => entry.name),
+	)
 	// A later entry of one name replaces an earlier one at the earlier position, as a keyed
 	// write does, and an edge to a name that is not published constrains nothing.
-	const dependencies = new Map(
-		found.map((entry): readonly [string, readonly string[]] => [
-			entry.name,
-			[...entry.dependencies, ...entry.peers]
-				.map((dependency) => dependency.name)
-				.filter((name) => published.has(name)),
-		]),
-	)
+	const found = Iterator.from(entries)
+		.flatMap((entry): ReadonlyArray<readonly [string, readonly string[]]> =>
+			entry.lookup === 'found'
+				? [
+						[
+							entry.name,
+							[...entry.dependencies, ...entry.peers]
+								.map((dependency) => dependency.name)
+								.filter((name) => published.has(name)),
+						],
+					]
+				: [],
+		)
+		.toArray()
+	const dependencies = new Map(found)
 	// Each round places every name whose edges are all placed, in name order. A round that places
 	// nothing leaves the state as it was, which ends the layers: a cycle never becomes ready.
 	// One round per found entry is enough, because a round that places anything places one name.
@@ -765,8 +818,11 @@ export function catalogToLayers(
  * ```
  */
 export function planToSummary(plan: Plan): PlanSummary {
-	// The spread reads a hole as an `undefined` artifact, as a `for…of` over the list would.
-	const origins = Array.from(plan.artifacts, (artifact) => artifact.origin)
+	// The iterator reads a hole as an `undefined` artifact, as a `for…of` over the list would, and the
+	// tally counts the artifacts it yields rather than the length the list reports.
+	const origins = Iterator.from(plan.artifacts)
+		.map((artifact) => artifact.origin)
+		.toArray()
 	const host = origins.filter((origin) => origin === 'host').length
 	const template = origins.filter((origin) => origin === 'template').length
 	return {
@@ -776,7 +832,7 @@ export function planToSummary(plan: Plan): PlanSummary {
 		groups: plan.groups,
 		host,
 		template,
-		computed: plan.artifacts.length - host - template,
+		computed: origins.length - host - template,
 	}
 }
 

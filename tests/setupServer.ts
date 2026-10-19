@@ -2790,18 +2790,20 @@ export function buildTargetAudit(
 	stale: readonly string[],
 ): Audit {
 	// A hole in `paths` reads as an `undefined` path, which the byte read refuses.
-	const findings = Array.from(paths, (path): Finding => {
-		const observed = readFileHex(target, path)
-		return observed === undefined
-			? { path, group: 'docs', ownership: 'content', drift: 'missing' }
-			: {
-					path,
-					group: 'docs',
-					ownership: 'content',
-					drift: stale.includes(path) ? 'stale' : 'aligned',
-					observed,
-				}
-	})
+	const findings = Iterator.from(paths)
+		.map((path): Finding => {
+			const observed = readFileHex(target, path)
+			return observed === undefined
+				? { path, group: 'docs', ownership: 'content', drift: 'missing' }
+				: {
+						path,
+						group: 'docs',
+						ownership: 'content',
+						drift: stale.includes(path) ? 'stale' : 'aligned',
+						observed,
+					}
+		})
+		.toArray()
 	return { findings, questions: [] }
 }
 
@@ -3086,23 +3088,26 @@ export function buildInstalledHostReplies(
 			'/orkestrel/scaffold/refs/heads/main/host.json',
 			{ status: 200, body: JSON.stringify(floor.manifest) },
 		],
-		// The spread reads a hole as an `undefined` entry, which the destination read refuses.
-		...[...floor.manifest.entries].flatMap((entry): Array<[string, TestUpstreamReply]> => {
-			if (isDeferredPath(entry.destination)) return []
-			const hex = floor.bytes[entry.destination]
-			return hex === undefined
-				? []
-				: [
-						[
-							`/orkestrel/scaffold/refs/heads/main/${entry.destination}`,
-							{
-								status: 200,
-								body: Buffer.from(hex, 'hex').toString('utf8'),
-								type: 'text/plain',
-							},
-						],
-					]
-		}),
+		// The iterator consumes one entry at a time and reads a hole as an `undefined` entry, which the
+		// destination read refuses before a later entry is read.
+		...Iterator.from(floor.manifest.entries)
+			.flatMap((entry): Array<[string, TestUpstreamReply]> => {
+				if (isDeferredPath(entry.destination)) return []
+				const hex = floor.bytes[entry.destination]
+				return hex === undefined
+					? []
+					: [
+							[
+								`/orkestrel/scaffold/refs/heads/main/${entry.destination}`,
+								{
+									status: 200,
+									body: Buffer.from(hex, 'hex').toString('utf8'),
+									type: 'text/plain',
+								},
+							],
+						]
+			})
+			.toArray(),
 	])
 }
 

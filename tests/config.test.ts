@@ -82,12 +82,14 @@ import {
 	SHEET_POLICY_BARREL_PATTERN,
 	SHEET_POLICY_ORDER_PATTERN,
 	readImportDiagnostics,
+	createPolicyLazyCases,
 	createPolicyScratch,
 	createPolicySparse,
 	inspectPolicyConfiguration,
 	inspectPolicyWiring,
 	normalizePolicyFilename,
 	POLICY_EXTRACTOR,
+	POLICY_LAZY_SHAPES,
 	POLICY_PUBLISHES,
 	POLICY_ROOT,
 } from './setupPolicy.js'
@@ -4245,4 +4247,134 @@ describe('configuration helpers', () => {
 			}
 		},
 	)
+})
+
+// A `for…of` loop reads one entry, works on it, and stops at the first failure, where a copy of the
+// list reads every entry first. Each case runs a policy reader over a recorded list and pins the
+// outcome and the entries it read, as the loop the reader replaced gave them.
+describe('policy readers consume a caller-supplied list one entry at a time', () => {
+	const name: PolicyExpression = { type: 'Identifier', range: [0, 0], name: 'run' }
+	const declarator = (): PolicyExpression => ({
+		type: 'VariableDeclarator',
+		range: [0, 0],
+		id: name,
+		init: { type: 'ArrowFunctionExpression', range: [0, 0] },
+	})
+	const exported = (): PolicyExpression => ({
+		type: 'ExportNamedDeclaration',
+		range: [47, 63],
+		declaration: { type: 'FunctionDeclaration', range: [0, 0], id: name },
+	})
+	const comment = (): PolicyComment => ({ type: 'Block', value: '* One.', range: [0, 11] })
+	// A revoked proxy refuses every read, which fails the reader once it holds the entry.
+	const refused =
+		<T extends object>(entry: () => T) =>
+		(): T => {
+			const { proxy, revoke } = Proxy.revocable(entry(), {})
+			revoke()
+			return proxy
+		}
+	const throwing = [
+		[POLICY_LAZY_SHAPES.hole, 'throw TypeError', []],
+		[POLICY_LAZY_SHAPES.holeFailure, 'throw TypeError', []],
+		[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
+		[POLICY_LAZY_SHAPES.refusalFirst, 'throw TypeError', [0]],
+		[POLICY_LAZY_SHAPES.holeBetween, 'throw TypeError', [0]],
+		[POLICY_LAZY_SHAPES.unlisted, 'throw TypeError', []],
+	] as const
+
+	it.each([
+		...createPolicyLazyCases(
+			'statementToPolicyBindings',
+			(declarations: PolicyExpression[]) =>
+				statementToPolicyBindings({ type: 'VariableDeclaration', range: [0, 0], declarations }).map(
+					(binding) => binding.name,
+				),
+			{ valid: declarator, refusal: refused(declarator) },
+			[
+				[POLICY_LAZY_SHAPES.empty, 'return []', []],
+				[POLICY_LAZY_SHAPES.dense, 'return ["run"]', [0]],
+				...throwing,
+			],
+		),
+		...createPolicyLazyCases(
+			'reportDomain',
+			(body: PolicyExpression[]) => {
+				const reports: Array<string | undefined> = []
+				reportDomain(
+					{
+						filename: '/ws/src/server/execution/run.ts',
+						cwd: '/ws',
+						sourceCode: { text: '', getAllComments: () => [] },
+						report: (diagnostic) => {
+							reports.push(diagnostic.messageId)
+						},
+					},
+					{ type: 'Program', range: [0, 0], body },
+				)
+				return reports
+			},
+			{ valid: exported, refusal: refused(exported) },
+			[
+				[POLICY_LAZY_SHAPES.empty, 'return ["module"]', []],
+				[POLICY_LAZY_SHAPES.dense, 'return []', [0]],
+				...throwing,
+			],
+		),
+		...createPolicyLazyCases(
+			'programToPolicyDocs statements',
+			(body: PolicyExpression[]) =>
+				programToPolicyDocs(
+					{ type: 'Program', range: [0, 0], body },
+					{ text: '/** One. */\nexport function run() {}', getAllComments: () => [comment()] },
+				).map((doc) => doc.name),
+			{ valid: exported, refusal: refused(exported) },
+			[
+				[POLICY_LAZY_SHAPES.empty, 'return []', []],
+				[POLICY_LAZY_SHAPES.dense, 'return []', [0]],
+				...throwing,
+			],
+		),
+		...createPolicyLazyCases(
+			'programToPolicyDocs comments',
+			(comments: PolicyComment[]) =>
+				programToPolicyDocs(
+					{ type: 'Program', range: [0, 0], body: [exported()] },
+					{ text: '/** One. */\n', getAllComments: () => comments },
+				).map((doc) => doc.name),
+			{ valid: comment, refusal: refused(comment) },
+			[
+				[POLICY_LAZY_SHAPES.empty, 'return []', []],
+				[POLICY_LAZY_SHAPES.dense, 'return ["run"]', [0]],
+				...throwing,
+			],
+		),
+		...createPolicyLazyCases(
+			'programToPolicyDocs comments of a program with no export',
+			(comments: PolicyComment[]) =>
+				programToPolicyDocs(
+					{ type: 'Program', range: [0, 0], body: [{ type: 'ImportDeclaration', range: [0, 0] }] },
+					{ text: 'import x', getAllComments: () => comments },
+				).map((doc) => doc.name),
+			{ valid: comment, refusal: refused(comment) },
+			[
+				[POLICY_LAZY_SHAPES.empty, 'return []', []],
+				[POLICY_LAZY_SHAPES.dense, 'return []', []],
+				[POLICY_LAZY_SHAPES.hole, 'return []', []],
+				[POLICY_LAZY_SHAPES.holeFailure, 'return []', []],
+				[POLICY_LAZY_SHAPES.failureFirst, 'return []', []],
+				[POLICY_LAZY_SHAPES.refusalFirst, 'return []', []],
+				[POLICY_LAZY_SHAPES.holeBetween, 'return []', []],
+				[POLICY_LAZY_SHAPES.unlisted, 'return []', []],
+			],
+		),
+	])('$label', ({ observe, outcome, reads }) => {
+		const read: number[] = []
+		expect(
+			observe((index) => {
+				read.push(index)
+			}),
+		).toBe(outcome)
+		expect(read).toStrictEqual(reads)
+	})
 })

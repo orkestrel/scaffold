@@ -115,95 +115,95 @@ Exported from `@orkestrel/scaffold`, and reachable from
 
 #### Constants
 
-| Name                              | Kind  | Summary                                                                                                |
-| --------------------------------- | ----- | ------------------------------------------------------------------------------------------------------ |
-| `APP_BROWSER_DEV_DEPENDENCIES`    | const | Lists the development dependencies a private browser application adds.                                 |
-| `APP_DEV_DEPENDENCIES`            | const | Names the development dependency every private `app` environment adds.                                 |
-| `APP_MATRIX`                      | const | Holds the configuration and runtime-entry settings each private `app` environment contributes, frozen. |
-| `APP_SERVER_DEV_DEPENDENCIES`     | const | Lists the development dependencies a private server application adds.                                  |
-| `ARTIFACT_TEMPLATES`              | const | Holds formatter-stable template text for source, test, document, guide, and service artifacts.         |
-| `AXES`                            | const | Lists the axes a browser extension may occupy, frozen.                                                 |
-| `BASE_DEV_DEPENDENCIES`           | const | Holds the tooling versions scaffold and every generated workspace share.                               |
-| `BIN_CONFIGS`                     | const | Lists the configuration files a workspace that ships its own executable adds, frozen.                  |
-| `BIN_ENTRY_PATH`                  | const | Names the executable entry whose presence makes a workspace `bin`.                                     |
-| `BROWSE_DEV_DEPENDENCIES`         | const | Names the development dependency a browser or styles surface adds.                                     |
-| `BROWSE_UPSTREAM`                 | const | Lists the packages `@orkestrel/browser` depends on at runtime, directly or transitively, frozen.       |
-| `CANON_PATHS`                     | const | Lists the instruction-canon paths staged for reading rather than for a target, frozen.                 |
-| `CATALOG_AGENT_PATH`              | const | Names the agent file whose marker-bounded package table the catalog verb alone owns.                   |
-| `CATALOG_CLOSING_MARKER`          | const | Names the marker closing the package table inside `CATALOG_AGENT_PATH`.                                |
-| `CATALOG_OPENING_MARKER`          | const | Names the marker opening the package table inside `CATALOG_AGENT_PATH`.                                |
-| `CONFIG_TEMPLATES`                | const | Holds formatter-stable template text for every configuration artifact.                                 |
-| `CONFORMANCE_TEST_PATH`           | const | Names the official-tooling drift proof whose presence makes a workspace `conformance`.                 |
-| `CONTROL_CHARACTER_PATTERN`       | const | Matches the Unicode controls, formatting controls, and line and paragraph separators rejected in text. |
-| `DECLARATION_DEV_DEPENDENCIES`    | const | Lists the development dependencies that roll declarations up for published source.                     |
-| `DEFAULT_ENGINES`                 | const | Names the `engines.node` range a workspace starts with.                                                |
-| `DEFAULT_VERSION`                 | const | Names the version a workspace starts at.                                                               |
-| `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                    |
-| `DISTRIBUTION_TEST_PATH`          | const | Names the generated packed-package proof every publishing workspace is planned at.                     |
-| `ENGINES_PATTERN`                 | const | Matches the minimum-Node engine syntax a blueprint declares.                                           |
-| `ENVIRONMENTS`                    | const | Lists the `Environment` values, frozen.                                                                |
-| `EXECUTABLE_PATHS`                | const | Lists the vendored paths a target receives with its executable bit set, frozen.                        |
-| `EXTRA_RANGE_PATTERN`             | const | Matches the registry-only semver subset accepted for a development extra's range.                      |
-| `FLOOR_RANGE_PATTERN`             | const | Matches the exact `major.minor.patch` floor accepted for a foreign peer's range.                       |
-| `FOREIGN_NAME_PATTERN`            | const | Matches the package name syntax for a dependency this package does not publish.                        |
-| `FRAMEWORKS`                      | const | Lists the supported browser frameworks, frozen.                                                        |
-| `FRAMEWORK_MATRIX`                | const | Describes the tooling and package boundaries of each browser framework, frozen.                        |
-| `GLOBAL_SETUP_PATH`               | const | Names the shared Vitest global-setup module whose presence makes a workspace `global`.                 |
-| `GROUPS`                          | const | Lists the `Group` values in plan order, frozen.                                                        |
-| `GUIDES_TEST_PATH`                | const | Names the package-owned guide-parity entry used by `test:guides` and to select the `guides` project.   |
-| `HEX_PATTERN`                     | const | Matches exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.            |
-| `HOST_INVENTORY_PATH`             | const | Names the repository-relative path where the committed vendored-file inventory is served.              |
-| `HOST_PATHS`                      | const | Lists the paths a target receives from the vendored data root, frozen.                                 |
-| `INTEGRATION_TEST_PATH`           | const | Names the cross-environment composition proof whose presence makes a workspace `integration`.          |
-| `INVALID_PATH_CHARACTER_PATTERN`  | const | Matches the visible characters a target-relative path and a Markdown path cell both forbid.            |
-| `JOURNEY_CONFIG_PATH`             | const | Names the Vite wrapper whose presence makes a workspace `journey`.                                     |
-| `MANIFEST_PATH`                   | const | Names the manifest path every compiler plan emits with birth ownership.                                |
-| `MAX_ARTIFACT_BYTES`              | const | Caps the bytes accepted for one artifact.                                                              |
-| `MAX_ARTIFACT_HEX_LENGTH`         | const | Caps the length of the hexadecimal string carrying one artifact's bytes.                               |
-| `MAX_AUDIT_FINDINGS`              | const | Caps the findings one audit can produce from a bounded plan and snapshot.                              |
-| `MAX_COLLECTION_ITEMS`            | const | Caps the items accepted in one public collection.                                                      |
-| `MAX_DEPENDENCY_NAME_LENGTH`      | const | Sets the maximum dependency package name length, scope included, as the registry caps it.              |
-| `MAX_MANIFEST_BYTES`              | const | Caps the bytes accepted for one package or vendored-host manifest.                                     |
-| `MAX_NAME_LENGTH`                 | const | Caps the bare workspace name length.                                                                   |
-| `MAX_PATH_LENGTH`                 | const | Caps the length of one path, matching the longest a supported filesystem accepts.                      |
-| `MAX_RANGE_LENGTH`                | const | Caps the length of one declared package range.                                                         |
-| `MAX_REGISTRY_BYTES`              | const | Caps the decoded bytes accepted from one registry response.                                            |
-| `MAX_SCRIPT_LENGTH`               | const | Caps the length of one manifest script name or command.                                                |
-| `MAX_TOTAL_ARTIFACT_BYTES`        | const | Caps the bytes retained across one whole plan or audit.                                                |
-| `MAX_TOTAL_REGISTRY_BYTES`        | const | Caps the decoded bytes accepted across one registry-reading call.                                      |
-| `MINIMUM_NODE_VERSION`            | const | Names the oldest Node version the generated toolchain supports.                                        |
-| `MINIMUM_NPM_VERSION`             | const | Names the oldest npm version the generated toolchain supports.                                         |
-| `NAME_PATTERN`                    | const | Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.             |
-| `ORCHESTRATION_PATH_NAMES`        | const | Lists the exact root paths that wire an agent bench or own an orchestration directory, frozen.         |
-| `ORCHESTRATION_PATH_PREFIXES`     | const | Lists the path prefixes whose contents instruct or wire an agent, frozen.                              |
-| `ORKESTREL_RANGE_PATTERN`         | const | Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.        |
-| `PRINT_WIDTH`                     | const | Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.                |
-| `REFERENCE_PATHS`                 | const | Lists the reference paths staged for offline reading, frozen.                                          |
-| `RELEASE_PROOF_COMMAND`           | const | Names the `prepublishOnly` row that runs the packed-package proof against a real registry.             |
-| `RESERVED_SHEET_NAMES`            | const | Lists the names a styles extension cannot occupy, frozen.                                              |
-| `SEED_GUIDE_PATHS`                | const | Lists the guide paths a generated workspace starts with, frozen.                                       |
-| `SERVICE_SCRIPT_PATH`             | const | Names the inventory skeleton a workspace with declared service vendors is given once.                  |
-| `SERVICE_SETUP_PATH`              | const | Names the live-service readiness module whose presence makes a workspace `service`.                    |
-| `SERVICE_TEST_INCLUDE`            | const | Names the include the live-service project covers, which is a directory rather than one proof.         |
-| `SHEET_ENTRY_NAME`                | const | Names the build entry beside each stylesheet marker.                                                   |
-| `SHOWCASE_CONFIG_PATH`            | const | Names the Vite wrapper whose presence makes a workspace `showcase`.                                    |
-| `SHOWCASE_DEV_DEPENDENCIES`       | const | Names the tested dependency pair selected by the optional single-file showcase build.                  |
-| `SHOWCASE_OVERRIDES`              | const | Names the scoped npm override required by the tested showcase plugin.                                  |
-| `SHOWCASE_PAGES_PATH`             | const | Names the physical showcase output directory.                                                          |
-| `SKILLS_CONFIG_PATH`              | const | Names the TypeScript wrapper whose presence makes a workspace `skills`.                                |
-| `SOURCE_BROWSER_DEV_DEPENDENCIES` | const | Lists the development dependencies a published browser `src` environment adds.                         |
-| `SRC_MATRIX`                      | const | Holds the build and export settings each published `src` environment contributes, frozen.              |
-| `STUDIES_TEST_INCLUDE`            | const | Names the include the study project covers, a directory whose test files make a workspace `studies`.   |
-| `STYLES_DEV_DEPENDENCIES`         | const | Lists the development dependencies the styles surface adds, frozen.                                    |
-| `STYLES_ENTRY_PATH`               | const | Names the base stylesheet marker.                                                                      |
-| `SURFACES`                        | const | Lists the surfaces an extension may extend, frozen.                                                    |
-| `TAB_WIDTH`                       | const | Sets the columns one tab occupies when the formatter measures a line, matching `tabWidth`.             |
-| `TARGET_SKILL_NAMES`              | const | Lists the package-facing skills a target receives pointers for, frozen and alphabetical.               |
-| `THEMES_BARREL_PATH`              | const | Names the themes stylesheet marker.                                                                    |
-| `THEMES_ENTRY_PATH`               | const | Names the themes build entry marker.                                                                   |
-| `VERSION_PATTERN`                 | const | Matches the exact `major.minor.patch` version syntax a blueprint declares.                             |
-| `WORKSPACE_DEV_ENGINES`           | const | Holds the `devEngines` record every generated manifest carries.                                        |
-| `WORKSPACE_OWNED_PATHS`           | const | Lists the vendored paths whose present bytes belong to each workspace, frozen.                         |
+| Name                              | Kind  | Summary                                                                                                                                                                                |
+| --------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_BROWSER_DEV_DEPENDENCIES`    | const | Lists the development dependencies a private browser application adds.                                                                                                                 |
+| `APP_DEV_DEPENDENCIES`            | const | Names the development dependency every private `app` environment adds.                                                                                                                 |
+| `APP_MATRIX`                      | const | Holds the configuration and runtime-entry settings each private `app` environment contributes, frozen.                                                                                 |
+| `APP_SERVER_DEV_DEPENDENCIES`     | const | Lists the development dependencies a private server application adds.                                                                                                                  |
+| `ARTIFACT_TEMPLATES`              | const | Holds formatter-stable template text for source, test, document, guide, and service artifacts.                                                                                         |
+| `AXES`                            | const | Lists the axes a browser extension may occupy, frozen.                                                                                                                                 |
+| `BASE_DEV_DEPENDENCIES`           | const | Holds the tooling versions scaffold and every generated workspace share.                                                                                                               |
+| `BIN_CONFIGS`                     | const | Lists the configuration files a workspace that ships its own executable adds, frozen.                                                                                                  |
+| `BIN_ENTRY_PATH`                  | const | Names the executable entry whose presence makes a workspace `bin`.                                                                                                                     |
+| `BROWSE_DEV_DEPENDENCIES`         | const | Names the development dependency a browser or styles surface adds.                                                                                                                     |
+| `BROWSE_UPSTREAM`                 | const | Lists the packages `@orkestrel/browser` depends on at runtime, directly or transitively, frozen.                                                                                       |
+| `CANON_PATHS`                     | const | Lists the instruction-canon paths staged for reading rather than for a target, frozen.                                                                                                 |
+| `CATALOG_AGENT_PATH`              | const | Names the agent file whose marker-bounded package table the catalog verb alone owns.                                                                                                   |
+| `CATALOG_CLOSING_MARKER`          | const | Names the marker closing the package table inside `CATALOG_AGENT_PATH`.                                                                                                                |
+| `CATALOG_OPENING_MARKER`          | const | Names the marker opening the package table inside `CATALOG_AGENT_PATH`.                                                                                                                |
+| `CONFIG_TEMPLATES`                | const | Holds formatter-stable template text for every configuration artifact.                                                                                                                 |
+| `CONFORMANCE_TEST_PATH`           | const | Names the official-tooling drift proof whose presence makes a workspace `conformance`.                                                                                                 |
+| `CONTROL_CHARACTER_PATTERN`       | const | Matches the Unicode controls, formatting controls, and line and paragraph separators rejected in text.                                                                                 |
+| `DECLARATION_DEV_DEPENDENCIES`    | const | Lists the development dependencies that roll declarations up for published source.                                                                                                     |
+| `DEFAULT_ENGINES`                 | const | Names the `engines.node` range a workspace starts with.                                                                                                                                |
+| `DEFAULT_VERSION`                 | const | Names the version a workspace starts at.                                                                                                                                               |
+| `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                                                                                                    |
+| `DISTRIBUTION_TEST_PATH`          | const | Names the generated packed-package proof every publishing workspace is planned at.                                                                                                     |
+| `ENGINES_PATTERN`                 | const | Matches the minimum-Node engine syntax a blueprint declares.                                                                                                                           |
+| `ENVIRONMENTS`                    | const | Lists the `Environment` values, frozen.                                                                                                                                                |
+| `EXECUTABLE_PATHS`                | const | Lists the vendored paths a target receives with its executable bit set, frozen.                                                                                                        |
+| `EXTRA_RANGE_PATTERN`             | const | Matches the registry-only semver subset accepted for a development extra's range.                                                                                                      |
+| `FLOOR_RANGE_PATTERN`             | const | Matches the exact `major.minor.patch` floor accepted for a foreign peer's range.                                                                                                       |
+| `FOREIGN_NAME_PATTERN`            | const | Matches the package name syntax for a dependency this package does not publish.                                                                                                        |
+| `FRAMEWORKS`                      | const | Lists the supported browser frameworks, frozen.                                                                                                                                        |
+| `FRAMEWORK_MATRIX`                | const | Describes the tooling and package boundaries of each browser framework, frozen.                                                                                                        |
+| `GLOBAL_SETUP_PATH`               | const | Names the shared Vitest global-setup module whose presence makes a workspace `global`.                                                                                                 |
+| `GROUPS`                          | const | Lists the `Group` values in plan order, frozen.                                                                                                                                        |
+| `GUIDES_TEST_PATH`                | const | Names the package-owned guide-parity entry used by `test:guides` and to select the `guides` project.                                                                                   |
+| `HEX_PATTERN`                     | const | Matches exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.                                                                                            |
+| `HOST_INVENTORY_PATH`             | const | Names the repository-relative path where the committed vendored-file inventory is served.                                                                                              |
+| `HOST_PATHS`                      | const | Lists the paths a target receives from the vendored data root, frozen.                                                                                                                 |
+| `INTEGRATION_TEST_PATH`           | const | Names the cross-environment composition proof whose presence makes a workspace `integration`.                                                                                          |
+| `INVALID_PATH_CHARACTER_PATTERN`  | const | Matches the visible characters a target-relative path and a Markdown path cell both forbid.                                                                                            |
+| `JOURNEY_CONFIG_PATH`             | const | Names the Vite wrapper whose presence makes a workspace `journey`.                                                                                                                     |
+| `MANIFEST_PATH`                   | const | Names the manifest path every compiler plan emits with birth ownership.                                                                                                                |
+| `MAX_ARTIFACT_BYTES`              | const | Caps the bytes accepted for one artifact.                                                                                                                                              |
+| `MAX_ARTIFACT_HEX_LENGTH`         | const | Caps the length of the hexadecimal string carrying one artifact's bytes.                                                                                                               |
+| `MAX_AUDIT_FINDINGS`              | const | Caps the findings one audit can produce from a bounded plan and snapshot.                                                                                                              |
+| `MAX_COLLECTION_ITEMS`            | const | Caps the items accepted in one public collection.                                                                                                                                      |
+| `MAX_DEPENDENCY_NAME_LENGTH`      | const | Sets the maximum dependency package name length, scope included, as the registry caps it.                                                                                              |
+| `MAX_MANIFEST_BYTES`              | const | Caps the bytes accepted for one package or vendored-host manifest.                                                                                                                     |
+| `MAX_NAME_LENGTH`                 | const | Caps the bare workspace name length.                                                                                                                                                   |
+| `MAX_PATH_LENGTH`                 | const | Caps the length of one path, matching the longest a supported filesystem accepts.                                                                                                      |
+| `MAX_RANGE_LENGTH`                | const | Caps the length of one declared package range.                                                                                                                                         |
+| `MAX_REGISTRY_BYTES`              | const | Caps the decoded bytes accepted from one registry response.                                                                                                                            |
+| `MAX_SCRIPT_LENGTH`               | const | Caps the length of one manifest script name or command.                                                                                                                                |
+| `MAX_TOTAL_ARTIFACT_BYTES`        | const | Caps the bytes retained across one whole plan or audit.                                                                                                                                |
+| `MAX_TOTAL_REGISTRY_BYTES`        | const | Caps the decoded bytes accepted across one registry-reading call.                                                                                                                      |
+| `MINIMUM_NODE_VERSION`            | const | Names the oldest Node version the generated toolchain supports.                                                                                                                        |
+| `MINIMUM_NPM_VERSION`             | const | Names the oldest npm version the generated toolchain supports.                                                                                                                         |
+| `NAME_PATTERN`                    | const | Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.                                                                                             |
+| `ORCHESTRATION_PATH_NAMES`        | const | Lists the exact root paths that wire an agent bench or own an orchestration directory, frozen.                                                                                         |
+| `ORCHESTRATION_PATH_PREFIXES`     | const | Lists the path prefixes whose contents instruct or wire an agent, frozen.                                                                                                              |
+| `ORKESTREL_RANGE_PATTERN`         | const | Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.                                                                                        |
+| `PRINT_WIDTH`                     | const | Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.                                                                                                |
+| `REFERENCE_PATHS`                 | const | Lists the reference paths staged for offline reading, frozen.                                                                                                                          |
+| `RELEASE_PROOF_COMMAND`           | const | Names the `prepublishOnly` row that runs the packed-package proof against a real registry.                                                                                             |
+| `RESERVED_SHEET_NAMES`            | const | Lists the names a styles extension cannot occupy, frozen.                                                                                                                              |
+| `SEED_GUIDE_PATHS`                | const | Lists the guide paths a generated workspace starts with, frozen.                                                                                                                       |
+| `SERVICE_SCRIPT_PATH`             | const | Names the inventory skeleton a workspace with declared service vendors is given once.                                                                                                  |
+| `SERVICE_SETUP_PATH`              | const | Names the live-service readiness module whose presence makes a workspace `service`.                                                                                                    |
+| `SERVICE_TEST_INCLUDE`            | const | Names the include the live-service project covers, which is a directory rather than one proof.                                                                                         |
+| `SHEET_ENTRY_NAME`                | const | Names the build entry beside each stylesheet marker.                                                                                                                                   |
+| `SHOWCASE_CONFIG_PATH`            | const | Names the Vite wrapper whose presence makes a workspace `showcase`.                                                                                                                    |
+| `SHOWCASE_DEV_DEPENDENCIES`       | const | Names the tested dependency pair selected by the optional single-file showcase build.                                                                                                  |
+| `SHOWCASE_OVERRIDES`              | const | Names the scoped npm override required by the tested showcase plugin.                                                                                                                  |
+| `SHOWCASE_PAGES_PATH`             | const | Names the physical showcase output directory.                                                                                                                                          |
+| `SKILLS_CONFIG_PATH`              | const | Names the TypeScript wrapper whose presence makes a workspace `skills`.                                                                                                                |
+| `SOURCE_BROWSER_DEV_DEPENDENCIES` | const | Lists the development dependencies a published browser `src` environment adds.                                                                                                         |
+| `SRC_MATRIX`                      | const | Holds the build and export settings each published `src` environment contributes, frozen.                                                                                              |
+| `STUDIES_TEST_INCLUDE`            | const | Names the include the study project covers, where an exact-case `*.test.ts` file beneath `tests/studies`, outside any `node_modules` or `.git` directory, makes a workspace `studies`. |
+| `STYLES_DEV_DEPENDENCIES`         | const | Lists the development dependencies the styles surface adds, frozen.                                                                                                                    |
+| `STYLES_ENTRY_PATH`               | const | Names the base stylesheet marker.                                                                                                                                                      |
+| `SURFACES`                        | const | Lists the surfaces an extension may extend, frozen.                                                                                                                                    |
+| `TAB_WIDTH`                       | const | Sets the columns one tab occupies when the formatter measures a line, matching `tabWidth`.                                                                                             |
+| `TARGET_SKILL_NAMES`              | const | Lists the package-facing skills a target receives pointers for, frozen and alphabetical.                                                                                               |
+| `THEMES_BARREL_PATH`              | const | Names the themes stylesheet marker.                                                                                                                                                    |
+| `THEMES_ENTRY_PATH`               | const | Names the themes build entry marker.                                                                                                                                                   |
+| `VERSION_PATTERN`                 | const | Matches the exact `major.minor.patch` version syntax a blueprint declares.                                                                                                             |
+| `WORKSPACE_DEV_ENGINES`           | const | Holds the `devEngines` record every generated manifest carries.                                                                                                                        |
+| `WORKSPACE_OWNED_PATHS`           | const | Lists the vendored paths whose present bytes belong to each workspace, frozen.                                                                                                         |
 
 #### Guards
 
@@ -270,6 +270,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `isDeferredPath`            | function | Checks whether another surface owns the vendored bytes at a path.                                   |
 | `isFloorPath`               | function | Checks whether a destination's floor bytes survive a live overlay.                                  |
 | `isRetainedPath`            | function | Checks whether another surface owns a target's present bytes at a path.                             |
+| `iterateAnswers`            | function | Yields the answer to each value of a source and ends after the first refused answer.                |
 | `manifestToDependencies`    | function | Projects a package manifest's text to the `@orkestrel/*` packages each dependency section declares. |
 | `manifestToName`            | function | Projects a package manifest's text to its own name.                                                 |
 | `matchesDriftReachability`  | function | Tests whether `inferDrift` could have produced a finding for an ownership.                          |
@@ -662,9 +663,9 @@ answers a read and grant no verb write authority that it did not already have.
 states what each emits and what each refuses. Creation leaves `setup` empty, and the remaining
 structural facts take no creation option. Add a root `tests/setup*.test.ts` proof for `setup`,
 `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
-`tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`, a
-`*.test.ts` file beneath `tests/studies` for `studies`,
-`tests/setupGlobal.ts` for `global`, `configs/app/vite.journey.config.ts` for `journey`, and
+`tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`, an
+exact-case `*.test.ts` file beneath `tests/studies`, outside any `node_modules` or `.git` directory,
+for `studies`, `tests/setupGlobal.ts` for `global`, `configs/app/vite.journey.config.ts` for `journey`, and
 `configs/agents/tsconfig.skills.json` for `skills`; reading verbs detect each exact-case file and
 register its fixed machinery. An explicitly supplied
 plan with `vendors` owns and protects the birth-owned `scripts/service.sh` inventory skeleton.
@@ -1713,7 +1714,8 @@ the others are not.
 
 Content ownership does not preserve an arbitrary custom Vitest project. The optional proof projects
 are fixed: `guides`, `integration`, `conformance`, and `service` are selected by their defining
-paths, `studies` by its test files, and `distribution` by a published `src` environment. A workspace that needs other local
+paths, `studies` by an exact-case `*.test.ts` file beneath `tests/studies` outside any `node_modules` or
+`.git` directory, and `distribution` by a published `src` environment. A workspace that needs other local
 configuration must keep those edits outside a content-owned file; `repair` restores that file to the
 canonical project set.
 

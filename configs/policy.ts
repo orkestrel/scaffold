@@ -647,13 +647,16 @@ export function statementToPolicyBindings(node: PolicyExpression): readonly Poli
 		return [{ node, name: identifierToPolicyName(node.id) }]
 	}
 	if (node.type !== 'VariableDeclaration') return []
-	// The spread reads a hole as an `undefined` declarator, as a `for…of` over the list would.
-	return [...(node.declarations ?? [])].flatMap((declarator) => {
-		const init = declarator.init
-		if (init === undefined || init === null || !isPolicyFunction(init)) return []
-		const name = identifierToPolicyName(declarator.id)
-		return name === undefined ? [] : [{ node: declarator, name }]
-	})
+	// The iterator consumes one declarator at a time and reads a hole as an `undefined` declarator,
+	// as a `for…of` over the list would.
+	return Iterator.from(node.declarations ?? [])
+		.flatMap((declarator) => {
+			const init = declarator.init
+			if (init === undefined || init === null || !isPolicyFunction(init)) return []
+			const name = identifierToPolicyName(declarator.id)
+			return name === undefined ? [] : [{ node: declarator, name }]
+		})
+		.toArray()
 }
 
 /** Reports whether a call trims a whole payload before splitting it on a line feed. */
@@ -789,26 +792,32 @@ export function programToPolicyDocs(
 	node: PolicyExpression,
 	sourceCode: PolicySourceCode,
 ): readonly PolicyDoc[] {
-	// Each spread reads a hole as an `undefined` entry, as a `for…of` over the list would, and the
-	// filter reads every comment where a `findLast` would stop at the nearest one.
-	const comments = [...sourceCode.getAllComments()]
-	return [...programToPolicyStatements(node)].flatMap((statement) => {
-		if (!statement.type.startsWith('Export')) return []
-		const start = statement.range[0]
-		const previous = comments.filter((comment) => comment.range[1] <= start).at(-1)
-		if (previous === undefined || previous.type !== 'Block') return []
-		if (!previous.value.startsWith('*')) return []
-		if (sourceCode.text.slice(previous.range[1], start).trim() !== '') return []
-		const declaration = statement.declaration
-		return [
-			{
-				comment: previous,
-				name:
-					identifierToPolicyName(declaration?.id) ??
-					identifierToPolicyName(declaration?.declarations?.[0]?.id),
-			},
-		]
-	})
+	// The iterator consumes one entry at a time and reads a hole as an `undefined` entry, as a
+	// `for…of` over the list would. The comments are read only for an export statement, once per
+	// statement, and every comment is read where a `findLast` would stop at the nearest one.
+	const comments = sourceCode.getAllComments()
+	return Iterator.from(programToPolicyStatements(node))
+		.flatMap((statement) => {
+			if (!statement.type.startsWith('Export')) return []
+			const start = statement.range[0]
+			const previous = Iterator.from(comments)
+				.flatMap((comment) => (comment.range[1] <= start ? [comment] : []))
+				.toArray()
+				.at(-1)
+			if (previous === undefined || previous.type !== 'Block') return []
+			if (!previous.value.startsWith('*')) return []
+			if (sourceCode.text.slice(previous.range[1], start).trim() !== '') return []
+			const declaration = statement.declaration
+			return [
+				{
+					comment: previous,
+					name:
+						identifierToPolicyName(declaration?.id) ??
+						identifierToPolicyName(declaration?.declarations?.[0]?.id),
+				},
+			]
+		})
+		.toArray()
 }
 
 /** Reports a doc block whose first sentence is not a third-person summary of its own symbol. */
@@ -1054,20 +1063,27 @@ export function reportDomain(context: PolicyContext, node: PolicyExpression): vo
 	}
 	if (!isPolicyDomain(context.filename, context.cwd)) return
 	const expected = fileToPolicyStem(file)
-	// The spread reads a hole as an `undefined` statement, as a `for…of` over the body would.
-	const members = [...programToPolicyStatements(node)]
-		.filter((statement) => statement.type !== 'ImportDeclaration')
-		.map((statement) => ({ statement, declaration: statementToPolicyDeclaration(statement) }))
-	const implementations = members.filter(
-		({ declaration }) => declaration?.type === 'FunctionDeclaration',
-	).length
-	const malformed = members.some(
-		({ statement, declaration }) =>
-			declaration === undefined ||
-			!isPolicyDeclaredFunction(declaration) ||
-			statement.type !== 'ExportNamedDeclaration' ||
-			identifierToPolicyName(declaration.id) !== expected,
-	)
+	// The iterator consumes one statement at a time and reads a hole as an `undefined` statement, as
+	// a `for…of` over the body would. Each statement is judged whole before the next is read.
+	const members = Iterator.from(programToPolicyStatements(node))
+		.flatMap((statement) => {
+			if (statement.type === 'ImportDeclaration') return []
+			const declaration = statementToPolicyDeclaration(statement)
+			if (declaration === undefined || !isPolicyDeclaredFunction(declaration)) {
+				return [{ implementation: false, malformed: true }]
+			}
+			return [
+				{
+					implementation: declaration.type === 'FunctionDeclaration',
+					malformed:
+						statement.type !== 'ExportNamedDeclaration' ||
+						identifierToPolicyName(declaration.id) !== expected,
+				},
+			]
+		})
+		.toArray()
+	const implementations = members.filter(({ implementation }) => implementation).length
+	const malformed = members.some((member) => member.malformed)
 	if (implementations !== 1 || malformed) context.report({ node, messageId: 'module' })
 }
 
