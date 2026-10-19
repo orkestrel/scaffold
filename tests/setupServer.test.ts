@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { chmodSync, existsSync, readFileSync, renameSync, statSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { basename, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -213,6 +213,8 @@ import {
 
 describe('createDistributionScratch', () => {
 	it('isolates consumer imports from packages installed only in the checkout', async () => {
+		// A fresh clone has no ignored `tmp/` until something writes it.
+		mkdirSync(join(WORKSPACE_ROOT, 'tmp'), { recursive: true })
 		const workspace = createDistributionScratch('distribution-boundary-')
 		const control = createScratch({
 			parent: join(WORKSPACE_ROOT, 'tmp'),
