@@ -68,12 +68,19 @@ Give every selected environment and every face an alias: `src/styles`, each `src
 - `configs/agents/tsconfig.skills.json`: the scoped typecheck of the skill scripts; its presence selects the `skills` blueprint fact.
 - `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
   `configs/src/*bin*` files. Shared logic remains in root configs.
-- `configs/helpers.ts`, `configs/browsers.ts`, and `configs/policy.ts`: the only permitted leaves
-  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf, so no
-  `configs/types.ts` exists for one to import: each keeps its own types, data, and functions in its
-  one file, and the centralized-kind placement in `.claude/rules/architecture.md` does not reach a
-  leaf. Each `configs/src/*.config.ts` wrapper imports the root config and may import the permitted
-  leaves; keep shared build and project composition in the root config.
+- `configs/helpers.ts`, `configs/browsers.ts`, `configs/commands.ts`, and `configs/policy.ts`: the
+  only permitted leaves under `configs/`. Each imports nothing from the workspace, which is what
+  keeps it a leaf, so no `configs/types.ts` exists for one to import: each keeps its own types,
+  data, and functions in its one file, and the centralized-kind placement in
+  `.claude/rules/architecture.md` does not reach a leaf. Each `configs/src/*.config.ts` wrapper
+  imports the root config and may import the permitted leaves; keep shared build and project
+  composition in the root config.
+- Register the package's own Vitest browser commands in the `commands` record of
+  `configs/commands.ts`, the presence-owned seed scaffold plans beside `configs/browsers.ts`.
+  Import only a `node:` module or an installed package there: the root config bundles the file
+  into every config load, builds included, and the bundle resolves no workspace alias. Load
+  workspace source inside a command body through `context.project.vitest.import`, never through a
+  static import.
 - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
   vendored byte-identical to every workspace, so an import there must resolve in all of them.
   `configs/browsers.ts` exists for that reason: it imports `playwright` and
@@ -148,6 +155,9 @@ environment axis is one project per src/app axis × environment, plus one per ex
 - Give every browser project `optimizeDeps.include` of `@orkestrel/test`, `@orkestrel/test/browser`,
   `@orkestrel/contract` where the manifest declares it, and `vue` where the project renders Vue.
   Give a Node project no `optimizeDeps` setting.
+- Give every browser project `test.browser.commands` from `configs/commands.ts`: each root factory
+  that names the Playwright provider reads the record, and a project that spreads another
+  factory's `test.browser`, as `appVue` and every `journey:<variant>` project do, keeps it.
 
 The workspace-proof axis is cross-cutting. Each proof covers the whole workspace rather than
 one environment, so each is its own project:

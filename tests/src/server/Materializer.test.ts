@@ -31,7 +31,12 @@ import {
 } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createRecorder, requireValue } from '@orkestrel/test'
-import { buildBlueprint, buildHostArtifact, MATERIALIZED_PATHS } from '../../setup.js'
+import {
+	buildBlueprint,
+	buildHostArtifact,
+	COMMANDS_PROBE_TEXT,
+	MATERIALIZED_PATHS,
+} from '../../setup.js'
 import {
 	buildHostManifest,
 	buildCompiledPlan,
@@ -974,6 +979,37 @@ describe('Materializer repair', () => {
 				expect(readFileSync(join(target, 'guides/guide.md'), 'utf8')).toBe('# Edited guide\n')
 			} finally {
 				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps the browser commands a target registered in its presence-owned module', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = join(workspace.path, 'project')
+			const compiler = new Compiler()
+			const materializer = new Materializer({ host })
+			try {
+				const plan = requireValue(
+					compiler.compile(buildBlueprint({ src: ['core', 'browser'] })).plan,
+				)
+				materializer.materialize(plan, target)
+				writeFileSync(join(target, 'configs/commands.ts'), COMMANDS_PROBE_TEXT, 'utf8')
+				const audit = materializer.audit(plan, target)
+				expect(audit.findings.find(({ path }) => path === 'configs/commands.ts')).toMatchObject({
+					ownership: 'presence',
+					drift: 'aligned',
+				})
+				const result = materializer.repair(plan, audit, target)
+				expect(result.skipped).toContain('configs/commands.ts')
+				expect(result.written).not.toContain('configs/commands.ts')
+				expect(readFileSync(join(target, 'configs/commands.ts'), 'utf8')).toBe(COMMANDS_PROBE_TEXT)
+			} finally {
+				materializer.destroy()
+				compiler.destroy()
 			}
 		} finally {
 			workspace.destroy()

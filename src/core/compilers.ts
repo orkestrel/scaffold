@@ -1546,9 +1546,11 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 					? helperImport
 					: `import {\n${helpers.map((helper) => `\t${helper},`).join('\n')}\n} from './configs/helpers.js'\n`,
 		// The provider options are resolved once for the whole configuration, and
-		// only a selection that emits `configs/browsers.ts` can name them.
+		// only a selection that emits `configs/browsers.ts` can name them. The same
+		// selection emits `configs/commands.ts`, whose record every factory that names
+		// the provider reads.
 		browsers: machinery.browser
-			? "import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\n"
+			? "import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\nimport { commands } from './configs/commands.js'\n"
 			: '',
 		options:
 			(machinery.browser
@@ -1608,7 +1610,9 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 	]
 	// The browser resolver is its own leaf rather than a block inside the vendored
 	// `configs/helpers.ts`, because that file is byte-identical in every workspace
-	// and only a browser selection declares the `playwright` it imports.
+	// and only a browser selection declares the `playwright` it imports. The commands
+	// module holds the package's own browser commands, so it is presence-owned: a
+	// missing file is restored and a written one is kept.
 	const browsers: readonly Artifact[] = blueprintToMachinery(blueprint).browser
 		? [
 				{
@@ -1617,6 +1621,13 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 					ownership: 'content',
 					origin: 'template',
 					content: CONFIG_TEMPLATES.browsers,
+				},
+				{
+					path: 'configs/commands.ts',
+					group: 'configs',
+					ownership: 'presence',
+					origin: 'template',
+					content: CONFIG_TEMPLATES.commands,
 				},
 			]
 		: []

@@ -1,5 +1,6 @@
 import type { Axis, Environment } from '@src/core'
 import type { PluginOption, UserConfig } from 'vite'
+import { isRecord } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
@@ -52,7 +53,8 @@ import {
 	replaceManifestScripts,
 	srcToExports,
 } from '@src/core'
-import { mergeConfig } from 'vite'
+import { loadConfigFromFile, mergeConfig } from 'vite'
+import { createVitest } from 'vitest/node'
 import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js'
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import {
@@ -66,6 +68,8 @@ import {
 	buildSparse,
 	buildTrailingHole,
 	collectWrappers,
+	COMMANDS_PROBE_TEXT,
+	COMMANDS_ROUTE_TEXT,
 	createClosableList,
 	createObservedList,
 	ENTRY_AUTHORED_TEST,
@@ -107,6 +111,7 @@ import {
 	linkPackage,
 	readStatements,
 	runEntry,
+	stageRootConfig,
 	TEMPLATE_PROJECT_CONFIG,
 } from '../../setupServer.js'
 
@@ -2528,6 +2533,7 @@ describe('blueprintToScripts config projects', () => {
 			'\t\t\tbrowser: {',
 			'\t\t\t\tenabled: true,',
 			'\t\t\t\tprovider: playwright(browserOptions),',
+			'\t\t\t\tcommands,',
 			"\t\t\t\tinstances: [{ browser: 'chromium', headless: true }],",
 			'\t\t\t},',
 			'\t\t},',
@@ -3447,6 +3453,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
+				commands,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -3572,6 +3579,234 @@ export function appShowcase(mode: string, override?: UserConfig): UserConfig {
 	})
 })
 
+// A package registers its own Vitest browser commands in `configs/commands.ts`, which every
+// browser factory reads. The file is presence-owned, so `repair` and `overwrite` restore it when
+// it is absent and keep the bytes a package wrote.
+describe('browser commands', () => {
+	it('plans the presence-owned commands seed for exactly the selections that get the resolver', () => {
+		for (const blueprint of [
+			buildBlueprint({ src: ['core', 'browser'] }),
+			buildBlueprint({ src: [], app: ['browser'] }),
+			buildBlueprint({ src: ['browser'], app: ['browser'] }),
+			buildBlueprint({ src: [], styles: true }),
+		]) {
+			const artifacts = blueprintToConfigArtifacts(blueprint)
+			expect(artifacts.map(({ path }) => path)).toContain('configs/browsers.ts')
+			expect(artifacts.find(({ path }) => path === 'configs/commands.ts')).toStrictEqual({
+				path: 'configs/commands.ts',
+				group: 'configs',
+				ownership: 'presence',
+				origin: 'template',
+				content: CONFIG_TEMPLATES.commands,
+			})
+		}
+		for (const blueprint of [
+			buildBlueprint({ src: ['core'] }),
+			buildBlueprint({ src: ['core', 'server'], bin: true }),
+			buildBlueprint({ src: [], app: ['core', 'server'] }),
+		]) {
+			const paths = blueprintToConfigArtifacts(blueprint).map(({ path }) => path)
+			expect(paths).not.toContain('configs/browsers.ts')
+			expect(paths).not.toContain('configs/commands.ts')
+		}
+	})
+
+	it('reads the commands record in every factory that names the browser provider', () => {
+		for (const blueprint of [
+			buildBlueprint({ src: ['core', 'browser'] }),
+			buildBlueprint({ src: [], app: ['browser'] }),
+			buildBlueprint({ src: [], styles: true }),
+			buildBlueprint({
+				src: ['core', 'browser'],
+				app: ['core', 'browser'],
+				styles: true,
+				journey: true,
+				setup: ['browser'],
+				integration: true,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			}),
+		]) {
+			const configuration = blueprintToRootVite(blueprint)
+			expect(configuration).toContain(
+				"import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\nimport { commands } from './configs/commands.js'\n",
+			)
+			const providers = configuration.match(/^\t+provider: playwright\(browserOptions\),$/gmu) ?? []
+			expect(providers.length).toBeGreaterThan(0)
+			// Each provider line is followed by the record at its own indentation.
+			expect(
+				configuration.match(/^(\t+)provider: playwright\(browserOptions\),\n\1commands,$/gmu),
+			).toStrictEqual(providers.map((line) => `${line}\n${line.replace(/\S.*$/u, '')}commands,`))
+			expect(configuration.match(/^\t+commands,$/gmu)).toHaveLength(providers.length)
+		}
+		const plain = blueprintToRootVite(buildBlueprint({ src: ['core'] }))
+		expect(plain).not.toContain('configs/commands.js')
+		expect(plain).not.toMatch(/^\t+commands,$/mu)
+	})
+
+	it('gives every browser project and journey project the commands its target registers', async () => {
+		const scratch = createScratch({ prefix: 'scaffold-browser-commands-' })
+		try {
+			const blueprint = createBlueprint('proof', {
+				src: ['core', 'browser'],
+				app: ['browser'],
+				journey: true,
+			})
+			stageRootConfig(blueprint, scratch, 'proof')
+			scratch.link('proof/node_modules', resolve('node_modules'))
+			// One bundle carries the module and both configurations, so the record each project
+			// holds and the module's own export are one object graph.
+			scratch.write(
+				'proof/configs/proof.config.ts',
+				"import { commands } from './commands.js'\nimport configuration from '../vite.config.js'\nimport journey from './app/vite.journey.config.js'\n\nexport default { commands, configuration, journey }\n",
+			)
+			for (const [content, keys] of [
+				[COMMANDS_PROBE_TEXT, ['probe']],
+				[CONFIG_TEMPLATES.commands, []],
+			] as const) {
+				scratch.write('proof/configs/commands.ts', content)
+				const loaded = await loadConfigFromFile(
+					{ command: 'serve', mode: 'test' },
+					resolve(scratch.path, 'proof/configs/proof.config.ts'),
+					resolve(scratch.path, 'proof'),
+					'silent',
+				)
+				const bundle: unknown = loaded?.config
+				if (!isRecord(bundle) || !isRecord(bundle.configuration) || !isRecord(bundle.commands))
+					throw new Error('The proof configuration loaded no commands and no configuration')
+				const test = bundle.configuration.test
+				if (!isRecord(test) || !Array.isArray(test.projects))
+					throw new Error('The root configuration carries no projects')
+				const rows: readonly unknown[] = test.projects
+				const journey = bundle.journey
+				if (typeof journey !== 'function') throw new Error('The journey wrapper exports no factory')
+				const composed: unknown = Reflect.apply(journey, undefined, [
+					{ command: 'serve', mode: 'browser' },
+				])
+				if (
+					!isRecord(composed) ||
+					!isRecord(composed.test) ||
+					!Array.isArray(composed.test.projects)
+				)
+					throw new Error('The journey wrapper composes no projects')
+				const variants: readonly unknown[] = composed.test.projects
+				const projects: readonly unknown[] = [
+					...rows.map((row): unknown =>
+						typeof row === 'function'
+							? Reflect.apply(row, undefined, [{ command: 'serve', mode: 'test' }])
+							: row,
+					),
+					...variants.map((variant): unknown => {
+						if (typeof variant !== 'function') throw new Error('The journey project is no factory')
+						return Reflect.apply(variant, undefined, [])
+					}),
+				]
+				const browsers = projects.flatMap((project) =>
+					isRecord(project) &&
+					isRecord(project.test) &&
+					isRecord(project.test.browser) &&
+					project.test.browser.enabled === true &&
+					isRecord(project.test.name)
+						? [{ label: project.test.name.label, commands: project.test.browser.commands }]
+						: [],
+				)
+				expect(browsers.map(({ label }) => label)).toStrictEqual([
+					'src:browser',
+					'app:browser',
+					'journey:desktop',
+					'journey:compact',
+				])
+				const registered = bundle.commands
+				expect(Object.isFrozen(registered)).toBe(true)
+				expect(Object.keys(registered)).toStrictEqual(keys)
+				for (const { label, commands } of browsers) {
+					expect({
+						label,
+						keys: isRecord(commands) ? Object.keys(commands) : commands,
+					}).toStrictEqual({ label, keys })
+					for (const key of keys) {
+						expect(isRecord(commands) ? commands[key] : commands).toBe(registered[key])
+					}
+				}
+			}
+		} finally {
+			scratch.destroy()
+		}
+	}, 60_000)
+
+	// A command body runs in the configuration bundle, where Node resolves a native import
+	// without the workspace's aliases. The root Vite server carries them, so a command loads
+	// workspace source through `context.project.vitest.import` at call time.
+	it('loads aliased workspace source in a commands body through the root Vitest server alone', async () => {
+		const scratch = createScratch({ prefix: 'scaffold-browser-commands-route-' })
+		try {
+			stageRootConfig(
+				createBlueprint('proof', { src: ['core', 'browser', 'server'] }),
+				scratch,
+				'proof',
+			)
+			scratch.link('proof/node_modules', resolve('node_modules'))
+			scratch.write('proof/src/core/index.ts', "export const GREETING = 'hello'\n")
+			scratch.write(
+				'proof/src/server/index.ts',
+				"import { GREETING } from '@src/core'\n\nexport const message = GREETING + ' from the server'\n",
+			)
+			scratch.write('proof/configs/commands.ts', COMMANDS_ROUTE_TEXT)
+			const root = resolve(scratch.path, 'proof')
+			const loaded = await loadConfigFromFile(
+				{ command: 'serve', mode: 'test' },
+				resolve(root, 'vite.config.ts'),
+				root,
+				'silent',
+			)
+			const rows: readonly unknown[] = loaded?.config.test?.projects ?? []
+			const commands = rows
+				.map((row): unknown =>
+					typeof row === 'function'
+						? Reflect.apply(row, undefined, [{ command: 'serve', mode: 'test' }])
+						: row,
+				)
+				.flatMap((project) =>
+					isRecord(project) &&
+					isRecord(project.test) &&
+					isRecord(project.test.name) &&
+					project.test.name.label === 'src:browser' &&
+					isRecord(project.test.browser) &&
+					isRecord(project.test.browser.commands)
+						? [project.test.browser.commands]
+						: [],
+				)
+			expect(commands).toHaveLength(1)
+			const native = commands[0]?.native
+			const routed = commands[0]?.routed
+			if (typeof native !== 'function' || typeof routed !== 'function')
+				throw new Error('The src:browser project carries neither command')
+			// The hazard: the bundled body imports the module natively, and Node resolves the
+			// module's own `@src/core` import as a package.
+			await expect(Reflect.apply(native, undefined, [])).rejects.toMatchObject({
+				code: 'ERR_MODULE_NOT_FOUND',
+				message: expect.stringContaining("Cannot find package '@src/core'"),
+			})
+			const vitest = await createVitest('test', {
+				root,
+				config: resolve(root, 'vite.config.ts'),
+				watch: false,
+			})
+			try {
+				const imported: unknown = await vitest.import(resolve(root, 'src/server/index.ts'))
+				expect(isRecord(imported) ? imported.message : imported).toBe('hello from the server')
+				const called: unknown = await Reflect.apply(routed, undefined, [
+					{ project: vitest.getRootProject() },
+				])
+				expect(called).toBe('hello from the server')
+			} finally {
+				await vitest.close()
+			}
+		} finally {
+			scratch.destroy()
+		}
+	}, 60_000)
+})
+
 describe('blueprintToConfigArtifacts app matrix', () => {
 	it('emits exactly the core app config', () => {
 		expect(
@@ -3620,6 +3855,7 @@ describe('blueprintToConfigArtifacts app matrix', () => {
 			'tsconfig.json',
 			'vite.config.ts',
 			'configs/browsers.ts',
+			'configs/commands.ts',
 			'configs/app/tsconfig.core.json',
 			'configs/app/vite.browser.config.ts',
 			'configs/app/tsconfig.browser.json',

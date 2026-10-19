@@ -25,6 +25,7 @@ import {
 	CATALOG_AGENT_PATH,
 	CATALOG_CLOSING_MARKER,
 	CATALOG_OPENING_MARKER,
+	CONFIG_TEMPLATES,
 	createBlueprint,
 	GROUPS,
 	isCanonPath,
@@ -48,7 +49,13 @@ import {
 } from '../../../src/bin/constants.js'
 import { renderUsage } from '../../../src/bin/helpers.js'
 import { CLI } from '../../../src/bin/CLI.js'
-import { buildSetupQuestion, FILLED_SETUP_TEXT, FLEET_NAMES, HOOK_SETUP_TEXT } from '../../setup.js'
+import {
+	buildSetupQuestion,
+	COMMANDS_PROBE_TEXT,
+	FILLED_SETUP_TEXT,
+	FLEET_NAMES,
+	HOOK_SETUP_TEXT,
+} from '../../setup.js'
 import {
 	ALIGNED_MANIFEST_TEXT,
 	AUDIT_REPLIES,
@@ -152,6 +159,50 @@ describe('surface creation and migration', () => {
 						expect(result.audit.questions).toEqual([])
 					}
 				}
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// A target that predates the commands module lacks the file, so the deleted case is the
+	// migration: both verbs write the seed it never received.
+	it('keeps registered browser commands through repair and overwrite and restores a deleted seed', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('display')
+			const args = ['--offline', '--from', host, '--target', target, '--json']
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'display',
+					'--app',
+					'browser',
+					...args,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(requireValue(workspace.read('display/configs/commands.ts'))).toBe(
+				CONFIG_TEMPLATES.commands,
+			)
+			createRepository(target)
+			for (const verb of ['repair', 'overwrite']) {
+				const command = [verb, ...(verb === 'overwrite' ? ['--dirty'] : []), ...args]
+				const exit = verb === 'overwrite' ? EXIT_DRIFT : EXIT_CLEAN
+				workspace.write('display/configs/commands.ts', COMMANDS_PROBE_TEXT)
+				const kept = createSink()
+				expect(await new CLI(kept.options).execute(command)).toBe(exit)
+				const retained: RepairResult = JSON.parse(kept.output[0] ?? '')
+				expect(retained.written).not.toContain('configs/commands.ts')
+				expect(workspace.read('display/configs/commands.ts')).toBe(COMMANDS_PROBE_TEXT)
+				workspace.remove('display/configs/commands.ts')
+				const restored = createSink()
+				expect(await new CLI(restored.options).execute(command)).toBe(exit)
+				const result: RepairResult = JSON.parse(restored.output[0] ?? '')
+				expect(result.written).toContain('configs/commands.ts')
+				expect(requireValue(workspace.read('display/configs/commands.ts'))).toBe(
+					CONFIG_TEMPLATES.commands,
+				)
 			}
 		} finally {
 			workspace.destroy()

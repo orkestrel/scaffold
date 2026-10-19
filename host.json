@@ -598,7 +598,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "31694c43a9ffa165147c77ce8982ec2092684db0bd52b6cb4b44fbd6d6fbf28f"
+			"digest": "085e9a26baeb50b215d715a349532b44866f7e0446776e21e9402b26e6b34eb1"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "d2dcba3daf237be7708175e87a3b6d86ad2237602925b6530b3510e706e25188"
+			"digest": "e9eb459d433def12be87feae79ad70c3a0ef840f87f21a38bde714b7a757bc82"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1180,7 +1180,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "fffb80a5ce6f4beabe32edf0df6c605c093a87f6d4cb5d9d4acffd32b48bd50d"
+			"digest": "325f8de835dd57524e44332b8dce1748d780ac083a05367a994d9190de2c4848"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2120,5 +2120,5 @@
 			]
 		}
 	],
-	"digest": "9d04ecf5166ebfc5bce7cd85dea4d331a2aaa4394fc9686abd965356062f8898"
+	"digest": "764c43cc61a5d887f92c749cc880c3e51ed918d324fbc2fd1e5e9fd7a7c8ac45"
 }

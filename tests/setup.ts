@@ -2056,6 +2056,7 @@ export const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'configs/app/vite.server.config.ts': 64,
 	'configs/app/vite.showcase.config.ts': 32,
 	'configs/browsers.ts': 96,
+	'configs/commands.ts': 96,
 	'configs/src/vite.bin.config.ts': 63,
 	'configs/src/vite.browser.config.ts': 64,
 	'configs/src/vite.core.config.ts': 64,
@@ -2080,6 +2081,44 @@ export const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'tests/src/server/index.test.ts': 64,
 	'vite.config.ts': 126,
 })
+
+/**
+ * Holds a `configs/commands.ts` module that registers one probe command.
+ *
+ * @remarks
+ * The command's body returns a constant, so a configuration load evaluates the module without
+ * reaching any workspace source.
+ */
+export const COMMANDS_PROBE_TEXT = `import type { BrowserConfigOptions } from 'vitest/node'
+
+export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> = Object.freeze({
+	probe: () => 'probed',
+})
+`
+
+/**
+ * Holds a `configs/commands.ts` module that loads aliased server source in two ways.
+ *
+ * @remarks
+ * The `native` command imports `src/server/index.ts` natively from the configuration bundle, which
+ * Node resolves without the workspace's aliases. The `routed` command imports the same file through
+ * the root Vitest server, whose `resolve.alias` the root configuration derives from the tsconfig
+ * paths.
+ */
+export const COMMANDS_ROUTE_TEXT = `import type { BrowserCommandContext, BrowserConfigOptions } from 'vitest/node'
+import { fileURLToPath } from 'node:url'
+
+const SERVER_ENTRY = fileURLToPath(new URL('../src/server/index.ts', import.meta.url))
+
+export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> = Object.freeze({
+	native: () => import(new URL('../src/server/index.ts', import.meta.url).href),
+	routed: async (context: BrowserCommandContext): Promise<string | undefined> => {
+		const loaded = await context.project.vitest.import<unknown>(SERVER_ENTRY)
+		if (typeof loaded !== 'object' || loaded === null || !('message' in loaded)) return undefined
+		return typeof loaded.message === 'string' ? loaded.message : undefined
+	},
+})
+`
 
 /**
  * Lists the packages installed into the staged externalization workspace, each with the token it exports.

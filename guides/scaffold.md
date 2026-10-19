@@ -1535,12 +1535,12 @@ content is produced. `Ownership` says what scaffold claims at the path.
 
 Presence ownership has separate mechanisms, and a reader needs to know which applies:
 
-| Mechanism       | Paths                                             | Bytes belong to                              | Cost                                                        |
-| --------------- | ------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
-| Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror`                        | The owning verb is the only route for a later update.       |
-| Workspace-owned | `WORKSPACE_OWNED_PATHS`, which holds `.gitignore` | The target workspace                         | Present bytes receive no later canonical ignore update.     |
-| Plan-owned      | `DISTRIBUTION_TEST_PATH`                          | The plan, until the workspace writes its own | A deleted file is restored from the plan on the next write. |
-| Unhydrated      | Every vendored path a core-compiled plan carries  | Scaffold, after a hydrating face reads them  | Hydration restores the byte claim the core plan omits.      |
+| Mechanism       | Paths                                              | Bytes belong to                              | Cost                                                        |
+| --------------- | -------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
+| Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors  | `catalog` or `mirror`                        | The owning verb is the only route for a later update.       |
+| Workspace-owned | `WORKSPACE_OWNED_PATHS`, which holds `.gitignore`  | The target workspace                         | Present bytes receive no later canonical ignore update.     |
+| Plan-owned      | `DISTRIBUTION_TEST_PATH` and `configs/commands.ts` | The plan, until the workspace writes its own | A deleted file is restored from the plan on the next write. |
+| Unhydrated      | Every vendored path a core-compiled plan carries   | Scaffold, after a hydrating face reads them  | Hydration restores the byte claim the core plan omits.      |
 
 The unhydrated row is the one a core-only caller meets most, and reading it as a claim about the
 path is the mistake it invites. `Compiler` runs in the pure core face, which cannot read the
@@ -1578,7 +1578,9 @@ and `tests/app`, the `tests/src/bin/main.test.ts` file, and the `tests/integrati
 Every sheet face's seed under `src` is yours on the same terms. Scaffold writes those
 planned files only during materialize and leaves later edits or deletions alone. You also own the
 `tests/guides.test.ts`, `tests/conformance.test.ts`, and `tests/service/**/*.test.ts` proof files,
-each of which selects its project by being written. Scaffold content-owns `tests/setupPolicy.ts`,
+each of which selects its project by being written. The browser commands you register in
+`configs/commands.ts` are yours too: scaffold writes the empty seed when the file is missing and
+leaves the bytes you wrote alone. Scaffold content-owns `tests/setupPolicy.ts`,
 `tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
 their bytes drift or the files are missing.
 
@@ -2174,6 +2176,36 @@ Nothing is fixed except the manifest.
   one usable build for many Playwright versions. It is its own file rather than a block in the
   vendored `configs/helpers.ts`, which every workspace receives byte-identical while only a browser
   selection declares the `playwright` this module imports.
+- One template artifact, `configs/commands.ts`, for every workspace that receives
+  `configs/browsers.ts`. It exports one frozen `commands` record, empty in the seed, and every root
+  factory that configures a `playwright()` provider passes that record to Vitest as
+  `test.browser.commands`. `appVue` and each `journey:<variant>` project keep it through the
+  browser configuration they spread. Scaffold claims the file by presence, so `repair` and
+  `overwrite` write the seed into a target that lacks it and keep the commands you register.
+- The root configuration bundles `configs/commands.ts` into every configuration load, builds
+  included, and the bundle resolves no workspace alias. A native import of `src/server/index.ts`
+  from a command body fails with `ERR_MODULE_NOT_FOUND` on that module's own `@src/core` import.
+  Import only a `node:` module or an installed package at the top of the file. Load workspace
+  source inside the command body through `context.project.vitest.import`, which runs on the root
+  Vite server and its `resolve.alias`, and narrow the module it returns as `unknown`. The
+  following module registers a `greeting` command that returns the `message` export of
+  `src/server/index.ts`:
+
+  ```ts
+  import type { BrowserCommandContext, BrowserConfigOptions } from 'vitest/node'
+  import { fileURLToPath } from 'node:url'
+
+  const SERVER_ENTRY = fileURLToPath(new URL('../src/server/index.ts', import.meta.url))
+
+  export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> = Object.freeze({
+  	greeting: async (context: BrowserCommandContext): Promise<string | undefined> => {
+  		const loaded = await context.project.vitest.import<unknown>(SERVER_ENTRY)
+  		if (typeof loaded !== 'object' || loaded === null || !('message' in loaded)) return undefined
+  		return typeof loaded.message === 'string' ? loaded.message : undefined
+  	},
+  })
+  ```
+
 - One template artifact per source and test file the selection needs: an `index.ts` barrel per
   selected environment, `main.ts` and `index.html` for an application browser, `tests/setup.ts`
   plus the host setup modules the selection reaches, and one entry test per axis project. An

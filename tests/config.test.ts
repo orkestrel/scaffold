@@ -27,7 +27,7 @@ import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, parse, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { build, createServer, loadConfigFromFile, resolveConfig } from 'vite'
+import { build, createServer, loadConfigFromFile, parseSync, resolveConfig } from 'vite'
 import { RuleTester } from 'oxlint/plugins-dev'
 import * as configHelpers from '../configs/helpers.js'
 import policyPlugin, {
@@ -447,6 +447,48 @@ describe('selected faces', () => {
 				new Set(provided.flatMap(({ names }) => names)),
 			)
 		}
+		// The runner loads the wrapper beside this file's own root configuration, so every journey
+		// project's record and the commands module's export are one object graph. A wrapper can
+		// add commands of its own; it keeps every command the module registers.
+		const registered = (
+			await Promise.all(
+				Object.values(import.meta.glob<unknown>('../configs/commands.ts')).map((load) => load()),
+			)
+		).map((module) => readConfigRecord(readConfigRecord(module).commands))
+		const wrappers = await Promise.all(
+			Object.values(
+				import.meta.glob<unknown>('../configs/app/vite.journey.config.ts', { import: 'default' }),
+			).map((load) => load()),
+		)
+		expect(wrappers).toHaveLength(1)
+		for (const wrapper of wrappers) {
+			if (typeof wrapper !== 'function') throw new Error('Missing journey wrapper factory')
+			for (const application of applications) {
+				const composed = readConfigRecord(
+					Reflect.apply(wrapper, undefined, [{ command: 'serve', mode: application }]),
+				)
+				const projects = readConfigRecord(composed.test).projects
+				if (!Array.isArray(projects) || projects.length === 0)
+					throw new Error('Missing journey projects')
+				for (const project of projects) {
+					if (typeof project !== 'function') throw new Error('Missing journey factory')
+					const held = readConfigRecord(
+						readConfigRecord(
+							readConfigRecord(
+								readConfigRecord(
+									await Reflect.apply(project, undefined, [
+										{ command: 'serve', mode: application },
+									]),
+								).test,
+							).browser,
+						).commands,
+					)
+					for (const commands of registered) {
+						for (const [key, command] of Object.entries(commands)) expect(held[key]).toBe(command)
+					}
+				}
+			}
+		}
 		const factory = factories.appJourney
 		if (typeof factory !== 'function') throw new Error('Missing application journey')
 		expect(() =>
@@ -458,7 +500,7 @@ describe('selected faces', () => {
 		).toThrow('not declared')
 	})
 
-	it('collects both browser setup proofs and optimizes every selected browser factory', () => {
+	it('collects both browser setup proofs and optimizes every selected browser factory', async () => {
 		const factories = readConfigRecord(rootConfiguration)
 		const manifest = readConfigRecord(
 			JSON.parse(readFileSync(resolve(POLICY_ROOT, 'package.json'), 'utf8')),
@@ -466,6 +508,47 @@ describe('selected faces', () => {
 		const dependencies = {
 			...readConfigRecord(manifest.dependencies ?? {}),
 			...readConfigRecord(manifest.devDependencies ?? {}),
+		}
+		// The runner loads the module this file's root configuration imports, so each factory's
+		// record and the module's export are one object graph.
+		const registered = (
+			await Promise.all(
+				Object.values(import.meta.glob<unknown>('../configs/commands.ts')).map((load) => load()),
+			)
+		).map((module) => readConfigRecord(readConfigRecord(module).commands))
+		// The configuration bundle carries `configs/commands.ts` into every load, builds included,
+		// and leaves an alias it cannot resolve as a bare package import. The module therefore
+		// imports only a `node:` module or a declared package, and loads workspace source inside a
+		// command. The control carries both refused forms.
+		const control =
+			"import { GREETING } from '@src/core'\nexport * from '../src/server/index.js'\nimport { join } from 'node:path'\nimport type { BrowserConfigOptions } from 'vitest/node'\n"
+		for (const [path, text, refused] of [
+			['control', control, ['@src/core', '../src/server/index.js']],
+			...['configs/commands.ts']
+				.filter((module) => existsSync(resolve(POLICY_ROOT, module)))
+				.map((module) => [module, readFileSync(resolve(POLICY_ROOT, module), 'utf8'), []] as const),
+		] as const) {
+			const specifiers = parseSync('commands.ts', text).program.body.flatMap((statement) =>
+				statement.type === 'ImportDeclaration' ||
+				statement.type === 'ExportAllDeclaration' ||
+				(statement.type === 'ExportNamedDeclaration' && statement.source !== null)
+					? [statement.source?.value ?? '']
+					: [],
+			)
+			expect({
+				path,
+				refused: specifiers.filter(
+					(specifier) =>
+						!specifier.startsWith('node:') &&
+						!Object.hasOwn(
+							dependencies,
+							specifier
+								.split('/')
+								.slice(0, specifier.startsWith('@') ? 2 : 1)
+								.join('/'),
+						),
+				),
+			}).toStrictEqual({ path, refused })
 		}
 		for (const name of [
 			'srcBrowser',
@@ -497,6 +580,10 @@ describe('selected faces', () => {
 					...(dependencies['@orkestrel/contract'] === undefined ? [] : ['@orkestrel/contract']),
 				]),
 			)
+			for (const commands of registered) {
+				const held = readConfigRecord(readConfigRecord(test.browser).commands)
+				for (const [key, command] of Object.entries(commands)) expect(held[key]).toBe(command)
+			}
 		}
 		for (const proof of ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts'].filter((path) =>
 			existsSync(resolve(POLICY_ROOT, path)),

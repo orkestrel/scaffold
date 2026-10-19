@@ -214,6 +214,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
+				commands,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -274,6 +275,7 @@ export function srcVue(override?: UserConfig): UserConfig {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
+				commands,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -317,6 +319,7 @@ export function srcBrowser(override?: UserConfig): UserConfig {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
+				commands,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -452,6 +455,7 @@ export function srcBin(override?: UserConfig): UserConfig {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
+				commands,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -689,6 +693,7 @@ export function appServer(override?: UserConfig): UserConfig {
 {{global}}			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
+				commands,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 		},
@@ -1554,6 +1559,10 @@ export function resolveBrowser(
 		launchOptions: { channel: resolveSystemBrowser(platform, environment) ?? fallback, ...launch },
 	}
 }
+`,
+	commands: `import type { BrowserConfigOptions } from 'vitest/node'
+
+export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> = Object.freeze({})
 `,
 })
 

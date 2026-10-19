@@ -25,6 +25,7 @@ import {
 	buildResolveCall,
 	buildSelections,
 	CLASSIFIER_CASES,
+	COMMANDS_PROBE_TEXT,
 	countEmitters,
 	findStrays,
 	findUnassigned,
@@ -132,7 +133,8 @@ describe('configuration templates', () => {
 			showcase: true,
 		})
 		const artifacts = blueprintToConfigArtifacts(blueprint)
-		expect(artifacts).toHaveLength(17)
+		expect(artifacts).toHaveLength(18)
+		expect(artifacts.map(({ path }) => path)).toContain('configs/commands.ts')
 		for (const artifact of artifacts) {
 			expect(artifact.origin).toBe('template')
 			if (artifact.origin === 'host') throw new Error('Expected a content artifact')
@@ -991,6 +993,13 @@ describe('emitted workspaces under their own gates', () => {
 			)
 			const application = requireValue(workspace.read('application/vite.config.ts'))
 			const showcase = requireValue(workspace.read('showcase/vite.config.ts'))
+			// The root configuration imports the commands record, so the stage writes the seed
+			// beside it. The showcase stage holds a registered command instead, which
+			// typechecks against Vitest's own record type.
+			expect(requireValue(workspace.read('application/configs/commands.ts'))).toBe(
+				CONFIG_TEMPLATES.commands,
+			)
+			workspace.write('showcase/configs/commands.ts', COMMANDS_PROBE_TEXT)
 			expect(checkTypes(applicationRoot)).toBe('')
 			expect(checkTypes(showcaseRoot)).toBe('')
 

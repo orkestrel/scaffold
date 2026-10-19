@@ -4539,7 +4539,7 @@ export function ensureTmpRoot(): string {
  * Writes the emitted root configuration and the files a typecheck of it must resolve.
  *
  * The emitted root configuration and the files a typecheck of it has to resolve:
- * the emitted browser resolver a browser selection also writes, the vendored
+ * the emitted browser resolver and commands seed a browser selection also writes, the vendored
  * boundary helpers, copied from this checkout because a generated workspace
  * receives those exact bytes, and the plugin declaration above. Everything else
  * the configuration names is installed here.
@@ -4559,7 +4559,8 @@ export function stageRootConfig(
 			artifact.path !== 'vite.config.ts' &&
 			artifact.path !== 'tsconfig.json' &&
 			artifact.path !== 'configs/app/vite.journey.config.ts' &&
-			artifact.path !== 'configs/browsers.ts'
+			artifact.path !== 'configs/browsers.ts' &&
+			artifact.path !== 'configs/commands.ts'
 		) {
 			continue
 		}
