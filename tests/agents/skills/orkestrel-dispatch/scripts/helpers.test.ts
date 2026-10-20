@@ -1,8 +1,12 @@
 import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
+import { buildSwapLocalSpecs, buildSwapRemoteSpecs } from '../../../../setupServer.js'
 import {
+	collectSpecs,
+	isRecord,
 	listFiles,
+	matchesLocalSpec,
 	normalizeSlashes,
 	parseJsonRecord,
 	readJsonObject,
@@ -12,9 +16,96 @@ import {
 	readOption,
 	readOptions,
 	readString,
+	removeTree,
 	resolveNpm,
 	runNpm,
+	scanLocalSpecs,
+	SPEC_FIELDS,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/helpers.ts'
+
+describe('the manifest specs', () => {
+	it('B4.1 matches the local swap specs and rejects the remote swap specs', () => {
+		for (const [, spec] of buildSwapLocalSpecs()) {
+			expect({ spec, local: matchesLocalSpec(spec) }).toEqual({ spec, local: true })
+		}
+		for (const [, spec] of buildSwapRemoteSpecs()) {
+			expect({ spec, local: matchesLocalSpec(spec) }).toEqual({ spec, local: false })
+		}
+		expect(matchesLocalSpec(' \tfile:../other')).toBe(true)
+		expect(matchesLocalSpec('')).toBe(false)
+		expect(matchesLocalSpec(' \t')).toBe(false)
+	})
+
+	it('collects strings recursively and ignores non-record values', () => {
+		expect(collectSpecs('overrides', { a: { b: 'file:../other' }, c: '^1.0.0' })).toEqual([
+			['overrides.a.b', 'file:../other'],
+			['overrides.c', '^1.0.0'],
+		])
+		expect(collectSpecs('dependencies', 'file:../other')).toEqual([
+			['dependencies', 'file:../other'],
+		])
+		expect(collectSpecs('overrides', { a: null, b: ['file:../other'], c: 1 })).toEqual([])
+		expect(collectSpecs('overrides', undefined)).toEqual([])
+		expect(collectSpecs('overrides', {})).toEqual([])
+	})
+
+	it('B4.2 scans each spec field and names nested override paths', () => {
+		expect(SPEC_FIELDS).toEqual([
+			'dependencies',
+			'devDependencies',
+			'peerDependencies',
+			'optionalDependencies',
+			'overrides',
+		])
+		expect(Object.isFrozen(SPEC_FIELDS)).toBe(true)
+		expect(
+			scanLocalSpecs({
+				name: 'file:../ignored',
+				dependencies: { local: 'file:../dependency', remote: '^1.0.0' },
+				devDependencies: { local: 'link:../development' },
+				peerDependencies: { local: './peer' },
+				optionalDependencies: { local: 'optional.tgz' },
+				overrides: { a: { '.': '^1.0.0', b: 'file:../override' }, remote: 'owner/other.tgz' },
+			}),
+		).toEqual([
+			['dependencies.local', 'file:../dependency'],
+			['devDependencies.local', 'link:../development'],
+			['peerDependencies.local', './peer'],
+			['optionalDependencies.local', 'optional.tgz'],
+			['overrides.a.b', 'file:../override'],
+		])
+		expect(scanLocalSpecs({})).toEqual([])
+		expect(scanLocalSpecs({ dependencies: null, overrides: ['file:../ignored'] })).toEqual([])
+	})
+
+	it('recognizes non-null non-array objects without reading their members', () => {
+		expect(isRecord({})).toBe(true)
+		expect(isRecord(Object.create(null))).toBe(true)
+		expect(isRecord(null)).toBe(false)
+		expect(isRecord(undefined)).toBe(false)
+		expect(isRecord([])).toBe(false)
+		expect(isRecord('record')).toBe(false)
+		expect(isRecord(1)).toBe(false)
+	})
+})
+
+describe('the tree removal', () => {
+	it('removes a nested tree, preserves its sibling, and accepts a missing tree', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-helpers-removal-' })
+		try {
+			scratch.write('owned/deep/file.txt', 'remove')
+			scratch.write('sibling/file.txt', 'keep')
+			const owned = scratch.ensure('owned')
+			removeTree(owned)
+			expect(scratch.has('owned')).toBe(false)
+			expect(scratch.read('sibling/file.txt')).toBe('keep')
+			removeTree(owned)
+			expect(scratch.has('owned')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
 
 describe('the argument readers', () => {
 	it('reads a flag value, a repeated flag, and a list up to the next flag', () => {

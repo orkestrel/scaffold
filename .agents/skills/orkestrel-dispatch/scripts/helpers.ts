@@ -3,7 +3,7 @@
 // `.ts` extension, for example `import { readOption } from '../../orkestrel-dispatch/scripts/helpers.ts'`.
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 /** Names the directories every tree walk in a skill script skips. */
@@ -16,6 +16,24 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 	'.idea',
 ])
 
+/** Names the manifest fields that hold specs, including nested overrides. */
+export const SPEC_FIELDS: readonly string[] = Object.freeze([
+	'dependencies',
+	'devDependencies',
+	'peerDependencies',
+	'optionalDependencies',
+	'overrides',
+])
+
+/** Matches npm local prefixes and path starts, including drive-relative paths. */
+export const LOCAL_SPEC_PATTERN = /^(?:file:|link:|\.|~[\\/]|[\\/]|[A-Za-z]:)/iu
+
+/** Matches archive specs with no protocol and a tgz, tar.gz, or tar extension. */
+export const ARCHIVE_SPEC_PATTERN = /^[^:]+\.(?:tgz|tar\.gz|tar)$/iu
+
+/** Matches hosted user/repository shorthand even when its name ends in an archive extension. */
+export const SHORTHAND_SPEC_PATTERN = /^[^:@%/\s.-][^:@%/\s]*\/[^:@\s/%]+$/u
+
 /** Describes one file a tree walk found, with the modification time the sweep reads. */
 export interface WalkedFile {
 	readonly path: string
@@ -27,6 +45,87 @@ export interface NpmCommand {
 	readonly file: string
 	readonly prefix: readonly string[]
 	readonly shell: boolean
+}
+
+/**
+ * Checks whether a value is a non-null, non-array object.
+ *
+ * @param value - The value to inspect.
+ * @returns True if the value is an object other than null or an array; false otherwise.
+ * @example
+ * isRecord({ dependencies: {} }) // true
+ * isRecord([]) // false
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Checks whether npm resolves a spec from the local host.
+ *
+ * @param spec - The package spec, with leading whitespace ignored.
+ * @returns True if the spec names a local path or archive; false otherwise.
+ * @example
+ * matchesLocalSpec('file:../other') // true
+ * matchesLocalSpec('owner/package.tgz') // false
+ */
+export function matchesLocalSpec(spec: string): boolean {
+	const text = spec.trimStart()
+	return (
+		LOCAL_SPEC_PATTERN.test(text) ||
+		(ARCHIVE_SPEC_PATTERN.test(text) && !SHORTHAND_SPEC_PATTERN.test(text))
+	)
+}
+
+/**
+ * Collects string specs with the dotted path of each nested record member.
+ *
+ * @param path - The field path that prefixes each finding.
+ * @param value - A string or finite, acyclic manifest record; other values contribute no specs.
+ * @returns The path and spec pairs in record order.
+ * @example
+ * collectSpecs('overrides', { a: { b: 'file:../other' } })
+ * // [['overrides.a.b', 'file:../other']]
+ */
+export function collectSpecs(
+	path: string,
+	value: unknown,
+): ReadonlyArray<readonly [string, string]> {
+	if (typeof value === 'string') return [[path, value]]
+	if (!isRecord(value)) return []
+	return Object.entries(value).flatMap(([key, child]) => collectSpecs(`${path}.${key}`, child))
+}
+
+/**
+ * Finds local specs in the manifest's spec fields, including nested overrides.
+ *
+ * @param manifest - A finite, acyclic package manifest record.
+ * @returns Each local spec's dotted field path and spec, in field and record order.
+ * @example
+ * scanLocalSpecs({ overrides: { a: { b: 'file:../other' } } })
+ * // [['overrides.a.b', 'file:../other']]
+ */
+export function scanLocalSpecs(
+	manifest: Readonly<Record<string, unknown>>,
+): ReadonlyArray<readonly [string, string]> {
+	return SPEC_FIELDS.flatMap((field) =>
+		collectSpecs(field, manifest[field]).filter(([, spec]) => matchesLocalSpec(spec)),
+	)
+}
+
+/**
+ * Removes a tree with bounded retries for transient host removal errors.
+ *
+ * @param path - The directory to remove; a missing path succeeds.
+ * @returns Nothing after the removal succeeds.
+ * @throws Thrown when removal fails after the bounded retries or the host refuses the path.
+ * @remarks
+ * Uses Node's recursive removal with five retries and a 100 ms retry delay.
+ * @example
+ * removeTree(scratch.path)
+ */
+export function removeTree(path: string): void {
+	rmSync(path, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 })
 }
 
 /**
