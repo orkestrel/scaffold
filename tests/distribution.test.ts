@@ -866,6 +866,7 @@ describe('installed package consumer', () => {
 				if (
 					artifact.origin === 'template' &&
 					(artifact.path === 'tests/distribution.test.ts' ||
+						artifact.path === 'tests/setupDistribution.ts' ||
 						artifact.path === 'configs/browsers.ts')
 				)
 					workspace.write(artifact.path, artifact.content)

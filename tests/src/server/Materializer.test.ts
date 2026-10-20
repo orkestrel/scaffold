@@ -8,6 +8,8 @@ import {
 	Compiler,
 	contentToHex,
 	createBlueprint,
+	DISTRIBUTION_SETUP_PATH,
+	DISTRIBUTION_TEST_PATH,
 	insertManifestDependencies,
 	isFinding,
 	isScaffoldError,
@@ -951,6 +953,51 @@ describe('Materializer audit', () => {
 })
 
 describe('Materializer repair', () => {
+	it('restores the distribution harness bytes while preserving the authored proof through every write', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const compiler = new Compiler()
+		const materializer = new Materializer({ host: WORKSPACE_ROOT })
+		try {
+			const target = workspace.ensure('target')
+			const plan = requireValue(compiler.compile(createBlueprint('paper', { src: ['core'] })).plan)
+			const harness = requireValue(
+				plan.artifacts.find(({ path }) => path === DISTRIBUTION_SETUP_PATH),
+			)
+			if (harness.origin !== 'template')
+				throw new Error('The distribution harness is not a template')
+			materializer.materialize(plan, target)
+			const original = readFileSync(join(target, DISTRIBUTION_SETUP_PATH))
+			expect(original).toEqual(Buffer.from(harness.content))
+			const authored = Buffer.from('// Authored distribution registrations\nexport {}\n')
+			writeFileSync(join(target, DISTRIBUTION_TEST_PATH), authored)
+			workspace.remove(`target/${DISTRIBUTION_SETUP_PATH}`)
+			const missing = materializer.audit(plan, target)
+			expect(missing.findings.find(({ path }) => path === DISTRIBUTION_SETUP_PATH)?.drift).toBe(
+				'missing',
+			)
+			materializer.repair(plan, missing, target)
+			expect(readFileSync(join(target, DISTRIBUTION_SETUP_PATH))).toEqual(original)
+			expect(readFileSync(join(target, DISTRIBUTION_TEST_PATH))).toEqual(authored)
+			writeFileSync(join(target, DISTRIBUTION_SETUP_PATH), '// Drifted harness\n')
+			const stale = materializer.audit(plan, target)
+			expect(stale.findings.find(({ path }) => path === DISTRIBUTION_SETUP_PATH)?.drift).toBe(
+				'stale',
+			)
+			expect(stale.findings.find(({ path }) => path === DISTRIBUTION_TEST_PATH)?.drift).toBe(
+				'aligned',
+			)
+			materializer.repair(plan, stale, target)
+			expect(readFileSync(join(target, DISTRIBUTION_SETUP_PATH))).toEqual(original)
+			expect(readFileSync(join(target, DISTRIBUTION_TEST_PATH))).toEqual(authored)
+			expect(() => materializer.materialize(plan, target)).toThrow('is not vacant')
+			expect(readFileSync(join(target, DISTRIBUTION_TEST_PATH))).toEqual(authored)
+		} finally {
+			materializer.destroy()
+			compiler.destroy()
+			workspace.destroy()
+		}
+	})
+
 	it('restores a missing file, replaces a stale owned one, and leaves the rest alone', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

@@ -225,6 +225,31 @@ describe('surface policy controls', () => {
 		}
 	})
 
+	it('excludes the distribution harness in an adopter while reporting target-owned collisions', () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			scratch.write('tests/setupDistribution.ts', 'export function readShared() {}\n')
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])
+			scratch.write('tests/setupExtra.ts', 'export function readShared() {}\n')
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([
+				{
+					rule: 'mirror',
+					path: 'tests/setupExtra.ts',
+					message:
+						'exporting setup module requires its sibling proof or an import from tests/setup.test.ts',
+				},
+				{
+					rule: 'surface',
+					path: 'tests/setupExtra.ts',
+					line: 1,
+					message: 'surface name belongs to one package: readShared (other)',
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('refuses a barrel statement outside the relative star-export population', () => {
 		const scratch = createPolicySurfaceFixture()
 		try {

@@ -2118,6 +2118,7 @@ export const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'tests/app/browser/index.test.ts': 64,
 	'tests/app/core/index.test.ts': 64,
 	'tests/app/server/index.test.ts': 64,
+	'tests/setupDistribution.ts': 112,
 	'tests/distribution.test.ts': 112,
 	'tests/integration.test.ts': 63,
 	'tests/setup.ts': 126,
@@ -2196,41 +2197,34 @@ export const PUBLISHED_FACES: ReadonlyArray<readonly [factory: string, environme
 		['srcServer', 'server'],
 	])
 
-/**
- * Names the declarations lifted from the emitted distribution proof to classify an exports map.
- *
- * The declarations the emitted distribution proof classifies an installed exports
- * map with. The proof packs and installs during suite setup;
- * these are lifted out of the real emitted text instead and driven directly. A name
- * the proof stops declaring fails the lift rather than thinning the drive.
- */
+/** Names the emitted harness exports exercised by the classifier cases. */
 export const CLASSIFIER_DECLARATIONS: readonly string[] = [
-	'MODULE_EXTENSIONS',
-	'ADDON_EXTENSION',
-	'DECLARATION_EXTENSIONS',
-	'BROWSER_OUTPUT',
-	'RUNTIME_CONDITIONS',
-	'BUNDLER_CONDITIONS',
-	'DECLARATION_CONDITIONS',
-	'isRecord',
-	'isList',
-	'isPackageTarget',
-	'readJson',
-	'resolvePackageTarget',
-	'resolveTarget',
-	'resolvesBrowser',
-	'matchesFile',
-	'targetToDeclaration',
-	'resolveDeclaration',
-	'readPackageType',
-	'resolvesCommonJS',
-	'declaresCommonJS',
-	'collectTargets',
-	'isModule',
-	'isDeclaration',
-	'readDeclaration',
-	'selectEntries',
-	'selectUntypable',
+	'DISTRIBUTION_MODULE_EXTENSIONS',
+	'DISTRIBUTION_ADDON_EXTENSION',
+	'DISTRIBUTION_DECLARATION_EXTENSIONS',
+	'DISTRIBUTION_BROWSER_OUTPUT',
+	'DISTRIBUTION_RUNTIME_CONDITIONS',
+	'DISTRIBUTION_BUNDLER_CONDITIONS',
+	'DISTRIBUTION_DECLARATION_CONDITIONS',
+	'isDistributionRecord',
+	'isDistributionList',
+	'matchesDistributionPackageTarget',
+	'readDistributionJSON',
+	'resolveDistributionPackageTarget',
+	'resolveDistributionTarget',
+	'resolvesDistributionBrowser',
+	'matchesDistributionFile',
+	'targetToDistributionDeclaration',
+	'resolveDistributionDeclaration',
+	'readDistributionPackageType',
+	'resolvesDistributionCommonJS',
+	'declaresDistributionCommonJS',
+	'collectDistributionTargets',
+	'matchesDistributionModule',
+	'matchesDistributionDeclaration',
+	'readDistributionDeclaration',
+	'filterDistributionEntries',
+	'filterDistributionUntypable',
 ]
 
 /**
@@ -2242,28 +2236,34 @@ export const CLASSIFIER_DECLARATIONS: readonly string[] = [
  * answer `require` alone.
  */
 export const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> = [
-	[`classifier.collectTargets(['./dist/src/core/index.js'])`, ['./dist/src/core/index.js']],
-	[`classifier.collectTargets(['./a.js', { require: './b.cjs' }])`, ['./a.js', './b.cjs']],
 	[
-		`classifier.collectTargets({ import: { types: './x.d.ts', default: './x.js' } })`,
+		`classifier.collectDistributionTargets(['./dist/src/core/index.js'])`,
+		['./dist/src/core/index.js'],
+	],
+	[
+		`classifier.collectDistributionTargets(['./a.js', { require: './b.cjs' }])`,
+		['./a.js', './b.cjs'],
+	],
+	[
+		`classifier.collectDistributionTargets({ import: { types: './x.d.ts', default: './x.js' } })`,
 		['./x.d.ts', './x.js'],
 	],
-	[`classifier.resolveTarget(['./a.js', './b.js'], ['import'])`, './a.js'],
+	[`classifier.resolveDistributionTarget(['./a.js', './b.js'], ['import'])`, './a.js'],
 	[
-		`classifier.resolveTarget([{ types: './x.d.ts', default: './x.js' }], ['types', 'import'])`,
+		`classifier.resolveDistributionTarget([{ types: './x.d.ts', default: './x.js' }], ['types', 'import'])`,
 		'./x.d.ts',
 	],
-	[`classifier.isModule('./dist/src/core/index.js')`, true],
-	[`classifier.isModule('./dist/src/core/index.mjs')`, true],
-	[`classifier.isModule('./dist/src/core/index.cjs')`, true],
-	[`classifier.isModule('./dist/src/core/addon.node')`, true],
-	[`classifier.isModule('./dist/src/core/feature')`, true],
-	[`classifier.isModule('./dist/bundle.js/feature')`, true],
-	[`classifier.isModule('./dist/src/core/module.wasm')`, false],
-	[`classifier.isModule('./dist/src/styles/main.css')`, false],
-	[`classifier.isModule('./package.json')`, false],
-	[`classifier.isModule('./dist/src/core/index.d.ts')`, false],
-	[`classifier.isModule('./dist/src/core/index.d.cts')`, false],
+	[`classifier.matchesDistributionModule('./dist/src/core/index.js')`, true],
+	[`classifier.matchesDistributionModule('./dist/src/core/index.mjs')`, true],
+	[`classifier.matchesDistributionModule('./dist/src/core/index.cjs')`, true],
+	[`classifier.matchesDistributionModule('./dist/src/core/addon.node')`, true],
+	[`classifier.matchesDistributionModule('./dist/src/core/feature')`, true],
+	[`classifier.matchesDistributionModule('./dist/bundle.js/feature')`, true],
+	[`classifier.matchesDistributionModule('./dist/src/core/module.wasm')`, false],
+	[`classifier.matchesDistributionModule('./dist/src/styles/main.css')`, false],
+	[`classifier.matchesDistributionModule('./package.json')`, false],
+	[`classifier.matchesDistributionModule('./dist/src/core/index.d.ts')`, false],
+	[`classifier.matchesDistributionModule('./dist/src/core/index.d.cts')`, false],
 ]
 
 /**
@@ -2282,6 +2282,16 @@ export const PLANNED_SETUP_SEED = ''
  * Holds the global setup seed a target is born with, transcribed from a run that printed it.
  */
 export const PLANNED_GLOBAL_SEED = 'export function setup(): void {}\n'
+
+/** Lists publishing shapes whose distribution harness and proof must be planned together. */
+export const DISTRIBUTION_SELECTIONS: ReadonlyArray<Partial<Omit<Blueprint, 'name'>>> =
+	Object.freeze([
+		{ src: ['core'] },
+		{ src: ['browser'] },
+		{ src: ['server'] },
+		{ src: [], styles: true },
+		{ src: [], themes: true },
+	])
 
 /**
  * Builds a blueprint for every selection the compiler accepts, in both structural states it branches on.
@@ -2417,7 +2427,10 @@ export function buildResolveCall(
  * @returns Each bound name, aliases resolved to the bound name.
  */
 export function extractBindings(clause: string): readonly string[] {
-	const inner = clause.replace(/^type\s+/u, '').trim()
+	const inner = clause
+		.replace(/\/\/[^\r\n]*|\/\*[\s\S]*?\*\//gu, '')
+		.trim()
+		.replace(/^type\s+/u, '')
 	const named = /^\{(?<names>[^}]*)\}$/u.exec(inner)
 	if (named?.groups?.names !== undefined) {
 		return named.groups.names

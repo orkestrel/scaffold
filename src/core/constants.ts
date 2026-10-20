@@ -422,6 +422,9 @@ export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 /** Names the generated packed-package proof every publishing workspace is planned at. */
 export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
 
+/** Names the content-owned harness imported by the generated distribution proof. */
+export const DISTRIBUTION_SETUP_PATH = 'tests/setupDistribution.ts'
+
 /**
  * Names the `prepublishOnly` row that runs the packed-package proof against a real registry.
  *

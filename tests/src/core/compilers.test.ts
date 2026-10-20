@@ -60,6 +60,7 @@ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import {
 	buildBlueprint,
+	DISTRIBUTION_SELECTIONS,
 	buildContentArtifact,
 	buildDependency,
 	buildLazyCase,
@@ -2258,6 +2259,33 @@ describe('blueprintToScripts config projects', () => {
 	// cannot disagree: a workspace registering the project always receives a proof
 	// for it to run, and a workspace registering neither receives no orphan file.
 	it('plans the packed-package proof for a publishing workspace and for no other', () => {
+		for (const selection of DISTRIBUTION_SELECTIONS) {
+			const artifacts = blueprintToTestArtifacts(createBlueprint('proof', selection))
+			expect(artifacts.find(({ path }) => path === 'tests/setupDistribution.ts')).toEqual({
+				path: 'tests/setupDistribution.ts',
+				group: 'tests',
+				ownership: 'content',
+				origin: 'template',
+				content: expect.stringContaining('export function createDistributionSuite'),
+			})
+			expect(artifacts.some(({ path }) => path === 'tests/distribution.test.ts')).toBe(true)
+			const browser = selection.src?.includes('browser') === true
+			expect(
+				artifacts
+					.find(({ path }) => path === 'tests/setupDistribution.ts')
+					?.content.includes("from 'playwright'"),
+			).toBe(browser)
+			expect(
+				artifacts
+					.find(({ path }) => path === 'tests/distribution.test.ts')
+					?.content.includes('checkDistributionBrowser'),
+			).toBe(browser)
+		}
+		expect(
+			blueprintToTestArtifacts(createBlueprint('private-proof', { app: ['core'] })).filter(
+				({ path }) => path.includes('Distribution') || path === 'tests/distribution.test.ts',
+			),
+		).toEqual([])
 		const planned = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
 			({ path }) => path === 'tests/distribution.test.ts',
 		)
@@ -2276,12 +2304,14 @@ describe('blueprintToScripts config projects', () => {
 	// rule keyed on the subpath name drives that bundle through Node instead.
 	it('writes a proof that selects a browser entry by its target rather than its name', () => {
 		const [proof] = blueprintToTestArtifacts(buildBlueprint({ src: ['browser'] })).filter(
-			({ path }) => path === 'tests/distribution.test.ts',
+			({ path }) => path === 'tests/setupDistribution.ts',
 		)
 		const content = proof?.content ?? ''
 
-		expect(content).toContain("const BROWSER_OUTPUT = './dist/src/browser/'")
-		expect(content).toContain('module !== undefined && module.startsWith(BROWSER_OUTPUT)')
+		expect(content).toContain("const DISTRIBUTION_BROWSER_OUTPUT = './dist/src/browser/'")
+		expect(content).toContain(
+			'module !== undefined && module.startsWith(DISTRIBUTION_BROWSER_OUTPUT)',
+		)
 		expect(content).toMatch(/never off the subpath name/u)
 		// The falsifying shape, stated as the whole class rather than as the one
 		// spelling: any comparison of a subpath against a `./` literal is a rule keyed
@@ -2304,17 +2334,17 @@ describe('blueprintToScripts config projects', () => {
 		// installed root because a `.d.ts` declaration's format comes from the nearest
 		// manifest above the declaration itself. `tests/src/core/templates.test.ts` drives
 		// what it answers.
-		expect(content).toContain("module: ['types', 'node', 'import'],")
-		expect(content).toContain("commonjs: ['types', 'node', 'require'],")
-		expect(content).toContain('const declaration = readDeclaration(mapping, installed)')
+		expect(content).toContain("module: Object.freeze(['types', 'node', 'import']),")
+		expect(content).toContain("commonjs: Object.freeze(['types', 'node', 'require']),")
+		expect(content).toContain('const declaration = readDistributionDeclaration(mapping, installed)')
 		// The workspace that publishes no browser face carries neither the launcher
 		// nor its imports, so its own `lint:check` sees no binding it never uses.
 		const [core] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
-			({ path }) => path === 'tests/distribution.test.ts',
+			({ path }) => path === 'tests/setupDistribution.ts',
 		)
 		const plain = core?.content ?? ''
 
-		expect(plain).toContain("const BROWSER_OUTPUT = './dist/src/browser/'")
+		expect(plain).toContain("const DISTRIBUTION_BROWSER_OUTPUT = './dist/src/browser/'")
 		expect(plain).not.toContain('playwright')
 		expect(plain).not.toContain('configs/browsers.js')
 	})
@@ -2329,23 +2359,25 @@ describe('blueprintToScripts config projects', () => {
 	// `tests/src/core/templates.test.ts` drives that reading against real targets.
 	it('writes a proof that partitions every published subpath rather than dropping one', () => {
 		const [proof] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
-			({ path }) => path === 'tests/distribution.test.ts',
+			({ path }) => path === 'tests/setupDistribution.ts',
 		)
 		const content = proof?.content ?? ''
 
-		expect(content).toContain("const MODULE_EXTENSIONS = ['.js', '.mjs', '.cjs']")
-		expect(content).toContain('return dot === -1 || MODULE_EXTENSIONS.includes(name.slice(dot))')
+		expect(content).toContain(
+			"const DISTRIBUTION_MODULE_EXTENSIONS = Object.freeze(['.js', '.mjs', '.cjs'])",
+		)
+		expect(content).toContain(
+			'return dot === -1 || DISTRIBUTION_MODULE_EXTENSIONS.includes(name.slice(dot))',
+		)
 		expect(content).toContain('const subpaths = readings.map(({ subpath }) => subpath)')
 		expect(content).toContain(
-			'.filter(({ entry, files }) => entry === undefined && files.some(isModule))',
+			'.filter(({ entry, files }) => entry === undefined && files.some(matchesDistributionModule))',
 		)
 		expect(content).toContain(
-			'.filter(({ entry, files }) => entry === undefined && !files.some(isModule))',
+			'.filter(({ entry, files }) => entry === undefined && !files.some(matchesDistributionModule))',
 		)
-		expect(content).toContain('expect(stage.undeclared).toStrictEqual([])')
-		expect(content).toContain(
-			'expect(partitioned.sort()).toStrictEqual([...stage.subpaths].sort())',
-		)
+		expect(content).toContain('undeclared: stage.undeclared,')
+		expect(content).toContain('partitioned: [...stage.subpaths].sort()')
 		// The falsifying shape: a declaration test that leaves the loop with no bucket
 		// for the subpath it walked past.
 		expect(content).not.toContain("!declaration.endsWith('.d.ts')) continue")
@@ -2353,8 +2385,8 @@ describe('blueprintToScripts config projects', () => {
 		// list. Node reads an array in an exports entry as one, so a walker refusing it
 		// collects no target, and the subpath is filed as excluded and never measured
 		// while the totality assertion stays green.
-		expect(content).toContain('if (isList(entry)) return entry.flatMap')
-		expect(content).toContain('if (isList(entry)) {')
+		expect(content).toMatch(/if \(isDistributionList\(entry\)\)\s+return entry\.flatMap/u)
+		expect(content).toContain('if (isDistributionList(entry)) {')
 	})
 
 	// Each Node drive filters installed entries by its runtime capability, so entries
@@ -3988,6 +4020,7 @@ describe('emitted setup claims', () => {
 		expect(setups.map(({ path }) => path).sort()).toEqual([
 			'tests/setup.ts',
 			'tests/setupBrowser.ts',
+			'tests/setupDistribution.ts',
 			'tests/setupGlobal.ts',
 			'tests/setupServer.ts',
 			'tests/setupService.ts',
@@ -4093,6 +4126,7 @@ describe('content artifact compilers', () => {
 			'tests/app/core/index.test.ts',
 			'tests/app/browser/index.test.ts',
 			'tests/app/server/index.test.ts',
+			'tests/setupDistribution.ts',
 			'tests/distribution.test.ts',
 			'tests/integration.test.ts',
 		])

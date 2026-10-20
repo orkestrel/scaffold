@@ -7,7 +7,7 @@ import { execute } from '@orkestrel/process/server'
 import { captureError, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
-import { build, loadConfigFromFile } from 'vite'
+import { build, loadConfigFromFile, parseSync } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,
 	blueprintToConfigArtifacts,
@@ -25,6 +25,7 @@ import {
 	buildResolveCall,
 	buildSelections,
 	CLASSIFIER_CASES,
+	CLASSIFIER_DECLARATIONS,
 	countEmitters,
 	findStrays,
 	findUnassigned,
@@ -39,19 +40,16 @@ import {
 	TestHolder,
 } from '../../setup.js'
 import {
-	driveClassifier,
 	GENERATED_INSTANCE_CASES,
 	readStatements,
 	spawnNpm,
 	buildBrowsersRoot,
-	buildDistributionClassification,
-	buildDistributionClassifier,
-	buildDistributionProof,
-	buildDistributionSuite,
 	checkTypes,
 	driveModule,
+	DISTRIBUTION_PROOF_TEXTS,
+	DISTRIBUTION_LIFECYCLE_TEXT,
 	ensureTmpRoot,
-	extractDeclarations,
+	writeDistributionHarness,
 	findRefusals,
 	stageResolver,
 	stageRootConfig,
@@ -883,6 +881,11 @@ describe('emitted workspaces under their own gates', () => {
 		expect(
 			findStrays("import {\n\tused,\n\talso,\n} from 'x'\nexport const value = used + also\n"),
 		).toStrictEqual([])
+		expect(
+			findStrays(
+				"import {\n\t// Retained binding.\n\tused,\n\t/* Unused binding. */ unused,\n} from 'x'\nexport const value = used\n",
+			),
+		).toStrictEqual(['unused'])
 
 		const selections = buildSelections()
 		const strays = selections.flatMap((blueprint) =>
@@ -1477,7 +1480,7 @@ describe('emitted browser resolver', () => {
 			// absence, so each answer above is a resolution rather than a constant.
 			workspace.remove('browsers/chromium-999')
 			const [absent] = driveModule(file, 'resolver', [call])
-			expect(absent).toBeNull()
+			expect(absent).toBeUndefined()
 		} finally {
 			workspace.destroy()
 		}
@@ -1516,6 +1519,130 @@ describe('emitted browser resolver', () => {
 })
 
 describe('emitted distribution classifier', () => {
+	it('drives the emitted suite lifecycle against real scratch directories', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-suite-lifecycle-',
+		})
+		try {
+			writeDistributionHarness(workspace)
+			const file = workspace.write('tests/lifecycle.test.ts', DISTRIBUTION_LIFECYCLE_TEXT)
+			expect(driveModule(file, 'proof', ['Object.keys(proof)'], true)).toEqual([[]])
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('exports every classifier the emitted-module drives require', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-classifier-surface-',
+		})
+		try {
+			const [names] = driveModule(writeDistributionHarness(workspace), 'classifier', [
+				'Object.keys(classifier)',
+			])
+			expect(names).toEqual(expect.arrayContaining([...CLASSIFIER_DECLARATIONS]))
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps proof registration thin and imports only its frozen harness surface', () => {
+		for (const browser of [false, true]) {
+			const artifacts = blueprintToTestArtifacts(
+				createBlueprint('proof', { src: browser ? ['browser'] : ['core'] }),
+			)
+			const proof = requireValue(
+				artifacts.find(({ path }) => path === 'tests/distribution.test.ts'),
+			)
+			const parsed = parseSync('distribution.test.ts', proof.content)
+			expect(parsed.errors).toEqual([])
+			expect(parsed.program.body.map((statement) => statement.type)).toEqual([
+				'ImportDeclaration',
+				'ImportDeclaration',
+				'VariableDeclaration',
+				'ExpressionStatement',
+				'ExpressionStatement',
+				'ExpressionStatement',
+			])
+			const imported = parsed.program.body.flatMap((statement) =>
+				statement.type === 'ImportDeclaration' &&
+				statement.source.value === './setupDistribution.js'
+					? statement.specifiers.map((specifier) => specifier.local.name)
+					: [],
+			)
+			expect(imported).toEqual(
+				browser
+					? ['buildDistributionCases', 'checkDistributionBrowser', 'createDistributionSuite']
+					: ['buildDistributionCases', 'createDistributionSuite'],
+			)
+			expect(proof.content).toContain('it(`${row.label}`, async (context) => {')
+			expect(proof.content).toContain(
+				'expect(observation.actual).toStrictEqual(observation.expected)',
+			)
+		}
+	})
+
+	it('imports only the toolchain declared by each distribution selection', () => {
+		for (const browser of [false, true]) {
+			const artifacts = blueprintToTestArtifacts(
+				createBlueprint('proof', { src: browser ? ['browser'] : ['core'] }),
+			)
+			const module = requireValue(
+				artifacts.find(({ path }) => path === 'tests/setupDistribution.ts'),
+			)
+			const parsed = parseSync('setupDistribution.ts', module.content)
+			expect(parsed.errors).toEqual([])
+			const specifiers = parsed.program.body.flatMap((statement) =>
+				statement.type === 'ImportDeclaration' ? [statement.source.value] : [],
+			)
+			expect(specifiers.filter((specifier) => !specifier.startsWith('node:')).sort()).toEqual(
+				browser
+					? [
+							'../configs/browsers.js',
+							'@vitest/browser-playwright',
+							'playwright',
+							'playwright',
+							'vite',
+							'vitest',
+						].sort()
+					: ['vitest'],
+			)
+			expect(module.content).not.toMatch(/\b(?:describe|it|expect)\s*\(/u)
+		}
+	})
+
+	it.each(Object.entries(DISTRIBUTION_PROOF_TEXTS['0.0.104']))(
+		'typechecks and imports the frozen 0.0.104 %s proof against the current harness',
+		(variant, text) => {
+			const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-frozen-proof-' })
+			try {
+				writeDistributionHarness(workspace, variant === 'browser')
+				const file = workspace.write('tests/distribution.test.ts', text)
+				workspace.write(
+					'tsconfig.json',
+					JSON.stringify({
+						compilerOptions: {
+							module: 'nodenext',
+							target: 'esnext',
+							strict: true,
+							noEmit: true,
+							skipLibCheck: true,
+							types: ['node', 'vite/client'],
+						},
+						files: ['tests/distribution.test.ts'],
+					}),
+				)
+				expect(checkTypes(workspace.path)).toBe('')
+				expect(driveModule(file, 'proof', ['Object.keys(proof)'], true)).toEqual([[]])
+			} finally {
+				workspace.destroy()
+			}
+		},
+		60_000,
+	)
+
 	// Every shape here is legal in an exports map, and each one the classifier fails
 	// to read is a subpath published without measurement: the walkers answer nothing
 	// for it, the proof files it as excluded, and the totality assertion stays green
@@ -1526,31 +1653,32 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-classifier-',
 		})
 		try {
-			const classifier = buildDistributionClassifier()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/x.d.ts', 'export const value: number\n')
 			workspace.write('installed/x.d.cts', 'export const value: number\n')
 			const cases: ReadonlyArray<readonly [call: string, answer: unknown]> = [
 				...CLASSIFIER_CASES,
 				[
-					`classifier.readDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } }, ${JSON.stringify(installed)})`,
+					`classifier.readDistributionDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } }, ${JSON.stringify(installed)})`,
 					{ module: './x.d.ts', commonjs: undefined, browser: './x.d.ts' },
 				],
 				[
-					`classifier.readDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
+					`classifier.readDistributionDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
 					{ module: undefined, commonjs: './x.d.cts', browser: undefined },
 				],
 				[
-					`classifier.readDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } }, ${JSON.stringify(installed)})`,
+					`classifier.readDistributionDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } }, ${JSON.stringify(installed)})`,
 					{ module: './x.d.ts', commonjs: './x.d.cts', browser: './x.d.ts' },
 				],
 				[
-					`classifier.readDeclaration({ import: './missing.js', default: './missing.js' }, ${JSON.stringify(installed)})`,
+					`classifier.readDistributionDeclaration({ import: './missing.js', default: './missing.js' }, ${JSON.stringify(installed)})`,
 					{ module: undefined, commonjs: undefined, browser: undefined },
 				],
 			]
-			const answers = await driveClassifier(
+			const answers = driveModule(
 				classifier,
+				'classifier',
 				cases.map(([call]) => call),
 			)
 
@@ -1560,13 +1688,18 @@ describe('emitted distribution classifier', () => {
 		}
 	}, 20_000)
 
-	it('classifies native addon targets as modules', async () => {
-		const answers = await driveClassifier(buildDistributionClassifier(), [
-			`classifier.isModule('./dist/addon.node')`,
-			`classifier.isModule('./dist/module.wasm')`,
-		])
+	it('classifies native addon targets as modules', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-classifier-' })
+		try {
+			const answers = driveModule(writeDistributionHarness(workspace), 'classifier', [
+				`classifier.matchesDistributionModule('./dist/addon.node')`,
+				`classifier.matchesDistributionModule('./dist/module.wasm')`,
+			])
 
-		expect(answers).toStrictEqual([true, false])
+			expect(answers).toStrictEqual([true, false])
+		} finally {
+			workspace.destroy()
+		}
 	})
 
 	it('resolves each runtime against its consumer declaration', async () => {
@@ -1575,13 +1708,13 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-dual-declaration-',
 		})
 		try {
-			const classifier = buildDistributionClassifier()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/x.d.mts', 'export const value: number\n')
 			workspace.write('installed/x.d.cts', 'export const value: number\n')
-			const answers = await driveClassifier(classifier, [
-				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
-				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: './missing.cjs' }, ${JSON.stringify(installed)})`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.readDistributionDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
+				`classifier.readDistributionDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: './missing.cjs' }, ${JSON.stringify(installed)})`,
 			])
 
 			expect(answers).toStrictEqual([
@@ -1599,7 +1732,7 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-declaration-substitution-',
 		})
 		try {
-			const classifier = buildDistributionClassifier()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/index.d.cts', 'export const value: number\n')
 			workspace.write('installed/index.d.mts', 'export const value: number\n')
@@ -1607,11 +1740,11 @@ describe('emitted distribution classifier', () => {
 			const missingTypes = `{ require: { types: './missing.d.cts', default: './index.cjs' } }`
 			const fallback = `{ require: ['../outside.cjs', './index.cjs'] }`
 			const absent = workspace.ensure('absent')
-			const answers = await driveClassifier(classifier, [
-				`classifier.readDeclaration(${conventional}, ${JSON.stringify(installed)})`,
-				`classifier.readDeclaration(${missingTypes}, ${JSON.stringify(installed)})`,
-				`classifier.readDeclaration(${fallback}, ${JSON.stringify(installed)})`,
-				`classifier.readDeclaration(${conventional}, ${JSON.stringify(absent)})`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.readDistributionDeclaration(${conventional}, ${JSON.stringify(installed)})`,
+				`classifier.readDistributionDeclaration(${missingTypes}, ${JSON.stringify(installed)})`,
+				`classifier.readDistributionDeclaration(${fallback}, ${JSON.stringify(installed)})`,
+				`classifier.readDistributionDeclaration(${conventional}, ${JSON.stringify(absent)})`,
 			])
 
 			expect(answers).toStrictEqual([
@@ -1631,18 +1764,18 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-driver-conditions-',
 		})
 		try {
-			const classifier = buildDistributionClassifier()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/node.d.mts', 'export const value: number\n')
 			workspace.write('installed/node.d.cts', 'export const value: number\n')
 			workspace.write('installed/default.d.ts', 'export const value: number\n')
 			const entry = `{ node: { import: { types: './node.d.mts', default: './node.mjs' }, require: { types: './node.d.cts', default: './node.cjs' } }, browser: './browser.js', default: { types: './default.d.ts', default: './default.js' } }`
-			const answers = await driveClassifier(classifier, [
-				`classifier.readDeclaration(${entry}, ${JSON.stringify(installed)})`,
-				`classifier.resolveTarget(${entry}, classifier.RUNTIME_CONDITIONS.module)`,
-				`classifier.resolveTarget(${entry}, classifier.RUNTIME_CONDITIONS.browser)`,
-				`classifier.resolveTarget(${entry}, classifier.BUNDLER_CONDITIONS.module)`,
-				`classifier.resolveTarget(${entry}, [])`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.readDistributionDeclaration(${entry}, ${JSON.stringify(installed)})`,
+				`classifier.resolveDistributionTarget(${entry}, classifier.DISTRIBUTION_RUNTIME_CONDITIONS.module)`,
+				`classifier.resolveDistributionTarget(${entry}, classifier.DISTRIBUTION_RUNTIME_CONDITIONS.browser)`,
+				`classifier.resolveDistributionTarget(${entry}, classifier.DISTRIBUTION_BUNDLER_CONDITIONS.module)`,
+				`classifier.resolveDistributionTarget(${entry}, [])`,
 			])
 
 			expect(answers).toStrictEqual([
@@ -1664,7 +1797,7 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-declaration-format-',
 		})
 		try {
-			const classifier = buildDistributionClassifier()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/nested/package.json', '{ "type": "commonjs" }\n')
@@ -1691,20 +1824,20 @@ describe('emitted distribution classifier', () => {
 			const nested = `{ types: './nested/feature.d.ts', require: './feature.mjs' }`
 			const malformed = `{ types: './malformed/feature.d.ts', require: './feature.mjs' }`
 			const directory = `{ types: './directory/index.d.ts', require: './feature.mjs' }`
-			const answers = await driveClassifier(classifier, [
-				`classifier.resolvesCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${synchronized}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${conditioned}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${module}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${dual}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${extensionless}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${nested}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${malformed}, ${JSON.stringify(installed)})`,
-				`classifier.resolvesCommonJS(${directory}, ${JSON.stringify(installed)})`,
-				`classifier.declaresCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
-				`classifier.declaresCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
-				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, loadable: true }, { subpath: './module', mapping: ${module}, loadable: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.resolvesDistributionCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${synchronized}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${conditioned}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${module}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${dual}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${extensionless}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${nested}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${malformed}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesDistributionCommonJS(${directory}, ${JSON.stringify(installed)})`,
+				`classifier.declaresDistributionCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
+				`classifier.declaresDistributionCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
+				`classifier.filterDistributionEntries([{ subpath: './dual', mapping: ${dual}, loadable: true }, { subpath: './module', mapping: ${module}, loadable: false }], classifier.DISTRIBUTION_BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
 			expect(answers).toStrictEqual([
@@ -1733,7 +1866,7 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-stage-classification-',
 		})
 		try {
-			const classifier = buildDistributionClassification()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/common.d.cts', 'export const value: number\n')
@@ -1775,8 +1908,8 @@ describe('emitted distribution classifier', () => {
 					'./package.json': './package.json',
 				},
 			}
-			const answers = await driveClassifier(classifier, [
-				`classifier.classifyStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'sample-package')`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.classifyDistributionStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'sample-package')`,
 			])
 
 			expect(answers).toStrictEqual([
@@ -1928,7 +2061,7 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-commonjs-unclaimed-',
 		})
 		try {
-			const classifier = buildDistributionClassification()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "commonjs" }\n')
 			workspace.write('installed/dist/src/browser/index.d.ts', 'export const value: number\n')
@@ -1950,10 +2083,10 @@ describe('emitted distribution classifier', () => {
 					},
 				},
 			}
-			const answers = await driveClassifier(classifier, [
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
-				`classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries.map((entry) => ({ loadable: entry.loadable, requirable: entry.requirable }))`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.filterDistributionUntypable(classifier.classifyDistributionStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+				`classifier.filterDistributionUntypable(classifier.classifyDistributionStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+				`classifier.classifyDistributionStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries.map((entry) => ({ loadable: entry.loadable, requirable: entry.requirable }))`,
 			])
 
 			expect(answers).toStrictEqual([[], [], [{ loadable: false, requirable: false }]])
@@ -1968,7 +2101,7 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-commonjs-untypable-',
 		})
 		try {
-			const classifier = buildDistributionClassification()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/module.d.mts', 'export const value: number\n')
@@ -1983,9 +2116,9 @@ describe('emitted distribution classifier', () => {
 					'.': { require: { types: './common.d.cts', default: './runtime.cjs' } },
 				},
 			}
-			const answers = await driveClassifier(classifier, [
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(incompatible)}, ${JSON.stringify(installed)}, 'incompatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(compatible)}, ${JSON.stringify(installed)}, 'compatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.filterDistributionUntypable(classifier.classifyDistributionStage(${JSON.stringify(incompatible)}, ${JSON.stringify(installed)}, 'incompatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+				`classifier.filterDistributionUntypable(classifier.classifyDistributionStage(${JSON.stringify(compatible)}, ${JSON.stringify(installed)}, 'compatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 			])
 
 			expect(answers).toStrictEqual([['.'], []])
@@ -2000,7 +2133,7 @@ describe('emitted distribution classifier', () => {
 			prefix: 'scaffold-e2-invalid-commonjs-target-',
 		})
 		try {
-			const classifier = buildDistributionClassification()
+			const classifier = writeDistributionHarness(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/index.d.cts', 'export const value: number\n')
@@ -2011,8 +2144,8 @@ describe('emitted distribution classifier', () => {
 					},
 				},
 			}
-			const answers = await driveClassifier(classifier, [
-				`classifier.classifyStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'invalid-target').entries.map((entry) => ({ subpath: entry.subpath, loadable: entry.loadable, requirable: entry.requirable }))`,
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.classifyDistributionStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'invalid-target').entries.map((entry) => ({ subpath: entry.subpath, loadable: entry.loadable, requirable: entry.requirable }))`,
 			])
 			const consumer = workspace.ensure('consumer')
 			workspace.write('consumer/package.json', '{ "private": true }\n')
@@ -2033,101 +2166,30 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('skips invalid package targets only inside fallback arrays', async () => {
-		const answers = await driveClassifier(buildDistributionClassifier(), [
-			`classifier.resolveTarget(['../outside.cjs', './valid.cjs'], ['import'])`,
-			`classifier.collectTargets(['../outside.cjs', './valid.cjs'])`,
-			`classifier.resolveTarget('../outside.cjs', ['import'])`,
-			`classifier.collectTargets('../outside.cjs')`,
-			`classifier.resolveTarget(['./x/../outside.cjs', './valid.cjs'], ['import'])`,
-			`classifier.resolveTarget(['./x//missing.cjs', './valid.cjs'], ['import'])`,
-			`classifier.resolveTarget(['./x%2fmissing.cjs', './valid.cjs'], ['import'])`,
-		])
+	it('skips invalid package targets only inside fallback arrays', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-classifier-' })
+		try {
+			const answers = driveModule(writeDistributionHarness(workspace), 'classifier', [
+				`classifier.resolveDistributionTarget(['../outside.cjs', './valid.cjs'], ['import'])`,
+				`classifier.collectDistributionTargets(['../outside.cjs', './valid.cjs'])`,
+				`classifier.resolveDistributionTarget('../outside.cjs', ['import'])`,
+				`classifier.collectDistributionTargets('../outside.cjs')`,
+				`classifier.resolveDistributionTarget(['./x/../outside.cjs', './valid.cjs'], ['import'])`,
+				`classifier.resolveDistributionTarget(['./x//missing.cjs', './valid.cjs'], ['import'])`,
+				`classifier.resolveDistributionTarget(['./x%2fmissing.cjs', './valid.cjs'], ['import'])`,
+			])
 
-		expect(answers).toStrictEqual([
-			'./valid.cjs',
-			['./valid.cjs'],
-			'../outside.cjs',
-			['../outside.cjs'],
-			'./valid.cjs',
-			'./x//missing.cjs',
-			'./x%2fmissing.cjs',
-		])
-	})
-
-	// The emitted suite binds one run, a scratch directory and the stage built in it, for one file.
-	// The class is lifted whole and driven, with a stand-in `openStage` where packing and
-	// installing would be.
-	it('binds one run, refuses a second start while it is bound, and releases it on destroy', async () => {
-		const [answer] = await driveClassifier(
-			buildDistributionSuite('function openStage(scratch) { return { scratch } }'),
-			[
-				`(() => {
-				const suite = new classifier.DistributionSuite()
-				suite.start()
-				const first = suite.scratch
-				const allocated = classifier.existsSync(first)
-				const staged = suite.stage?.scratch === first
-				const second = (() => { try { suite.start(); return 'started' } catch (error) { return error.message } })()
-				const kept = suite.scratch === first && suite.stage?.scratch === first
-				suite.destroy()
-				const removed = !classifier.existsSync(first)
-				const released = (() => { try { return suite.scratch } catch (error) { return error.message } })()
-				suite.start()
-				const rebound = suite.scratch !== first
-				suite.destroy()
-				return { allocated, staged, second, kept, removed, released, stage: suite.stage, rebound }
-			})()`,
-			],
-		)
-
-		expect(answer).toStrictEqual({
-			allocated: true,
-			staged: true,
-			second: 'The distribution setup has already allocated its scratch directory',
-			kept: true,
-			removed: true,
-			released: 'The distribution setup has not allocated its scratch directory',
-			stage: undefined,
-			rebound: true,
-		})
-	})
-
-	// A start whose stage fails publishes nothing, so a later start is not refused as a second one.
-	it('binds no run when the stage refuses, and starts again afterward', async () => {
-		const [answer] = await driveClassifier(
-			buildDistributionSuite(
-				"function openStage(scratch) { rmSync(scratch, { force: true, recursive: true }); throw new Error('the registry refused') }",
-			),
-			[
-				`(() => {
-				const suite = new classifier.DistributionSuite()
-				const attempt = () => { try { suite.start(); return 'started' } catch (error) { return error.message } }
-				const first = attempt()
-				const unbound = (() => { try { return suite.scratch } catch (error) { return error.message } })()
-				const second = attempt()
-				suite.destroy()
-				return { first, unbound, second }
-			})()`,
-			],
-		)
-
-		expect(answer).toStrictEqual({
-			first: 'the registry refused',
-			unbound: 'The distribution setup has not allocated its scratch directory',
-			second: 'the registry refused',
-		})
-	})
-
-	// The control on the lift itself: a name the proof does not declare stops the
-	// extraction, so a drive above reports on declarations that were really carried
-	// across rather than on a module that quietly lost them.
-	it('refuses to lift a declaration the emitted proof does not carry', () => {
-		const content = buildDistributionProof()
-
-		expect(() => extractDeclarations(content, ['resolveTarget', 'resolveNothing'])).toThrow(
-			'declares no resolveNothing',
-		)
-		expect(extractDeclarations(content, ['isModule'])).toContain('export { isModule }')
+			expect(answers).toStrictEqual([
+				'./valid.cjs',
+				['./valid.cjs'],
+				'../outside.cjs',
+				['../outside.cjs'],
+				'./valid.cjs',
+				'./x//missing.cjs',
+				'./x%2fmissing.cjs',
+			])
+		} finally {
+			workspace.destroy()
+		}
 	})
 })

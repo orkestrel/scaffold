@@ -44,10 +44,7 @@ import {
 	buildCheckoutManifest,
 	buildCLIOptions,
 	buildCompiledPlan,
-	buildDistributionClassification,
-	buildDistributionClassifier,
 	buildDistributionProof,
-	buildDistributionSuite,
 	buildEntryWorkspace,
 	buildEnvironment,
 	buildFleetManifest,
@@ -122,7 +119,7 @@ import {
 	ensureTmpRoot,
 	executeOllamaHook,
 	executeOllamaSetup,
-	extractDeclarations,
+	writeDistributionHarness,
 	FILESYSTEM_PATH_CASES,
 	findRefusals,
 	FLEET_ARTIFACT_COUNT,
@@ -2240,38 +2237,24 @@ describe('the emitted-template staging', () => {
 		}
 	})
 
-	it('lifts the named declarations of a module, in source order, and refuses a name it lacks', () => {
-		const source =
-			"import { x } from 'node:fs'\nconst A = 1\nconst B = 2\nfunction f(): number {\n\treturn A\n}\n"
-		const lifted = extractDeclarations(source, ['f', 'A'])
-		expect(lifted).toContain("import { x } from 'node:fs'")
-		expect(lifted.indexOf('const A = 1')).toBeLessThan(lifted.indexOf('function f()'))
-		expect(lifted).not.toContain('const B')
-		expect(lifted).toContain('export { f, A }')
-		expect(() => extractDeclarations(source, ['A', 'absent'])).toThrow('declares no absent')
-	})
-
-	it('lifts the emitted distribution proof into a classifier module and a classification entry', () => {
-		const proof = buildDistributionProof()
-		expect(proof).toContain('buildStage')
-		const classifier = buildDistributionClassifier()
-		expect(classifier).toContain('function resolveTarget')
-		expect(classifier).toContain('export { ')
-		const classification = buildDistributionClassification()
-		expect(classification).toContain(classifier.slice(0, classifier.indexOf('\n')))
-		expect(classification).toContain('export function classifyStage(')
-		expect(classification).toContain('return { entries, targets, subpaths, undeclared, excluded }')
-	})
-
-	it('lifts the emitted distribution suite beside the stage opener the drive writes', () => {
-		const opener = 'function openStage(scratch) { return { scratch } }'
-		const suite = buildDistributionSuite(opener)
-		expect(suite).toContain("from 'node:fs'")
-		expect(suite).toContain(opener)
-		expect(suite).toContain('class DistributionSuite {')
-		expect(suite.indexOf(opener)).toBeLessThan(suite.indexOf('class DistributionSuite {'))
-		expect(suite).toContain('export { DistributionSuite, existsSync }')
-		expect(suite).not.toContain('function buildStage')
+	it('writes each emitted harness beside its proof with a resolvable toolchain', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const file = writeDistributionHarness(workspace)
+			expect(file).toBe(join(workspace.path, 'tests/setupDistribution.ts'))
+			expect(workspace.read('tests/setupDistribution.ts')).toContain(
+				'export function createDistributionSuite',
+			)
+			expect(workspace.has('node_modules/typescript')).toBe(true)
+			expect(buildDistributionProof()).toContain("from './setupDistribution.js'")
+			writeDistributionHarness(workspace, true)
+			expect(workspace.read('tests/setupDistribution.ts')).toContain(
+				'export async function checkDistributionBrowser',
+			)
+			expect(workspace.has('configs/browsers.ts')).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
 	})
 
 	it('finds a project row whose parameters differ from the signature the sweep demands', () => {

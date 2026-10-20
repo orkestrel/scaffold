@@ -29,7 +29,6 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { createServer } from 'node:http'
-import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
 import {
 	delimiter,
@@ -39,6 +38,7 @@ import {
 	resolve as resolvePath,
 } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { deserialize } from 'node:v8'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
@@ -51,7 +51,7 @@ import {
 	readVariable,
 	resolveExecutable,
 } from '@orkestrel/process/server'
-import { parseSync, transformWithOxc } from 'vite'
+import { parseSync } from 'vite'
 import {
 	BASE_DEV_DEPENDENCIES,
 	blueprintToConfigArtifacts,
@@ -72,6 +72,7 @@ import {
 	Compiler,
 	compareVersions,
 	createBlueprint,
+	DISTRIBUTION_SETUP_PATH,
 	DISTRIBUTION_TEST_PATH,
 	FLOOR_RANGE_PATTERN,
 	HOST_PATHS,
@@ -146,7 +147,6 @@ import {
 	buildPlan,
 	buildQuestion,
 	BROWSER_PLUGIN_DECLARATIONS,
-	CLASSIFIER_DECLARATIONS,
 	DEPENDENCY_TABLES,
 	ENTRY_OBSERVATION_PATH,
 	ENTRY_PASSING_TEST,
@@ -1804,36 +1804,6 @@ export function captureScaffoldCode(call: () => unknown): ScaffoldErrorCode | un
 export function captureScaffoldMessage(call: () => unknown): string | undefined {
 	const error = captureError(call)
 	return isScaffoldError(error) ? error.message : undefined
-}
-
-/**
- * Drives expressions against a transformed source module in a fresh real module graph.
- *
- * @param source - The TypeScript declarations to transform and export.
- * @param calls - The expressions to evaluate against the module's `classifier` binding.
- * @returns The values the drive exported.
- */
-export async function driveClassifier(
-	source: string,
-	calls: readonly string[],
-): Promise<readonly unknown[]> {
-	const workspace = createScratch({ prefix: 'scaffold-classifier-' })
-	try {
-		const transformed = await transformWithOxc(source, 'classifier.ts', { target: 'esnext' })
-		workspace.write('classifier.mjs', transformed.code)
-		workspace.write(
-			'drive.mjs',
-			`import * as classifier from './classifier.mjs'\nexport const answers = [${calls.join(', ')}]\n`,
-		)
-		const load = createRequire(import.meta.url)
-		const driven: unknown = load(join(workspace.path, 'drive.mjs'))
-		if (!isRecord(driven) || !isArray(driven.answers)) {
-			throw new Error('The emitted classifier drive exported no answer list')
-		}
-		return driven.answers
-	} finally {
-		workspace.destroy()
-	}
 }
 
 /**
@@ -4623,40 +4593,71 @@ export function stageResolver(workspace: ScratchInterface): string {
 }
 
 /**
- * Evaluates expressions against a loaded emitted module in a real Node process.
- *
- * One or more expressions evaluated against a loaded emitted module, in a real Node
- * process that strips the module's types and runs it. The caller names the binding
- * its own expressions read. This driver serializes an `undefined` answer as `null`.
- *
- * @param file - The module to load.
- * @param binding - The name the expressions read the module through.
- * @param calls - The expressions to evaluate.
- * @returns Each answer, in call order.
+ * Evaluates expressions against an emitted module in a real Node process or Vitest proof run.
+ * @param file - The emitted module to import.
+ * @param binding - The namespace binding the expressions read.
+ * @param calls - The expressions to evaluate, including awaited expressions.
+ * @param proof - If true, imports through Vitest so proof registration and hooks execute; if false, imports through Node.
+ * @returns Each answer in call order, preserving undefined members.
  */
 export function driveModule(
 	file: string,
 	binding: string,
 	calls: readonly string[],
+	proof = false,
 ): readonly unknown[] {
-	const script = [
-		`const ${binding} = await import(${JSON.stringify(pathToFileURL(file).href)})`,
-		`console.log(JSON.stringify([${calls.join(', ')}]))`,
-	].join('\n')
-	const output = execFileSync(
-		process.execPath,
-		['--experimental-strip-types', '--input-type=module', '--eval', script],
-		{ stdio: 'pipe', encoding: 'utf8' },
-	)
-	const answers: unknown = JSON.parse(output)
-	if (!isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
-	return answers
+	const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-module-drive-' })
+	try {
+		const result = join(workspace.path, 'answers.bin')
+		const script = [
+			"import { writeFileSync } from 'node:fs'",
+			"import { serialize } from 'node:v8'",
+			proof ? "import { afterAll } from 'vitest'" : '',
+			`import * as ${binding} from ${JSON.stringify(pathToFileURL(file).href)}`,
+			proof
+				? `afterAll(() => writeFileSync(${JSON.stringify(result)}, serialize([${calls.join(', ')}])))`
+				: `writeFileSync(${JSON.stringify(result)}, serialize([${calls.join(', ')}]))`,
+		].join('\n')
+		workspace.write('drive.test.ts', script)
+		workspace.write(
+			'vite.config.ts',
+			"export default { test: { include: ['drive.test.ts'], hookTimeout: 30000, testTimeout: 30000 } }\n",
+		)
+		execFileSync(
+			process.execPath,
+			proof
+				? [
+						resolvePath('node_modules/vitest/vitest.mjs'),
+						'run',
+						'--config',
+						join(workspace.path, 'vite.config.ts'),
+						'--root',
+						workspace.path,
+						'--reporter=dot',
+					]
+				: ['--experimental-strip-types', join(workspace.path, 'drive.test.ts')],
+			{
+				stdio: 'pipe',
+				encoding: 'utf8',
+				windowsHide: true,
+				env: proof
+					? buildEnvironment({
+							npm_config_registry: 'http://127.0.0.1:1',
+							npm_config_fetch_retries: '0',
+						})
+					: process.env,
+			},
+		)
+		const answers: unknown = deserialize(readFileSync(result))
+		if (!isArray(answers)) throw new Error('The module driver wrote no answer list')
+		return answers
+	} finally {
+		workspace.destroy()
+	}
 }
 
 /**
- * Builds the emitted distribution proof whose text every lift reads.
- *
- * The emitted distribution proof, whose text every lift below reads.
+ * Builds the emitted distribution proof for a publishing Node workspace.
  *
  * @returns The proof text.
  */
@@ -4668,123 +4669,21 @@ export function buildDistributionProof(): string {
 }
 
 /**
- * Builds the generated distribution proof lifted into one module for a direct classifier drive.
- *
- * The generated distribution proof lifted into one module for a direct classifier
- * drive.
- *
- * @returns The lifted module text.
+ * Writes the current emitted harness where real module imports resolve its toolchain.
+ * @param workspace - The owned scratch workspace.
+ * @param browser - If true, writes the browser variant and its resolver; if false, writes Node alone.
+ * @returns The harness module's absolute path.
  */
-export function buildDistributionClassifier(): string {
-	return extractDeclarations(buildDistributionProof(), CLASSIFIER_DECLARATIONS)
-}
-
-/**
- * Builds the statements that classify one installed exports map, lifted from the emitted proof.
- *
- * The statements that classify one installed exports map, lifted from the emitted
- * `buildStage` body. Packing and installing are outside this drive; the staged
- * manifest and installed root are its real inputs, and every pushed record is the
- * emitted statement's own value.
- *
- * @returns The lifted module text, exporting the classification entry.
- */
-export function buildDistributionClassification(): string {
-	const content = buildDistributionProof()
-	const carried = ['entries', 'targets', 'subpaths', 'undeclared', 'excluded']
-	const stage = readStatements(content, 'proof.ts').find(
-		(statement) =>
-			statement.syntax === 'FunctionDeclaration' &&
-			statement.declarations.some(({ name }) => name === 'buildStage'),
+export function writeDistributionHarness(workspace: ScratchInterface, browser = false): string {
+	const blueprint = createBlueprint('sample', { src: browser ? ['browser'] : ['core'] })
+	const harness = requireValue(
+		blueprintToTestArtifacts(blueprint).find(({ path }) => path === DISTRIBUTION_SETUP_PATH),
 	)
-	if (stage === undefined) throw new Error('The emitted proof declares no buildStage body')
-	// The classification is every binding and walk the body writes after it reads the installed manifest.
-	const read = stage.body.findIndex(({ declarations }) =>
-		declarations.some(({ name }) => name === 'manifest'),
-	)
-	const classification = stage.body
-		.slice(read + 1)
-		.filter(({ syntax }) => syntax === 'VariableDeclaration' || syntax === 'ForOfStatement')
-	const declared = classification.flatMap(({ declarations: bindings }) =>
-		bindings.map(({ name }) => name),
-	)
-	const missing = carried.filter((name) => !declared.includes(name))
-	if (read === -1 || missing.length > 0) {
-		throw new Error('The emitted buildStage carries no complete classification walk')
-	}
-	return `${extractDeclarations(content, CLASSIFIER_DECLARATIONS)}
-export function classifyStage(
-	manifest: Readonly<Record<string, unknown>>,
-	installed: string,
-	name: string,
-): unknown {
-${classification.map(({ text }) => text).join('\n')}
-	return { entries, targets, subpaths, undeclared, excluded }
-}
-`
-}
-
-/**
- * Builds the emitted distribution suite lifted into one module beside a stand-in stage opener.
- *
- * @param opener - The `openStage` function declaration that stands where packing and installing would be.
- * @returns The lifted module text, exporting `DistributionSuite` and the `existsSync` its imports carry.
- *
- * @throws Thrown when the emitted proof declares no class.
- *
- * @remarks
- * The class is lifted whole with the proof's own `node:` imports, so a drive reaches the real
- * filesystem through the emitted lifecycle. The opener is the one declaration the drive writes.
- */
-export function buildDistributionSuite(opener: string): string {
-	const statements = readStatements(buildDistributionProof(), 'proof.ts')
-	const suite = requireValue(statements.find(({ syntax }) => syntax === 'ClassDeclaration'))
-	const imports = statements
-		.filter(
-			({ syntax, specifier }) =>
-				syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
-		)
-		.map(({ text }) => text)
-	return `${imports.join('\n')}\n${opener}\n${suite.text}\nexport { DistributionSuite, existsSync }\n`
-}
-
-/**
- * Extracts the named top-level declarations of a module into one module that exports each.
- *
- * One module carrying the named top-level declarations of another, in source order
- * so a constant still precedes the function reading it, and exporting each name.
- * The parser reads the names and the extents, so a formatter that rewrapped a
- * declaration moves nothing here and a renamed declaration fails loudly. The lifted
- * module also carries the proof's own `node:` imports, because a lifted declaration
- * reaches the real filesystem through them; every other import the proof declares
- * belongs to the suite around those declarations rather than to the declarations
- * themselves.
- *
- * @param content - The module text.
- * @param names - The declarations to lift.
- * @returns The lifted module text.
- */
-export function extractDeclarations(content: string, names: readonly string[]): string {
-	const statements = readStatements(content, 'proof.ts')
-	const imports = statements
-		.filter(
-			({ syntax, specifier }) =>
-				syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
-		)
-		.map(({ text }) => text)
-	// A name declared twice takes the later declaration, as an assignment sequence would.
-	const lifted = new Map(
-		statements.flatMap((statement) =>
-			statement.declarations.flatMap(({ name }): Array<[string, string]> =>
-				names.includes(name) ? [[name, statement.text]] : [],
-			),
-		),
-	)
-	const missing = names.filter((name) => !lifted.has(name))
-	if (missing.length > 0) {
-		throw new Error(`The emitted proof declares no ${missing.join(', ')}`)
-	}
-	return `${imports.join('\n')}\n\n${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
+	workspace.write(DISTRIBUTION_SETUP_PATH, harness.content)
+	if (!workspace.has('package.json')) workspace.write('package.json', '{"type":"module"}\n')
+	if (!workspace.has('node_modules')) workspace.link('node_modules', resolvePath('node_modules'))
+	if (browser) workspace.write('configs/browsers.ts', CONFIG_TEMPLATES.browsers)
+	return join(workspace.path, DISTRIBUTION_SETUP_PATH)
 }
 
 /**
@@ -5941,3 +5840,44 @@ export function buildSkillRun(status: number | null, stdout: string, stderr: str
 	const parsed = line === undefined ? undefined : parseJSON(line)
 	return { status, stdout, stderr, json: isRecord(parsed) ? parsed : undefined }
 }
+
+/** Holds immutable released proof bytes; add a release key without editing an existing fixture. */
+export const DISTRIBUTION_PROOF_TEXTS = Object.freeze({
+	'0.0.104': Object.freeze({
+		node: "import { buildDistributionCases, createDistributionSuite } from './setupDistribution.js'\nimport { afterAll, beforeAll, describe, expect, it } from 'vitest'\n\nconst DISTRIBUTION_SUITE = createDistributionSuite()\n\nbeforeAll(() => DISTRIBUTION_SUITE.start())\n\nafterAll(() => DISTRIBUTION_SUITE.destroy())\n\ndescribe('installed package consumer', () => {\n\tfor (const row of buildDistributionCases(DISTRIBUTION_SUITE)) {\n\t\tit(row.label, async (context) => {\n\t\t\tconst observation = await row.observe(context)\n\t\t\texpect(observation.actual).toStrictEqual(observation.expected)\n\t\t})\n\t}\n\tit('publishes no browser face this proof cannot drive [requires the registry]', (context) => {\n\t\tconst faces = DISTRIBUTION_SUITE.read(context).entries.filter((entry) => entry.browsable)\n\t\texpect(faces.map((entry) => entry.subpath)).toStrictEqual([])\n\t})\n})\n",
+		browser:
+			"import { buildDistributionCases, checkDistributionBrowser, createDistributionSuite } from './setupDistribution.js'\nimport { afterAll, beforeAll, describe, expect, it } from 'vitest'\n\nconst DISTRIBUTION_SUITE = createDistributionSuite()\n\nbeforeAll(() => DISTRIBUTION_SUITE.start())\n\nafterAll(() => DISTRIBUTION_SUITE.destroy())\n\ndescribe('installed package consumer', () => {\n\tfor (const row of buildDistributionCases(DISTRIBUTION_SUITE)) {\n\t\tit(row.label, async (context) => {\n\t\t\tconst observation = await row.observe(context)\n\t\t\texpect(observation.actual).toStrictEqual(observation.expected)\n\t\t})\n\t}\n\tit('publishes what it declares to a real browser [requires a browser]', async (context) => {\n\t\texpect(await checkDistributionBrowser(DISTRIBUTION_SUITE.read(context), context)).toStrictEqual([])\n\t})\n})\n",
+	}),
+})
+
+/** Drives the emitted suite's ownership with a real refusing registry and filesystem. */
+export const DISTRIBUTION_LIFECYCLE_TEXT = `import { existsSync } from 'node:fs'
+import { createDistributionSuite } from './setupDistribution.js'
+import { describe, expect, it } from 'vitest'
+
+describe('distribution suite lifecycle', () => {
+	it('binds a run until destruction, refuses overlap, and permits a later run', () => {
+		const suite = createDistributionSuite()
+		try {
+			expect(() => suite.scratch).toThrow('has not allocated')
+			suite.start()
+			const initial = suite.scratch
+			expect(existsSync(initial)).toBe(true)
+			expect(() => suite.start()).toThrow('already allocated')
+			expect(suite.scratch).toBe(initial)
+			suite.destroy()
+			expect(existsSync(initial)).toBe(false)
+			expect(() => suite.scratch).toThrow('has not allocated')
+			suite.destroy()
+			suite.start()
+			const subsequent = suite.scratch
+			expect(subsequent).not.toBe(initial)
+			expect(existsSync(subsequent)).toBe(true)
+			suite.destroy()
+			expect(existsSync(subsequent)).toBe(false)
+		} finally {
+			suite.destroy()
+		}
+	})
+})
+`

@@ -342,7 +342,9 @@ Policy instruments:
 - `surface` is that rule, and the sweep owns it. It reads the fleet's published guides — a target
   reads `node_modules/@orkestrel/scaffold/dist/host/guides/`, and a scaffold checkout reads its own
   `guides/` — and compares every bare name their `## Surface` tables claim against the target's live
-  barrel exports and its own root `tests/setup*.ts` exports. `.claude/rules/names.md` § Fleet name
+  barrel exports and the exports of the root `tests/setup*.ts` modules the target owns. The
+  comparison leaves out the setup modules scaffold owns in every target: each vendored `HOST_PATHS`
+  member and the `tests/setupDistribution.ts` harness. `.claude/rules/names.md` § Fleet name
   ownership defines the bare name that comparison matches and decides which declaration gives a
   claimed name up.
 - Keep every barrel statement in the form `.claude/rules/architecture.md` § Barrel exports fixes.

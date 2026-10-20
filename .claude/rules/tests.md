@@ -21,8 +21,9 @@ paths:
 - Mirror root setup modules and proofs in both directions. A root `tests/setup<Name>.test.ts`
   resolves to `tests/setup<Name>.ts`. A root `tests/setup<Name>.ts` that declares an export has
   `tests/setup<Name>.test.ts` or is imported by `tests/setup.test.ts`, which can prove several
-  setup modules when their helpers serve several projects. A vendored module is outside this
-  population. The policy sweep (`tests/setupPolicy.ts`) enforces both directions. `tests/studies/**`
+  setup modules when their helpers serve several projects. The setup modules scaffold owns are
+  outside this population: a vendored module and the `tests/setupDistribution.ts` harness. The
+  policy sweep (`tests/setupPolicy.ts`) enforces both directions. `tests/studies/**`
   is outside the mirrored population: a study test names a package-level subject and mirrors no
   module.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
@@ -183,9 +184,12 @@ Test helpers are shared infrastructure, not local test-file clutter.
 
 `@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Before declaring a helper in a `tests/setup*.ts` module, read the installed surface — `guides/test.md` § Surface in the scaffold checkout, or the package's own declaration under `node_modules` — and declare only what no export does. A setup-module export whose name or job matches an installed export is a defect, whichever file declared it first. The following shapes are the contract a workspace codes against, not source to copy.
 
-- For the vendored test set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
-  `tests/config.test.ts`), keep shared helpers within that set instead of importing them from
-  `@orkestrel/test`; follow the vendored-file import law in `.claude/rules/workspace.md`.
+- For the test modules scaffold owns, keep shared helpers within them instead of importing them
+  from `@orkestrel/test`. In the vendored set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
+  `tests/config.test.ts`), follow the vendored-file import law in `.claude/rules/workspace.md`. In
+  the `tests/setupDistribution.ts` harness, import only `node:` modules, `vitest`, and `vite`, and
+  in its browser variant also `playwright`, `@vitest/browser-playwright`, and
+  `../configs/browsers.js`.
 
 - Extract a fixture, recorder, event factory, async wait, renderer, scenario/data builder, protocol fixture, or DOM builder as soon as it could serve another test.
 - Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.
@@ -207,6 +211,24 @@ Place helpers by environment:
 - `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,
   its source tests too. Name it in no project's `setupFiles`; tests import it, as the policy proof
   imports `tests/setupPolicy.ts`.
+- `tests/setupDistribution.ts`: the harness of the `distribution` proof, which scaffold plans in
+  every publishing workspace and owns by content. Name it in no project's `setupFiles`. The emitted
+  `tests/distribution.test.ts` imports `createDistributionSuite` and `buildDistributionCases`, plus
+  `checkDistributionBrowser` in its browser variant, starts and destroys the suite in its hooks, and
+  registers one `it` per case row. Put a package-specific distribution helper in
+  `tests/setupServer.ts`, because `repair` replaces every edit to the harness.
+
+Never rename or remove an export of `tests/setupDistribution.ts` that an emitted proof imports, an
+interface member that proof reads, or the `./setupDistribution.js` specifier it imports from,
+because no verb rewrites a proof a target holds. Add a name or member beside a frozen one instead.
+The proof scaffold 0.0.104 emits freezes `createDistributionSuite`, `buildDistributionCases`, and
+`checkDistributionBrowser`; the `start`, `read`, and `destroy` members of
+`DistributionSuiteInterface`; the `label` and `observe` members of `DistributionCase`; the `actual`
+and `expected` members of `DistributionObservation`; the `entries` member of `DistributionStage`;
+and the `browsable` and `subpath` members of `DistributionEntry`. When a release changes the
+emitted proof, add its variants under that release's key in the `DISTRIBUTION_PROOF_TEXTS` fixture
+of the scaffold checkout's `tests/setupServer.ts`, drive them against the harness, and never edit a
+released key.
 
 ### Recorder
 

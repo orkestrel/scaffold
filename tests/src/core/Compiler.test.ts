@@ -52,6 +52,7 @@ describe('Compiler artifacts', () => {
 			'tests/setupServer.ts',
 			'tests/src/core/index.test.ts',
 			'tests/src/server/index.test.ts',
+			'tests/setupDistribution.ts',
 			'tests/distribution.test.ts',
 			'guides/README.md',
 			'README.md',

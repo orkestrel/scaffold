@@ -5,7 +5,7 @@ import {
 	hasCanonicalSegments,
 	resolveLink,
 } from '@orkestrel/guide'
-import { BASE_DEV_DEPENDENCIES, HOST_PATHS } from '@orkestrel/scaffold'
+import { BASE_DEV_DEPENDENCIES, DISTRIBUTION_SETUP_PATH, HOST_PATHS } from '@orkestrel/scaffold'
 import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import {
@@ -1105,8 +1105,24 @@ export function inspectPolicyMirrors(root: string): readonly PolicyViolation[] {
 }
 
 /**
+ * Checks whether a normalized path belongs to a scaffold-owned setup module.
+ * @param path - The workspace-relative module path.
+ * @returns True if scaffold owns the module; false otherwise.
+ */
+export function matchesScaffoldSetup(path: string): boolean {
+	const normalized = normalizePolicyPath(path)
+	return (
+		normalized === DISTRIBUTION_SETUP_PATH ||
+		HOST_PATHS.some(
+			(vendored) =>
+				normalized === normalizePolicyPath(vendored) ||
+				normalized.startsWith(normalizePolicyPath(vendored) + '/'),
+		)
+	)
+}
+
+/**
  * Inspects root setup modules and their proofs in both directions.
- *
  * @param root - The workspace root to inspect.
  * @returns Missing modules and uncovered exporting setup modules.
  */
@@ -1125,14 +1141,7 @@ export function inspectPolicySetup(root: string): readonly PolicyViolation[] {
 	)
 	return [...paths].sort().flatMap((path) => {
 		const module = path.endsWith('.test.ts') ? path.replace(/\.test\.ts$/u, '.ts') : path
-		if (
-			HOST_PATHS.some(
-				(vendored) =>
-					module === normalizePolicyPath(vendored) ||
-					module.startsWith(normalizePolicyPath(vendored) + '/'),
-			)
-		)
-			return []
+		if (matchesScaffoldSetup(module)) return []
 		if (path.endsWith('.test.ts')) {
 			return paths.has(module)
 				? []
@@ -3155,12 +3164,7 @@ export function inspectPolicySurface(root: string): readonly PolicyViolation[] {
 		.map(normalizePolicyPath)
 		.sort()
 		.flatMap((path) =>
-			path.endsWith('.test.ts') ||
-			HOST_PATHS.some(
-				(vendored) =>
-					path === normalizePolicyPath(vendored) ||
-					path.startsWith(`${normalizePolicyPath(vendored)}/`),
-			)
+			path.endsWith('.test.ts') || matchesScaffoldSetup(path)
 				? []
 				: [collectPolicyDeclarations(root, path, readFileSync(join(root, path), 'utf8'))],
 		)
@@ -3393,6 +3397,13 @@ export const SETUP_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 					'exporting setup module requires its sibling proof or an import from tests/setup.test.ts',
 			},
 		],
+	},
+	{
+		label: 'admits the distribution harness without a sibling proof',
+		membership: 'content-owned distribution setup module outside the mirror population',
+		rule: 'mirror',
+		files: [{ path: 'tests/setupDistribution.ts', content: 'export const DISTRIBUTION = 1\n' }],
+		violations: [],
 	},
 	{
 		label: 'admits an inventory-vendored setup module without proof',

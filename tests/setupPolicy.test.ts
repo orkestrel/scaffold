@@ -49,6 +49,7 @@ import {
 	inspectSkillTemplateTODOs,
 	isPolicyDirectory,
 	matchesSkillToken,
+	matchesScaffoldSetup,
 	normalizePolicyFilename,
 	normalizePolicyPath,
 	parsePolicyJSON,
@@ -338,6 +339,29 @@ describe('configuration infrastructure', () => {
 })
 
 describe('inspectPolicySetup', () => {
+	it('admits scaffold-owned setup paths and reports both laws for target-owned collisions', () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			expect(matchesScaffoldSetup('tests\\setupDistribution.ts')).toBe(true)
+			expect(matchesScaffoldSetup('tests/setupPolicy.ts')).toBe(true)
+			expect(matchesScaffoldSetup('tests/setupExtra.ts')).toBe(false)
+			expect(matchesScaffoldSetup('tests/setupDistribution.ts/extra.ts')).toBe(false)
+			scratch.write('tests/setupDistribution.ts', 'export function readShared() {}\n')
+			expect(inspectPolicySetup(scratch.path)).toEqual([])
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])
+			scratch.write('tests/setupExtra.ts', 'export function readShared() {}\n')
+			expect(inspectPolicySetup(scratch.path).map(({ rule, path }) => ({ rule, path }))).toEqual([
+				{ rule: 'mirror', path: 'tests/setupExtra.ts' },
+			])
+			expect(
+				inspectPolicyWorkspace(scratch.path)
+					.filter(({ rule }) => rule === 'surface')
+					.map(({ rule, path }) => ({ rule, path })),
+			).toEqual([{ rule: 'surface', path: 'tests/setupExtra.ts' }])
+		} finally {
+			scratch.destroy()
+		}
+	})
 	it.each(SETUP_POLICY_CONTROLS)('$label through the setup inspector', (control) => {
 		const scratch = createPolicyScratch({ prefix: 'scaffold-setup-control-' })
 		try {

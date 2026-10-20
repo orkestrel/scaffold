@@ -63,8 +63,13 @@ await new GuideCommand({
 	const { argvToCommand, renderUsage, selectionToExtensions, targetToExtensions, targetToFacts } =
 		await import('../src/bin/helpers.js')
 	const { CLI } = await import('../src/bin/CLI.js')
-	const { buildTargetManifest, createSink, createStagedHost, driveClassifier, readStatements } =
-		await import('./setupServer.js')
+	const {
+		buildTargetManifest,
+		createSink,
+		createStagedHost,
+		driveModule,
+		writeDistributionHarness,
+	} = await import('./setupServer.js')
 	const { collectGuideStatements, POLICY_STUDIES_POPULATION } = await import('./setupPolicy.js')
 
 	describe('guides', () => {
@@ -298,53 +303,32 @@ await new GuideCommand({
 			expect(markdown).toContain(
 				'`node_modules` segment is skipped rather than resolved or collected',
 			)
-			const proof = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).find(
-				({ path }) => path === 'tests/distribution.test.ts',
-			)
-			const content = requireValue(proof?.content)
-			const names = [
-				'isRecord',
-				'isList',
-				'isPackageTarget',
-				'resolvePackageTarget',
-				'resolveTarget',
-				'collectTargets',
-			]
-			// The parser names the declarations and their extents, so the lift carries the
-			// emitted text whatever width the formatter printed it at, and a name the proof
-			// stopped declaring fails the order assertion rather than thinning the drive.
-			const lifted = readStatements(content, 'distribution.test.ts')
-				.filter((statement) => statement.syntax === 'FunctionDeclaration')
-				.flatMap((statement) =>
-					statement.declarations
-						.filter(({ name }) => names.includes(name))
-						.map(({ name }) => ({ name, text: statement.text })),
-				)
-			const declared = lifted.map(({ name }) => name)
-			expect(declared).toStrictEqual(names)
-			const targets = [
-				'../outside.cjs',
-				'./x/./outside.cjs',
-				'./x/../outside.cjs',
-				'./x/node_modules/outside.cjs',
-			]
-			const calls = targets.flatMap((target) => [
-				`classifier.resolveTarget([${JSON.stringify(target)}, './valid.cjs'], ['import'])`,
-				`classifier.collectTargets([${JSON.stringify(target)}, './valid.cjs'])`,
-				`classifier.resolveTarget(${JSON.stringify(target)}, ['import'])`,
-				`classifier.collectTargets(${JSON.stringify(target)})`,
-			])
-			const expected: unknown[] = targets.flatMap((target) => [
-				'./valid.cjs',
-				['./valid.cjs'],
-				target,
-				[target],
-			])
-			const answers = await driveClassifier(
-				`${lifted.map(({ text }) => text).join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
-				calls,
-			)
-			expect(answers).toStrictEqual(expected)
+			const workspace = createScratch({ prefix: 'scaffold-guide-harness-' })
+			try {
+				const file = writeDistributionHarness(workspace)
+				const targets = [
+					'../outside.cjs',
+					'./x/./outside.cjs',
+					'./x/../outside.cjs',
+					'./x/node_modules/outside.cjs',
+				]
+				const calls = targets.flatMap((target) => [
+					`classifier.resolveDistributionTarget([${JSON.stringify(target)}, './valid.cjs'], ['import'])`,
+					`classifier.collectDistributionTargets([${JSON.stringify(target)}, './valid.cjs'])`,
+					`classifier.resolveDistributionTarget(${JSON.stringify(target)}, ['import'])`,
+					`classifier.collectDistributionTargets(${JSON.stringify(target)})`,
+				])
+				const expected: unknown[] = targets.flatMap((target) => [
+					'./valid.cjs',
+					['./valid.cjs'],
+					target,
+					[target],
+				])
+				const answers = driveModule(file, 'classifier', calls)
+				expect(answers).toStrictEqual(expected)
+			} finally {
+				workspace.destroy()
+			}
 		})
 
 		it('documents declaration substitution and each runtime condition set', () => {
@@ -551,6 +535,7 @@ await new GuideCommand({
 				'tests/setupStyles.ts': 'birth',
 				'tests/setupStyles.test.ts': 'birth',
 				'configs/src/vite.themes.config.ts': 'content',
+				'tests/setupDistribution.ts': 'content',
 				'tests/distribution.test.ts': 'presence',
 				...Object.fromEntries(
 					faces.flatMap((face): Array<[string, string]> => [

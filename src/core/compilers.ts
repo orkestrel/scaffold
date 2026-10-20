@@ -42,6 +42,7 @@ import {
 	CATALOG_AGENT_PATH,
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
+	DISTRIBUTION_SETUP_PATH,
 	DISTRIBUTION_TEST_PATH,
 	ENVIRONMENTS,
 	EXTRA_RANGE_PATTERN,
@@ -2053,7 +2054,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * path. `studies` emits nothing: the root configuration names no study harness,
  * so `tests/setupStudy.ts` is the package's own module.
  *
- * The distribution proof is emitted, and the same test separates it from those
+ * The content-owned distribution harness and presence-owned proof are emitted, and the same test separates it from those
  * two: its subject is the packed tarball rather than anything only the package
  * knows, so every assertion derives from the installed tree at run time and
  * nothing has to be named. It follows the published source it packs, and it is
@@ -2286,20 +2287,31 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	const distribution = ARTIFACT_TEMPLATES.tests.distribution
 	const distributions: readonly ContentArtifact[] =
 		blueprint.src.length > 0 || blueprintToSheets(blueprint).length > 0 || blueprint.themes
-			? [blueprint.src.includes('browser')].map((browser): ContentArtifact => ({
-					path: DISTRIBUTION_TEST_PATH,
-					group: 'tests',
-					ownership: 'presence',
-					origin: 'template',
-					content: fillTemplate(distribution.proof, {
-						types: browser ? distribution.types : '',
-						transport: browser ? distribution.transport : '',
-						launcher: browser ? distribution.launcher : '',
-						helpers: browser ? distribution.helpers : '',
-						drive: browser ? distribution.drive : '',
-						guard: browser ? '' : distribution.guard,
-					}),
-				}))
+			? [blueprint.src.includes('browser')].flatMap((browser): readonly ContentArtifact[] => [
+					{
+						path: DISTRIBUTION_SETUP_PATH,
+						group: 'tests',
+						ownership: 'content',
+						origin: 'template',
+						content: fillTemplate(distribution.module, {
+							types: browser ? distribution.types : '',
+							transport: browser ? distribution.transport : '',
+							launcher: browser ? distribution.launcher : '',
+							helpers: browser ? distribution.helpers : '',
+						}),
+					},
+					{
+						path: DISTRIBUTION_TEST_PATH,
+						group: 'tests',
+						ownership: 'presence',
+						origin: 'template',
+						content: fillTemplate(distribution.proof, {
+							import: browser ? distribution.import : '',
+							drive: browser ? distribution.drive : '',
+							guard: browser ? '' : distribution.guard,
+						}),
+					},
+				])
 			: []
 	const integrations: readonly ContentArtifact[] = blueprint.integration
 		? [
