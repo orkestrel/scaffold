@@ -6061,6 +6061,9 @@ export const WAVE_REFUSALS: ReadonlyArray<readonly [string, string]> = Object.fr
 	['nested', 'the target is not the root of its work tree'],
 ])
 
+/** Lists whether a completion-journal collision follows restoration. */
+export const WAVE_JOURNAL_FAILURES: readonly boolean[] = Object.freeze([false, true])
+
 /** Lists the steps the publish wave runs for each package, in order. */
 export const WAVE_STEPS: readonly string[] = Object.freeze([
 	'pin',

@@ -8,7 +8,7 @@
 // `scaffold audit` exiting 0; offline, an exit of 1 whose note names the catalog refusal is
 // accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
 // is staged from that checkout), verify (`scaffold audit --json` prints the releases envelope and
-// every declared range matches the registry; on @orkestrel/scaffold itself an audit exit of 1 is
+// the audit's writable dependency population matches its lookup bounds; on @orkestrel/scaffold itself an audit exit of 1 is
 // read as the expected foreign-path findings of its own canonical sources), install,
 // pins (the self-pin sweep with --prior or the manifest version and every range the visit moved; hits are reported, not
 // fatal), format, record (commit the overwrite paths), gates (format:check, lint:check, check, build, test), and compare (the rebuilt
@@ -29,11 +29,12 @@ import {
 	lstatSync,
 	readFileSync,
 	mkdirSync,
+	realpathSync,
 	renameSync,
 	unlinkSync,
 	writeFileSync,
 } from 'node:fs'
-import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
 	parseJsonRecord,
@@ -132,6 +133,19 @@ interface OverwriteReceipt {
 	readonly offline: boolean
 	readonly written: readonly string[]
 	readonly removed: readonly string[]
+}
+
+interface Journal {
+	readonly path?: string
+	readonly failure?: string
+}
+
+interface Regeneration {
+	readonly exit: number
+	readonly note: string
+	readonly installed?: SpawnSyncReturns<string>
+	readonly listed?: SpawnSyncReturns<string>
+	readonly duration?: number
 }
 
 function readManifest(target: string): Record<string, unknown> | undefined {
@@ -319,18 +333,24 @@ function writeJournal(
 	exit: number | undefined,
 	stdout: string,
 	stderr: string,
-): string | undefined {
-	if (runner.directory === undefined) return undefined
-	mkdirSync(runner.directory, { recursive: true })
+): Journal {
+	if (runner.directory === undefined) return {}
 	const path = join(
 		runner.directory,
 		`${String(runner.steps.length + 1).padStart(2, '0')}-${step}.log`,
 	)
-	writeFileSync(
-		path,
-		`command: ${command}\nexit: ${String(exit)}\nstdout:\n${stdout}\nstderr:\n${stderr}\n`,
-	)
-	return path
+	try {
+		validateWavePath(runner.target, path)
+		mkdirSync(runner.directory, { recursive: true })
+		validateWavePath(runner.target, path)
+		writeFileSync(
+			path,
+			`command: ${command}\nexit: ${String(exit)}\nstdout:\n${stdout}\nstderr:\n${stderr}\n`,
+		)
+		return { path }
+	} catch (error) {
+		return { failure: `journal failed: ${path}: ${String(error)}` }
+	}
 }
 
 function appendResult(
@@ -353,20 +373,25 @@ function appendResult(
 		step,
 		command,
 		durationMs,
-		...verdict,
-		...(journal === undefined ? {} : { journal }),
+		...(journal.path === undefined ? {} : { journal: journal.path }),
+		...(journal.failure === undefined
+			? verdict
+			: {
+					exit: 1,
+					note: [verdict.note, journal.failure].filter((value) => value !== undefined).join('; '),
+				}),
 	})
 }
 
 function appendStep(runner: Runner, step: string, command: string, note: string, exit = 0): void {
-	const journal = runner.dry ? undefined : writeJournal(runner, step, command, exit, note, '')
+	const journal = runner.dry ? {} : writeJournal(runner, step, command, exit, note, '')
 	runner.steps.push({
 		step,
 		command,
-		exit: runner.dry ? undefined : exit,
+		exit: runner.dry ? undefined : journal.failure === undefined ? exit : 1,
 		durationMs: 0,
-		note,
-		...(journal === undefined ? {} : { journal }),
+		note: journal.failure === undefined ? note : `${note}; ${journal.failure}`,
+		...(journal.path === undefined ? {} : { journal: journal.path }),
 	})
 }
 
@@ -516,7 +541,9 @@ function regenerateLock(runner: Runner, step: string, conflict: SpawnSyncReturns
 	const manifest = readFileSync(join(runner.target, 'package.json'))
 	const before = createHash('sha256').update(readFileSync(lock)).digest('hex')
 	try {
+		for (const path of [backup, moved, lock, modules]) validateWavePath(runner.target, path)
 		mkdirSync(runner.directory, { recursive: true })
+		for (const path of [backup, moved, lock, modules]) validateWavePath(runner.target, path)
 		copyFileSync(lock, backup)
 		moveModules(modules, moved)
 	} catch (error) {
@@ -529,81 +556,128 @@ function regenerateLock(runner: Runner, step: string, conflict: SpawnSyncReturns
 		)
 		return
 	}
-	try {
-		unlinkSync(lock)
-		const started = Date.now()
-		const installed = runNpm(['install'], runner.target)
-		const duration = Date.now() - started
-		const listed =
-			installed.status === 0 ? runNpm(['ls', '--all', '--json'], runner.target) : undefined
-		const unchanged = manifest.equals(readFileSync(join(runner.target, 'package.json')))
-		const proved = installed.status === 0 && existsSync(lock) && listed?.status === 0 && unchanged
-		const after = existsSync(lock)
-			? createHash('sha256').update(readFileSync(lock)).digest('hex')
-			: 'absent'
-		if (!proved) {
-			const restored = restoreLock(runner.target, moved, backup)
-			appendStep(
-				runner,
-				step,
-				'regenerate lock and modules',
-				`ERESOLVE; ${restored}; lock SHA-256 ${before} -> ${after}${unchanged ? '' : '; manifest bytes changed'}`,
-				1,
-			)
-		} else {
-			removeTree(moved)
-			const names = [
-				...new Set(
-					[
-						...`${conflict.stdout}\n${conflict.stderr}`.matchAll(
-							/(?:node_modules\/)((?:@[^/\s]+\/)?[^/\s]+)/gu,
-						),
-					].flatMap((match) => (match[1] === undefined ? [] : [match[1]])),
+	const result = regenerateTree(runner.target, manifest, before)
+	const restored = result.exit === 0 ? undefined : restoreLock(runner.target, moved, backup, before)
+	const cleanup = result.exit === 0 ? discardBackup(runner.target, moved, backup) : undefined
+	const names = [
+		...new Set(
+			[
+				...`${conflict.stdout}\n${conflict.stderr}`.matchAll(
+					/(?:node_modules\/)((?:@[^/\s]+\/)?[^/\s]+)/gu,
 				),
-			]
-			const versions = names
-				.map(
-					(name) =>
-						`${name}@${readString(readManifest(join(modules, name)), 'version') ?? 'absent'}`,
-				)
-				.join(', ')
-			appendStep(
-				runner,
-				step,
-				'regenerate lock and modules',
-				`lock SHA-256 ${before} -> ${after}; installed ${versions}`,
-			)
-		}
+			].flatMap((match) => (match[1] === undefined ? [] : [match[1]])),
+		),
+	]
+	const versions =
+		result.exit === 0
+			? names
+					.map(
+						(name) =>
+							`${name}@${readString(readManifest(join(modules, name)), 'version') ?? 'absent'}`,
+					)
+					.join(', ')
+			: undefined
+	appendStep(
+		runner,
+		step,
+		'regenerate lock and modules',
+		[result.note, restored, versions === undefined ? undefined : `installed ${versions}`, cleanup]
+			.filter((value) => value !== undefined)
+			.join('; '),
+		cleanup === undefined ? result.exit : 1,
+	)
+	if (result.installed !== undefined)
 		appendResult(
 			runner,
 			step,
 			'npm install (regenerated)',
+			result.installed,
+			result.duration ?? 0,
+			readVerdict(result.installed),
+		)
+	if (result.listed !== undefined)
+		appendResult(runner, step, 'npm ls --all --json', result.listed, 0, readVerdict(result.listed))
+}
+
+// Journal writes and backup disposal cannot enter the transaction's rollback boundary.
+function regenerateTree(target: string, manifest: Buffer, before: string): Regeneration {
+	const lock = join(target, 'package-lock.json')
+	try {
+		unlinkSync(lock)
+		const started = Date.now()
+		const installed = runNpm(['install'], target)
+		const duration = Date.now() - started
+		const listed = installed.status === 0 ? runNpm(['ls', '--all', '--json'], target) : undefined
+		const unchanged = manifest.equals(readFileSync(join(target, 'package.json')))
+		const proved = installed.status === 0 && existsSync(lock) && listed?.status === 0 && unchanged
+		const after = existsSync(lock)
+			? createHash('sha256').update(readFileSync(lock)).digest('hex')
+			: 'absent'
+		return {
+			exit: proved ? 0 : 1,
+			note: `${proved ? '' : 'ERESOLVE; '}lock SHA-256 ${before} -> ${after}${unchanged ? '' : '; manifest bytes changed'}`,
 			installed,
+			...(listed === undefined ? {} : { listed }),
 			duration,
-			readVerdict(installed),
-		)
-		if (listed !== undefined)
-			appendResult(runner, step, 'npm ls --all --json', listed, 0, readVerdict(listed))
+		}
 	} catch (error) {
-		const restored = restoreLock(runner.target, moved, backup)
-		appendStep(
-			runner,
-			step,
-			'regenerate lock and modules',
-			`ERESOLVE; ${String(error)}; ${restored}`,
-			1,
-		)
+		return { exit: 1, note: `ERESOLVE; ${String(error)}` }
 	}
 }
 
-function restoreLock(target: string, moved: string, backup: string): string {
+function discardBackup(target: string, moved: string, backup: string): string | undefined {
 	try {
+		for (const path of [moved, backup, join(target, 'node_modules')]) validateWavePath(target, path)
+		removeTree(moved)
+		return undefined
+	} catch (error) {
+		return `backup cleanup failed: ${String(error)}; proved installation retained; backups: ${backup}; ${moved}`
+	}
+}
+
+function restoreLock(target: string, moved: string, backup: string, before: string): string {
+	try {
+		for (const path of [
+			moved,
+			backup,
+			join(target, 'node_modules'),
+			join(target, 'package-lock.json'),
+		])
+			validateWavePath(target, path)
+		if (!lstatSync(moved).isDirectory() || !lstatSync(backup).isFile())
+			throw new Error('no recoverable backup')
+		const saved = readFileSync(backup)
+		if (createHash('sha256').update(saved).digest('hex') !== before)
+			throw new Error('backup lock digest changed')
 		removeTree(join(target, 'node_modules'))
 		moveModules(moved, join(target, 'node_modules'))
-		copyFileSync(backup, join(target, 'package-lock.json'))
+		writeFileSync(join(target, 'package-lock.json'), saved)
 		return 'tree and lock restored'
 	} catch (error) {
 		return `rollback failed: ${String(error)}; backups: ${backup}; ${moved}`
+	}
+}
+
+function validateWavePath(target: string, destination: string): void {
+	const root = resolve(target)
+	const path = resolve(destination)
+	const location = relative(root, path)
+	if (location === '..' || location.startsWith(`..${sep}`) || isAbsolute(location))
+		throw new Error(`unsafe wave path: ${path} escapes ${root}`)
+	const physical = realpathSync(root)
+	const segments = location === '' ? [] : location.split(sep)
+	for (const entry of [
+		root,
+		...segments.map((_, index) => join(root, ...segments.slice(0, index + 1))),
+	]) {
+		const status = lstatSync(entry, { throwIfNoEntry: false })
+		if (status === undefined) continue
+		if (status.isSymbolicLink()) throw new Error(`unsafe wave path: ${entry} is a link`)
+		if (entry !== path && !status.isDirectory())
+			throw new Error(`unsafe wave path: ${entry} is not a directory`)
+		const actual = relative(physical, realpathSync(entry))
+		if (actual === '..' || actual.startsWith(`..${sep}`) || isAbsolute(actual))
+			throw new Error(`unsafe wave path: ${entry} resolves outside ${physical}`)
 	}
 }
 
@@ -883,11 +957,17 @@ function runOverwrite(
 			receipt.removed.every((path) => typeof path === 'string')
 		) {
 			const path = join(runner.target, 'tmp', 'units', 'wave', 'overwrite.json')
-			mkdirSync(dirname(path), { recursive: true })
-			writeFileSync(
-				path,
-				`${JSON.stringify({ head: head.stdout.trim(), version, offline: runner.offline, written: receipt.written, removed: receipt.removed })}\n`,
-			)
+			try {
+				validateWavePath(runner.target, path)
+				mkdirSync(dirname(path), { recursive: true })
+				validateWavePath(runner.target, path)
+				writeFileSync(
+					path,
+					`${JSON.stringify({ head: head.stdout.trim(), version, offline: runner.offline, written: receipt.written, removed: receipt.removed })}\n`,
+				)
+			} catch (error) {
+				appendStep(runner, 'overwrite', 'write overwrite receipt', String(error), 1)
+			}
 		}
 	}
 	if (!failed(runner)) {
@@ -1026,9 +1106,16 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 				: readJournalDirectory(resolve(target)),
 		steps: [],
 	}
+	if (runner.directory !== undefined) {
+		try {
+			validateWavePath(runner.target, runner.directory)
+		} catch (error) {
+			appendStep(runner, 'journal', 'validate wave destination', String(error), 1)
+		}
+	}
 	const before = readRanges(manifest, RANGE_FIELDS)
 	const offline = runner.offline ? ['--offline'] : []
-	if (selected.has('pin')) runPin(runner, scaffoldFile, scaffoldPrefix, offline)
+	if (selected.has('pin') && !failed(runner)) runPin(runner, scaffoldFile, scaffoldPrefix, offline)
 	if (selected.has('commit') && !failed(runner)) runCommit(runner)
 	if (selected.has('overwrite') && !failed(runner)) {
 		if (name === SCAFFOLD) {

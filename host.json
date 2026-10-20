@@ -388,7 +388,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "fdd6785280330b95fa70de9eee9878e1b07d15106c79c727a8378129ed58426a"
+			"digest": "adef61fda63e8bc59c62ed1c751319520c66352fd23d71963baf9278f68d2c3a"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -418,7 +418,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/wave.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/wave.ts",
 			"executable": false,
-			"digest": "b07020f52c0126bb42c48c3876189d76c7e45132c1cfaf8efbb23efa61fa6393"
+			"digest": "c74fa4425e4368367451222ea4bc70f14d40a2260a1e1b8b2dc1096bf49eb482"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/window.ts",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "91e70bfe45b56f779efb030d9f1a40450c78d119bbed3b12b75d8f60e5c0b63d"
+	"digest": "61c2c52263dce4c40157d360247191df7c4ab4336cf662520b1bb03562589e2d"
 }
