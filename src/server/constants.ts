@@ -3,8 +3,8 @@
  *
  * @remarks
  * The one segment allowed to carry a colon. Every other segment is measured by
- * {@link INVALID_SEGMENT_CHARACTER_PATTERN}, which refuses one, so a stream name
- * such as `file.txt:stream` cannot be smuggled through a later segment.
+ * {@link INVALID_SEGMENT_CHARACTER_PATTERN}, which refuses one, so a later
+ * segment cannot carry a stream name such as `file.txt:stream`.
  */
 export const DRIVE_PATTERN = /^[A-Za-z]:$/
 
@@ -77,7 +77,7 @@ export const MAX_PATH_DEPTH = 64
  * Far above the core collection ceiling, and deliberately so. A tracked or dirty
  * path list is the target repository's own fact rather than an argument a caller
  * authored, so measuring it against the ceiling that bounds a public collection
- * would read a legitimately large checkout as hostile and refuse the deletion
+ * would read a legitimately large checkout as off contract and refuse the deletion
  * verb on it.
  */
 export const MAX_INVENTORY_PATHS = 100_000

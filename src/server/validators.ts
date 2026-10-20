@@ -161,7 +161,7 @@ export const isDigest: Guard<string> = stringOf({ pattern: DIGEST_PATTERN })
  * @remarks
  * Compose this ahead of an element guard exactly as the core collection guard is
  * composed, and for the same reason: the item count is settled before anything
- * walks the items, and a hostile `length` accessor answers `false` rather than
+ * walks the items, and a throwing `length` accessor answers `false` rather than
  * escaping as a throw. It exists beside that guard rather than reusing it
  * because they bound different things — one bounds what a caller may hand a
  * public method, this one bounds what a checkout may contain.

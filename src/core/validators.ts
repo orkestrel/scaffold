@@ -139,7 +139,7 @@ export const isContent: Guard<string> = stringOf({ max: MAX_ARTIFACT_BYTES })
  *
  * @remarks
  * Compose this ahead of an element guard so the item count is settled before
- * anything walks the items. A hostile `length` accessor answers `false` here
+ * anything walks the items. A throwing `length` accessor answers `false` here
  * rather than escaping as a thrown error.
  *
  * @example
@@ -630,7 +630,7 @@ export const isCatalogEntry: Guard<CatalogEntry> = unionOf(
  * whose every value is exact lowercase hexadecimal bytes; false otherwise.
  *
  * @remarks
- * Read through the shared total key lens, so a hostile `ownKeys` trap and a
+ * Read through the shared total key lens, so an `ownKeys` trap that throws and a
  * throwing accessor both answer `false` rather than escaping. There is no
  * dictionary combinator upstream to compose this from: the key law and the
  * value law are both this package's own.

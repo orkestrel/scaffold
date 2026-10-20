@@ -172,7 +172,7 @@ export interface PolicyProject {
 	readonly setup: readonly string[]
 }
 
-/** Describes one physical negative control, including the population boundary it attacks. */
+/** Describes one physical negative control, including the population boundary it tests. */
 export interface PolicyControl {
 	readonly label: string
 	readonly membership: string
@@ -4283,7 +4283,7 @@ export const PROSE_POLICY_MANIFEST = '{\n\t"name": "@orkestrel/sample"\n}\n'
  * Lists the physical controls for every prose-population boundary the workspace route reaches.
  *
  * @remarks
- * Each control that attacks an exclusion also writes the arrival file, whose different term proves
+ * Each control that tests an exclusion also writes the arrival file, whose different term proves
  * the sweep ran over the control workspace rather than reporting nothing because it found nothing.
  */
 export const PROSE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([

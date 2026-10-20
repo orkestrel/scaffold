@@ -80,7 +80,7 @@ import { MANIFEST_NAME, MAX_INVENTORY_PATHS, MAX_PATH_DEPTH } from './constants.
  * The one place absence is told apart from failure. Every read here answers
  * `undefined` or an empty result for a path that is not there and reports a path
  * that is there but unreadable, so they must never be read from the same
- * caught value by eye. Total for any caught value, including a hostile one.
+ * caught value by eye. Total for any caught value, including one whose reads throw.
  *
  * @example
  * ```ts
@@ -573,7 +573,7 @@ export function computeFileDigest(path: string): string | undefined {
  * prefix moves the destination somewhere the text never named. So the deepest
  * existing ancestor is resolved and the remaining segments are re-joined onto
  * it. {@link climbRealPath} performs the climb and bounds it by the path-depth
- * ceiling, so an adversarial path cannot make it walk indefinitely.
+ * ceiling, so no path can make it walk indefinitely.
  *
  * The caller's own text is collapsed first, which is what `resolve` does with a
  * `..` the caller wrote: it cancels the segment before it as text, before any
@@ -625,9 +625,9 @@ export function resolveRealPath(path: string): string | undefined {
  * Each step reads one path and moves the climb to one other: a dangling link redirects it to the
  * link's target with the same suffix, and an absent name moves it to the parent with that name added
  * to the suffix. One successor per step makes the climb a bounded recursion rather than a worklist,
- * and the depth argument is its bound, so an adversarial path or a link cycle answers `undefined`
- * after `MAX_PATH_DEPTH` steps instead of walking indefinitely. {@link resolveRealPath} starts the
- * climb at depth 0 with nothing pending.
+ * and the depth argument is its bound, so a path or a link cycle whose climb runs past that bound
+ * answers `undefined` after `MAX_PATH_DEPTH` steps instead of walking indefinitely.
+ * {@link resolveRealPath} starts the climb at depth 0 with nothing pending.
  *
  * @example
  * ```ts
@@ -687,7 +687,7 @@ export function climbRealPath(
  * concurrent rename or link swap during the call or before the caller finishes
  * using the returned path. This helper returns a string, not a filesystem
  * handle, so it cannot bind its containment check to a later operation. A caller
- * that admits hostile concurrent namespace mutation needs a handle-bound
+ * that admits untrusted concurrent namespace mutation needs a handle-bound
  * operation instead.
  *
  * @example
@@ -1026,7 +1026,7 @@ export function listCanonPaths(target: string, groups: readonly Group[]): readon
  * Candidates are taken deepest first, which is what lets a whole chain go: the
  * directory holding nothing but the emptied directory is empty in turn by the
  * time it is read. Each one is resolved through the containment law and left
- * standing when it escapes the target, is not a physical directory, still holds
+ * standing when it resolves outside the target, is not a physical directory, still holds
  * an entry, or refuses removal, and a directory left standing is absent from the
  * answer.
  *

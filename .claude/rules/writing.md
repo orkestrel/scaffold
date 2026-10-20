@@ -61,32 +61,40 @@
 
 ## Substitutions
 
-Replace each term with its replacement. A code identifier and a string inside a fence or a fixture are data and exempt.
+Replace each term with its replacement. A code identifier, an API name, and a string inside a fence or a fixture are data and exempt.
 
-| Term                               | Replacement                                  |
-| ---------------------------------- | -------------------------------------------- |
-| `should`                           | `must`, `can`, `might`, or the imperative    |
-| `simply`, `easy`, `just`           | Delete                                       |
-| `currently`, `now`                 | Delete, or give the date                     |
-| `new`, `latest`                    | Delete, or give the version                  |
-| `utilize`, `leverage`              | `use`                                        |
-| `via`                              | `through`, `by using`                        |
-| `in order to`                      | `to`                                         |
-| `e.g.`, `i.e.`                     | `for example`, `that is`                     |
-| `etc.`                             | Bound the list, or recast the sentence       |
-| `performant`, `robust`             | The measured property                        |
-| `allows you to`                    | `lets you`                                   |
-| `and/or`                           | `and`, `or`, or `both`                       |
-| `since` (causal)                   | `because`                                    |
-| `once` (temporal)                  | `after`                                      |
-| `above`, `below` (cross-reference) | `preceding`, `following`, `earlier`, `later` |
-| `please`                           | Delete                                       |
-| `sanity check`                     | `quick check`                                |
-| `dummy`                            | `placeholder`                                |
-| `blacklist`, `whitelist`           | `denylist`, `allowlist`                      |
-| `master`, `slave`                  | `primary`, `replica`                         |
+| Term                                    | Replacement                                                     |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `should`                                | `must`, `can`, `might`, or the imperative                       |
+| `simply`, `easy`, `just`                | Delete                                                          |
+| `currently`, `now`                      | Delete, or give the date                                        |
+| `new`, `latest`                         | Delete, or give the version                                     |
+| `utilize`, `leverage`                   | `use`                                                           |
+| `via`                                   | `through`, `by using`                                           |
+| `in order to`                           | `to`                                                            |
+| `e.g.`, `i.e.`                          | `for example`, `that is`                                        |
+| `etc.`                                  | Bound the list, or recast the sentence                          |
+| `performant`, `robust`                  | The measured property                                           |
+| `allows you to`                         | `lets you`                                                      |
+| `and/or`                                | `and`, `or`, or `both`                                          |
+| `since` (causal)                        | `because`                                                       |
+| `once` (temporal)                       | `after`                                                         |
+| `above`, `below` (cross-reference)      | `preceding`, `following`, `earlier`, `later`                    |
+| `please`                                | Delete                                                          |
+| `sanity check`                          | `quick check`                                                   |
+| `dummy`                                 | `placeholder`                                                   |
+| `blacklist`, `whitelist`                | `denylist`, `allowlist`                                         |
+| `master`, `slave`                       | `primary`, `replica`                                            |
+| `hostile`, `adversarial` (input, value) | `malformed`, `unexpected`, or `untrusted`                       |
+| `adversarial` (review, round, audit)    | `independent` or `skeptical`                                    |
+| `attack`, `break` (a claim)             | `test` or `falsify`                                             |
+| `forge`                                 | `fabricate`, `fake`, or `does not match`                        |
+| `bypass`                                | `skip`, or recast as reaching one thing without passing another |
+| `poison`                                | `corrupt`, `invalidate`, or `stale`                             |
+| `escape` (a root, a sandbox)            | `read outside` or `resolve outside`                             |
+| `exploit`, `payload` (attack sense)     | Name the defect, or `input`                                     |
 
-- `policy/no-banned-term` reads comments and the prose sweep in `tests/setupPolicy.ts` reads authored Markdown; each matches the rows banned unconditionally. Rule a hit in `now`, `new`, `latest`, `once`, `since`, `above`, `below`, or `master` yourself by the banned sense.
+- `policy/no-banned-term` reads comments and the prose sweep in `tests/setupPolicy.ts` reads authored Markdown; each matches the rows banned unconditionally. Rule a hit in `now`, `new`, `latest`, `once`, `since`, `above`, `below`, `master`, `hostile`, `adversarial`, `attack`, `break`, `forge`, `bypass`, `poison`, `escape`, `exploit`, or `payload` yourself by the banned sense.
 - Sweep case-insensitively and across inflections. Name the pattern and the paths behind every sweep result.
 - Write singular `they` for a person of unstated gender.
 - `.claude/rules/names.md` § Fixed lifecycle vocabulary owns `execute`, `abort`, `kill`, `terminate`, and `run`.

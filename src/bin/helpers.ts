@@ -776,9 +776,9 @@ export function writeDiagnostic(line: string): void {
  * break folded to a space.
  *
  * @remarks
- * The single write path's cleaner, and the only place hostile bytes are answered
+ * The single write path's cleaner, and the only place untrusted bytes are answered
  * for. A refusal quotes the argument that caused it, so an escape sequence, a
- * bell, or a forged second line arrives here inside otherwise ordinary prose.
+ * bell, or a fabricated second line arrives here inside otherwise ordinary prose.
  * ANSI escapes go first because they are what repaints a terminal, control
  * characters next, and what remains is folded onto one line because a handler
  * takes one line and a caller writing a record per call must get one record.

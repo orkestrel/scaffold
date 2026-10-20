@@ -2126,7 +2126,7 @@ against the digest in `host.json`, then verifies the inventory against its membe
 Transport encoding is transparent and does not enter the comparison. The path never character-
 decodes and re-encodes the content.
 
-This posture supplies integrity, not authenticity. An attacker who can serve the files can also
+This posture supplies integrity, not authenticity. Anyone who can serve the files can also
 serve a matching inventory. The residual is direct: fetched bytes govern agent behavior in a target
 that has no release gate. Run `audit` to preview the change, use the `--offline` option to pin the
 distributed floors, and keep operator grants in `.claude/settings.local.json`; scaffold does not
@@ -2330,13 +2330,13 @@ When a `Materializer` uses a value `Host`, each mutating call stages the host un
 `#fill` root in the operating system's temporary directory and removes that root in a `finally`
 block. A process killed during the mutation can leave the temporary root behind.
 
-`resolveContainedPath` refuses a lexical escape, a physical link out of the root, and a dangling
-link whose raw target contains a `..` segment. It returns the lexical join of `root` and `path` — an
-absolute path under `root` — after checking the namespace, not an open filesystem handle. Its
-shipped example tests that answer's suffix rather than printing the whole path. Its contract
-therefore excludes a concurrent rename or link swap during the check or before the caller finishes
-using that path. A caller that admits hostile concurrent namespace mutation needs a handle-bound
-operation instead.
+`resolveContainedPath` refuses a path whose text resolves outside the root, a physical link out of
+the root, and a dangling link whose raw target contains a `..` segment. It returns the lexical join
+of `root` and `path` — an absolute path under `root` — after checking the namespace, not an open
+filesystem handle. Its shipped example tests that answer's suffix rather than printing the whole
+path. Its contract therefore excludes a concurrent rename or link swap during the check or before
+the caller finishes using that path. A caller that admits untrusted concurrent namespace mutation
+needs a handle-bound operation instead.
 
 `resolveRealPath` answers the caller's own text collapsed lexically, then resolved through every link
 in what survives that collapse. A `..` the caller wrote cancels the segment before it as text, so
@@ -2716,11 +2716,11 @@ The generated guide index lists each occupied Vue face with its source, tests, a
 - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the pure leaves, their
   determinism, and their input independence.
 - [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — every guard against
-  the adversarial matrix.
+  the matrix of unexpected values.
 - [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — parse and guard soundness
   in both directions.
 - [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — ownership of a snapshot
-  taken from a hostile value.
+  taken from an unexpected value.
 - [`tests/src/core/templates.test.ts`](../tests/src/core/templates.test.ts) — the frozen template
   definitions and generated configurations under live Vitest. The isolated `templates` project runs
   through `test:templates` in `prepublishOnly`; its compiler and Chromium processes run apart from

@@ -479,8 +479,8 @@ export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
  * @remarks
  * A dependency name reaches a path, because a workspace's guide mirror is
  * derived from it. Fixing the scope and forbidding everything but the bare name
- * after it is what stops a hand-built name from escaping the directory the
- * mirror belongs in.
+ * after it is what stops a hand-built name from resolving outside the directory
+ * the mirror belongs in.
  */
 export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
 

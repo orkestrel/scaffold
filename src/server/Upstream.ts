@@ -94,7 +94,7 @@ import { ReadAllowance } from './ReadAllowance.js'
  * baseline instead of a mixture it would have to reconcile.
  *
  * Requests are unauthenticated because every fleet repository is public, and
- * they follow no redirect, so a misconfigured or hostile endpoint cannot move a
+ * they follow no redirect, so a misconfigured or untrusted endpoint cannot move a
  * read to another host. Each one is bounded by its endpoint's timeout and by the
  * reader's own abort signal, so {@link Upstream.destroy} cancels what is in
  * flight instead of waiting for it.
@@ -690,8 +690,8 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// The latest version the registry states, or nothing. The version is bounded
-	// and control-free before it is admitted, so an upstream answer cannot smuggle
-	// text into a verdict a caller prints.
+	// and control-free before it is admitted, so an upstream answer cannot carry
+	// control characters or unbounded text into a verdict a caller prints.
 	#latest(content: string): string | undefined {
 		const parsed = parseJSON(content)
 		if (!isRecord(parsed)) return undefined
