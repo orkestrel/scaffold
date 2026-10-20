@@ -502,7 +502,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "545373b87070cd9217cc40143ec50fdc82e493dd5dea3eafe083b8ca55ffac50"
+			"digest": "1707a6ec45f3a8cba1fc0382134935e225ddf35f0f96cf8d5d31320446345afb"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -856,7 +856,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "f43f24eafb1583396abb5ee9d2b056923e02cc53e29f18064d6f5bf9017c014e"
+			"digest": "daf0d233d6fae909afdc99b2c6b1594cbacd4ab1523bbecc6712444f379b194b"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -874,7 +874,7 @@
 			"storage": "guides/budget.md",
 			"destination": "guides/budget.md",
 			"executable": false,
-			"digest": "e9aa1ced2409c74a8db59bd941372b43599a9e609d2a8c12b46c60880c6fb566"
+			"digest": "d9bb1ac17b8eea3d84312f433e4695a4e73b14a82347a2c6af732f7844b96038"
 		},
 		{
 			"storage": "guides/codec.md",
@@ -916,7 +916,7 @@
 			"storage": "guides/form.md",
 			"destination": "guides/form.md",
 			"executable": false,
-			"digest": "effe6b240bee575b2bcbe9dccb551f8dae6996a1d6f791d8e7615d58aed892ea"
+			"digest": "d7326a7ae3d3db56e4af24170dd045712311dac84bde80142750b1a1aafd80fc"
 		},
 		{
 			"storage": "guides/guide.md",
@@ -958,7 +958,7 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "e66a9a0c81f3734a56db229f111f9c4ee26bfa99fa12b3dd8a8aea04016a26ac"
+			"digest": "ea75c0a7f43e99787f808abf6e99093624b636f35cd8181923c578f0f6a349a5"
 		},
 		{
 			"storage": "guides/middleware.md",
@@ -982,7 +982,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "53134e4f0a914c7bfc7fd0490dda362dbfb3327e917b5b6c1ddc89c3911a9323"
+			"digest": "842ac9497fae2fff001d2d4cdd68997545f7e6614030e49865778c28df304001"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -994,7 +994,7 @@
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "11ddbf59ab6dd29e24f25ad1076dd6976b6e3bcdda1d95cb5186871b082ce560"
+			"digest": "6a1d3aca89e008bbb821411efa91dcf2cb085db7a6beee3a5ba73c98be4ab1a9"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1075,6 +1075,12 @@
 			"digest": "88c5fa0b3dadde1370f5e74f087f472cbedbdf18e695d4a82e37a4abc8e24579"
 		},
 		{
+			"storage": "guides/study.md",
+			"destination": "guides/study.md",
+			"executable": false,
+			"digest": "e86dedce995879c104bb1f9ec7afa034a56348ef106c24050ebfbdfe04ae9946"
+		},
+		{
 			"storage": "guides/supervisor.md",
 			"destination": "guides/supervisor.md",
 			"executable": false,
@@ -1084,7 +1090,7 @@
 			"storage": "guides/table.md",
 			"destination": "guides/table.md",
 			"executable": false,
-			"digest": "1cd64986661674ad9d93e080bbe4117f07ca2c1a84361ddb2ecd8873911f3f83"
+			"digest": "1afc1604d7ffe437828ddb5ead106e38ae0d86dcd8d556b101faf8e06477145c"
 		},
 		{
 			"storage": "guides/template.md",
@@ -1096,7 +1102,7 @@
 			"storage": "guides/terminal.md",
 			"destination": "guides/terminal.md",
 			"executable": false,
-			"digest": "1b1f8f30887c30afb01fd7571ca9485911b595fb4fe9a667492f65edb76b516b"
+			"digest": "3b66a33475881741a199b3d13050457c10bc4cc08312643d890c822211ae8ee6"
 		},
 		{
 			"storage": "guides/test.md",
@@ -2126,5 +2132,5 @@
 			]
 		}
 	],
-	"digest": "d697e26a5ba1695b4eb6b27f1f11d3369cf2fff2ec1304bcb3fcf1f69497aac3"
+	"digest": "20c262931139ddb9c8dfe220ba679a83176db0b3ff29921205bb60b4eebcc1df"
 }
