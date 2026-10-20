@@ -3,7 +3,7 @@
 // Compare exact decoded describe/it/test title counts in tests/**/*.test.ts against REV. Report
 // deficits with their baseline files, or as moved when another tests/**/*.ts string literal holds
 // the title. Confirm moved registrations by reading their holder. Decode quote and backslash
-// escapes only. An each table whose arguments contain ) is not read.
+// escapes only. Balance each-table parentheses over code tokens, skipping lexical regions.
 // Print text by default or one JSON line with --json; --out writes .json or .txt independently.
 // Compare interpolated templates by full raw spelling. Refuse unclosed lexical tokens.
 // Track lexical brace context without a syntax tree. Function-expression and arrow bodies cannot
@@ -59,7 +59,7 @@ interface Parenthesis {
 	readonly ambiguous: boolean
 }
 
-const TITLE_PATTERN = /^\s*(?:it|test|describe)(?:\.\w+)*(?:\([^)]*\))?\(\s*\0/gmu
+const TITLE_PATTERN = /^\s*(?:it|test|describe)(?:\.\w+)*\(/gmu
 const REGEX_PREFIX =
 	/^(?:return|throw|case|delete|void|typeof|instanceof|in|of|yield|await|else|do)$/u
 
@@ -243,7 +243,23 @@ class TokenScanner {
 	}
 }
 
-function readRegistrations(text: string, tokens: readonly Token[]): readonly Token[] {
+function readArguments(
+	text: string,
+	tokens: IterableIterator<Token>,
+	location: string,
+	depth: number,
+): number {
+	if (depth > 256) throw new Error(`${location}: each argument nesting exceeds 256`)
+	for (const token of tokens) {
+		if (token.category !== 'code') continue
+		const spelling = text.slice(token.start, token.end)
+		if (spelling === '(') readArguments(text, tokens, location, depth + 1)
+		else if (spelling === ')') return token.end
+	}
+	throw new Error(`${location}: Unbalanced each arguments`)
+}
+
+function readRegistrations(text: string, tokens: readonly Token[], file: string): readonly Token[] {
 	const code = tokens
 		.map((token) => {
 			const raw = text.slice(token.start, token.end)
@@ -258,12 +274,23 @@ function readRegistrations(text: string, tokens: readonly Token[]): readonly Tok
 		})
 		.join('')
 	const offset = tokens[0]?.start ?? 0
+	const positions = new Map(tokens.map((token, index) => [token.start, index]))
 	const starts = new Set(
-		Array.from(code.matchAll(TITLE_PATTERN), (match) => offset + match.index + match[0].length - 1),
+		Array.from(code.matchAll(TITLE_PATTERN)).flatMap((match) => {
+			const opening = offset + match.index + match[0].length - 1
+			const direct = /^\s*\0/u.exec(code.slice(opening + 1 - offset))
+			if (!/\.each\(/u.test(match[0]) && direct !== null) return [opening + direct[0].length]
+			const index = positions.get(opening)
+			if (index === undefined) return []
+			const line = text.slice(0, opening).split(/\r\n|\n/u).length
+			const end = readArguments(text, tokens.slice(index + 1).values(), `${file}:${line}`, 0)
+			const title = /^\s*\(\s*\0/u.exec(code.slice(end - offset))
+			return title === null ? [] : [end + title[0].length - 1]
+		}),
 	)
 	return [
 		...tokens.filter((token) => starts.has(token.start)),
-		...tokens.flatMap((token) => readRegistrations(text, token.children)),
+		...tokens.flatMap((token) => readRegistrations(text, token.children, file)),
 	]
 }
 
@@ -292,12 +319,14 @@ function readReport(base: string, root: string): Report {
 		.filter((file) => file.endsWith('.test.ts'))
 		.flatMap((file) => {
 			const text = readGit(root, ['show', `${base}:${file}`])
-			return readRegistrations(text, new TokenScanner(text, `${base}:${file}`).scan()).map(
-				(token) => ({
-					file,
-					title: decodeTitle(text, token),
-				}),
-			)
+			return readRegistrations(
+				text,
+				new TokenScanner(text, `${base}:${file}`).scan(),
+				`${base}:${file}`,
+			).map((token) => ({
+				file,
+				title: decodeTitle(text, token),
+			}))
 		})
 	const directory = join(root, 'tests')
 	const files = (existsSync(directory) ? listFiles(directory) : [])
@@ -310,7 +339,7 @@ function readReport(base: string, root: string): Report {
 				file,
 				text,
 				tokens,
-				registrations: file.endsWith('.test.ts') ? readRegistrations(text, tokens) : [],
+				registrations: file.endsWith('.test.ts') ? readRegistrations(text, tokens, file) : [],
 			}
 		})
 		.sort((left, right) => left.file.localeCompare(right.file))

@@ -10,11 +10,133 @@ import {
 	TITLES_QUOTES,
 	TITLES_SCRIPT,
 	TITLES_STATEMENTS,
+	TITLES_TABLES,
 	TITLES_TERMINATORS,
+	TITLES_UNBALANCED,
 	trackFiles,
 } from '../../../../setupServer.js'
 
 describe('titles.ts', () => {
+	it.each(TITLES_TABLES)('balances each arguments over code tokens: %s', (table) => {
+		const scratch = createScratch({ prefix: 'titles-balanced-each-' })
+		try {
+			scratch.write(
+				'tests/read.test.ts',
+				`describe.skip.each(${table})('groups %s', () => {})\nit.each(${table})('reads %s', () => {})\ntest.concurrent.each(${table})(\n\t\`checks %s\`, () => {})\n`,
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const unchanged = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(unchanged.status).toBe(0)
+			expect(unchanged.json).toMatchObject({ count: 3, missing: [], moved: [] })
+			scratch.remove('tests/read.test.ts')
+			const removed = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(removed.status).toBe(3)
+			expect(removed.json).toMatchObject({
+				count: 3,
+				missing: [
+					{ file: 'tests/read.test.ts', title: 'groups %s', deficit: 1 },
+					{ file: 'tests/read.test.ts', title: 'reads %s', deficit: 1 },
+					{ file: 'tests/read.test.ts', title: 'checks %s', deficit: 1 },
+				],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_UNBALANCED)('refuses unbalanced each arguments in either tree: %s', (head) => {
+		const scratch = createScratch({ prefix: 'titles-unbalanced-each-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', `// registration\n${head}\n`)
+			const working = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(working.status).toBe(2)
+			expect(working.stderr).toContain('tests/read.test.ts:2: Unbalanced each arguments')
+			expect(working.stdout).toBe('')
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.remove('tests/read.test.ts')
+			const baseline = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(baseline.status).toBe(2)
+			expect(baseline.stderr).toContain('HEAD:tests/read.test.ts:2: Unbalanced each arguments')
+			expect(baseline.stdout).toBe('')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports the renamed frozen distribution proof title after Object.entries', () => {
+		const scratch = createScratch({ prefix: 'titles-distribution-each-' })
+		try {
+			scratch.write(
+				'tests/src/core/templates.test.ts',
+				"it.each(Object.entries(DISTRIBUTION_PROOF_TEXTS['0.0.104']))(\n\t'typechecks and imports the frozen 0.0.104 %s proof against the current harness',\n\t(variant, text) => {},\n)\n",
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write(
+				'tests/src/core/templates.test.ts',
+				"it.each(Object.entries(DISTRIBUTION_PROOF_TEXTS['0.0.104']))(\n\t'renames the frozen 0.0.104 %s proof',\n\t(variant, text) => {},\n)\n",
+			)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				count: 1,
+				missing: [
+					{
+						file: 'tests/src/core/templates.test.ts',
+						title: [
+							'typechecks and imports the frozen 0.0.104 %s proof',
+							'against the current harness',
+						].join(' '),
+						deficit: 1,
+					},
+				],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports the removed each title after Number arguments', () => {
+		const scratch = createScratch({ prefix: 'titles-number-each-' })
+		try {
+			scratch.write(
+				'tests/read.test.ts',
+				"it.each([[Number('1')]])('reads the value %s', () => {})\n",
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.remove('tests/read.test.ts')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				count: 1,
+				missing: [{ file: 'tests/read.test.ts', title: 'reads the value %s', deficit: 1 }],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it.each(TITLES_STATEMENTS)('excludes regex holders after statement blocks: %s', (statement) => {
 		const scratch = createScratch({ prefix: 'titles-block-regex-' })
 		try {
@@ -591,7 +713,7 @@ describe('titles.ts', () => {
 		try {
 			scratch.write(
 				'tests/sample.test.ts',
-				"it('reads', () => {})\nit(`reads ${`file`}`, () => {})\n",
+				"it('reads', () => {})\nit(`reads ${`file`}`, () => {})\nit.each([[Number('1')]])('reads the value %s', () => {})\n",
 			)
 			createRepository(scratch.path)
 			trackFiles(scratch.path)

@@ -5131,6 +5131,23 @@ export const DISCOVERY_SCRIPT = '.agents/skills/orkestrel-harden/scripts/discove
 /** Names the checkout-relative path of the harden skill's `titles` script. */
 export const TITLES_SCRIPT = '.agents/skills/orkestrel-harden/scripts/titles.ts'
 
+/** Supplies each tables with nested calls and parentheses outside code tokens. */
+export const TITLES_TABLES: readonly string[] = Object.freeze([
+	"[[Number('1')]]",
+	"[[Number(String(Number('1')))]]",
+	`[[')', "(", Number('1')]]`,
+	"[[`) ${Number('1')} (`, Number('1')]]",
+	"[[/\\)/u, /[(]/u, Number('1')]]",
+	"[[/* ) ( */ Number('1') // ) (\n]]",
+])
+
+/** Supplies each heads whose table arguments never close. */
+export const TITLES_UNBALANCED: readonly string[] = Object.freeze([
+	"it.each([[Number('1')]]",
+	"test.concurrent.each(\n[[Number('1')]]",
+	"describe.each([[Number('1')]]\n('groups', () => {})",
+])
+
 /** Supplies statement contexts whose closing braces permit regex literals. */
 export const TITLES_STATEMENTS: readonly string[] = Object.freeze([
 	'if (true) {}',
