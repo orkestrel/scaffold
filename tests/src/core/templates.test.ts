@@ -1436,7 +1436,7 @@ describe('emitted browser resolver', () => {
 				buildResolveCall(pinned, {}, browsers),
 			])
 			expect(installed).toStrictEqual({
-				launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] },
+				launchOptions: { executablePath: pinned, ignoreDefaultArgs: ['--hide-scrollbars'] },
 			})
 			expect(managed).toStrictEqual({
 				launchOptions: { executablePath: pinned, ignoreDefaultArgs: ['--hide-scrollbars'] },
@@ -1444,7 +1444,7 @@ describe('emitted browser resolver', () => {
 			expect(bundled).toStrictEqual({
 				launchOptions: { executablePath: pinned, ignoreDefaultArgs: ['--hide-scrollbars'] },
 			})
-			expect(plain).toStrictEqual({})
+			expect(plain).toStrictEqual({ launchOptions: { executablePath: pinned } })
 		} finally {
 			workspace.destroy()
 		}
@@ -1572,7 +1572,7 @@ describe('emitted browser resolver', () => {
 		}
 	}, 30_000)
 
-	it('keeps Playwright launch defaults when the pinned revision is installed', () => {
+	it('names the full executable for pinned and discovered managed revisions', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-resolver-pinned-',
@@ -1581,16 +1581,17 @@ describe('emitted browser resolver', () => {
 			const file = stageResolver(workspace)
 			const browsers = buildBrowsersRoot(workspace, ['chromium-1234/chrome-linux64/chrome'])
 			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
+			const missing = join(browsers, 'chromium-9999/chrome-linux64/chrome')
 			const bare = workspace.ensure('bare')
-			const [installed, bundled, channel] = driveModule(file, 'resolver', [
+			const [installed, discovered, bundled, channel] = driveModule(file, 'resolver', [
 				buildResolveCall(pinned, {}, browsers),
+				buildResolveCall(missing, {}, browsers),
 				buildResolveCall(undefined, {}, browsers),
 				buildResolveCall(undefined, {}, bare),
 			])
 
-			expect(installed).toStrictEqual({})
-			// The control against that empty answer: the same host, the same directory,
-			// and no pinned revision names the bundled executable instead.
+			expect(installed).toStrictEqual({ launchOptions: { executablePath: pinned } })
+			expect(discovered).toStrictEqual({ launchOptions: { executablePath: pinned } })
 			expect(bundled).toStrictEqual({ launchOptions: { executablePath: pinned } })
 			// With nothing to find the resolver names a channel. Which channel it names
 			// is a property of this host, so the assertion is the set it comes from.

@@ -2210,10 +2210,11 @@ Nothing is fixed except the manifest.
   `--hide-scrollbars` default argument so classic scrollbars can take layout space in every case.
   An empty or unset value preserves the launch defaults; any other value throws an `Error`.
   Pairing `classic` with `PLAYWRIGHT_WS_ENDPOINT` throws an `Error`, even with an executable
-  override, because the server owns the launch. An installed pinned revision returns empty options
-  unless `classic` is set. A pinned revision that is not installed falls through to a `chromium` alias or a
-  sibling `chromium-*` revision under the same browsers directory, because a managed container ships
-  one usable build for many Playwright versions. It is its own file rather than a block in the
+  override, because the server owns the launch. Every resolved managed path names the full Chromium
+  executable so headless launches retain browser permissions. A pinned revision that is not installed
+  falls through to a `chromium` alias or a sibling `chromium-*` revision under the same browsers
+  directory, because a managed container ships one usable build for many Playwright versions.
+  It is its own file rather than a block in the
   vendored `configs/helpers.ts`, which every workspace receives byte-identical while only a browser
   selection declares the `playwright` this module imports.
 - One template artifact, `configs/commands.ts`, for every workspace that receives
