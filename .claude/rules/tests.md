@@ -59,6 +59,7 @@ its own:
 | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                        |
 | `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
 | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
+| `tests/tree.test.ts`         | The laws this package states about its own real tree, such as the module closure a project may reach, that no vendored proof carries                                                         |
 | `tests/agents/**/*.test.ts`  | Each skill script does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; the scaffold checkout alone carries them                     |
 | `tests/studies/**/*.test.ts` | Evaluations of the workspace's consumer study code under `studies/`, run through bounded subprocesses and protocol fixtures; the `test:studies` script is their gate                         |
 | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
@@ -71,6 +72,9 @@ its own:
   project, and exclude both browser proofs from that project. Keep each proof's assertions on
   exported test-infrastructure behavior: do not duplicate production behavior there, and do not
   move setup-helper assertions into another cross-cutting proof.
+- Put an assertion about the package's real tree that no vendored proof carries in
+  `tests/tree.test.ts`, driving the exported `tests/setup*.ts` helper that reads the tree, and keep
+  that helper's own proof over fixtures in its `tests/setup*.test.ts` file.
 - `.claude/rules/workspace.md` names the Vitest project each location belongs to.
 - The `guides` project runs in Node with the browser disabled. Its subject is what the guide
   claims: that every documented name resolves, and that every fence asserting a value returns

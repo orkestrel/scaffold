@@ -660,6 +660,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			...(blueprint.skills ? ['npm run test:skills'] : []),
 			...(blueprint.guides ? ['npm run test:guides'] : []),
 			...(blueprint.conformance ? ['npm run test:conformance'] : []),
+			...(blueprint.tree ? ['npm run test:tree'] : []),
 			...(integrates ? ['npm run test:integration'] : []),
 			...(!publishes && blueprint.studies ? ['npm run test:studies'] : []),
 			...(!publishes && blueprint.service ? ['npm run test:service'] : []),
@@ -745,6 +746,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			? { 'test:guides': `node --experimental-strip-types ${GUIDES_TEST_PATH}` }
 			: {}),
 		...(blueprint.conformance ? { 'test:conformance': `${vitest} --project conformance` } : {}),
+		...(blueprint.tree ? { 'test:tree': `${vitest} --project tree` } : {}),
 		'test:probe':
 			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
 		'test:bench': 'vitest bench --config vite.config.ts --no-cache --project probe',
@@ -1275,6 +1277,7 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 		...(blueprint.guides ? ['guides'] : []),
 		...(blueprint.skills ? ['skills'] : []),
 		...(blueprint.conformance ? ['conformance'] : []),
+		...(blueprint.tree ? ['tree'] : []),
 		...(blueprint.service ? ['service'] : []),
 		...(blueprint.studies ? ['studies'] : []),
 		...(blueprint.src.length > 0 || styled ? ['distribution'] : []),
@@ -1469,6 +1472,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		...(planned.has('guides') ? [CONFIG_TEMPLATES.factories.guides] : []),
 		...(planned.has('skills') ? [CONFIG_TEMPLATES.factories.skills] : []),
 		...(planned.has('conformance') ? [CONFIG_TEMPLATES.factories.conformance] : []),
+		...(planned.has('tree') ? [CONFIG_TEMPLATES.factories.tree] : []),
 		...(planned.has('service') ? [CONFIG_TEMPLATES.factories.service] : []),
 		...(planned.has('studies') ? [CONFIG_TEMPLATES.factories.studies] : []),
 		...(planned.has('distribution') ? [CONFIG_TEMPLATES.factories.distribution] : []),
@@ -1511,6 +1515,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		...(planned.has('guides') ? ['guides'] : []),
 		...(planned.has('skills') ? ['skills'] : []),
 		...(planned.has('conformance') ? ['conformance'] : []),
+		...(planned.has('tree') ? ['tree'] : []),
 		...(planned.has('service') ? ['service'] : []),
 		...(planned.has('studies') ? ['studies'] : []),
 		...(planned.has('distribution') ? ['distribution'] : []),
@@ -2139,7 +2144,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 		blueprint.src.includes('server') ||
 		blueprint.app.includes('server') ||
 		blueprint.bin ||
-		blueprint.conformance
+		blueprint.conformance ||
+		blueprint.tree
 			? [
 					{
 						path: 'tests/setupServer.ts',

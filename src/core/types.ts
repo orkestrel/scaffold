@@ -266,11 +266,13 @@ export interface Override {
  * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
- * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
+ * `bin`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
  * `vendors`, `studies`, `global`, `showcase`, `journey`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
+ * `tree` registers the Node proof over the package's real tree at the exact-case
+ * `tests/tree.test.ts` path, with `tests/setup.ts` and `tests/setupServer.ts`.
  * `setup` lists the runtimes required by root setup proofs: `node` for generic
  * and server proofs, and `browser` for `tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts`.
  * `journey` selects the birth-owned variant wrapper for a browser application.
@@ -317,6 +319,7 @@ export interface Blueprint {
 	readonly guides: boolean
 	readonly integration: boolean
 	readonly conformance: boolean
+	readonly tree: boolean
 	readonly service: boolean
 	readonly vendors: readonly string[]
 	readonly studies: boolean

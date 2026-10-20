@@ -1,6 +1,7 @@
 import {
 	BIN_ENTRY_PATH,
 	CONFORMANCE_TEST_PATH,
+	TREE_TEST_PATH,
 	DISTRIBUTION_TEST_PATH,
 	GUIDES_TEST_PATH,
 	INTEGRATION_TEST_PATH,
@@ -736,6 +737,24 @@ export function skills(override?: UserConfig): UserConfig {
 			browser: { enabled: false },
 			// Each case spawns node on a script; a census case runs \`vitest list\` over this checkout.
 			testTimeout: 60_000,
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
+		tree: `// The laws this package states about its own real tree.
+// Standalone Node proof; reads the tree without a build, install, or service.
+export function tree(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		test: {
+			name: { label: 'tree', color: 'magenta' },
+			include: ['${TREE_TEST_PATH}'],
+			setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+			pool: 'threads',
+			isolate: false,
+			environment: 'node',
+			browser: { enabled: false },
 		},
 	}
 	return mergeOverride(project, override)

@@ -718,7 +718,7 @@ describe('root configuration', () => {
 			)
 				.filter(([, path]) => existsSync(resolve(POLICY_ROOT, path)))
 				.map(([label, , include, setup]): [string, PolicyProject] => [label, { include, setup }]),
-			...['policy', 'config', 'guides', 'conformance', 'distribution', 'integration']
+			...['policy', 'config', 'guides', 'conformance', 'tree', 'distribution', 'integration']
 				.filter((label) => existsSync(resolve(POLICY_ROOT, `tests/${label}.test.ts`)))
 				.map((label): [string, PolicyProject] => [
 					label,
@@ -726,7 +726,7 @@ describe('root configuration', () => {
 						include: `tests/${label}.test.ts`,
 						setup: [
 							'./tests/setup.ts',
-							...(label === 'conformance' ? ['./tests/setupServer.ts'] : []),
+							...(label === 'conformance' || label === 'tree' ? ['./tests/setupServer.ts'] : []),
 							...(label === 'integration' &&
 							(collectSheets(POLICY_ROOT).length > 0 ||
 								existsSync(resolve(POLICY_ROOT, 'src/styles/themes/index.scss')))
@@ -926,8 +926,8 @@ describe('root configuration', () => {
 		// before its result is read. Extra factories are ignored without validating their result shape.
 		expect(extraLoads).toStrictEqual([])
 		for (const [label, project] of expected) expect(configured.get(label)).toStrictEqual(project)
-		for (const label of ['setup', 'setup:browser']) {
-			const name = label === 'setup' ? 'setup' : 'setupBrowser'
+		for (const label of ['setup', 'setup:browser', 'tree']) {
+			const name = label === 'setup:browser' ? 'setupBrowser' : label
 			expect(projects.some((entry) => typeof entry === 'function' && entry.name === name)).toBe(
 				expected.has(label),
 			)
@@ -1297,6 +1297,7 @@ describe('root configuration', () => {
 		const distribution = Object.getOwnPropertyDescriptor(scripts, 'test:distribution')?.value
 		const integration = Object.getOwnPropertyDescriptor(scripts, 'test:integration')?.value
 		const conformance = Object.getOwnPropertyDescriptor(scripts, 'test:conformance')?.value
+		const tree = Object.getOwnPropertyDescriptor(scripts, 'test:tree')?.value
 		const service = Object.getOwnPropertyDescriptor(scripts, 'test:service')?.value
 		const studies = Object.getOwnPropertyDescriptor(scripts, 'test:studies')?.value
 		const publish = Object.getOwnPropertyDescriptor(scripts, 'prepublishOnly')?.value
@@ -1323,6 +1324,7 @@ describe('root configuration', () => {
 		expect(registered.has('config')).toBe(true)
 		expect(registered.has('control')).toBe(false)
 		const hasConformance = registered.has('conformance')
+		const hasTree = registered.has('tree')
 		const hasDistribution = registered.has('distribution')
 		const hasService = registered.has('service')
 		const hasStudies = registered.has('studies')
@@ -1365,6 +1367,13 @@ describe('root configuration', () => {
 		expect(typeof test === 'string' && test.includes('npm run test:conformance')).toBe(
 			hasConformance,
 		)
+		expect(tree).toBe(
+			hasTree
+				? 'vitest run --config vite.config.ts --no-cache --reporter=dot --project tree'
+				: undefined,
+		)
+		expect(typeof test === 'string' && test.includes('npm run test:tree')).toBe(hasTree)
+		expect(typeof publish === 'string' && publish.includes('npm run test:tree')).toBe(false)
 		expect(service).toBe(
 			hasService
 				? 'vitest run --config vite.config.ts --no-cache --reporter=dot --project service'

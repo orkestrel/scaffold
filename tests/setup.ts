@@ -216,6 +216,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		guides: false,
 		integration: false,
 		conformance: false,
+		tree: false,
 		service: false,
 		vendors: [],
 		studies: false,
@@ -226,6 +227,43 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		...fields,
 	}
 }
+
+/** Lists dispatch-build byte pins for selections without a tree proof. */
+export const TREE_EMISSION_CASES: ReadonlyArray<{
+	readonly fields: Partial<Blueprint>
+	readonly vite: string
+	readonly scripts: string
+}> = Object.freeze([
+	{
+		fields: { src: ['core'] },
+		vite: 'bcfd6d3a4b4723163df9156683f44cc1f2cc13844e14e3553cd078223fa9d616',
+		scripts: 'ce1206f9568601061d7d19fb69f8381b007118ae8ced98c139bac182ed0f9ee7',
+	},
+	{
+		fields: { src: [], app: ['server'] },
+		vite: 'c7e7becfb724beeccc1e84dfbe3cd0b56691338c86f23c1d3d9b9c5424681434',
+		scripts: '4c07423deacb5eaa8ee362e1dcf7a0d180c2f22113461714bc8211894acec2f1',
+	},
+	{
+		fields: {
+			src: ['core', 'browser', 'server'],
+			app: ['browser'],
+			styles: true,
+			themes: true,
+			setup: ['node', 'browser'],
+			guides: true,
+			integration: true,
+			conformance: true,
+			service: true,
+			studies: true,
+			global: true,
+			journey: true,
+			skills: true,
+		},
+		vite: '925bf5b3cc9a51a4ea1504d376b6d88ed4fff368bb80f6b8666dc1ff24ee2624',
+		scripts: 'cfb282751af709e58e7e59889517bd9960a14ca212adc09379b6bc793fc25851',
+	},
+])
 
 /**
  * Builds a list with holes, which an array literal cannot express.
@@ -1060,7 +1098,11 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 		{
 			name: 'isBlueprint',
 			guard: isBlueprint,
-			accepted: [buildBlueprint(), buildBlueprint({ description: 'A sample workspace.' })],
+			accepted: [
+				buildBlueprint(),
+				buildBlueprint({ description: 'A sample workspace.' }),
+				buildBlueprint({ tree: true }),
+			],
 			admits: [],
 		},
 		{
@@ -1117,8 +1159,20 @@ export function buildParserCases(): readonly TestParserCase[] {
 			name: 'parseBlueprint',
 			parse: parseBlueprint,
 			guard: isBlueprint,
-			accepted: [buildBlueprint(), buildBlueprint({ description: 'A sample workspace.' })],
-			refused: [buildBlueprint({ name: '' }), { name: 'sample' }, undefined, 'sample'],
+			accepted: [
+				buildBlueprint(),
+				buildBlueprint({ description: 'A sample workspace.' }),
+				buildBlueprint({ tree: true }),
+			],
+			refused: [
+				buildBlueprint({ name: '' }),
+				{ name: 'sample' },
+				undefined,
+				'sample',
+				{ ...buildBlueprint(), tree: undefined },
+				{ ...buildBlueprint(), tree: 'true' },
+				Object.fromEntries(Object.entries(buildBlueprint()).filter(([key]) => key !== 'tree')),
+			],
 		},
 		{
 			name: 'parseGroups',
@@ -2315,6 +2369,7 @@ export function buildSelections(): readonly Blueprint[] {
 							app,
 							bin: true,
 							integration: true,
+							tree: true,
 							global: true,
 							showcase: true,
 						}),

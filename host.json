@@ -592,7 +592,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "ceaf6386d3b378d5a2b7d3f08ed4c807de527a6a09b843c341456f66833df275"
+			"digest": "8aa2d69049d8b55cb80a0cbb32b711ee7fc7b0f1b28e76548fe02344547fa1db"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -604,7 +604,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "82dbe5c0978b2cae7e4d5c7644573b52747d9eda78fe05ad655746205df9995c"
+			"digest": "d3ef6baa67e57b4d63aaef5fd28d7b602c2a59d6d89a5ba130e68a17c10708df"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -616,7 +616,7 @@
 			"storage": "claude/settings.json",
 			"destination": ".claude/settings.json",
 			"executable": false,
-			"digest": "ebe54b12ac933a12312f562d069012b7d6dfe4b5155943c1805c3e1e2874afbd"
+			"digest": "d51ad87c5d690e6d2d31e729293d1cebf9aa4883215ccd4930d49cbdb468fc15"
 		},
 		{
 			"storage": "claude/skills/enterprise-bootstrap/SKILL.md",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "eb466acd2c22bfe6efc2e5860e5a40e29dda2b98ef20373f3ca6091b4fc947e5"
+			"digest": "c4ff14fa325ef9912847d78dc908c14d0887a6036759632eec3f89a66de1135d"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1192,7 +1192,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "bfabbde2d78c51fd35a9075d7eb60825d291f88989734b918d9b3ca8ed4e2dd1"
+			"digest": "22afe8d8b0c8c745564af7cba5b0c498dc0be7cce92dcdcb30cd72452fabaa10"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1204,7 +1204,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "f366104ea7c4e87d0f450271c8413c479f39560e54859c930c219d168f94501e"
+			"digest": "2fb412f0585dc9c01d3b88d8c960920d3af62745415ed1bcf65a2e6753f9fdf8"
 		}
 	],
 	"roots": [
@@ -2132,5 +2132,5 @@
 			]
 		}
 	],
-	"digest": "ea1c827adb08e64916fed786bfe543fb918ef8af4cdd9dc96d42dabdd99d709a"
+	"digest": "4c0c81869d35410801fccb8e8438eadf4519d4733fcf2c52543eb47df8821ec2"
 }

@@ -203,6 +203,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `TARGET_SKILL_NAMES`              | const | Lists the package-facing skills a target receives pointers for, frozen and alphabetical.                                                                                               |
 | `THEMES_BARREL_PATH`              | const | Names the themes stylesheet marker.                                                                                                                                                    |
 | `THEMES_ENTRY_PATH`               | const | Names the themes build entry marker.                                                                                                                                                   |
+| `TREE_TEST_PATH`                  | const | Names the real-tree proof whose presence makes a workspace `tree`.                                                                                                                     |
 | `VERSION_PATTERN`                 | const | Matches the exact `major.minor.patch` version syntax a blueprint declares.                                                                                                             |
 | `WORKSPACE_DEV_ENGINES`           | const | Holds the `devEngines` record every generated manifest carries.                                                                                                                        |
 | `WORKSPACE_OWNED_PATHS`           | const | Lists the vendored paths whose present bytes belong to each workspace, frozen.                                                                                                         |
@@ -665,7 +666,8 @@ answers a read and grant no verb write authority that it did not already have.
 states what each emits and what each refuses. Creation leaves `setup` empty, and the remaining
 structural facts take no creation option. Add a root `tests/setup*.test.ts` proof for `setup`,
 `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
-`tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`, an
+`tests/conformance.test.ts` for `conformance`, `tests/tree.test.ts` for `tree`,
+`tests/setupService.ts` for `service`, an
 exact-case `*.test.ts` file beneath `tests/studies`, outside any `node_modules` or `.git` directory,
 for `studies`, `tests/setupGlobal.ts` for `global`, `configs/app/vite.journey.config.ts` for `journey`, and
 `configs/agents/tsconfig.skills.json` for `skills`; reading verbs detect each exact-case file and
@@ -687,7 +689,8 @@ it could disagree. The styles surface, its themes target, the showcase, and ever
 read from the markers Surfaces and extensions lists. The remaining facts come from exact-case
 files: `src/bin/main.ts` selects `bin`, each root `tests/setup*.test.ts` match selects `setup`,
 `tests/guides.test.ts` selects `guides`, `tests/integration.test.ts` selects `integration`,
-`tests/conformance.test.ts` selects `conformance`, `tests/setupService.ts` selects `service`,
+`tests/conformance.test.ts` selects `conformance`, `tests/tree.test.ts` selects `tree`,
+`tests/setupService.ts` selects `service`,
 any exact-case `*.test.ts` file beneath `tests/studies`, nested or direct, outside any
 `node_modules` or `.git` directory, which Vitest's default exclude never collects, selects
 `studies`, `tests/setupGlobal.ts` selects `global`, `configs/app/vite.journey.config.ts` selects `journey`,
@@ -1037,8 +1040,8 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
 `repair` need the plan to describe and restore a target that already has that shape. A library
 caller creating a workspace holds the same refusal, and the Compile section states it.
 
-`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `studies`, `global`,
-`styles`, `themes`, `showcase`, `journey`, and `skills` are structural facts, and `extensions` lists the
+`bin`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`, `vendors`, `studies`,
+`global`, `styles`, `themes`, `showcase`, `journey`, and `skills` are structural facts, and `extensions` lists the
 extension faces. Reading verbs set each fact and list each extension only when the workspace
 physically ships the directory or exact-case file that defines it, never because of the workspace's
 name and never because a sibling fact is set.
@@ -1115,6 +1118,15 @@ live-service project. The root `studies/` directory holds the adapters and decla
 tests run, and it selects nothing. A `prepublishOnly` chain written before the fact existed upgrades
 in place: the generated chain without its study step, and without both its study step and the release
 proof, are accepted predecessors.
+
+`tree` says the workspace holds the exact-case `tests/tree.test.ts` proof, and it alone registers
+the `tree` Vitest project over that file and its `test:tree` script, which `test` invokes in a
+publishing and a `private: true` workspace alike. The project runs in Node with the browser disabled
+and loads `tests/setup.ts` and `tests/setupServer.ts`, so scaffold plans the birth-owned
+`tests/setupServer.ts` seed for a `tree` workspace whatever environments it selects. The proof
+states the laws this package holds about its own real tree, and it reads that tree without a build,
+install, or service. Without the file, the workspace has no `tree` project and no `test:tree`
+script, and its `test` chain carries no step for one.
 
 `integration` projects a cross-environment composition proof for any workspace, independently of
 whether it has a published `src`. Its generated seed imports every selected `src` and `app`
@@ -1586,8 +1598,8 @@ You own `tests/setup.ts`, the selected `tests/setupBrowser.ts`, `tests/setupServ
 and `tests/app`, the `tests/src/bin/main.test.ts` file, and the `tests/integration.test.ts` seed.
 Every sheet face's seed under `src` is yours on the same terms. Scaffold writes those
 planned files only during materialize and leaves later edits or deletions alone. You also own the
-`tests/guides.test.ts`, `tests/conformance.test.ts`, and `tests/service/**/*.test.ts` proof files,
-each of which selects its project by being written. The browser commands you register in
+`tests/guides.test.ts`, `tests/conformance.test.ts`, `tests/tree.test.ts`, and
+`tests/service/**/*.test.ts` proof files, each of which selects its project by being written. The browser commands you register in
 `configs/commands.ts` are yours too: scaffold writes the empty seed when the file is missing and
 leaves the bytes you wrote alone. Scaffold content-owns `tests/setupPolicy.ts`,
 `tests/policy.test.ts`, and `tests/config.test.ts`, and in a publishing workspace the
@@ -1743,8 +1755,8 @@ release renames or removes a harness export a released proof imports, a member i
 `./setupDistribution.js` specifier; `.claude/rules/tests.md` names that frozen set.
 
 Content ownership does not preserve an arbitrary custom Vitest project. The optional proof projects
-are fixed: `guides`, `integration`, `conformance`, and `service` are selected by their defining
-paths, `studies` by an exact-case `*.test.ts` file beneath `tests/studies` outside any `node_modules` or
+are fixed: `guides`, `integration`, `conformance`, `tree`, and `service` are selected by their
+defining paths, `studies` by an exact-case `*.test.ts` file beneath `tests/studies` outside any `node_modules` or
 `.git` directory, and `distribution` by a published `src` environment. A workspace that needs other local
 configuration must keep those edits outside a content-owned file; `repair` restores that file to the
 canonical project set.
@@ -2577,9 +2589,10 @@ a Node import, a CommonJS require, and a real browser hand back from that instal
 there has to be named, so one generated file measures every publishing workspace, and it stays true
 as that workspace's published surface moves.
 
-A guide, conformance, live-service, or authored setup proof asserts something scaffold cannot read: the API a
-guide fence claims, the official runner a conformance check measures against, the service a live
-proof drives, and what a setup module does. That subject is what no generated file can reach, and
+A guide, conformance, real-tree, live-service, or authored setup proof asserts something scaffold
+cannot read: the API a guide fence claims, the official runner a conformance check measures against,
+the laws a package states about its own tree, the service a live proof drives, and what a setup
+module does. That subject is what no generated file can reach, and
 the claim here is about the subject rather than about every property those files have. A structural
 property of the same files can be derivable — whether each root `tests/setup*.ts` module is
 reachable from the root configuration is one — and a file asserting it would still leave the
@@ -2587,10 +2600,10 @@ module's behavior unmeasured. A generated file there would read as a proof while
 which is worse than an absent one. So the file a consumer writes is what selects each of those
 projects. Scaffold also seeds proofs for its own setup modules, as Root setup mirror describes.
 
-Registration follows the same split. Scaffold registers `conformance`, `studies`, and `service` when their
-structural facts are set, and registers `distribution` whenever the workspace publishes at least one
-`src` environment or sheet face. In a publishing workspace, `distribution`, `studies`, and `service` run from `prepublishOnly`
-and `conformance` stays in `test`. In a `private: true` workspace, `distribution` is absent,
+Registration follows the same split. Scaffold registers `conformance`, `tree`, `studies`, and
+`service` when their structural facts are set, and registers `distribution` whenever the workspace
+publishes at least one `src` environment or sheet face. In a publishing workspace, `distribution`,
+`studies`, and `service` run from `prepublishOnly`, and `conformance` and `tree` stay in `test`. In a `private: true` workspace, `distribution` is absent,
 `studies` and then `service` run from `test`, and there is no `prepublishOnly` at all. The `policy` project reports an exporting root setup module that lacks its sibling proof or an import from `tests/setup.test.ts`.
 Separately, a filled, exporting `tests/setup*.ts` module that no `tests/setup*.test.ts`
 proof covers raises the non-blocking `setup` question in `audit`, which names the modules and the proof to add.
@@ -2723,8 +2736,8 @@ a replacement alone, so a replacement that ignores the flag reports green on exa
 matter.
 
 The consequence is one empty-project case per refused proof. A blueprint carrying `conformance` with
-no `tests/conformance.test.ts` registers a project whose include resolves to nothing, and Vitest
-exits non-zero on it. A blueprint carrying `service` gets `tests/setupService.ts` — the root
+no `tests/conformance.test.ts`, or `tree` with no `tests/tree.test.ts`, registers a project whose
+include resolves to nothing, and Vitest exits non-zero on it. A blueprint carrying `service` gets `tests/setupService.ts` — the root
 configuration names that module by path, so an absent one fails the project's load rather than its
 run — and still no suite beneath `tests/service`, so `test:service` reports no test files until the
 consumer writes the first one. A blueprint carrying `studies` has no such case, because the fact is

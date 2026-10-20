@@ -447,6 +447,9 @@ export const MANIFEST_PATH = 'package.json'
 /** Names the official-tooling drift proof whose presence makes a workspace `conformance`. */
 export const CONFORMANCE_TEST_PATH = 'tests/conformance.test.ts'
 
+/** Names the real-tree proof whose presence makes a workspace `tree`. */
+export const TREE_TEST_PATH = 'tests/tree.test.ts'
+
 /** Names the live-service readiness module whose presence makes a workspace `service`. */
 export const SERVICE_SETUP_PATH = 'tests/setupService.ts'
 

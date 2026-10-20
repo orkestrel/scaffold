@@ -56,6 +56,7 @@ import {
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CONFORMANCE_TEST_PATH,
+	TREE_TEST_PATH,
 	createBlueprint,
 	Compiler,
 	extractRangeMajor,
@@ -1137,6 +1138,7 @@ export class CLI implements CLIInterface {
 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
 		const conformance = resolveContainedPath(target, CONFORMANCE_TEST_PATH)
+		const tree = resolveContainedPath(target, TREE_TEST_PATH)
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
@@ -1180,6 +1182,7 @@ export class CLI implements CLIInterface {
 			guides: guides !== undefined && isExactCaseFile(guides),
 			integration: integration !== undefined && isExactCaseFile(integration),
 			conformance: conformance !== undefined && isExactCaseFile(conformance),
+			tree: tree !== undefined && isExactCaseFile(tree),
 			service: service !== undefined && isExactCaseFile(service),
 			studies,
 			global: global !== undefined && isExactCaseFile(global),

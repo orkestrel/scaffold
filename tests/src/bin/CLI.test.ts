@@ -2431,7 +2431,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('rejects wrong-case structural paths while deriving every exact fact', async () => {
+	it('A9.2 rejects wrong-case structural paths while deriving every exact fact', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -2454,12 +2454,14 @@ describe('CLI audit', () => {
 			expect(absent).not.toContain("label: 'guides'")
 			expect(absent).not.toContain("label: 'integration'")
 			expect(absent).not.toContain("label: 'conformance'")
+			expect(absent).not.toContain("label: 'tree'")
 			expect(absent).not.toContain("label: 'service'")
 			expect(absent).not.toContain('globalSetup:')
 			expect(absent).not.toContain('appShowcase')
 
 			workspace.write('target/src/bin/Main.ts', 'export {}\n')
 			workspace.write('target/tests/Guides.test.ts', 'export {}\n')
+			workspace.write('target/tests/Tree.test.ts', 'export {}\n')
 			workspace.write('target/tests/Setup.test.ts', 'export {}\n')
 			workspace.write('target/tests/nested/setup.test.ts', 'export {}\n')
 			expect(
@@ -2475,9 +2477,11 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:bin'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'guides'")
+			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'tree'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'setup'")
 			workspace.remove('target/src/bin/Main.ts')
 			workspace.remove('target/tests/Guides.test.ts')
+			workspace.remove('target/tests/Tree.test.ts')
 			workspace.remove('target/tests/Setup.test.ts')
 
 			workspace.write('target/src/bin/main.ts', 'export {}\n')
@@ -2485,6 +2489,7 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
 			workspace.write('target/tests/conformance.test.ts', 'export {}\n')
+			workspace.write('target/tests/tree.test.ts', 'export {}\n')
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/tests/setupGlobal.ts', 'export {}\n')
 			workspace.ensure('target/app/browser')
@@ -2498,6 +2503,7 @@ describe('CLI audit', () => {
 				integration: true,
 				conformance: true,
 				service: true,
+				tree: true,
 				global: true,
 				showcase: true,
 			})
@@ -2519,6 +2525,7 @@ describe('CLI audit', () => {
 			expect(present).toContain("label: 'guides'")
 			expect(present).toContain("label: 'integration'")
 			expect(present).toContain("label: 'conformance'")
+			expect(present).toContain("label: 'tree'")
 			expect(present).toContain("label: 'service'")
 			expect(present).toContain("globalSetup: ['./tests/setupGlobal.ts']")
 			expect(present).toContain('appShowcase')

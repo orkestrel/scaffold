@@ -175,6 +175,7 @@ one environment, so each is its own project:
 | `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                  | `test` through the journey scripts    |
 | `guides`            | `tests/guides.test.ts`                                         | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns                                | `test`                                |
 | `conformance`       | `tests/conformance.test.ts`                                    | Where this package drifts from the official tooling it tracks                                                                                                                                                               | `test`                                |
+| `tree`              | `tests/tree.test.ts`                                           | The laws this package states about its own real tree that no vendored proof carries                                                                                                                                         | `test`                                |
 | `skills`            | `tests/agents/**/*.test.ts`                                    | Each skill script under `.agents/skills/*/scripts/` does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; `configs/agents/tsconfig.skills.json` selects the project | `test`                                |
 | `distribution`      | `tests/distribution.test.ts`                                   | The packed package installs and resolves through its public exports                                                                                                                                                         | `prepublishOnly`; absent when private |
 | `integration`       | `tests/integration.test.ts`                                    | The package's features work together end to end across environments                                                                                                                                                         | `test`                                |
@@ -203,10 +204,11 @@ one environment, so each is its own project:
   from its application project, and run `test:journey` and one `test:journey:<framework>` per
   app-side browser extension after the application projects in `test`.
 
-`conformance`, `integration`, `distribution`, `studies`, and `service` are separate subjects, not
-names for one.
+`conformance`, `tree`, `integration`, `distribution`, `studies`, and `service` are separate
+subjects, not names for one.
 Keep `conformance` in `test`: measure this package against an installed official artifact, and start
-any server the proof drives itself. Keep `integration` in `test`: compose the workspace's public
+any server the proof drives itself. Keep `tree` in `test`: read the real tree in Node and drive no
+build, install, or service. Keep `integration` in `test`: compose the workspace's public
 surfaces without packing, installing, or driving an external service. In a publishing workspace,
 run `distribution`, `studies`, and `service` from `prepublishOnly`: pack and install the package in
 `distribution`, run the authored study proofs in `studies` after `npm test` and before the release
@@ -242,8 +244,8 @@ Setup assets:
 Scope with `test:src`, `test:src:core`, `test:src:<face>`, `test:app`, `test:app:server`, and
 equivalent scripts. Each cross-cutting project has its own script too: `test:policy`,
 `test:config`, `test:setup`, `test:setup:browser`, `test:journey`, `test:journey:<framework>`,
-`test:guides`, `test:conformance`, `test:distribution`, `test:integration`, `test:studies`,
-`test:service`.
+`test:guides`, `test:conformance`, `test:tree`, `test:distribution`, `test:integration`,
+`test:studies`, `test:service`.
 
 ## Typechecking and environment isolation
 

@@ -14,6 +14,7 @@ import {
 	blueprintToDevDependencies,
 	blueprintToManifest,
 	blueprintToTestArtifacts,
+	blueprintToSourceArtifacts,
 	CONFIG_TEMPLATES,
 	createBlueprint,
 	Compiler,
@@ -535,6 +536,52 @@ describe('emitted workspaces under their own gates', () => {
 		}
 	}, 180_000)
 
+	it('A9.3 runs the vendored registration and gate proofs with and without tree', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-tree-config-' })
+		try {
+			for (const tree of [false, true]) {
+				const blueprint = createBlueprint('sample', { src: ['core'], tree })
+				const prefix = tree ? 'present' : 'absent'
+				stageRootConfig(blueprint, workspace, prefix)
+				workspace.link(`${prefix}/node_modules/@orkestrel/scaffold`, resolve('.'))
+				for (const artifact of [
+					...blueprintToConfigArtifacts(blueprint),
+					...blueprintToSourceArtifacts(blueprint),
+					...blueprintToTestArtifacts(blueprint),
+				]) {
+					if (artifact.origin !== 'host')
+						workspace.write(`${prefix}/${artifact.path}`, artifact.content)
+				}
+				for (const path of ['tests/config.test.ts', 'tests/setupPolicy.ts', 'configs/policy.ts']) {
+					workspace.write(`${prefix}/${path}`, readFileSync(resolve(path), 'utf8'))
+				}
+				if (tree) workspace.write(`${prefix}/tests/tree.test.ts`, 'export {}\n')
+				const result = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'run',
+							'--config',
+							'vite.config.ts',
+							'--project',
+							'config',
+							'tests/config.test.ts',
+							'-t',
+							'registers every workspace project|registers proof scripts in the correct gate',
+						],
+					},
+					{ workspace: join(workspace.path, prefix), timeout: 90_000, strict: false },
+				)
+				if (result.failed) throw new Error(result.stdout + result.stderr)
+				expect(result.code).toBe(0)
+				expect(result.stdout).toMatch(/2 passed/u)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	}, 120_000)
+
 	it('lists and runs browser, sheet, guides, and integration projects unscoped', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-unscoped-' })
 		try {
@@ -549,6 +596,7 @@ describe('emitted workspaces under their own gates', () => {
 				bin: true,
 				conformance: true,
 				skills: true,
+				tree: true,
 				service: true,
 			})
 			stageRootConfig(blueprint, workspace, 'selected')
@@ -577,6 +625,7 @@ describe('emitted workspaces under their own gates', () => {
 				'setup',
 				'setupBrowser',
 				'conformance',
+				'tree',
 				'agents/sample',
 				'distribution',
 				'service/sample',

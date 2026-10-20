@@ -3438,6 +3438,7 @@ export const SETUP_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 export const SHEET_POLICY_SELECTIONS: ReadonlyArray<
 	Pick<Blueprint, 'src' | 'styles' | 'themes'> & {
 		readonly conformance?: boolean
+		readonly tree?: boolean
 		readonly integration?: boolean
 		readonly files?: readonly PolicySource[]
 		readonly control?: {
@@ -3461,6 +3462,13 @@ export const SHEET_POLICY_SELECTIONS: ReadonlyArray<
 		},
 	},
 	{ src: ['core'], styles: true, themes: true },
+	{
+		src: ['core'],
+		styles: false,
+		themes: false,
+		tree: true,
+		files: [{ path: 'tests/tree.test.ts', content: 'export {}\n' }],
+	},
 	{
 		src: ['core', 'browser'],
 		styles: true,

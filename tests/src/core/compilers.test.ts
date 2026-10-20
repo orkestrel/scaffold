@@ -5,6 +5,7 @@ import { createGuide } from '@orkestrel/guide'
 import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { basename, join, posix, resolve } from 'node:path'
 import {
@@ -60,6 +61,7 @@ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import {
 	buildBlueprint,
+	TREE_EMISSION_CASES,
 	DISTRIBUTION_SELECTIONS,
 	buildContentArtifact,
 	buildDependency,
@@ -3014,6 +3016,52 @@ describe('blueprint gate laws', () => {
 })
 
 describe('blueprintToRootVite fixed proofs', () => {
+	it('A9.1 preserves the pre-A9 Vite and script bytes without a tree proof', () => {
+		for (const row of TREE_EMISSION_CASES) {
+			const blueprint = buildBlueprint(row.fields)
+			expect(blueprint.tree).toBe(false)
+			expect(createHash('sha256').update(blueprintToRootVite(blueprint)).digest('hex')).toBe(
+				row.vite,
+			)
+			expect(
+				createHash('sha256')
+					.update(JSON.stringify(blueprintToScripts(blueprint)))
+					.digest('hex'),
+			).toBe(row.scripts)
+		}
+	})
+
+	it('A9.2 registers the tree proof with Node setup and its default gate', () => {
+		for (const row of TREE_EMISSION_CASES.filter(({ fields }) => !fields.conformance)) {
+			const blueprint = createBlueprint('sample', { ...row.fields, tree: true, global: true })
+			const configuration = blueprintToRootVite(blueprint)
+			const projects = blueprintToProjects(blueprint)
+			expect(projects).toContain('tree')
+			expect(projects).not.toContain('conformance')
+			expect(configuration).toContain('export function tree(override?: UserConfig): UserConfig')
+			const factory = configuration.slice(
+				configuration.indexOf('export function tree'),
+				configuration.indexOf('export function tree') + CONFIG_TEMPLATES.factories.tree.length,
+			)
+			expect(factory).toContain("include: ['tests/tree.test.ts']")
+			expect(factory).toContain("setupFiles: ['./tests/setup.ts', './tests/setupServer.ts']")
+			expect(factory).toContain("environment: 'node'")
+			expect(factory).toContain('browser: { enabled: false }')
+			expect(factory).not.toContain('globalSetup')
+			const scripts = blueprintToScripts(blueprint)
+			expect(scripts['test:tree']).toBe(
+				'vitest run --config vite.config.ts --no-cache --reporter=dot --project tree',
+			)
+			expect(scripts.test?.split(' && ')).toContain('npm run test:tree')
+			expect(scripts.prepublishOnly?.includes('npm run test:tree') ?? false).toBe(false)
+			const artifacts = blueprintToTestArtifacts(blueprint)
+			expect(artifacts.map(({ path }) => path)).toContain('tests/setupServer.ts')
+			expect(artifacts.map(({ path }) => path)).not.toContain('tests/tree.test.ts')
+		}
+		expect(createBlueprint('sample').tree).toBe(false)
+		expect(blueprintToScripts(buildBlueprint())['test:tree']).toBeUndefined()
+	})
+
 	it('gives every bin project its contended-suite timeout and reason', () => {
 		const configuration = blueprintToRootVite(buildBlueprint({ bin: true }))
 		const start = configuration.indexOf('export function srcBin')

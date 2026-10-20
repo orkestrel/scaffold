@@ -68,6 +68,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		guides: input?.guides ?? false,
 		integration: input?.integration ?? false,
 		conformance: input?.conformance ?? false,
+		tree: input?.tree ?? false,
 		service: input?.service ?? false,
 		vendors: input?.vendors ?? [],
 		studies: input?.studies ?? false,
