@@ -2056,12 +2056,12 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * path. `studies` emits nothing: the root configuration names no study harness,
  * so `tests/setupStudy.ts` is the package's own module.
  *
- * The content-owned distribution harness and presence-owned proof are emitted, and the same test separates it from those
- * two: its subject is the packed tarball rather than anything only the package
- * knows, so every assertion derives from the installed tree at run time and
- * nothing has to be named. It follows the published source it packs, and it is
- * the one artifact here claimed by presence: a target lacking it reports as
- * drift, and a package that replaced it with a better proof keeps that proof.
+ * The content-owned distribution harness `tests/setupDistribution.ts` and the presence-owned
+ * proof `tests/distribution.test.ts` are emitted because the proof measures the packed tarball
+ * rather than anything only the package knows. Every assertion derives from the installed tree
+ * at run time, so nothing has to be named. The proof follows the published source it packs and
+ * alone is claimed by presence: a target lacking the proof reports as drift, and a package that
+ * replaced the proof with a better one keeps that proof.
  *
  * @example
  * ```ts
