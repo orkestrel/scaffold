@@ -139,19 +139,19 @@ Environment rules:
 `vite.config.ts` defines Vitest projects on an environment axis and a workspace-proof axis. The
 environment axis is one project per src/app axis × environment, plus one per extension face:
 
-| Project       | Files                  | Environment                           | Setup                                           |
-| ------------- | ---------------------- | ------------------------------------- | ----------------------------------------------- |
-| `src:core`    | `tests/src/core/**`    | Node                                  | `setup.ts`                                      |
-| `src:browser` | `tests/src/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
-| `src:vue`     | `tests/src/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
-| `src:server`  | `tests/src/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                    |
-| `src:styles`  | `tests/src/styles/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` |
-| `src:<name>`  | `tests/src/<name>/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` |
-| `src:bin`     | `tests/src/bin/**`     | Node                                  | `setup.ts`, `setupServer.ts`                    |
-| `app:core`    | `tests/app/core/**`    | Node                                  | `setup.ts`                                      |
-| `app:browser` | `tests/app/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
-| `app:vue`     | `tests/app/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
-| `app:server`  | `tests/app/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                    |
+| Project       | Files                  | Environment                           | Setup                                                        |
+| ------------- | ---------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `src:core`    | `tests/src/core/**`    | Node                                  | `setup.ts`                                                   |
+| `src:browser` | `tests/src/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `src:vue`     | `tests/src/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `src:server`  | `tests/src/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                                 |
+| `src:styles`  | `tests/src/styles/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` when present |
+| `src:<name>`  | `tests/src/<name>/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` when present |
+| `src:bin`     | `tests/src/bin/**`     | Node                                  | `setup.ts`, `setupServer.ts`                                 |
+| `app:core`    | `tests/app/core/**`    | Node                                  | `setup.ts`                                                   |
+| `app:browser` | `tests/app/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `app:vue`     | `tests/app/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `app:server`  | `tests/app/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                                 |
 
 - Compose every sheet-face project (`src:styles` and each `src:<name>`) in its own wrapper through
   the one root `sheetProject` factory, and run it through its `test:src:<face>` script, which builds

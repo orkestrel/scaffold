@@ -91,7 +91,7 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 ## Proofs
 
-- Declare every CSSOM instrument a sheet proof reads in `tests/setupStyles.ts`, never in a test file. `tests/setupStyles.test.ts` proves each instrument under the root setup mirror in `.claude/rules/tests.md`.
+- Import the CSSOM instruments a sheet proof reads, such as `adoptSheet` and `readLayerNames`, from `@orkestrel/test/browser`. Declare a reader that entry does not export in the target's own `tests/setupStyles.ts`, never in a test file; a sheet-face project loads that module when the target has it. `tests/setupStyles.test.ts` proves each reader the module declares under the root setup mirror in `.claude/rules/tests.md`.
 
 ## Naming
 

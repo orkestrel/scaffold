@@ -206,8 +206,8 @@ Place helpers by environment:
 - `tests/setup.ts`: host-independent; no `node:*`, DOM, `window`, or Vue.
 - `tests/setupServer.ts`: Node-only helpers and `node:fs` loaders anchored to `WORKSPACE_ROOT`.
 - `tests/setupBrowser.ts`: DOM/Vue/browser helpers and setup CSS.
-- `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; every
-  sheet-face project loads it after `tests/setupBrowser.ts`.
+- `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; a
+  sheet-face project loads it after `tests/setupBrowser.ts` when the target has the file.
 - `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,
   its source tests too. Name it in no project's `setupFiles`; tests import it, as the policy proof
   imports `tests/setupPolicy.ts`.
