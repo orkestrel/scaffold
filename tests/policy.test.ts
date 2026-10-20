@@ -88,10 +88,23 @@ describe('surface policy controls', () => {
 		}
 	})
 
-	it('refuses a target catalog row absent from the installed guides', () => {
+	it('ignores a target catalog row the installed scaffold does not stage', () => {
 		const scratch = createPolicySurfaceFixture()
 		try {
 			scratch.write(POLICY_CATALOG_FILE, createPolicyCatalog(['other', 'sample', 'uncovered']))
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a staged catalog row absent from the installed guides', () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			scratch.write(
+				`${POLICY_SURFACE_HOST}/${POLICY_SURFACE_CATALOG}`,
+				createPolicyCatalog(['other', 'sample', 'uncovered']),
+			)
 			expect(inspectPolicyWorkspace(scratch.path)).toEqual([
 				{
 					rule: 'surface',

@@ -1627,7 +1627,11 @@ The `surface` rule in `inspectPolicyWorkspace` compares live barrel exports and 
 environments and declaration kinds. Source names claimed by the target's own hosted guide are
 grandfathered; setup exports have no grandfather, and setup paths selected by `HOST_PATHS` are
 excluded. A scaffold checkout reads its own `guides/` directory and its own catalog; every other
-target reads `node_modules/@orkestrel/scaffold/dist/host/guides/` and the catalog staged beside it.
+target reads `node_modules/@orkestrel/scaffold/dist/host/guides/` and the catalog staged beside it,
+or its own `guides/` directory and its own catalog where that installed host is absent. Beside the
+installed guides, the rule takes no row from the target's own catalog table: the `catalog` verb
+writes that table from the registry's organization package list, so the table can list a package
+whose guide the installed release doesn't stage.
 The population it compares is what the parser accounts for: each exported declaration — a variable
 declarator, function, class, interface, type alias, enum, or namespace — every name an export list
 or a re-export list names, the alias of a namespace re-export, and the names a relative star export

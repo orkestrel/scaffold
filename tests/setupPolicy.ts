@@ -3075,7 +3075,9 @@ export function readPolicySurface(root: string): PolicySurfacePopulation {
  *
  * @remarks
  * Source names claimed by the target's own hosted guide are grandfathered. Setup names have no
- * grandfather. An absent installed host falls back to checkout guides only with catalog coverage.
+ * grandfather. Catalog rows come from beside the guides: with an installed host, from the staged
+ * catalog and never from the target's own table, which can list a package without a guide in that
+ * host. An absent installed host falls back to checkout guides only with catalog coverage.
  * Missing comparison evidence and unread barrel statements produce surface violations.
  *
  * @param root - The workspace root to inspect.
@@ -3088,7 +3090,7 @@ export function inspectPolicySurface(root: string): readonly PolicyViolation[] {
 	const host = hosted ? installed : root
 	const catalog = hosted ? POLICY_SURFACE_CATALOG : POLICY_CATALOG_FILE
 	const directory = hosted ? `${POLICY_SURFACE_HOST}/guides` : 'guides'
-	const names = new Set([...readPolicyCatalog(host, catalog), ...readPolicyCatalog(root)])
+	const names = new Set(readPolicyCatalog(host, catalog))
 	if (!existsSync(join(host, 'guides')) || names.size === 0) {
 		return [
 			createPolicyViolation(

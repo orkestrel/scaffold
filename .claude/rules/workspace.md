@@ -344,7 +344,9 @@ Policy instruments:
 - Keep every barrel statement in the form `.claude/rules/architecture.md` § Barrel exports fixes.
   The sweep refuses a barrel population it cannot read whole and reports that refusal as a `surface`
   violation rather than passing over the statements it did read. A catalog row with no hosted guide,
-  and a missing hosted guide root, refuse the same way.
+  and a missing hosted guide root, refuse the same way. Read only the catalog beside the guides the
+  `surface` rule reads, so a target reading the installed guides takes every row from the staged
+  catalog and none from its own catalog table.
 - Change the code when an instrument reports a violation.
 
 ## Text integrity
