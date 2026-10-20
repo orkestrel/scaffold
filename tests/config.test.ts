@@ -730,7 +730,12 @@ describe('root configuration', () => {
 							...(label === 'integration' &&
 							(collectSheets(POLICY_ROOT).length > 0 ||
 								existsSync(resolve(POLICY_ROOT, 'src/styles/themes/index.scss')))
-								? ['./tests/setupBrowser.ts', './tests/setupStyles.ts']
+								? [
+										'./tests/setupBrowser.ts',
+										...(existsSync(resolve(POLICY_ROOT, 'tests/setupStyles.ts'))
+											? ['./tests/setupStyles.ts']
+											: []),
+									]
 								: []),
 						],
 					},

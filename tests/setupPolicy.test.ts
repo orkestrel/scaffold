@@ -1,4 +1,12 @@
-import { chmodSync, existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import {
+	chmodSync,
+	existsSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs'
 import { userInfo } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -141,29 +149,42 @@ describe('configuration infrastructure', () => {
 				expect(result.code).toBe(0)
 				expect(result.stdout).toMatch(/3 passed/u)
 				for (const mutation of control === undefined ? [] : [control]) {
-					const config = requireValue(scratch.read('vite.config.ts'))
+					const path = resolve(scratch.path, 'vite.config.ts')
+					const original = readFileSync(path)
+					const config = original.toString('utf8')
 					expect(config).toContain(mutation.before)
-					scratch.write('vite.config.ts', config.replace(mutation.before, mutation.after))
-					const refused = await execute(
-						{
-							file: process.execPath,
-							arguments: [
-								resolve('node_modules/vitest/vitest.mjs'),
-								'run',
-								'--config',
-								'vite.config.ts',
-								'--project',
-								'config',
-								'tests/config.test.ts',
-								'-t',
-								'registers every workspace project',
-							],
-						},
-						{ workspace: scratch.path, timeout: 90_000, strict: false },
-					)
-					expect(refused.code).toBe(1)
-					expect(refused.stdout).toMatch(/1 failed/u)
-					expect(refused.stderr).toContain(mutation.failure)
+					try {
+						for (const mutated of [false, true, false]) {
+							writeFileSync(
+								path,
+								mutated ? config.replace(mutation.before, mutation.after) : original,
+							)
+							expect(readFileSync(path).equals(original)).toBe(!mutated)
+							const measured = await execute(
+								{
+									file: process.execPath,
+									arguments: [
+										resolve('node_modules/vitest/vitest.mjs'),
+										'run',
+										'--config',
+										'vite.config.ts',
+										'--project',
+										'config',
+										'tests/config.test.ts',
+										'-t',
+										'registers every workspace project',
+									],
+								},
+								{ workspace: scratch.path, timeout: 90_000, strict: false },
+							)
+							expect(measured.code).toBe(mutated ? 1 : 0)
+							expect(measured.stdout).toMatch(mutated ? /1 failed/u : /1 passed/u)
+							expect(measured.stderr.includes(mutation.failure)).toBe(mutated)
+						}
+					} finally {
+						writeFileSync(path, original)
+						expect(readFileSync(path).equals(original)).toBe(true)
+					}
 				}
 			} finally {
 				scratch.destroy()

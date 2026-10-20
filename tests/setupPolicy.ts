@@ -3429,7 +3429,17 @@ export const SHEET_POLICY_SELECTIONS: ReadonlyArray<
 > = Object.freeze([
 	{ src: [], styles: true, themes: true },
 	{ src: [], styles: false, themes: true },
-	{ src: [], styles: false, themes: true, integration: true },
+	{
+		src: [],
+		styles: false,
+		themes: true,
+		integration: true,
+		control: {
+			before: "existsSync(resolveWorkspacePath('tests/setupStyles.ts'))",
+			after: 'true',
+			failure: './tests/setupStyles.ts',
+		},
+	},
 	{ src: ['core'], styles: true, themes: true },
 	{
 		src: ['core', 'browser'],
@@ -3470,10 +3480,10 @@ export const SHEET_POLICY_SELECTIONS: ReadonlyArray<
 		styles: true,
 		themes: false,
 		integration: true,
+		files: [{ path: 'tests/setupStyles.ts', content: 'export {}\n' }],
 		control: {
-			before:
-				"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts']",
-			after: "setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts']",
+			before: "? ['./tests/setupStyles.ts']",
+			after: '? []',
 			failure: './tests/setupStyles.ts',
 		},
 	},
