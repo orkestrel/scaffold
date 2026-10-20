@@ -171,7 +171,10 @@ describe('window.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-upload-' })
 		const registry = await createWhoamiRegistry('fixture')
 		try {
-			const env = buildWhoamiEnvironment(scratch.path, registry)
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, registry),
+				npm_config_loglevel: 'silent',
+			}
 			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
 			const upload = await spawnSkillScript(
 				WINDOW_SCRIPT,

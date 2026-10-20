@@ -109,8 +109,9 @@ function readManifestName(directory: string): {
 function publishPackage(directory: string, otp: string): Upload {
 	const manifest = readManifestName(directory)
 	const journal = `tmp/units/publish-${(manifest.name ?? directory).replace(/[^A-Za-z0-9.-]+/gu, '-')}.log`
+	// The refusal code must survive an inherited silent npm log level.
 	const result = runNpm(
-		['publish', '--ignore-scripts', '--browser=false', `--otp=${otp}`],
+		['publish', '--ignore-scripts', '--browser=false', '--loglevel=error', `--otp=${otp}`],
 		directory,
 	)
 	writeFileSync(journal, `${result.stdout}\n${result.stderr}\nexit=${result.status ?? 'null'}\n`)

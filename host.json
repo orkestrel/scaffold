@@ -406,7 +406,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/window.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/window.ts",
 			"executable": false,
-			"digest": "7a58dd800c4f89d033993a5e562e5bf28474f195bab7b9f47f27f63d7c73bd1f"
+			"digest": "0a38033929054a243cafe5a811e2f480408c3b6f4929bef96712df2ce0c6ca9b"
 		},
 		{
 			"storage": "agents/skills/orkestrel-scout/SKILL.md",
@@ -2126,5 +2126,5 @@
 			]
 		}
 	],
-	"digest": "922b554fffd2e8e38a6b270533be2cc2f826c9a881e48343d31856e04d692d39"
+	"digest": "7ae3758c18440e769784cbe6569a996700ad3bab746a450ed771877067febfc4"
 }
