@@ -5,11 +5,110 @@ import {
 	commitFiles,
 	createRepository,
 	runSkillScript,
+	TITLES_AMBIGUITIES,
+	TITLES_EXPRESSIONS,
+	TITLES_QUOTES,
 	TITLES_SCRIPT,
+	TITLES_STATEMENTS,
+	TITLES_TERMINATORS,
 	trackFiles,
 } from '../../../../setupServer.js'
 
 describe('titles.ts', () => {
+	it.each(TITLES_STATEMENTS)('excludes regex holders after statement blocks: %s', (statement) => {
+		const scratch = createScratch({ prefix: 'titles-block-regex-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', `${statement}\n/'reads'/.test('other')\n`)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				count: 1,
+				missing: [{ file: 'tests/read.test.ts', title: 'reads', deficit: 1 }],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_EXPRESSIONS)('preserves division after expression braces: %s', (expression) => {
+		const scratch = createScratch({ prefix: 'titles-brace-division-' })
+		try {
+			scratch.write('tests/read.test.ts', `it('reads', () => {})\n${expression}\n`)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({ count: 1, missing: [], moved: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_TERMINATORS)('accepts escaped string continuations: %j', (terminator) => {
+		const scratch = createScratch({ prefix: 'titles-continuation-' })
+		try {
+			const text = `it('reads', () => {})\r\nconst label = 'rea\\${terminator}ds'\r\nconst double = "rea\\${terminator}ds"\r\n`
+			scratch.write('tests/read.test.ts', text)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({ count: 1, missing: [], moved: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_TERMINATORS)('refuses unescaped string line terminators: %j', (terminator) => {
+		const scratch = createScratch({ prefix: 'titles-unescaped-line-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			for (const quote of TITLES_QUOTES) {
+				scratch.write(
+					'tests/read.test.ts',
+					`it('reads', () => {})\nconst label = ${quote}rea${terminator}ds${quote}\n`,
+				)
+				const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+					cwd: scratch.path,
+				})
+				expect(run.status).toBe(2)
+				expect(run.stderr).toContain('Unclosed string token')
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_AMBIGUITIES)('refuses ambiguous block slash contexts: %s', (expression) => {
+		const scratch = createScratch({ prefix: 'titles-ambiguous-brace-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', `${expression}\n`)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('Ambiguous brace before slash')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('excludes registrations inside block comments', () => {
 		const scratch = createScratch({ prefix: 'titles-regions-' })
 		try {
@@ -499,7 +598,7 @@ describe('titles.ts', () => {
 			commitFiles(scratch.path)
 			scratch.write(
 				'tests/sample.test.ts',
-				"const pattern = /'reads'/\nit(`reads ${`record`}`, () => {})\n",
+				"if (true) {}\n/'reads'/.test('other')\nfunction read() {}\n/'reads'/.test('other')\nconst label = 'rea\\\r\nds'\r\nit(`reads ${`record`}`, () => {})\n",
 			)
 			const source = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
 				cwd: scratch.path,

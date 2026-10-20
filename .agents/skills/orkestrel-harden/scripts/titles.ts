@@ -6,6 +6,8 @@
 // escapes only. An each table whose arguments contain ) is not read.
 // Print text by default or one JSON line with --json; --out writes .json or .txt independently.
 // Compare interpolated templates by full raw spelling. Refuse unclosed lexical tokens.
+// Track lexical brace context without a syntax tree. Function-expression and arrow bodies cannot
+// establish a following slash's grammar; refuse that detectable ambiguity instead of claiming a move.
 // Exit 0 with no missing titles, 3 with missing titles, 2 on git, filesystem or token refusal, 64 on usage.
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -44,6 +46,17 @@ interface Token {
 	readonly end: number
 	readonly children: readonly Token[]
 	readonly prefix?: boolean
+	readonly ambiguous?: boolean
+}
+
+interface Brace {
+	readonly category: 'block' | 'expression' | 'template'
+	readonly ambiguous: boolean
+}
+
+interface Parenthesis {
+	readonly prefix: boolean
+	readonly ambiguous: boolean
 }
 
 const TITLE_PATTERN = /^\s*(?:it|test|describe)(?:\.\w+)*(?:\([^)]*\))?\(\s*\0/gmu
@@ -60,7 +73,8 @@ function decodeTitle(text: string, token: Token): string {
 class TokenScanner {
 	readonly #text: string
 	readonly #file: string
-	readonly #parentheses: boolean[] = []
+	readonly #parentheses: Parenthesis[] = []
+	readonly #braces: Brace[] = []
 	#position = 0
 
 	constructor(text: string, file: string) {
@@ -79,26 +93,6 @@ class TokenScanner {
 			const start = this.#position
 			const rest = this.#text.slice(start)
 			const character = this.#text[start]
-			if (character === '}' && expression) {
-				this.#position += 1
-				return tokens
-			}
-			if (character === '{') {
-				this.#position += 1
-				tokens.push({ category: 'code', start, end: this.#position, children: [] })
-				tokens.push(...this.#readCode(true, depth + 1))
-				tokens.push({
-					category: 'code',
-					start: this.#position - 1,
-					end: this.#position,
-					children: [],
-				})
-				continue
-			}
-			if (character === '`') {
-				tokens.push(this.#readTemplate(depth + 1))
-				continue
-			}
 			const previous = tokens.findLast(
 				(token) =>
 					token.category !== 'line' &&
@@ -106,6 +100,45 @@ class TokenScanner {
 					this.#text.slice(token.start, token.end).trim().length > 0,
 			)
 			const spelling = previous === undefined ? '' : this.#text.slice(previous.start, previous.end)
+			if (character === '}' && expression) {
+				this.#position += 1
+				return tokens
+			}
+			if (character === '{') {
+				const block =
+					previous === undefined
+						? this.#braces.at(-1)?.category !== 'template'
+						: previous.category === 'code' &&
+							/^(?:\)|=>|;|\{|\}|else|try|finally|do)$/u.test(spelling)
+				this.#braces.push({
+					category: block ? 'block' : 'expression',
+					ambiguous: block && (spelling === '=>' || previous?.ambiguous === true),
+				})
+				this.#position += 1
+				tokens.push({ category: 'code', start, end: this.#position, children: [] })
+				tokens.push(...this.#readCode(true, depth + 1))
+				const brace = this.#braces.pop()
+				tokens.push({
+					category: 'code',
+					start: this.#position - 1,
+					end: this.#position,
+					children: [],
+					prefix: brace?.category === 'block',
+					ambiguous: brace?.ambiguous === true,
+				})
+				continue
+			}
+			if (character === '`') {
+				tokens.push(this.#readTemplate(depth + 1))
+				continue
+			}
+			if (
+				character === '/' &&
+				!rest.startsWith('//') &&
+				!rest.startsWith('/*') &&
+				previous?.ambiguous === true
+			)
+				throw new Error(`${this.#file}:${start}: Ambiguous brace before slash`)
 			const regex =
 				character === '/' &&
 				!rest.startsWith('//') &&
@@ -131,8 +164,8 @@ class TokenScanner {
 						? /^\/\*[\s\S]*?\*\//u.exec(rest)
 						: category === 'string'
 							? (character === "'"
-									? /^'(?:\\[\s\S]|[^'\\\r\n])*'/u
-									: /^"(?:\\[\s\S]|[^"\\\r\n])*"/u
+									? /^'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n\u2028\u2029])*'/u
+									: /^"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n\u2028\u2029])*"/u
 								).exec(rest)
 							: category === 'regex'
 								? /^\/(?:\\[^\r\n]|\[(?:\\[^\r\n]|[^\]\\\r\n])*\]|[^/\\[\r\n])*\/[a-z]*/iu.exec(
@@ -142,10 +175,38 @@ class TokenScanner {
 			if (match === null) throw new Error(`${this.#file}:${start}: Unclosed ${category} token`)
 			this.#position += match[0].length
 			if (category === 'code' && character === '(') {
-				this.#parentheses.push(/^(?:if|while|for|with|switch|catch)$/u.test(spelling))
+				const words = tokens
+					.filter((token) => token.category === 'code')
+					.map((token) => this.#text.slice(token.start, token.end))
+					.filter((word) => word.trim().length > 0)
+				const keyword = words.findLastIndex((word) => word === 'function')
+				const callable =
+					keyword >= 0 &&
+					words
+						.slice(keyword + 1)
+						.every((word) => word === '*' || /^[\p{ID_Start}_$][\p{ID_Continue}$]*$/u.test(word))
+				const before = words[words[keyword - 1] === 'async' ? keyword - 2 : keyword - 1]
+				this.#parentheses.push({
+					prefix: /^(?:if|while|for|with|switch|catch)$/u.test(spelling),
+					ambiguous:
+						callable &&
+						(before === undefined
+							? this.#braces.at(-1)?.category === 'template'
+							: /^(?:[=(,:[?+\-*/%&|^!~<>]|=>|return|throw|yield|await|case|new|void|typeof|delete|instanceof|in|of)$/u.test(
+									before,
+								)),
+				})
 			}
-			const prefix = category === 'code' && character === ')' ? this.#parentheses.pop() : undefined
-			tokens.push({ category, start, end: this.#position, children: [], prefix: prefix === true })
+			const parenthesis =
+				category === 'code' && character === ')' ? this.#parentheses.pop() : undefined
+			tokens.push({
+				category,
+				start,
+				end: this.#position,
+				children: [],
+				prefix: parenthesis?.prefix === true,
+				ambiguous: parenthesis?.ambiguous === true,
+			})
 		}
 		if (expression)
 			throw new Error(`${this.#file}:${this.#position}: Unclosed template expression or brace`)
@@ -165,7 +226,9 @@ class TokenScanner {
 			} else if (this.#text.startsWith('${', this.#position)) {
 				const opening = this.#position
 				this.#position += 2
+				this.#braces.push({ category: 'template', ambiguous: false })
 				const expression = this.#readCode(true, depth)
+				this.#braces.pop()
 				children.push({
 					category: 'code',
 					start: opening,

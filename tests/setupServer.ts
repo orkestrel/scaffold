@@ -5188,6 +5188,47 @@ export const DISCOVERY_SCRIPT = '.agents/skills/orkestrel-harden/scripts/discove
 /** Names the checkout-relative path of the harden skill's `titles` script. */
 export const TITLES_SCRIPT = '.agents/skills/orkestrel-harden/scripts/titles.ts'
 
+/** Supplies statement contexts whose closing braces permit regex literals. */
+export const TITLES_STATEMENTS: readonly string[] = Object.freeze([
+	'if (true) {}',
+	'function read() {}',
+	'; {}',
+	'if (false) {} else {}',
+	'try {} finally {}',
+	'do {} while (false);',
+	'{ {} }',
+	'const read = () => { if (true) {}\n/other/.test("other") };',
+])
+
+/** Supplies expression contexts whose closing braces retain division. */
+export const TITLES_EXPRESSIONS: readonly string[] = Object.freeze([
+	'const amount = {} / 3 / 2',
+	'const amount = ({}) / 3 / 2',
+	'const amount = [{}][0] / 3 / 2',
+	'const amount = `${{} / 3 / 2}`',
+	'const amount = true ? {} / 3 / 2 : 0',
+	'function read() { return {} / 3 / 2 }',
+])
+
+/** Supplies line terminator sequences for escaped and unescaped string boundaries. */
+export const TITLES_TERMINATORS: readonly string[] = Object.freeze([
+	'\r\n',
+	'\n',
+	'\r',
+	'\u2028',
+	'\u2029',
+])
+
+/** Supplies the quote forms whose line continuations the scanner reads. */
+export const TITLES_QUOTES: readonly string[] = Object.freeze(["'", '"'])
+
+/** Supplies detectable function-body slash ambiguities that must refuse classification. */
+export const TITLES_AMBIGUITIES: readonly string[] = Object.freeze([
+	'const amount = function read() {} / 3 / 2',
+	'const amount = () => {} / 3 / 2',
+	"const text = `${function read() {} / 'reads' / 2}`",
+])
+
 /** Names the checkout-relative path of the scout skill's `map` script. */
 export const MAP_SCRIPT = '.agents/skills/orkestrel-scout/scripts/map.ts'
 
