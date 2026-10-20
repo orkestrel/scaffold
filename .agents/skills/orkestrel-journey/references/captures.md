@@ -30,7 +30,8 @@ file is written to, and the flag as `enabled`.
   picture is one element.
 - Take `enabled` from `inject('capture')`, which the generated root configuration provides from the
   `CAPTURE` environment variable set to `1` in the shell that runs the axis. An ordinary run leaves
-  it false, so `place` returns `undefined`, resizes nothing, writes nothing, and records nothing.
+  it false, so `place` returns `undefined`, resizes nothing, writes nothing, records no placement,
+  and still refuses an unregistered state and a second placement of one state.
 - Read `files` for the registry expanded across every variant, `placements` for what this run placed,
   and `paths` for what it wrote. Each hands back a snapshot.
 - Reach for `readFrame` where the written image itself is the subject — its decoded size, or its
@@ -42,8 +43,8 @@ The package already refuses these, so assert none of them again:
 | Refusal                                                              | Raised by             |
 | -------------------------------------------------------------------- | --------------------- |
 | `Capture variant "<name>" is not registered`                         | `createPortfolio`     |
-| `Capture state "<state>" is not registered`                          | `place`, when enabled |
-| `Capture state "<state>" is already placed`                          | `place`, when enabled |
+| `Capture state "<state>" is not registered`                          | `place`, in every run |
+| `Capture state "<state>" is already placed`                          | `place`, in every run |
 | `Capture frame at <path> is not the one this run shot`               | `captureFrame`        |
 | `Capture frame was written to <written> where <asked> was asked for` | `captureFrame`        |
 
@@ -92,11 +93,11 @@ Write each of the following proofs into the suite. The package asserts none of t
 - Keep the filename proof always-on, so a registry edit that introduces a duplicate or a collision
   fails the ordinary run. Compare `expandCaptures(states, variants)` against `files` and against a
   set built from it; a length equal to the set's size is what proves the expansion unique.
-- Assert placement as set equality against the registry, in every run. Never assert a count: a count
-  passes while one state is placed twice and another never.
-- Read the placement proof from the suite's own set rather than from `placements`. An ordinary run's
-  `place` returns before it reads the registry, so `placements` is empty there and an unregistered name
-  reaches no refusal until a capture run. The always-on placement proof is what catches it.
+- Assert placement as set equality against the registry, in every run.
+- Read the placement proof from the suite's own set rather than from `placements`, which stays empty
+  in an ordinary run. `place` refuses an unregistered name and a second placement of one state in
+  every run, but a registered state that no journey placed reaches no refusal; the always-on
+  placement proof catches it.
 - Under the flag, assert the written filenames equal the registry expanded for the run's variant.
   `captureFrame` already reads each file back and compares its bytes against the frame it shot, so
   the path `place` returns is proof the file exists and holds that frame.

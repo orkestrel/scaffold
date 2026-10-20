@@ -38,6 +38,7 @@ A re-run takes a successor brief named per `.agents/orchestration.md` § Dispatc
 - "The guide is true." Ask whether a false universal was replaced by an unfalsifiable one.
 - "The package is coherent as a whole. Would you ship this?"
 - "The self-declared sound-and-unchanged verdicts are sound." Require the lane to test the ones it judges most likely wrong.
+- "The rewrite preserves behavior." Judge it by `.agents/skills/orkestrel-harden/references/equivalence.md`, and require a differential row for each class it names that the changed code admits.
 
 ## Sentences that change lane behavior
 

@@ -92,6 +92,8 @@ Run `node .agents/skills/orkestrel-harden/scripts/discovery.ts` for the discover
 - helpers do not reimplement production logic;
 - real cleanup runs even after assertion or setup failure.
 
+Collection evaluates every collected project's `setupFiles`, so the census runs each setup module's load-time work, and `--projects` narrows the report, never that listing. When a setup module contacts a live service at load, such as a `service` project's readiness gate in `tests/setupService.ts`, run the census only while an instance the run may contact is up and the service's address points at it; with the address on a closed port, that project's listing fails and the census exits 2 naming its gate.
+
 ## Inspect generated outputs
 
 - build all supported environments;

@@ -34,6 +34,10 @@ Load [centralization.md](references/centralization.md) for every structural lane
 
 Load [hardening.md](references/hardening.md) for the hardening lane and for any request involving concurrency, lifecycle pressure, security boundaries, real services/models, test discovery, or package inspection.
 
+Load [bindings.md](references/bindings.md) for a census or a sweep under `.claude/rules/typescript.md` § Bindings, together with [equivalence.md](references/equivalence.md).
+
+Load [equivalence.md](references/equivalence.md) for a structural lane whose rewrite claims unchanged behavior, and cite it in the claims of the review that judges one.
+
 ## Execute the workflow
 
 1. **Bound the campaign.** Record requested outcomes, in-scope environments/domains, explicit exclusions, supported hosts, dirty files, and evidence needed for acceptance.
