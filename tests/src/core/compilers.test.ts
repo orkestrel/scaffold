@@ -1,11 +1,12 @@
 import type { Axis, Environment } from '@src/core'
 import type { PluginOption, UserConfig } from 'vite'
 import { isRecord } from '@orkestrel/contract'
+import { createGuide } from '@orkestrel/guide'
 import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { posix, resolve } from 'node:path'
+import { readFileSync, readdirSync } from 'node:fs'
+import { basename, join, posix, resolve } from 'node:path'
 import {
 	artifactsToQuestions,
 	blueprintToConfigArtifacts,
@@ -105,6 +106,7 @@ import {
 	SCRIPT_REGION,
 	SCRIPT_SECTION,
 } from '../../setup.js'
+import { collectPolicyDeclarations } from '../../setupPolicy.js'
 import {
 	buildEntryWorkspace,
 	buildEnvironment,
@@ -3966,6 +3968,50 @@ describe('blueprintToConfigArtifacts app check scopes', () => {
 	]
 }
 `)
+	})
+})
+
+describe('emitted setup claims', () => {
+	it('emits every planned setup module without an export that a hosted guide claims', () => {
+		const blueprint = createBlueprint('template-claims', {
+			src: ['core', 'browser', 'server'],
+			app: ['core', 'browser', 'server'],
+			styles: true,
+			themes: true,
+			global: true,
+			service: true,
+			journey: true,
+		})
+		const setups = blueprintToTestArtifacts(blueprint).filter(({ path }) =>
+			/^tests\/setup[^/.]*\.ts$/u.test(path),
+		)
+		expect(setups.map(({ path }) => path).sort()).toEqual([
+			'tests/setup.ts',
+			'tests/setupBrowser.ts',
+			'tests/setupGlobal.ts',
+			'tests/setupServer.ts',
+			'tests/setupService.ts',
+			'tests/setupStyles.ts',
+		])
+		const readings = setups.map(({ path, content }) =>
+			collectPolicyDeclarations(process.cwd(), path, content),
+		)
+		expect(
+			readings.flatMap(({ violation }) => (violation === undefined ? [] : [violation])),
+		).toEqual([])
+		const exported = readings.flatMap(({ declarations }) => declarations.map(({ name }) => name))
+		const claimed = new Map(
+			readdirSync('guides')
+				.filter((file) => file.endsWith('.md') && file !== 'README.md')
+				.flatMap((file) =>
+					createGuide(readFileSync(join('guides', file), 'utf8'))
+						.surface()
+						.map((symbol): readonly [string, string] => [symbol.name, basename(file, '.md')]),
+				),
+		)
+		expect(
+			exported.filter((name) => claimed.has(name)).map((name) => `${name} (${claimed.get(name)})`),
+		).toEqual([])
 	})
 })
 
