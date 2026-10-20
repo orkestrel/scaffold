@@ -111,6 +111,7 @@ import { collectPolicyDeclarations } from '../../setupPolicy.js'
 import {
 	buildEntryWorkspace,
 	buildEnvironment,
+	ensureTmpRoot,
 	linkPackage,
 	readStatements,
 	runEntry,
@@ -322,6 +323,63 @@ describe('generated defect regressions', () => {
 })
 
 describe('blueprintToProjects', () => {
+	it('loads a sheet project with styles setup only when the target owns the file', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-sheet-setup-' })
+		try {
+			stageRootConfig(createBlueprint('paper', { styles: true }), workspace, 'selected')
+			workspace.write(
+				'selected/sheet.config.ts',
+				"import { sheetProject } from './vite.config.ts'\nexport default sheetProject('src:styles')\n",
+			)
+			const root = join(workspace.path, 'selected')
+			const absent = await loadConfigFromFile(
+				{ command: 'serve', mode: 'test' },
+				join(root, 'sheet.config.ts'),
+				root,
+			)
+			expect(absent?.config.test?.setupFiles).toEqual([
+				'./tests/setup.ts',
+				'./tests/setupBrowser.ts',
+			])
+			workspace.write('selected/tests/setupStyles.ts', 'export {}\n')
+			const present = await loadConfigFromFile(
+				{ command: 'serve', mode: 'test' },
+				join(root, 'sheet.config.ts'),
+				root,
+			)
+			expect(present?.config.test?.setupFiles).toEqual([
+				'./tests/setup.ts',
+				'./tests/setupBrowser.ts',
+				'./tests/setupStyles.ts',
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('registers browser setup only when a browser setup proof is present', () => {
+		for (const blueprint of [
+			createBlueprint('paper', { styles: true }),
+			createBlueprint('paper', { themes: true }),
+			createBlueprint('paper', {
+				styles: true,
+				extensions: [{ surface: 'styles', name: 'print' }],
+			}),
+		]) {
+			expect(blueprintToProjects(blueprint)).not.toContain('setup:browser')
+			expect(blueprintToRootVite(blueprint)).not.toContain("label: 'setup:browser'")
+			expect(blueprintToScripts(blueprint)).not.toHaveProperty('test:setup:browser')
+			expect(blueprintToScripts(blueprint).test).not.toContain('test:setup:browser')
+			const authored = { ...blueprint, setup: ['browser'] as const }
+			expect(blueprintToProjects(authored)).toContain('setup:browser')
+			expect(blueprintToRootVite(authored)).toContain("label: 'setup:browser'")
+			expect(blueprintToScripts(authored)['test:setup:browser']).toContain(
+				'--project setup:browser',
+			)
+			expect(blueprintToScripts(authored).test).toContain('npm run test:setup:browser')
+		}
+	})
+
 	it('lists only the root projects for a workspace without faces or setup proofs', () => {
 		expect(blueprintToProjects(createBlueprint('desk'))).toStrictEqual([
 			'policy',
@@ -420,12 +478,11 @@ describe('blueprintToProjects', () => {
 		).toContain('studies')
 	})
 
-	it('selects themes and browser setup without a base styles face', () => {
+	it('selects themes without browser setup and selects authored setup independently', () => {
 		expect(blueprintToProjects(createBlueprint('desk', { themes: true }))).toStrictEqual([
 			'src:themes',
 			'policy',
 			'config',
-			'setup:browser',
 			'distribution',
 			'probe',
 		])
@@ -987,14 +1044,13 @@ describe('sheet planning', () => {
 			)
 			for (const text of [
 				'export function sheetProject(name: string, override?: UserConfig): UserConfig',
-				"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts']",
+				"existsSync(resolveWorkspacePath('tests/setupStyles.ts'))",
 				"include: ['@orkestrel/test', '@orkestrel/test/browser']",
-				"include: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']",
-				"label: 'setup:browser'",
 			])
 				expect(root.includes(text)).toBe(styled)
+			expect(root).not.toContain("label: 'setup:browser'")
 			expect(root.includes('isolate: false')).toBe(styled)
-			expect(scripts.test?.includes('npm run test:setup:browser')).toBe(styled)
+			expect(scripts.test).not.toContain('npm run test:setup:browser')
 			expect(scripts.build).toContain('npm run build:src')
 			for (const name of [...faces, ...(shape === 'themes-only' ? ['themes'] : [])]) {
 				expect(scripts['build:src']).toContain(`npm run build:src:${name}`)
@@ -1003,9 +1059,7 @@ describe('sheet planning', () => {
 				expect(root).toContain(`'./configs/src/vite.${name}.config.ts'`)
 			}
 			for (const path of ['tests/setupStyles.ts', 'tests/setupStyles.test.ts']) {
-				expect(tests.find((artifact) => artifact.path === path)?.ownership).toBe(
-					styled ? 'birth' : undefined,
-				)
+				expect(tests.find((artifact) => artifact.path === path)).toBeUndefined()
 			}
 			expect(scripts['build:src:styles']).toBe(
 				shape === 'themes'
@@ -4017,15 +4071,6 @@ describe('emitted setup claims', () => {
 		const setups = blueprintToTestArtifacts(blueprint).filter(({ path }) =>
 			/^tests\/setup[^/.]*\.ts$/u.test(path),
 		)
-		expect(setups.map(({ path }) => path).sort()).toEqual([
-			'tests/setup.ts',
-			'tests/setupBrowser.ts',
-			'tests/setupDistribution.ts',
-			'tests/setupGlobal.ts',
-			'tests/setupServer.ts',
-			'tests/setupService.ts',
-			'tests/setupStyles.ts',
-		])
 		const readings = setups.map(({ path, content }) =>
 			collectPolicyDeclarations(process.cwd(), path, content),
 		)
@@ -4045,6 +4090,14 @@ describe('emitted setup claims', () => {
 		expect(
 			exported.filter((name) => claimed.has(name)).map((name) => `${name} (${claimed.get(name)})`),
 		).toEqual([])
+		expect(setups.map(({ path }) => path).sort()).toEqual([
+			'tests/setup.ts',
+			'tests/setupBrowser.ts',
+			'tests/setupDistribution.ts',
+			'tests/setupGlobal.ts',
+			'tests/setupServer.ts',
+			'tests/setupService.ts',
+		])
 	})
 })
 

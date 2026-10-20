@@ -1050,9 +1050,9 @@ The `setup` member is a `readonly SetupRuntime[]`, empty by default. Target infe
 
 The `node` runtime registers the Node `setup` project, which loads `tests/setup.ts` and excludes
 both browser proofs. The `browser` runtime registers `setup:browser`, which collects only the two
-browser proofs and loads `tests/setup.ts` and `tests/setupBrowser.ts` through Playwright Chromium. A
-sheet face registers `setup:browser` as well, because scaffold plans `tests/setupStyles.test.ts`
-beside every sheet face. The generated manifest emits the selected `test:setup` and
+browser proofs and loads `tests/setup.ts` and `tests/setupBrowser.ts` through Playwright Chromium.
+A sheet face alone registers no setup project. A target's browser setup proof selects that project
+through the `browser` runtime. The generated manifest emits the selected `test:setup` and
 `test:setup:browser` scripts and invokes them from `test`. Scaffold generates no setup proof for an
 empty setup seed.
 
@@ -1263,7 +1263,6 @@ same seed. In the following table, `<face>` is `styles` or the extension's name:
 | `_index.scss` in each of `src/<face>/elements`, `components`, and `utilities`       | `birth`    |
 | `src/styles/themes/index.scss`, `_default.scss`, and `sheet.ts`                     | `birth`    |
 | `tests/src/<face>/index.test.ts` and `tests/src/styles/themes/index.test.ts`        | `birth`    |
-| `tests/setupStyles.ts` and `tests/setupStyles.test.ts`                              | `birth`    |
 | `configs/src/vite.<face>.config.ts` and `configs/src/tsconfig.<face>.json`          | `content`  |
 | `configs/src/vite.themes.config.ts`                                                 | `content`  |
 | `tests/setupDistribution.ts`                                                        | `content`  |
@@ -1297,8 +1296,9 @@ path relative to the test file. With themes, `build:src:styles`
 builds the themes target after the base face. The root configuration registers each face's project
 by its wrapper, and the wrapper composes it through the root `sheetProject` factory, which runs it
 in Playwright Chromium with `isolate: false` and loads `tests/setup.ts`, `tests/setupBrowser.ts`,
-and `tests/setupStyles.ts`. The manifest declares `sass` from `STYLES_DEV_DEPENDENCIES` beside the
-Playwright pair, and the root `tsconfig.json` aliases `@src/<face>` to the face's `index.ts`.
+and, when the target has the file, `tests/setupStyles.ts`. The manifest declares `sass` from
+`STYLES_DEV_DEPENDENCIES` beside the Playwright pair, and the root `tsconfig.json` aliases
+`@src/<face>` to the face's `index.ts`.
 
 ### The browser surface
 
@@ -1419,9 +1419,9 @@ names the fleet targets that meet the refusal.
 Scaffold plans each setup seed that declares an export beside its sibling proof, so the module and
 its proof arrive together under the mirror `.claude/rules/tests.md` states:
 
-- `tests/setupStyles.ts` exports the CSSOM instruments every sheet proof reads and arrives with
-  `tests/setupStyles.test.ts`. The emitted sheet proofs import `adoptSheet` and `readLayerNames`
-  from that module, and the sibling proof drives both against sheets it builds from text.
+- The emitted sheet proofs import `adoptSheet` and `readLayerNames` from `@orkestrel/test/browser`.
+  Scaffold seeds no styles setup module or proof because those instruments belong to the package.
+  A target can keep its own `tests/setupStyles.ts` module and sibling proof for its CSSOM instruments.
 - `tests/setupGlobal.ts` exports the Vitest global `setup` function and arrives with
   `tests/setupGlobal.test.ts`, which imports `setup` and runs in the Node `setup` project that
   `test:setup` invokes from `test`.
@@ -2242,8 +2242,8 @@ export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> =
   selected public barrel and records its initial empty exports for the consumer to replace with an
   observable cross-environment flow.
 - One set of template artifacts per sheet face, and one for the themes target: the birth-owned
-  seed, the content-owned wrappers, and the birth-owned entry proof, beside the birth-owned
-  `tests/setupStyles.ts` module and its proof. Surfaces and extensions lists each path.
+  seed, the content-owned wrappers, and the birth-owned entry proof. Surfaces and extensions lists
+  each path.
 - One set of template artifacts per axis the `vue` extension occupies, and one birth-owned arrival
   journey per application of a journey workspace. Surfaces and extensions lists each face.
 - Two template artifacts for a workspace publishing any `src` environment or sheet face: the
@@ -2557,9 +2557,9 @@ implementation that conforms to it, then export both from the barrel — the ord
 is what separates them, and it is the whole rule. Generating a file is not the same as writing one:
 scaffold also writes `tests/policy.test.ts` and `tests/config.test.ts` into a target, byte for byte
 from the shared file set, and the distribution proof is the one it derives from the workspace it is
-writing into. A seed is not generation either: scaffold writes `tests/setupStyles.test.ts`,
-`tests/setupGlobal.test.ts`, and each arrival journey at creation, as birth-owned template bytes
-that prove the modules and applications it seeds beside them. After creation those files are the
+writing into. A seed is not generation either: scaffold writes `tests/setupGlobal.test.ts` and each
+arrival journey at creation, as birth-owned template bytes that prove the modules and applications
+it seeds beside them. After creation those files are the
 workspace's, so no verb compares or restores them.
 
 A distribution proof's every assertion derives from the artifact the workspace installs: the

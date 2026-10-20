@@ -656,9 +656,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			'npm run test:policy',
 			'npm run test:config',
 			...(blueprint.setup.includes('node') || blueprint.global ? ['npm run test:setup'] : []),
-			...(blueprint.setup.includes('browser') || targets.length > 0
-				? ['npm run test:setup:browser']
-				: []),
+			...(blueprint.setup.includes('browser') ? ['npm run test:setup:browser'] : []),
 			...(blueprint.skills ? ['npm run test:skills'] : []),
 			...(blueprint.guides ? ['npm run test:guides'] : []),
 			...(blueprint.conformance ? ['npm run test:conformance'] : []),
@@ -731,7 +729,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.setup.includes('node') || blueprint.global
 			? { 'test:setup': `${vitest} --project setup` }
 			: {}),
-		...(blueprint.setup.includes('browser') || targets.length > 0
+		...(blueprint.setup.includes('browser')
 			? { 'test:setup:browser': `${vitest} --project setup:browser` }
 			: {}),
 		...(blueprint.journey && blueprint.app.includes('browser')
@@ -1273,7 +1271,7 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 		'policy',
 		'config',
 		...(blueprint.setup.includes('node') || blueprint.global ? ['setup'] : []),
-		...(blueprint.setup.includes('browser') || styled ? ['setup:browser'] : []),
+		...(blueprint.setup.includes('browser') ? ['setup:browser'] : []),
 		...(blueprint.guides ? ['guides'] : []),
 		...(blueprint.skills ? ['skills'] : []),
 		...(blueprint.conformance ? ['conformance'] : []),
@@ -1355,12 +1353,16 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	// `src:browser`, `setup:browser`, and `integration` take the same span.
 	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
 	const imports = [
+		...(styled || machinery.showcase
+			? [
+					`import { ${[...(styled ? ['existsSync'] : []), ...(machinery.showcase ? ['renameSync'] : [])].join(', ')} } from 'node:fs'`,
+				]
+			: []),
 		...(machinery.browser ? ["import { playwright } from '@vitest/browser-playwright'"] : []),
 		...(machinery.frameworks.includes('vue') ? ["import vue from '@vitejs/plugin-vue'"] : []),
 		...(machinery.showcase
 			? [
 					"import { viteSingleFile } from 'vite-plugin-singlefile'",
-					"import { renameSync } from 'node:fs'",
 					"import { resolve as resolvePath } from 'node:path'",
 				]
 			: []),
@@ -2104,8 +2106,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 					},
 				]
 			: []
-	// Oxlint's `import/no-absolute-path` refuses a root-relative specifier, so both imports
-	// climb from `tests/src/<name>/`.
+	// Oxlint's `import/no-absolute-path` refuses a root-relative specifier, so the sheet import
+	// climbs from `tests/src/<name>/`.
 	const sheetTests: readonly ContentArtifact[] = sheets.map((name): ContentArtifact => {
 		const tests = '../'.repeat(name.split('/').length + 1)
 		return {
@@ -2116,7 +2118,6 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			content: fillTemplate(ARTIFACT_TEMPLATES.tests.sheet, {
 				name,
 				root: `${tests}../`,
-				setup: `${tests}setupStyles.js`,
 			}),
 		}
 	})
@@ -2375,7 +2376,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			content: ARTIFACT_TEMPLATES.tests.setup,
 		},
 		...faces,
-		...styles,
+		...styles.filter(({ content }) => content.length > 0),
 		...sheetTests,
 		...browsers,
 		...servers,

@@ -210,7 +210,13 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			name: { label: name, color: 'magenta' },
 			root: resolveWorkspacePath('.'),
 			isolate: false,
-			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts'],
+			setupFiles: [
+				'./tests/setup.ts',
+				'./tests/setupBrowser.ts',
+				...(existsSync(resolveWorkspacePath('tests/setupStyles.ts'))
+					? ['./tests/setupStyles.ts']
+					: []),
+			],
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
@@ -1724,8 +1730,8 @@ declare module 'vitest' {
 }
 `,
 		sheet: `import sheet from '{{root}}dist/src/{{name}}/index.css?raw'
+import { adoptSheet, readLayerNames } from '@orkestrel/test/browser'
 import { describe, expect, it } from 'vitest'
-import { adoptSheet, readLayerNames } from '{{setup}}'
 
 describe('{{name}} entry', () => {
 	it('opens with the declared cascade order', () => {
@@ -1749,120 +1755,8 @@ describe('{{name}} entry', () => {
 })
 `,
 		styles: Object.freeze({
-			module: `/** Describes an adopted stylesheet and its idempotent release operation. */
-export interface SheetAdoption {
-	readonly sheet: CSSStyleSheet
-	release(): void
-}
-
-/**
- * Adopts CSS text into the document with an idempotent release operation.
- * @param text - The compiled sheet text.
- * @returns The adopted sheet and its release operation.
- * @example
- * \`\`\`ts
- * const adopted = adoptSheet('.sample { color: red }')
- * adopted.release()
- * \`\`\`
- */
-export function adoptSheet(text: string): SheetAdoption {
-	const sheet = new CSSStyleSheet()
-	sheet.replaceSync(text)
-	document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
-	return {
-		sheet,
-		release: () => {
-			document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
-				(candidate) => candidate !== sheet,
-			)
-		},
-	}
-}
-
-/**
- * Reads layer statements and blocks in declaration order, including repeated names.
- * @param source - The parsed sheet, or a grouping rule inside it.
- * @param layer - The qualified name of the layer that encloses \`source\`, when one does.
- * @returns Qualified layer names, with an empty name for an anonymous layer.
- * @example
- * \`\`\`ts
- * readLayerNames(new CSSStyleSheet()) // []
- * \`\`\`
- */
-export function readLayerNames(
-	source: CSSStyleSheet | CSSGroupingRule,
-	layer?: string,
-): readonly string[] {
-	return Array.from(source.cssRules).flatMap((rule) => [
-		...(rule instanceof CSSLayerStatementRule
-			? rule.nameList
-			: rule instanceof CSSLayerBlockRule
-				? [rule.name]
-				: []
-		).map((name) => (layer === undefined ? name : layer + '.' + name)),
-		...(rule instanceof CSSGroupingRule
-			? readLayerNames(
-					rule,
-					rule instanceof CSSLayerBlockRule
-						? layer === undefined
-							? rule.name
-							: layer + '.' + rule.name
-						: layer,
-				)
-			: []),
-	])
-}
-`,
-			proof: `import type { SheetAdoption } from './setupStyles.js'
-import { describe, expect, it } from 'vitest'
-import { adoptSheet, readLayerNames } from './setupStyles.js'
-
-describe('CSSOM instruments', () => {
-	it('adopts and releases only its own sheet, including repeated release', () => {
-		const previous = [...document.adoptedStyleSheets]
-		const first: SheetAdoption = adoptSheet('.sample { color: red }')
-		try {
-			const second = adoptSheet('.other { display: block }')
-			try {
-				expect(document.adoptedStyleSheets).toEqual([...previous, first.sheet, second.sheet])
-				expect(first.sheet.cssRules.length).toBe(1)
-				first.release()
-				first.release()
-				expect(document.adoptedStyleSheets).toEqual([...previous, second.sheet])
-			} finally {
-				second.release()
-			}
-		} finally {
-			first.release()
-		}
-		expect(document.adoptedStyleSheets).toEqual(previous)
-	})
-
-	it('reads statements, blocks, nested conditions, and anonymous layers in order', () => {
-		const adopted = adoptSheet(
-			'@layer first, second; @layer first { @media all { @layer nested {} } } @layer {}',
-		)
-		try {
-			expect(readLayerNames(adopted.sheet)).toEqual([
-				'first',
-				'second',
-				'first',
-				'first.nested',
-				'',
-			])
-		} finally {
-			adopted.release()
-		}
-	})
-
-	it('returns no layer names for an empty sheet or an unlayered rule', () => {
-		const sheet = new CSSStyleSheet()
-		expect(readLayerNames(sheet)).toEqual([])
-		sheet.replaceSync('.sample { color: red }')
-		expect(readLayerNames(sheet)).toEqual([])
-	})
-})
-`,
+			module: '',
+			proof: '',
 		}),
 		setup: '',
 		global: Object.freeze({

@@ -98,6 +98,40 @@ describe('pointer documents', () => {
 })
 
 describe('configuration templates', () => {
+	it('imports sheet instruments from the browser package without seeding local copies', () => {
+		expect(ARTIFACT_TEMPLATES.tests.sheet).toContain(
+			"import { adoptSheet, readLayerNames } from '@orkestrel/test/browser'",
+		)
+		expect(ARTIFACT_TEMPLATES.tests.sheet).not.toContain('{{setup}}')
+		expect(ARTIFACT_TEMPLATES.tests.styles.module).toBe('')
+		expect(ARTIFACT_TEMPLATES.tests.styles.proof).toBe('')
+	})
+
+	it('omits empty styles setup seeds from base, themes, and extension targets', () => {
+		for (const blueprint of [
+			createBlueprint('paper', { styles: true }),
+			createBlueprint('paper', { themes: true }),
+			createBlueprint('paper', {
+				styles: true,
+				extensions: [{ surface: 'styles', name: 'print' }],
+			}),
+		]) {
+			const artifacts = blueprintToTestArtifacts(blueprint)
+			expect(artifacts.map(({ path }) => path)).toContain('tests/setupBrowser.ts')
+			expect(artifacts.filter(({ path }) => path.startsWith('tests/src/')).length).toBeGreaterThan(
+				0,
+			)
+			expect(artifacts.map(({ path }) => path)).not.toContain('tests/setupStyles.ts')
+			expect(artifacts.map(({ path }) => path)).not.toContain('tests/setupStyles.test.ts')
+			for (const sheet of artifacts.filter(({ path }) => path.startsWith('tests/src/'))) {
+				expect(sheet.content).toContain(
+					"import { adoptSheet, readLayerNames } from '@orkestrel/test/browser'",
+				)
+				expect(sheet.content).not.toContain('setupStyles')
+			}
+		}
+	})
+
 	it('seeds each planned setup module with the exact transcribed bytes', () => {
 		expect(ARTIFACT_TEMPLATES.tests.setup).toBe(PLANNED_SETUP_SEED)
 		expect(ARTIFACT_TEMPLATES.tests.global.module).toBe(PLANNED_GLOBAL_SEED)
