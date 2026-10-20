@@ -4572,15 +4572,22 @@ export function collectFaceWrappers(directory: string): readonly string[] {
  * Inspects sheet setup membership and themes ordering from configuration data.
  * @param project - The resolved sheet project.
  * @param script - The optional chained styles and themes build command.
+ * @param directory - The target workspace root; defaults to the policy root.
  * @returns Missing setup paths and invalid isolation or ordering fields.
  */
-export function inspectSheetConfiguration(project: unknown, script?: string): readonly string[] {
+export function inspectSheetConfiguration(
+	project: unknown,
+	script?: string,
+	directory: string = POLICY_ROOT,
+): readonly string[] {
 	const test = readConfigRecord(readConfigRecord(project).test)
 	const setup = test.setupFiles
 	return [
-		...['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts'].filter(
-			(path) => !Array.isArray(setup) || !setup.includes(path),
-		),
+		...[
+			'./tests/setup.ts',
+			'./tests/setupBrowser.ts',
+			...(existsSync(resolve(directory, 'tests/setupStyles.ts')) ? ['./tests/setupStyles.ts'] : []),
+		].filter((path) => !Array.isArray(setup) || !setup.includes(path)),
 		...(test.isolate !== false ? ['isolate'] : []),
 		...(script !== undefined &&
 		(!script.includes('vite.styles.config.ts') ||

@@ -263,25 +263,46 @@ describe('configuration infrastructure', () => {
 			scratch.destroy()
 		}
 	})
-	it('inspects sheet setup, isolation, and themes order with failing controls', () => {
+	it('requires styles setup only when the target has the file and preserves isolation and themes order', () => {
 		const project = {
 			test: {
 				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts'],
 				isolate: false,
 			},
 		}
-		expect(
-			inspectSheetConfiguration(project, 'vite.styles.config.ts && vite.themes.config.ts'),
-		).toEqual([])
-		expect(inspectSheetConfiguration({ test: {} })).toEqual([
-			'./tests/setup.ts',
-			'./tests/setupBrowser.ts',
-			'./tests/setupStyles.ts',
-			'isolate',
-		])
-		expect(
-			inspectSheetConfiguration(project, 'vite.themes.config.ts && vite.styles.config.ts'),
-		).toEqual(['themes order'])
+		const scratch = createPolicyScratch({ prefix: 'scaffold-sheet-setup-' })
+		const withoutStyles = {
+			test: { ...project.test, setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'] },
+		}
+		try {
+			expect(inspectSheetConfiguration(withoutStyles, undefined, scratch.path)).toEqual([])
+			scratch.write('tests/setupStyles.ts', 'export {}\n')
+			expect(inspectSheetConfiguration(withoutStyles, undefined, scratch.path)).toEqual([
+				'./tests/setupStyles.ts',
+			])
+			expect(
+				inspectSheetConfiguration(
+					project,
+					'vite.styles.config.ts && vite.themes.config.ts',
+					scratch.path,
+				),
+			).toEqual([])
+			expect(inspectSheetConfiguration({ test: {} }, undefined, scratch.path)).toEqual([
+				'./tests/setup.ts',
+				'./tests/setupBrowser.ts',
+				'./tests/setupStyles.ts',
+				'isolate',
+			])
+			expect(
+				inspectSheetConfiguration(
+					project,
+					'vite.themes.config.ts && vite.styles.config.ts',
+					scratch.path,
+				),
+			).toEqual(['themes order'])
+		} finally {
+			scratch.destroy()
+		}
 	})
 	it('reads real import diagnostics and refuses an uncollected sentinel', () => {
 		const scratch = createPolicyScratch({ prefix: 'scaffold-diagnostics-' })

@@ -1396,7 +1396,7 @@ The vendored `tests/config.test.ts` proves those files in each target that holds
 enumerates the sheet faces and the framework faces from the target's tree rather than from the
 emitted wrappers, requires a non-empty population only where a marker exists, loads every selected
 wrapper, and pairs each behaviour with a mutation control in a scratch copy: a deleted wrapper, a
-removed `tests/setupStyles.ts` entry, a reversed themes build order, a disabled Vue import
+removed `tests/setupStyles.ts` entry when the target has that file, a reversed themes build order, a disabled Vue import
 restriction, and disabled declaration rewrites each fail it. Scaffold's own release gate adds a
 scratch adopter: `tests/distribution.test.ts` generates the complete selection through the packed
 executable, installs it, runs its checks, builds, projects, journey modes, showcase builds, and CSS

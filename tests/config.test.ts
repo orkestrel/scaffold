@@ -323,16 +323,27 @@ describe('selected faces', () => {
 		}
 		const script =
 			'vite build --config configs/src/vite.styles.config.ts && vite build --config configs/src/vite.themes.config.ts'
-		expect(inspectSheetConfiguration(project, script)).toEqual([])
-		expect(
-			inspectSheetConfiguration(
-				{ test: { ...project.test, setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'] } },
-				script,
-			),
-		).toContain('./tests/setupStyles.ts')
-		expect(
-			inspectSheetConfiguration(project, script.split(' && ').reverse().join(' && ')),
-		).toContain('themes order')
+		const scratch = createPolicyScratch({ prefix: 'config-sheet-setup-' })
+		const withoutStyles = {
+			test: { ...project.test, setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'] },
+		}
+		try {
+			expect(inspectSheetConfiguration(withoutStyles, script, scratch.path)).toEqual([])
+			scratch.write('tests/setupStyles.ts', 'export {}\n')
+			expect(inspectSheetConfiguration(project, script, scratch.path)).toEqual([])
+			expect(inspectSheetConfiguration(withoutStyles, script, scratch.path)).toContain(
+				'./tests/setupStyles.ts',
+			)
+			expect(
+				inspectSheetConfiguration(
+					project,
+					script.split(' && ').reverse().join(' && '),
+					scratch.path,
+				),
+			).toContain('themes order')
+		} finally {
+			scratch.destroy()
+		}
 	})
 
 	it('resolves showcase and journey modes for every occupied application', async () => {
