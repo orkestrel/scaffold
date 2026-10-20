@@ -616,7 +616,7 @@
 			"storage": "claude/rules/typescript.md",
 			"destination": ".claude/rules/typescript.md",
 			"executable": false,
-			"digest": "eff5a0932ca36ea77210020bc9f2fc86efcfb39303e97fef4ad75317da763785"
+			"digest": "07cd9bc855199ce586d91a4849f0c021efe09a25ebb0c9ff1e2828c8ff337b6a"
 		},
 		{
 			"storage": "claude/rules/workspace.md",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "956e31d9c8e5eaf5c75b7e6702d3e7246e133fc3679cc88361d8ba54f56c62c9"
+	"digest": "17bc8c1e3d9209d7abb52a5013d4f9b0e3c770b1b0b786396f1a9fb5239c2e3d"
 }

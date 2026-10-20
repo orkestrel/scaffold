@@ -200,6 +200,35 @@ type Result<T, E = Error> = Success<T> | Failure<E>
 - Otherwise construct and narrow through the owning environment's centralized helpers.
 - Error classes expose a machine-readable `code` and optional `context`.
 - Every public error class ships with a guard such as `isAppError` for safe `catch` narrowing.
+  Make the guard return true for a value that passes the brand and member checks the following
+  bullet prescribes, an instance of a subclass included, and false for a value that fails them, a
+  transparent `Proxy` object over a branded error included. Make those checks recognize an error
+  from any copy of the package that stamps the brand: another installed version, the other module
+  format, or an entry that bundles its own copy. Treat the brand as a recognition marker, never as
+  proof that the class's constructor ran. Never answer through the `instanceof` operator or the
+  `isInstance` function against the class.
+- Brand every public error class for that guard:
+  - key the brand `Symbol.for('<package>.<ClassName>')`, where `<package>` is the manifest's `name`
+    field and `<ClassName>` is the class identifier, and keep a key the package has published, such
+    as `Symbol.for('@orkestrel/contract.error')`, because a changed key stops recognizing every
+    earlier copy;
+  - in the constructor, define an own non-enumerable, non-writable property under that key whose
+    value is the error itself, so that a subclass instance holds its own identity there and a
+    transparent `Proxy` object over the error forwards its target's;
+  - in the guard, require an instance of the global `Error` whose prototype is not
+    `Error.prototype`, the own brand property whose value is the tested value itself, a `code` from
+    the class's declared codes where the class declares them, and each other member the class
+    declares, checked against its declared type, under the guard law in
+    `.claude/rules/patterns.md` § Validation and contracts; never require the class's `name`, which
+    a subclass replaces;
+  - where `@orkestrel/contract` is declared, read through its `INTRINSICS` constant inside its
+    `holds` function.
+- Prove the guard in `tests/distribution.test.ts` against two copies of the packed package, each
+  copy's guard reading the other copy's error: the `require` entry against the `import` entry where
+  the package ships both, and the installed package against a copy of its files at a second path.
+  Prove beside it that the guard accepts an instance of a subclass and refuses a look-alike error
+  with the same `code` and no brand, a transparent `Proxy` object over a branded error, and a plain
+  object that only carries the brand.
 
 ## Comments and API documentation
 
