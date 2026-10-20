@@ -5,6 +5,7 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 ## Launch
 
 - Launch as a harness-tracked background command through `scripts/launch.ts` under a hard cap. Never detach a run from inside a dispatched agent; an unowned run has no completion signal and no death notice.
+- On Windows, launch npm through its JavaScript entry, `node <directory of node>/node_modules/npm/bin/npm-cli.js ARGS`: `launch.ts` spawns with no shell, a `.cmd` shim cannot start that way, and the launcher reports exit `127`.
 - Write a multi-step chain as a TypeScript file run by `node`, with an opening comment naming its log, its cap, and what changed from the file it supersedes. Never edit a script while it runs: copy, edit the copy, launch the copy.
 - On Windows, keep every program-carrying command in a file: a heredoc, `node -e`, an `&&` chain, or a `${...}` argument trips the approval classifier.
 - Run the first use of any flag, subcommand, or quoting form in a throwaway probe, never inside a unit.

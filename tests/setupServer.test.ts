@@ -109,6 +109,8 @@ import {
 	createSink,
 	createStagedHost,
 	createSwapRegistry,
+	createWaveRecording,
+	createWaveSession,
 	createSwapSession,
 	createUpstreamServer,
 	createWhoamiRegistry,
@@ -2305,6 +2307,86 @@ describe('the emitted-template staging', () => {
 })
 
 describe('the command fixtures served from a registry', () => {
+	it('seeds the committed overwrite recorder and isolates its npm cache under tmp', () => {
+		const fixture = createWaveRecording('orkestrel-wave-recording-')
+		try {
+			expect(fixture.scratch.read('node_modules/@orkestrel/scaffold/package.json')).toContain(
+				'9.9.9',
+			)
+			expect(fixture.scratch.read('tmp/answer.json')).toBe(
+				JSON.stringify({ written: ['configs/fixture.ts'], removed: ['removed.txt'] }),
+			)
+			expect(fixture.environment.npm_config_cache).toBe(join(fixture.target, 'tmp', 'npm-cache'))
+			expect(
+				spawnSync('git', ['status', '--porcelain'], { cwd: fixture.target, encoding: 'utf8' })
+					.stdout,
+			).toBe('')
+		} finally {
+			fixture.scratch.destroy()
+		}
+	})
+	it('serves the A0 exact-peer shape and reproduces ERESOLVE on a probe re-pin', async () => {
+		const session = await createWaveSession('orkestrel-wave-precondition-')
+		try {
+			const packuments = await Promise.all(
+				['vt', 'bp', 'br', 'pr'].map(async (name) =>
+					(await fetch(`${session.registry.url}${name}`)).json(),
+				),
+			)
+			expect(packuments).toMatchObject([
+				{
+					versions: {
+						'1.0.0': {
+							peerDependencies: { bp: '1.0.0' },
+							peerDependenciesMeta: { bp: { optional: true } },
+							dist: { integrity: expect.stringMatching(/^sha512-/u) },
+						},
+						'1.0.1': { peerDependencies: { bp: '1.0.1' } },
+					},
+				},
+				{
+					versions: {
+						'1.0.0': { peerDependencies: { vt: '1.0.0' }, dependencies: { br: '1.0.0' } },
+						'1.0.1': { peerDependencies: { vt: '1.0.1' }, dependencies: { br: '1.0.1' } },
+					},
+				},
+				{
+					versions: {
+						'1.0.0': { peerDependencies: { vt: '1.0.0' } },
+						'1.0.1': { peerDependencies: { vt: '1.0.1' } },
+					},
+				},
+				{
+					versions: {
+						'1.0.0': {
+							peerDependencies: { vt: '^1.0.0' },
+							peerDependenciesMeta: { vt: { optional: true } },
+						},
+						'1.0.1': {
+							peerDependencies: { vt: '^1.0.1' },
+							peerDependenciesMeta: { vt: { optional: true } },
+						},
+					},
+				},
+			])
+			const manifest = session.scratch.read('consumer/package.json')
+			if (manifest === undefined) throw new Error('The wave manifest is absent')
+			session.scratch.write(
+				'consumer/package.json',
+				manifest.replace('"pr": "^1.0.0"', '"pr": "^1.0.1"'),
+			)
+			const run = await spawnNpm(['install', '--ignore-scripts'], {
+				workspace: session.target,
+				environment: session.environment,
+			})
+			console.log(`Wave P1 exit=${run.code}\n${run.stdout}\n${run.stderr}`)
+			expect(run.code).toBe(1)
+			expect(run.stderr).toContain('code ERESOLVE')
+			expect(run.stderr).toContain('Conflicting peer dependency: vt@1.0.1')
+		} finally {
+			await session.destroy()
+		}
+	}, 60_000)
 	it('serves a packument for each fleet package and a guide for each fleet mirror', () => {
 		for (const reply of Object.values(FLEET_RELEASE_REPLIES)) {
 			expect(reply.status).toBe(200)

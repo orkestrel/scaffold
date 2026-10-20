@@ -45,18 +45,20 @@ import {
 	readFileSync,
 	realpathSync,
 	renameSync,
-	rmSync,
 	writeFileSync,
 } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import {
+	isRecord,
 	normalizeSlashes,
 	parseJsonRecord,
 	readMissingFlags,
 	readOption,
 	readOptions,
 	readString,
+	removeTree,
 	runNpm,
+	scanLocalSpecs,
 } from '../../orkestrel-dispatch/scripts/helpers.ts'
 
 type Manifest = Readonly<Record<string, unknown>>
@@ -256,25 +258,6 @@ const OVERRIDE_PRECEDERS: readonly string[] = [
 	'resolutions',
 ]
 
-// The manifest blocks whose values are dependency specs; `overrides` nests records of them.
-const SPEC_BLOCKS: readonly string[] = [
-	'dependencies',
-	'devDependencies',
-	'peerDependencies',
-	'optionalDependencies',
-	'overrides',
-]
-
-// npm-package-arg reads a spec as local when it carries a `file:` or `link:` prefix or begins like a
-// path: a dot, `~/`, a separator, or a drive letter.
-const LOCAL_SPEC_PATTERN = /^(?:file:|link:|\.|~[\\/]|[\\/]|[A-Za-z]:)/iu
-
-// It also reads a spec as local when the spec ends in an archive extension and carries no protocol...
-const ARCHIVE_SPEC_PATTERN = /^[^:]+\.(?:tgz|tar\.gz|tar)$/iu
-
-// ...unless the spec is a `user/repo` shorthand, which names a hosted repository whatever it ends in.
-const SHORTHAND_SPEC_PATTERN = /^[^:@%/\s.-][^:@%/\s]*\/[^:@\s/%]+$/u
-
 // An optional `@scope/` and a name of the characters a registry URL carries untouched; a path
 // separator beyond the scope's one `/`, an absolute form, and a drive form fall outside it.
 const PACKAGE_NAME_PATTERN = /^(?:@[A-Za-z0-9~-][A-Za-z0-9._~-]*\/)?[A-Za-z0-9~-][A-Za-z0-9._~-]*$/u
@@ -286,18 +269,6 @@ const USAGE = [
 	'       swap.ts --restore --consumer DIR [--package NAME ...] [--json]',
 	'       swap.ts --status --consumer DIR [--json]',
 ].join('\n')
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isLocalSpec(spec: string): boolean {
-	const text = spec.trimStart()
-	return (
-		LOCAL_SPEC_PATTERN.test(text) ||
-		(ARCHIVE_SPEC_PATTERN.test(text) && !SHORTHAND_SPEC_PATTERN.test(text))
-	)
-}
 
 function isPackageName(name: string): boolean {
 	return (
@@ -899,10 +870,6 @@ function replaceFile(path: string, text: string): void {
 	renameSync(temporary, path)
 }
 
-function removeTree(path: string): void {
-	rmSync(path, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 })
-}
-
 // Vite keys its pre-bundle on the installed version, so a same-version tarball would serve stale bytes.
 function installConsumer(consumer: string): void {
 	invokeNpm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], consumer)
@@ -1146,20 +1113,9 @@ function readPackedManifest(directory: string): string | undefined {
 // or not a ledger recorded the spec.
 function scanPackedSpecs(source: Source): readonly string[] {
 	const manifest = loadPackedManifest(source.directory)
-	return SPEC_BLOCKS.flatMap((block) =>
-		collectSpecs(block, manifest[block]).flatMap(([path, spec]) =>
-			isLocalSpec(spec)
-				? [`${source.name} would pack a local dependency spec: ${path} is ${spec}`]
-				: [],
-		),
+	return scanLocalSpecs(manifest).map(
+		([path, spec]) => `${source.name} would pack a local dependency spec: ${path} is ${spec}`,
 	)
-}
-
-// An `overrides` value can nest records, so the path names every key down to the spec.
-function collectSpecs(path: string, value: unknown): ReadonlyArray<readonly [string, string]> {
-	if (typeof value === 'string') return [[path, value]]
-	if (!isRecord(value)) return []
-	return Object.entries(value).flatMap(([key, child]) => collectSpecs(`${path}.${key}`, child))
 }
 
 // A source that carries a ledger of its own has its manifest rewritten to the recorded ranges for the

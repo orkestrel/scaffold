@@ -9,10 +9,20 @@ prepare the next.
 
 `scripts/wave.ts --visit` runs these steps in this order and stops at the first one that fails; a
 step that reads generated or installed state is invalid before the step that writes it. Run a step
-by hand only to repair it, then resume with `--from <step>`.
+by hand only to repair it, then resume with `--from <step>`. Read a failed step's journal, which
+its row names under the target's `tmp/units/wave/`, before running the step again. Journals and
+overwrite receipts are written only where the work tree ignores `tmp/`.
 
-1. Re-pin every `@orkestrel` range to the registry caret (peer ranges included) and install, so
-   the overwrite runs the current vendored host.
+1. Re-pin every range the audit's release readings name to the caret of its returned release,
+   and install before the overwrite. Read the audit population as the declared `@orkestrel`
+   dependencies in `dependencies` and `devDependencies`, plus declared foreign tools that the
+   blueprint plans in those sections; exclude the fixed showcase tool pair from ordinary release lookups.
+   Look up fleet releases with `*`; look up foreign tools with
+   a caret over the declared major when one can be extracted, otherwise with the declared range.
+   Do not treat a declared minor or patch bound as the lookup bound. Peer-only dependencies produce no release reading;
+   rewrite a peer range only when its name shares an audited release reading. For example, with
+   peer-only `@orkestrel/peer-only: ^0.0.1`, leave that peer unchanged; with a planned tool whose
+   registry serves `8.3.4`, apply `vite: ~8.2.0 -> ^8.3.4` even though the tilde excludes `8.3.4`.
 2. Commit the manifest and the lockfile as the preparation commit. `scaffold overwrite` refuses a
    tree carrying uncommitted changes, and the install left both dirty.
 3. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
@@ -33,17 +43,24 @@ by hand only to repair it, then resume with `--from <step>`.
      rather than waiving past it.
    - A copy the target git-ignores stays a `foreign` finding, so that target never reaches exit `0`
      again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
-4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
-   published.
+4. Force-verify the same audit population and lookup bounds against a registry sweep taken after
+   the previous layer published. Do not infer verification of peer-only declarations from that audit.
 5. Run the full install. The overwrite re-declares the toolchain ranges and declares each planned
    dependency the manifest lacks, so the lockfile the first install regenerated no longer matches the
    manifest.
 6. Sweep the self-pins, per § Sweep the self-pins: the re-pin moves the snapshot class.
 7. Run the mutating `format` script to converge generated writes.
-8. Run the quality gates.
-9. Run `node .agents/skills/orkestrel-publish/scripts/compare.ts` to compare the rebuilt `dist/`
-   against the published tarball for material content. An exit of 2 is an unanswered comparison,
-   never a moved dist: fetch and re-run rather than ruling a bump owed.
+8. Commit the overwrite's writes as `Overwrite with scaffold <version>`: every path the overwrite
+   wrote or removed, and the manifest and lockfile the install converged. The step refuses a dirty
+   path the overwrite did not write and names it. After committing an unrelated path, complete the intended overwrite commit by hand:
+   inspect the receipt's written and removed paths, stage those paths and the converged manifest
+   and lockfile, and commit them as `Overwrite with scaffold <version>`. Then resume with `--from gates`.
+   Treat the receipt as stale after any intervening commit; never use that receipt to authorize
+   another `record` commit. Skip this step for an offline overwrite and the `@orkestrel/scaffold` package.
+9. Run the quality gates.
+10. Run `node .agents/skills/orkestrel-publish/scripts/compare.ts` to compare the rebuilt `dist/`
+    against the published tarball for material content. An exit of 2 is an unanswered comparison,
+    never a moved dist: fetch and re-run rather than ruling a bump owed.
 
 Restore every pin the target holds with `scripts/swap.ts --restore` before the visit's first step, per
 [release.md](release.md) § Fix a dependency before it publishes, because the visit reads and
@@ -71,6 +88,30 @@ against that checkout.
 
 Run visits in parallel slices of disjoint repositories, each slice strictly serial inside itself,
 reporting per target. Refuse a failed target, name it, repair it, and re-run it alone.
+
+### Regenerate a lock the install cannot move
+
+When the install in step 1 or step 5 fails with `ERESOLVE`, read its conflict and rerun command.
+An exact-peer cluster, such as `vitest` with `@vitest/browser-playwright`, can prevent npm from
+moving the lockfile in place. Without the flag, the step deletes nothing.
+
+- Pass `--regenerate` only when the user's instruction for the visit names it: the regeneration is a
+  destructive command under `.agents/orchestration.md` § Permission floor. A unit whose brief does
+  not name it, or whose sandbox refused a deletion, stops at the refusal and reports it.
+- With the flag, refuse before moving anything when `node_modules` is a link, the lockfile is
+  untracked or carries uncommitted changes, the manifest names a local dependency spec or declares
+  `workspaces`, `tmp/` is not git-ignored, or the target is not the root of its work tree.
+- Validate the backup and journal paths' ancestry and physical containment before writing or moving,
+  and revalidate before cleanup. Refuse a linked ancestor while permitting ignored scratch beneath a real target.
+- Otherwise copy the lockfile and move `node_modules` under `tmp/units/wave/<stamp>/`, delete the
+  lockfile, install from the manifest, and prove the result: the install exits `0`, the lockfile
+  exists, `npm ls --all` exits `0`, and the manifest bytes are unchanged. Read each package named
+  by the conflict with its installed version in the step's note. A proved result deletes the moved
+  tree; a failed result restores the copied lockfile and moved tree and names why the step failed.
+  Confirm a recoverable tree and lock backup before deleting the active tree. Attempt rollback at
+  most once. If rollback fails, retain both backup paths for recovery. If completion journaling or
+  backup cleanup fails, report that failure and retain the restored or proved installation.
+- Resume a visit that stopped at the refusal with `--regenerate --from <step>`.
 
 ## Rule on the bump
 
@@ -100,6 +141,8 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 
 ## Prepare a layer
 
+- When the manifest's `engines.node` names a floor below the `DEFAULT_ENGINES` a generated workspace declares, raise it to that floor and move the package's CI floor row with it.
+- Before the release, rule the package's guide and source comments against `.claude/rules/writing.md` § Substitutions and reword each hit its rows name; identifiers stay.
 - Compare release packs between hosts by paths, sizes, and content hashes, and report executable-mode differences separately; a pack made on Windows records `0644` for an entry git tracks as `100755`.
 
 An unpublished package's first version is `0.0.1`. Do not bump it before that first publish. The
@@ -117,9 +160,9 @@ Prepare a published package's layer in this order, after the visit has ruled the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
 4. **Run each package's own `prepublishOnly` script to green.**
-   When the host npm is below the `MINIMUM_NPM_VERSION` floor a generated workspace declares in
-   `devEngines`, prepend a local npm 11 install's `node_modules/.bin` to `PATH` for the visit and
-   this script.
+   Run the visit and this script on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION` floor a
+   generated workspace declares in `devEngines`: the scripts spawn the npm CLI beside the running
+   Node binary when one is there, so a `PATH` change reaches them only where none is.
 5. **Write the release commit and push before the window opens.** The preparation commit inside
    the visit is a different commit at a different moment.
 

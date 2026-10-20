@@ -178,9 +178,9 @@ the same status. Rule from the evidence, never from which cause reads likelier.
   status of the pipeline, and a CDN read straight after a publish can still serve the previous
   version.
 - Treat a `404` after a first publish as pending rather than failed. A first publish creates the
-  packument and can serve `404` for minutes after success, so for a package with no prior version
-  re-read on an interval before reporting either way. A bump serving the old version is CDN lag,
-  same rule.
+  packument and can serve `404` for minutes after success. For a first publish, rerun
+  `window.ts --confirm NAME@VERSION` with a `--wait` long enough for a first publish before reporting
+  either way. A bump serving the old version is CDN lag, same rule.
 - Rule on a pack-time manifest-rewriting warning by fetching the registry's copy of the manifest,
   never by the warning's own text.
 - Re-read the registry before telling the user a package failed. A chain still running, a retry

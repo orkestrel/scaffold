@@ -51,6 +51,23 @@ interface Exit {
 	readonly error: string | undefined
 }
 
+function startCommand(
+	command: string,
+	args: readonly string[],
+	journal: number,
+	errors: number,
+): ReturnType<typeof spawn> | Exit {
+	try {
+		return spawn(command, args, { stdio: ['ignore', journal, errors], windowsHide: true })
+	} catch (error) {
+		return {
+			code: null,
+			signal: null,
+			error: error instanceof Error ? error.message : String(error),
+		}
+	}
+}
+
 function waitForExit(child: ReturnType<typeof spawn>): Promise<Exit> {
 	return new Promise((resolve) => {
 		child.on('error', (error) => resolve({ code: null, signal: null, error: error.message }))
@@ -94,25 +111,29 @@ async function main(argv: readonly string[]): Promise<number> {
 	const errorsFd = openSync(errors, 'w')
 	rmSync(`${journal}.pid`, { force: true })
 	const started = Date.now()
-	const child = spawn(command, args, { stdio: ['ignore', journalFd, errorsFd], windowsHide: true })
-	if (child.pid !== undefined) {
+	const launched = startCommand(command, args, journalFd, errorsFd)
+	const child = 'error' in launched ? undefined : launched
+	if (child?.pid !== undefined) {
 		writeFileSync(`${journal}.pid`, `${child.pid}\n`)
 		console.log(JSON.stringify({ pid: child.pid, journal, errors }))
 	}
 	// The signal aborts once the cap elapses, so whether it aborted is whether the cap ended the run.
 	// The timer cannot be cleared, so a cap that elapses after the child exited kills nothing: a
 	// reused pid is not this command's.
-	const deadline = capMilliseconds === undefined ? undefined : AbortSignal.timeout(capMilliseconds)
+	const deadline =
+		child === undefined || capMilliseconds === undefined
+			? undefined
+			: AbortSignal.timeout(capMilliseconds)
 	deadline?.addEventListener(
 		'abort',
 		() => {
-			if (child.pid !== undefined && child.exitCode === null && child.signalCode === null) {
+			if (child?.pid !== undefined && child.exitCode === null && child.signalCode === null) {
 				killTree(child.pid)
 			}
 		},
 		{ once: true },
 	)
-	const exit = await waitForExit(child)
+	const exit = 'error' in launched ? launched : await waitForExit(launched)
 	const capped = deadline?.aborted === true
 	closeSync(journalFd)
 	closeSync(errorsFd)
@@ -124,7 +145,7 @@ async function main(argv: readonly string[]): Promise<number> {
 	if (status) writeFileSync(`${journal}.status-after.txt`, readStatus())
 	console.log(
 		JSON.stringify({
-			pid: child.pid,
+			pid: child?.pid,
 			exit: exit.error === undefined ? exit.code : 127,
 			signal: exit.signal,
 			capped,

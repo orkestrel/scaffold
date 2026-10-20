@@ -34,6 +34,7 @@ When a consumer needs a dependency's unpublished source, to meet a defect that l
 
 ## The scaffold surface
 
+- After a package's first publish, run `scaffold catalog --all` in the scaffold checkout and release scaffold, so the `surface` rule reads the package's guide from that release.
 - `scaffold` is a development dependency of every package, so it publishes on its own and propagates as files, never as a cascade. Each package builds against the published `scaffold`.
 - `scaffold` ships `dist/host`, the vendored file set every target receives through `repair`. Bump and publish `scaffold` when any vendored byte or the set of vendored paths changes.
 - After a vendored-only release, re-pin `@orkestrel/scaffold` in each target, run `repair` there, and prove that target's gates still green. A target bumps only when its own published surface moved.

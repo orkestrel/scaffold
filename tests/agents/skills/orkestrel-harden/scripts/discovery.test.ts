@@ -5,6 +5,39 @@ import { join } from 'node:path'
 import { DISCOVERY_SCRIPT, runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 
 describe('discovery.ts', () => {
+	it('evaluates setup modules of non-selected projects during the census', () => {
+		const scratch = createScratch({ prefix: 'discovery-nonselected-setup-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				`export default { test: { projects: [
+	{ test: { name: 'first', include: ['tests/first.test.ts'] } },
+	{ test: { name: 'second', include: ['tests/second.test.ts'], setupFiles: ['tests/setupSecond.ts'] } },
+] } }\n`,
+			)
+			scratch.write('tests/first.test.ts', "import { it } from 'vitest'\nit('first', () => {})\n")
+			scratch.write('tests/second.test.ts', "import { it } from 'vitest'\nit('second', () => {})\n")
+			scratch.write(
+				'tests/setupSecond.ts',
+				"import { writeFileSync } from 'node:fs'\nwriteFileSync('second-loaded', 'loaded')\n",
+			)
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'first', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			expect(run.json?.projects).toEqual([{ name: 'first', gate: 'test', files: 1, tests: 1 }])
+			expect(scratch.read('second-loaded')).toBe('loaded')
+		} finally {
+			scratch.remove('node_modules')
+			scratch.destroy()
+		}
+	})
+
 	it('passes allowOnly and strictTags boolean values to full gate collection', () => {
 		const scratch = createScratch({ prefix: 'discovery-collection-options-' })
 		try {

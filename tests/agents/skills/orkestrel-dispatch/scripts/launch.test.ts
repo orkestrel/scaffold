@@ -12,6 +12,44 @@ import {
 } from '../../../../setupServer.js'
 
 describe('launch.ts', () => {
+	it('B5.1 reports a shim that cannot start as exit 127 with its trailer and no pid', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-shim-' })
+		try {
+			const shim = scratch.write('shim.cmd', '@echo off\r\nexit /b 0\r\n')
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				[
+					'--journal',
+					'tmp/units/shim.jsonl',
+					'--errors',
+					'tmp/units/shim.err',
+					'--cap',
+					'5',
+					'--status',
+					'--',
+					shim,
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(127)
+			expect(run.json?.exit).toBe(127)
+			expect(run.json?.error).toEqual(expect.any(String))
+			expect(run.json?.error).not.toBe('')
+			expect(run.json?.pid).toBeUndefined()
+			expect(run.json?.capped).toBe(false)
+			expect(run.stdout.split(/\r\n|\n/).filter((line) => line !== '')).toHaveLength(1)
+			expect(scratch.read('tmp/units/shim.jsonl')).toBe('')
+			expect(scratch.read('tmp/units/shim.err')).toMatch(
+				/^launch: the command could not start: .+\n\nexit=127 signal=none capped=false duration_ms=\d+\n$/u,
+			)
+			expect(scratch.has('tmp/units/shim.jsonl.pid')).toBe(false)
+			expect(scratch.has('tmp/units/shim.jsonl.status-before.txt')).toBe(true)
+			expect(scratch.has('tmp/units/shim.jsonl.status-after.txt')).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('journals a command, ends the errors file with the exit trailer, and prints a summary', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-' })
 		try {
