@@ -155,8 +155,32 @@ await new GuideCommand({
 				fileURLToPath(new URL('../.github/workflows/ci.yml', import.meta.url)),
 				'utf8',
 			)
-			const matrix = /^[\t ]*node: \['(?<floor>\d+\.\d+\.\d+)', '24'\][\t ]*$/mu.exec(workflow)
-			expect(matrix?.groups?.floor).toBe(MINIMUM_NODE_VERSION)
+			const lines = workflow.split(/\r\n|\n/u).filter((line) => !/^[\t ]*(?:#.*)?$/u.test(line))
+			// Direct children keep another job and block-scalar payload out of the matrix read.
+			const matrix = ['jobs', 'ci', 'strategy', 'matrix'].reduce((block, key) => {
+				const indentation = Math.min(...block.map((line) => /^ */u.exec(line)?.[0].length ?? 0))
+				const heading = new RegExp(`^ {${indentation}}${key}:`, 'u')
+				const matches = block.flatMap((line, index) => (heading.test(line) ? [index] : []))
+				expect(matches, `Unambiguous ${key} mapping`).toHaveLength(1)
+				const start = requireValue(matches[0])
+				expect(block[start]).toMatch(new RegExp(`^ {${indentation}}${key}:[\\t ]*(?:#.*)?$`, 'u'))
+				const end = block.findIndex(
+					(line, index) => index > start && !line.startsWith(' '.repeat(indentation + 1)),
+				)
+				return block.slice(start + 1, end === -1 ? undefined : end)
+			}, lines)
+			const indentation = Math.min(...matrix.map((line) => /^ */u.exec(line)?.[0].length ?? 0))
+			const nodes = matrix.filter((line) => new RegExp(`^ {${indentation}}node:`, 'u').test(line))
+			expect(nodes, 'Unambiguous jobs.ci.strategy.matrix.node row').toHaveLength(1)
+			const entries = requireValue(
+				/^[ ]*node:[\t ]*\[(?<entries>[^\]\r\n]*)\][\t ]*(?:#.*)?$/u.exec(requireValue(nodes[0]))
+					?.groups?.entries,
+			)
+			const versions = entries
+				.split(',')
+				.map((entry) => entry.trim().replace(/^(['"])(.*)\1$/u, '$2'))
+			expect(versions[0]).toBe(MINIMUM_NODE_VERSION)
+			expect(versions).toContain('24')
 			const readme = requireValue(files['README.md'])
 			const stated = /Node (?<floor>\d+\.\d+\.\d+) or later/u.exec(readme)?.groups?.floor
 			expect(stated).toBe(declared.replace(/^>=/u, ''))
