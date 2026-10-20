@@ -381,13 +381,38 @@ describe('configuration infrastructure', () => {
 })
 
 describe('inspectPolicySetup', () => {
+	it('applies mirror and surface rules to a private workspace distribution module', () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			for (const privateWorkspace of [false, true]) {
+				scratch.write(
+					'package.json',
+					JSON.stringify({ name: '@orkestrel/sample', private: privateWorkspace }),
+				)
+				scratch.write('tests/setupDistribution.ts', 'export function readShared() {}\n')
+				scratch.write('tests/setupExtra.ts', 'export function readShared() {}\n')
+				const violations = inspectPolicyWorkspace(scratch.path)
+				expect(
+					violations
+						.filter(({ path }) => path === 'tests/setupDistribution.ts')
+						.map(({ rule }) => rule),
+				).toEqual(privateWorkspace ? ['mirror', 'surface'] : [])
+				expect(
+					violations.filter(({ path }) => path === 'tests/setupExtra.ts').map(({ rule }) => rule),
+				).toEqual(['mirror', 'surface'])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('admits scaffold-owned setup paths and reports both laws for target-owned collisions', () => {
 		const scratch = createPolicySurfaceFixture()
 		try {
-			expect(matchesScaffoldSetup('tests\\setupDistribution.ts')).toBe(true)
-			expect(matchesScaffoldSetup('tests/setupPolicy.ts')).toBe(true)
-			expect(matchesScaffoldSetup('tests/setupExtra.ts')).toBe(false)
-			expect(matchesScaffoldSetup('tests/setupDistribution.ts/extra.ts')).toBe(false)
+			expect(matchesScaffoldSetup('tests\\setupDistribution.ts', scratch.path)).toBe(true)
+			expect(matchesScaffoldSetup('tests/setupPolicy.ts', scratch.path)).toBe(true)
+			expect(matchesScaffoldSetup('tests/setupExtra.ts', scratch.path)).toBe(false)
+			expect(matchesScaffoldSetup('tests/setupDistribution.ts/extra.ts', scratch.path)).toBe(false)
 			scratch.write('tests/setupDistribution.ts', 'export function readShared() {}\n')
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
 			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])

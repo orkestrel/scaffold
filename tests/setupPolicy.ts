@@ -1107,12 +1107,15 @@ export function inspectPolicyMirrors(root: string): readonly PolicyViolation[] {
 /**
  * Checks whether a normalized path belongs to a scaffold-owned setup module.
  * @param path - The workspace-relative module path.
+ * @param root - The workspace root whose manifest determines harness ownership.
  * @returns True if scaffold owns the module; false otherwise.
  */
-export function matchesScaffoldSetup(path: string): boolean {
+export function matchesScaffoldSetup(path: string, root: string): boolean {
 	const normalized = normalizePolicyPath(path)
+	const manifest = readPolicyJSON(join(root, 'package.json'))
 	return (
-		normalized === DISTRIBUTION_SETUP_PATH ||
+		(normalized === DISTRIBUTION_SETUP_PATH &&
+			(!isPolicyRecord(manifest) || manifest.private !== true)) ||
 		HOST_PATHS.some(
 			(vendored) =>
 				normalized === normalizePolicyPath(vendored) ||
@@ -1141,7 +1144,7 @@ export function inspectPolicySetup(root: string): readonly PolicyViolation[] {
 	)
 	return [...paths].sort().flatMap((path) => {
 		const module = path.endsWith('.test.ts') ? path.replace(/\.test\.ts$/u, '.ts') : path
-		if (matchesScaffoldSetup(module)) return []
+		if (matchesScaffoldSetup(module, root)) return []
 		if (path.endsWith('.test.ts')) {
 			return paths.has(module)
 				? []
@@ -3164,7 +3167,7 @@ export function inspectPolicySurface(root: string): readonly PolicyViolation[] {
 		.map(normalizePolicyPath)
 		.sort()
 		.flatMap((path) =>
-			path.endsWith('.test.ts') || matchesScaffoldSetup(path)
+			path.endsWith('.test.ts') || matchesScaffoldSetup(path, root)
 				? []
 				: [collectPolicyDeclarations(root, path, readFileSync(join(root, path), 'utf8'))],
 		)
@@ -3411,6 +3414,23 @@ export const SETUP_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		rule: 'mirror',
 		files: [{ path: 'tests/setupPolicy.ts', content: 'export const POLICY = 1\n' }],
 		violations: [],
+	},
+	{
+		label: 'requires a proof for a private workspace distribution module',
+		membership: 'target-owned distribution setup module in a private workspace',
+		rule: 'mirror',
+		files: [
+			{ path: 'package.json', content: '{"private":true}\n' },
+			{ path: 'tests/setupDistribution.ts', content: 'export const DISTRIBUTION = 1\n' },
+		],
+		violations: [
+			{
+				rule: 'mirror',
+				path: 'tests/setupDistribution.ts',
+				message:
+					'exporting setup module requires its sibling proof or an import from tests/setup.test.ts',
+			},
+		],
 	},
 ])
 
