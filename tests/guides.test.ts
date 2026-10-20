@@ -19,6 +19,7 @@ await new GuideCommand({
 	const { createGuide } = await import('@orkestrel/guide')
 	const { captureError, requireValue } = await import('@orkestrel/test')
 	const { createScratch } = await import('@orkestrel/test/server')
+	const { loadConfigFromFile } = await import('vite')
 	const {
 		ARTIFACT_TEMPLATES,
 		blueprintToConfigArtifacts,
@@ -68,6 +69,8 @@ await new GuideCommand({
 		createSink,
 		createStagedHost,
 		driveModule,
+		ensureTmpRoot,
+		stageRootConfig,
 		writeDistributionHarness,
 	} = await import('./setupServer.js')
 	const { collectGuideStatements, POLICY_STUDIES_POPULATION } = await import('./setupPolicy.js')
@@ -556,8 +559,6 @@ await new GuideCommand({
 				'src/styles/themes/_default.scss': 'birth',
 				'src/styles/themes/sheet.ts': 'birth',
 				'tests/src/styles/themes/index.test.ts': 'birth',
-				'tests/setupStyles.ts': 'birth',
-				'tests/setupStyles.test.ts': 'birth',
 				'configs/src/vite.themes.config.ts': 'content',
 				'tests/setupDistribution.ts': 'content',
 				'tests/distribution.test.ts': 'presence',
@@ -578,6 +579,8 @@ await new GuideCommand({
 				}
 			}
 			expect(planned).toMatchObject(expected)
+			expect(planned['tests/setupStyles.ts']).toBeUndefined()
+			expect(planned['tests/setupStyles.test.ts']).toBeUndefined()
 			expect(planned['configs/src/tsconfig.themes.json']).toBeUndefined()
 			const bare = createBlueprint('paper', { styles: true })
 			const seeded = blueprintToSourceArtifacts(bare).map(({ path }) => path)
@@ -595,9 +598,17 @@ await new GuideCommand({
 			const loads = "@use 'tokens';\n@use 'elements';\n@use 'components';\n@use 'utilities';\n"
 			expect(contents['src/print/index.scss']).toBe(loads)
 			expect(contents['src/styles/themes/index.scss']).toBe("@use '../tokens';\n@use 'default';\n")
+			const global = blueprintToTestArtifacts({ ...blueprint, global: true })
+			const owned = Object.fromEntries(global.map(({ path, ownership }) => [path, ownership]))
+			expect(owned).toMatchObject({
+				'tests/setupGlobal.ts': 'birth',
+				'tests/setupGlobal.test.ts': 'birth',
+			})
+			expect(owned['tests/setupStyles.ts']).toBeUndefined()
+			expect(owned['tests/setupStyles.test.ts']).toBeUndefined()
 		})
 
-		it('declares the scripts, projects, dependencies, and aliases each sheet face needs', () => {
+		it('declares the scripts, projects, dependencies, and aliases each sheet face needs', async () => {
 			const markdown = requireValue(files['guides/scaffold.md'])
 			expect(markdown).toContain(
 				"`test:src:<face>` builds the face before it runs the face's project.",
@@ -622,7 +633,12 @@ await new GuideCommand({
 			expect(scripts['build:src:print']).toBe(printed)
 			expect(scripts['check:src:print']).toBe('tsc --noEmit -p configs/src/tsconfig.print.json')
 			expect(scripts['test:src:print']).toBe(`npm run build:src:print && ${project}`)
-			expect(scripts.test).toContain('npm run test:setup:browser')
+			expect(scripts).not.toHaveProperty('test:setup:browser')
+			expect(scripts.test).not.toContain('npm run test:setup:browser')
+			const authored = { ...blueprint, setup: ['browser'] as const }
+			const selected = blueprintToScripts(authored)
+			expect(selected['test:setup:browser']).toBe(`${vitest} --project setup:browser`)
+			expect(selected.test).toContain('npm run test:setup:browser')
 			const writable = blueprintToWritableScripts(blueprint)
 			const direct = ['check:src:styles', 'check:src:print', 'build:src:print']
 			expect(writable.map(({ name }) => name)).toEqual(expect.arrayContaining(direct))
@@ -634,11 +650,42 @@ await new GuideCommand({
 			expect(vite).toContain("'./configs/src/vite.print.config.ts'")
 			expect(vite).toContain('export function sheetProject(')
 			expect(vite).toContain('isolate: false')
-			expect(vite).toContain(
-				"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts']",
-			)
+			expect(vite).not.toContain("label: 'setup:browser'")
 			const collected = "include: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']"
-			expect(vite).toContain(collected)
+			expect(vite).not.toContain(collected)
+			const configured = blueprintToRootVite(authored)
+			expect(configured).toContain("label: 'setup:browser'")
+			expect(configured).toContain(collected)
+			const workspace = createScratch({
+				parent: ensureTmpRoot(),
+				prefix: 'scaffold-guide-sheet-setup-',
+			})
+			try {
+				stageRootConfig(blueprint, workspace, 'selected')
+				const file = workspace.write(
+					'selected/sheet.config.ts',
+					"import { sheetProject } from './vite.config.ts'\nexport default sheetProject('src:print')\n",
+				)
+				const directory = join(workspace.path, 'selected')
+				const absent = await loadConfigFromFile({ command: 'serve', mode: 'test' }, file, directory)
+				expect(absent?.config.test?.setupFiles).toStrictEqual([
+					'./tests/setup.ts',
+					'./tests/setupBrowser.ts',
+				])
+				workspace.write('selected/tests/setupStyles.ts', 'export {}\n')
+				const present = await loadConfigFromFile(
+					{ command: 'serve', mode: 'test' },
+					file,
+					directory,
+				)
+				expect(present?.config.test?.setupFiles).toStrictEqual([
+					'./tests/setup.ts',
+					'./tests/setupBrowser.ts',
+					'./tests/setupStyles.ts',
+				])
+			} finally {
+				workspace.destroy()
+			}
 			const dependencies = blueprintToDevDependencies(blueprint)
 			expect(STYLES_DEV_DEPENDENCIES).toStrictEqual({ sass: '^1.105.1' })
 			expect(dependencies.sass).toBe(STYLES_DEV_DEPENDENCIES.sass)
@@ -1188,17 +1235,18 @@ await new GuideCommand({
 				expect.arrayContaining([
 					['tests/setup.ts', 'birth', false, false, false],
 					['tests/setupBrowser.ts', 'birth', false, true, false],
-					['tests/setupStyles.ts', 'birth', true, true, true],
 					['tests/setupGlobal.ts', 'birth', true, true, true],
 				]),
 			)
 			const texts = tested.map(({ path, content }): [string, string] => [path, content])
 			const contents = Object.fromEntries(texts)
+			expect(contents['tests/setupStyles.ts']).toBeUndefined()
+			expect(contents['tests/setupStyles.test.ts']).toBeUndefined()
 			expect(contents['tests/setupGlobal.test.ts']).toContain(
 				"import { setup } from './setupGlobal.js'",
 			)
 			expect(contents['tests/src/styles/index.test.ts']).toContain(
-				"import { adoptSheet, readLayerNames } from '../../setupStyles.js'",
+				"import { adoptSheet, readLayerNames } from '@orkestrel/test/browser'",
 			)
 			const scripts = blueprintToScripts(blueprint)
 			const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'

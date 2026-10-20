@@ -586,13 +586,13 @@
 			"storage": "claude/rules/styles.md",
 			"destination": ".claude/rules/styles.md",
 			"executable": false,
-			"digest": "23197503f78e95abc6f367f4208318faa7b2d4e6f56dae7084cf5b947d9ce95f"
+			"digest": "d777e35325f2ede9f3223e300c97f52b9c61da1216a237f01c6e71f8c5023796"
 		},
 		{
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "8dd236c28c77279fdb12b8591f8dda293e8c25ba0933e2db7e97c435e64069c7"
+			"digest": "ceaf6386d3b378d5a2b7d3f08ed4c807de527a6a09b843c341456f66833df275"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -604,7 +604,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "83468f31b80c5c874d42d907ca33f99127a70a279d9843aca30701abeed0a820"
+			"digest": "82dbe5c0978b2cae7e4d5c7644573b52747d9eda78fe05ad655746205df9995c"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "4ab2b88dace40af58562e465cd47ef140c163180901c303d9ff787efb27f4f7b"
+			"digest": "1a9f42e7e8140769ea0522816d5ed7b46b474445ebfc9b14d758be5fe091ca57"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1192,7 +1192,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "548c110439e4f9cf6321bd49e95b696602e14024a65ca59c875ac79bbbb28b91"
+			"digest": "bfabbde2d78c51fd35a9075d7eb60825d291f88989734b918d9b3ca8ed4e2dd1"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1204,7 +1204,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "87eb3b5ceae737d8ba9e784442cdb4541367df2b1cdd6fd840db63009183f454"
+			"digest": "f6e4194f81718b1b40a336740309baae8eef968c0cc77f1e15bae1c6327d8945"
 		}
 	],
 	"roots": [
@@ -2132,5 +2132,5 @@
 			]
 		}
 	],
-	"digest": "c9b50f1f2fe4fd310d7f3730b03a1afd49e365c6518916196ab7bb13e68fcfa6"
+	"digest": "c6bdaea3088fe17d7a6c502421c551ae3139cce5f7aced815b263bbc555a2672"
 }
