@@ -10,6 +10,233 @@ import {
 } from '../../../../setupServer.js'
 
 describe('titles.ts', () => {
+	it('excludes registrations inside block comments', () => {
+		const scratch = createScratch({ prefix: 'titles-regions-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', "/*\nit('reads', () => {})\n*/\n")
+			const comment = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(comment.status).toBe(3)
+			expect(comment.json?.missing).toEqual([
+				{ file: 'tests/read.test.ts', title: 'reads', deficit: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('excludes registrations inside template text', () => {
+		const scratch = createScratch({ prefix: 'titles-template-region-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', "const text = `\nit('reads', () => {})\n`\n")
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.missing).toEqual([
+				{ file: 'tests/read.test.ts', title: 'reads', deficit: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('excludes baseline comments and template text from the title count', () => {
+		const scratch = createScratch({ prefix: 'titles-baseline-regions-' })
+		try {
+			scratch.write(
+				'tests/read.test.ts',
+				"/*\nit('reads', () => {})\n*/\nconst text = `\nit('reads', () => {})\n`\n",
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', '')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({ count: 0, missing: [], moved: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('matches same-file survivors before cross-file moves', () => {
+		const scratch = createScratch({ prefix: 'titles-attribution-' })
+		try {
+			scratch.write('tests/a.test.ts', "it('reads', () => {})\n")
+			scratch.write('tests/b.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.remove('tests/a.test.ts')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.missing).toEqual([{ file: 'tests/a.test.ts', title: 'reads', deficit: 1 }])
+			scratch.write('tests/c.test.ts', "it('reads', () => {})\n")
+			const moved = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(moved.status).toBe(0)
+			expect(moved.json).toMatchObject({ missing: [], moved: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('excludes regex bodies from literal holders', () => {
+		const scratch = createScratch({ prefix: 'titles-regex-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write(
+				'tests/read.test.ts',
+				"const pattern = /'reads'/\nif (pattern) /'reads'/.test('other')\nconst divide = (12) / 3 / 2\n",
+			)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				missing: [{ file: 'tests/read.test.ts', title: 'reads', deficit: 1 }],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('retains literal holders inside template expressions', () => {
+		const scratch = createScratch({ prefix: 'titles-expression-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', "it(`${'reads'}`, () => {})\n")
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({
+				missing: [],
+				moved: [{ file: 'tests/read.test.ts', title: 'reads', holder: 'tests/read.test.ts' }],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('compares complete nested template titles by raw spelling', () => {
+		const scratch = createScratch({ prefix: 'titles-nested-' })
+		try {
+			scratch.write('tests/read.test.ts', 'it(`reads ${`file`}`, () => {})\n')
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', 'it(`reads ${`record`}`, () => {})\n')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.missing).toEqual([
+				{ file: 'tests/read.test.ts', title: 'reads ${`file`}', deficit: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses unclosed lexical regions with a file diagnostic', () => {
+		const scratch = createScratch({ prefix: 'titles-unclosed-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', 'it(`reads ${`file`}, () => {})\n')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('tests/read.test.ts')
+			expect(run.stderr).toContain('Unclosed')
+			scratch.write('tests/read.test.ts', '/* unfinished')
+			const comment = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
+			expect(comment).toMatchObject({
+				status: 2,
+				stderr: expect.stringContaining('Unclosed block'),
+			})
+			scratch.write('tests/read.test.ts', "const title = 'unfinished")
+			const string = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
+			expect(string).toMatchObject({
+				status: 2,
+				stderr: expect.stringContaining('Unclosed string'),
+			})
+			scratch.write('tests/read.test.ts', 'const pattern = /unfinished')
+			const regex = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
+			expect(regex).toMatchObject({ status: 2, stderr: expect.stringContaining('Unclosed regex') })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('preserves plain templates and Unicode across BOM and CRLF', () => {
+		const scratch = createScratch({ prefix: 'titles-unicode-' })
+		try {
+			scratch.write('tests/é.test.ts', '\uFEFFit(\r\n`re\u0301ads 日本語`, () => {})\r\n')
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/é.test.ts', 'it("re\u0301ads 日本語", () => {})\n')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({ count: 1, missing: [], moved: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('scans escaped regex classes and division beside template expressions', () => {
+		const scratch = createScratch({ prefix: 'titles-token-boundaries-' })
+		try {
+			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write(
+				'tests/read.test.ts',
+				"const pattern = /['/}]reads/giu\nconst count = 12 / 3 / 2\nconst text = `${({ title: 'reads', nested: `file ${/}/.source}` }).title}`\n",
+			)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.moved).toEqual([
+				{ file: 'tests/read.test.ts', title: 'reads', holder: 'tests/read.test.ts' },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads code registrations inside template expressions', () => {
+		const scratch = createScratch({ prefix: 'titles-expression-registration-' })
+		try {
+			scratch.write('tests/read.test.ts', "const text = `${\nit('reads', () => {})\n}`\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/read.test.ts', '')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				count: 1,
+				missing: [{ file: 'tests/read.test.ts', title: 'reads', deficit: 1 }],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
 	it('keeps unchanged titles with no missing or moved rows', () => {
 		const scratch = createScratch({ prefix: 'titles-unchanged-' })
 		try {
@@ -263,11 +490,17 @@ describe('titles.ts', () => {
 	it('prints the same JSON through the built JavaScript twin', () => {
 		const scratch = createScratch({ prefix: 'titles-twin-' })
 		try {
-			scratch.write('tests/sample.test.ts', "it('reads', () => {})\n")
+			scratch.write(
+				'tests/sample.test.ts',
+				"it('reads', () => {})\nit(`reads ${`file`}`, () => {})\n",
+			)
 			createRepository(scratch.path)
 			trackFiles(scratch.path)
 			commitFiles(scratch.path)
-			scratch.write('tests/sample.test.ts', '')
+			scratch.write(
+				'tests/sample.test.ts',
+				"const pattern = /'reads'/\nit(`reads ${`record`}`, () => {})\n",
+			)
 			const source = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
 				cwd: scratch.path,
 			})
