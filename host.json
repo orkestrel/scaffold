@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-harden/SKILL.md",
 			"destination": ".agents/skills/orkestrel-harden/SKILL.md",
 			"executable": false,
-			"digest": "8f44196a0b38f25c84d93d6db4d84bd1e55455453daeb221ea689544ba701c89"
+			"digest": "9b687cda7365ce94dab8fff7854b51417108fa16cec041eeeafbda96b25b6ff7"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/agents/openai.yaml",
@@ -281,6 +281,12 @@
 			"destination": ".agents/skills/orkestrel-harden/scripts/discovery.ts",
 			"executable": false,
 			"digest": "fe1df67ffa96d707f106e248b67cecc78212bd5e64090c20fb7ea128b19664f7"
+		},
+		{
+			"storage": "agents/skills/orkestrel-harden/scripts/titles.ts",
+			"destination": ".agents/skills/orkestrel-harden/scripts/titles.ts",
+			"executable": false,
+			"digest": "b00080b53d3624fc3e617775baa73a490ccf5c93f44f5f5ca676227dd603c9bd"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
@@ -2126,5 +2132,5 @@
 			]
 		}
 	],
-	"digest": "7ae3758c18440e769784cbe6569a996700ad3bab746a450ed771877067febfc4"
+	"digest": "67b34109abe4c84c5a5325b2b42014b18617d9b93f182f84c4ec876fd6e40fd2"
 }

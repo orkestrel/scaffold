@@ -5185,6 +5185,9 @@ export const WINDOW_SCRIPT = '.agents/skills/orkestrel-publish/scripts/window.ts
 /** Names the checkout-relative path of the harden skill's `discovery` script. */
 export const DISCOVERY_SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
+/** Names the checkout-relative path of the harden skill's `titles` script. */
+export const TITLES_SCRIPT = '.agents/skills/orkestrel-harden/scripts/titles.ts'
+
 /** Names the checkout-relative path of the scout skill's `map` script. */
 export const MAP_SCRIPT = '.agents/skills/orkestrel-scout/scripts/map.ts'
 
