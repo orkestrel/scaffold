@@ -1498,9 +1498,8 @@ export class CLI implements CLIInterface {
 	// first proof a maintainer writes and leave every other module uncovered with
 	// no further signal.
 	//
-	// A vendored module is excluded because `repair` restores it in every target,
-	// so a question naming one would fire everywhere and name nothing the
-	// maintainer owns.
+	// A vendored or content-owned module is excluded because `repair` restores it,
+	// so a question naming one would name nothing the maintainer owns.
 	//
 	// Audit alone raises this. A writing verb refuses an advisory whose next step
 	// would replace planned configuration, and this one names nothing scaffold
@@ -1512,16 +1511,21 @@ export class CLI implements CLIInterface {
 		const entries = listFiles(tests).filter((path) => !path.includes('/'))
 		const proofs = new Set(entries.filter((path) => path.endsWith('.test.ts')))
 		const seeds = new Map(
-			blueprintToTestArtifacts(blueprint).map(({ path, content }) => [path, content.trim()]),
+			blueprintToTestArtifacts(blueprint).map(({ path, content, ownership }) => [
+				path,
+				{ content: content.trim(), ownership },
+			]),
 		)
 		const modules = entries
 			.filter((path) => {
 				if (!path.startsWith('setup') || !path.endsWith('.ts')) return false
 				if (path.endsWith('.test.ts') || HOST_PATHS.includes(`tests/${path}`)) return false
+				const seed = seeds.get(`tests/${path}`)
+				if (seed?.ownership === 'content') return false
 				if (proofs.has(`${path.slice(0, -'.ts'.length)}.test.ts`)) return false
 				if (resolveContainedPath(tests, path) === undefined) return false
 				const content = (readFileText(tests, path) ?? '').trim()
-				return /^export /m.test(content) && content !== (seeds.get(`tests/${path}`) ?? '')
+				return /^export /m.test(content) && content !== (seed?.content ?? '')
 			})
 			.sort()
 		if (modules.length === 0) return undefined

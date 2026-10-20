@@ -3679,6 +3679,54 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('reports a drifted content-owned harness without requesting a setup proof', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const fresh = workspace.ensure('fresh')
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'new',
+					'widget',
+					'--src',
+					'core',
+					'--from',
+					fleet.host,
+					'--target',
+					fresh,
+				]),
+			).toBe(EXIT_CLEAN)
+			const harness = requireValue(workspace.read('fresh/tests/setupDistribution.ts'))
+			expect(harness).toContain('export function createDistributionSuite')
+			workspace.write(
+				'fresh/tests/setupDistribution.ts',
+				harness + '\nexport const DISTRIBUTION_EXTRA = 1\n',
+			)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fresh,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.findings).toContainEqual(
+				expect.objectContaining({
+					path: 'tests/setupDistribution.ts',
+					ownership: 'content',
+					drift: 'stale',
+				}),
+			)
+			expect(audit.questions.filter(({ field }) => field === 'setup')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('names every filled setup module no proof covers', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
