@@ -1,6 +1,6 @@
 ---
 name: orkestrel-debrief
-description: Look back at a long campaign to learn from its mistakes and successes and improve the agents, rules, skills, and processes that ran it. Use after a campaign or milestone closes to run the retrospective - field evidence, layer and boundary audits, package promotion, an adversarial audit of the instruction set itself, process doctrine - and to land every learning as a refinement that propagates, then retire the campaign folder.
+description: Look back at a long campaign to learn from its mistakes and successes and improve the agents, rules, skills, and processes that ran it. Use after a campaign or milestone closes to run the retrospective - field evidence, layer and boundary audits, package promotion, an independent audit of the instruction set itself, process doctrine - and to land every learning as a refinement that propagates, then retire the campaign folder.
 ---
 
 # Debrief a closed campaign
@@ -66,7 +66,7 @@ practice that worked as a refinement, so it repeats.
    defects versus rounds that churned; anything the orchestrator absorbed that a dispatch
    owned, or dispatched that the orchestrator owned.
 5. **Instruction-set audit.** Audit the agents, rules, skills, and orchestration
-   contract themselves against the campaign record, using the adversarial method in
+   contract themselves against the campaign record, using the blind-pass method in
    [instruction-audit.md](references/instruction-audit.md). What confused an executor is
    a defect in the instruction, not the executor.
 6. **Reconcile into the campaign folder.** Number the findings, attach verbatim

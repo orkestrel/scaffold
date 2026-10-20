@@ -1,7 +1,7 @@
 ---
 name: orkestrel-falsify
 description: >-
-  Run one adversarial audit round against finished work: write the subject as numbered falsifiable claims, dispatch independent auditors instructed to break them, reconcile their evidence, and rule. Use when the size gate in `.agents/orchestration.md` names a review, before a fix round is accepted, before a version bump or publication, or when a defect has recurred across rounds. Do not use it for a small change, a mechanical rename, or a round with no added or repaired claim to attack.
+  Run one skeptical audit round against finished work: write the subject as numbered falsifiable claims, dispatch independent auditors instructed to falsify them, reconcile their evidence, and rule. Use when the size gate in `.agents/orchestration.md` names a review, before a fix round is accepted, before a version bump or publication, or when a defect has recurred across rounds. Do not use it for a small change, a mechanical rename, or a round with no added or repaired claim to test.
 ---
 
 # Falsify
@@ -22,7 +22,7 @@ Do not run one for a small change, a rename, or work whose failure the touched t
 Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/brief.md` for the claim form.
 
 - State the subject as numbered falsifiable claims: properties a concrete input, state, or interleaving could show false. Never "review this diff".
-- Derive claims from adverse conditions: cancellation, restart, concurrency, partial failure, hostile input, resource exhaustion, orderings the happy path never reaches.
+- Derive claims from adverse conditions: cancellation, restart, concurrency, partial failure, malformed or unexpected input, resource exhaustion, orderings the happy path never reaches.
 - Limit claims to the public contract and the risky seams. A claim about a comment or a name is not a claim.
 - Supply the evidence the subject type requires: a code change carries the actual diff and `git status --porcelain`; a rendered surface carries its capture portfolio with source as corroboration; a proposal carries the proposal, the canon it must satisfy, and its motivation.
 - Name where a lane may run a probe (`tmp/probes/` through the `probe` project) and that it deletes the probe before returning.
@@ -40,9 +40,9 @@ Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/
 
 Every lane returns exactly this:
 
-1. Numbered verdicts in claim order, one value each: `CONFIRMED` (attacked and held, with the attack), `BROKEN` (the failing input, state, or interleaving plus the smallest correct fix), `UNRESOLVED` (what would settle it; a claim whose only evidence is the writer's report), `NOT-EVIDENCED` (the capture that is missing).
+1. Numbered verdicts in claim order, one value each: `CONFIRMED` (held against a falsification attempt, with the attempt), `BROKEN` (the failing input, state, or interleaving plus the smallest correct fix), `UNRESOLVED` (what would settle it; a claim whose only evidence is the writer's report), `NOT-EVIDENCED` (the capture that is missing).
 2. Findings outside the claims, each substantiated to the `BROKEN` standard. After them, list each cost finding that `.claude/rules/quality.md` § Performance rules advisory, marked `ADVISORY`; an advisory never enters the terminal line.
-3. Attacked and held: attacks no verdict line carries, and the adjacent behavior that looks like the defect and is correct.
+3. Tested and held: tests no verdict line carries, and the adjacent behavior that looks like the defect and is correct.
 4. One terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>; outside the claims: <finding ids or none>`. `PASS` needs every claim `CONFIRMED` and no substantiated outside finding.
 
 Before confirming a claim about a proof, the lane names the mutation that would make the proof fail and states whether the assertions distinguish it. No process diary.

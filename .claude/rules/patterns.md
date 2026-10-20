@@ -121,7 +121,7 @@ Use these orthogonal contract mechanisms:
 - Use plain guards/parsers for small contracts.
 - Use the shape DSL only when validation, serialization, and generation parity earns its complexity.
 - When `@orkestrel/contract` is declared, use its exact installed guards, parsers, combinators, outcomes, `attempt` boundary, and shape DSL wherever their semantics match. Do not maintain a local copy of those primitives.
-- A guard never throws for adversarial input, cycles, deep nesting, or hostile prototypes; return false.
+- A guard never throws for any input, including cycles, deep nesting, revoked proxies, throwing accessors, or exotic prototypes; return false.
 - Recursive guards track ancestors and cap depth.
 - Recursion enters only through an explicit lazy gate.
 - Non-lazy structural cycles fail at build time, not runtime.

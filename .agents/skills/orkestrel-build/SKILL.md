@@ -45,7 +45,7 @@ includes app/core so the shared transport contracts have one host-independent ow
 5. **Own the shutdown contract.**
    - Serialize lifecycle transitions in call order.
    - Re-request port zero on an ephemeral restart.
-   - Close hostile active connections deterministically on stop.
+   - Close lingering active connections deterministically on stop.
    - Release the runner's signal listeners idempotently on stop.
    - Isolate asynchronous failures by runner generation, so an older transition cannot
      release a newer run's listeners.
@@ -70,7 +70,7 @@ includes app/core so the shared transport contracts have one host-independent ow
      compiler for `.vue` blocks, Vite's HTML parser callbacks, its bundled Lightning CSS
      dependency analyzer, and the TypeScript compiler API for the narrow coding-law pass.
    - Disable the browser application's public directory, so an unmanaged file copy cannot
-     bypass the module graph.
+     ship outside the module graph.
    - Keep browser-only runtime tooling development-only.
    - Require explicit authorization before adding a Sass compiler.
 

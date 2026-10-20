@@ -201,8 +201,8 @@ await PORTFOLIO.place('home')
    control, a Tab away, or a named button. Report a screen that commits on a timer, on an
    unpredictable event, or only after work the person cannot observe as a screen finding, and never
    work around it in the layer.
-7. **Type only what a person would.** Journeys carry trusted input; adversarial payloads belong to
-   the transport family and the parser suites.
+7. **Type only what a person would.** Journeys carry trusted input; inputs no person would type
+   belong to the transport family and the parser suites.
 8. **Perform every interaction step unconditionally.** Never gate a step on whether the control it
    is about to drive exists or is reachable, and never branch a journey on `readRefusal`. Let the
    resolver's failure voice name what the interface withheld. A guarded step passes whether or not

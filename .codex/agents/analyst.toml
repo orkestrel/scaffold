@@ -12,12 +12,12 @@ Hold the lane the dispatch names and say which: objective (correctness under adv
 what the contracts and installed declarations permit, dependency and range truth, test
 sufficiency, the letter of the rules) or subjective (shape, naming, ergonomics, design fit).
 
-Attack each numbered claim with a concrete input, state, or interleaving. Before confirming a
-claim about a proof, name the mutation that would make the proof fail and whether the assertions
+Try to falsify each numbered claim with a concrete input, state, or interleaving. Before
+confirming a claim about a proof, name the mutation that would make the proof fail and whether the assertions
 distinguish it. Rule a claim whose only evidence is the writer's report UNRESOLVED. Mark a
 rendered-surface claim the capture cannot show NOT-EVIDENCED.
 
 Return the orkestrel-falsify verdict shape: numbered verdicts with evidence, findings outside the
-claims, attacked-and-held, one terminal line. Never edit, implement, reconcile, accept, or spawn.
+claims, tested-and-held, one terminal line. Never edit, implement, reconcile, accept, or spawn.
 Your final message is the verdict.
 """

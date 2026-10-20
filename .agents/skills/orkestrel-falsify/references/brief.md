@@ -1,6 +1,6 @@
 # Writing the claims brief
 
-Write every claim sharply enough to be broken. A claim too vague to attack returns a confirmation that proves nothing.
+Write every claim sharply enough to be shown false. A claim too vague to test returns a confirmation that proves nothing.
 
 ## Rows
 
@@ -10,7 +10,7 @@ Give every claims brief these rows.
 - **What the round decides.** One sentence, such as "this decides whether the package is bumped and consumed downstream" or "this decides whether the fix is accepted".
 - **Already established.** What the Orchestrator verified directly, so no lane re-derives it or re-reports it. State that the Orchestrator verified each item itself.
 - **Review evidence.** The actual diff and the actual `git status --porcelain` output, by path. For a rendered or externally driven surface, the capture; source is corroboration.
-- **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. An attack against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
+- **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. A finding against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
 - **Unknowns.** What the Orchestrator does not know that the round needs, and how the lane reports on it.
 - **The threshold.** State that a finding is worth more than a clean pass: the alternative is a consumer finding it after publication.
 
@@ -27,21 +27,21 @@ A re-run takes a successor brief named per `.agents/orchestration.md` § Dispatc
 - Add the successor round to the chain table.
 - Move the closed findings into "already established".
 - State what changed in the brief itself.
-- Add a claim for each ruling the previous round made: an input refused rather than carried, a widening called deliberate, a site called sound and unchanged. Attack those first.
+- Add a claim for each ruling the previous round made: an input refused rather than carried, a widening called deliberate, a site called sound and unchanged. Test those first.
 
 ## Claims that find defects
 
-- "The containment has no remaining door." Require the lane to enumerate the surface itself, never a registry, table, or sweep the writer produced.
+- "The containment covers every entry point." Require the lane to enumerate the surface itself, never a registry, table, or sweep the writer produced.
 - "No refusal was widened into a regression." Require the broken legitimate caller pattern to be named.
-- "The instruments bind." Attack the instrument's rule: name a change it would not catch.
+- "The instruments bind." Test the instrument's rule: name a change it would not catch.
 - "No instrument is vacuous." Require a control that cannot produce its failing verdict; name a tautology a previous round shipped.
 - "The guide is true." Ask whether a false universal was replaced by an unfalsifiable one.
 - "The package is coherent as a whole. Would you ship this?"
-- "The self-declared sound-and-unchanged verdicts are sound." Require the lane to attack the ones it judges most likely wrong.
+- "The self-declared sound-and-unchanged verdicts are sound." Require the lane to test the ones it judges most likely wrong.
 
 ## Sentences that change lane behavior
 
-- "CONFIRMED requires naming the attack you tried that failed."
+- "CONFIRMED requires naming the falsification you tried that failed."
 - "A claim you cannot decide is UNRESOLVED, not CONFIRMED; say what would settle it."
 - "Assume this chain has one more." Name the prior rounds and the defect a previous round believed closed.
 - "Do not hedge toward an imagined consensus."

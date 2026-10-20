@@ -22,7 +22,7 @@ paths:
 - Label an unverified assertion as unverified. An unverified claim in a brief becomes the premise of every downstream unit.
 - Bound a search before starting it: the benchmark, the population, or the row that ends it.
 - A passing negative probe proves nothing until its input is shown to reach the code under test.
-- A clean reproduction of a reported defect means your vector was weaker than the reporter's; get theirs before ruling. A vector the compiler rejects refutes the vector, not the finding.
+- A clean reproduction of a reported defect means your input was weaker than the reporter's; get theirs before ruling. An input the compiler rejects refutes that input, not the finding.
 - "No tests found", an empty match, or a runner that resolved nothing reports on the harness. Confirm the probe was collected before reading a result.
 - Prefer an observation to a derivation. When a measurement and an argument disagree, the argument is wrong until the measurement is shown broken.
 - Read a gate bare. A `| tail` or `| grep` behind it hides the failing lines and reports the pipe's exit code.
@@ -63,7 +63,7 @@ paths:
 
 ## Production hardening
 
-- Translate "enterprise-grade" or "production-ready" into a risk and seam matrix: inputs, states, failures, cleanup, cancellation, concurrency, resource ownership, hostile boundaries, environment isolation, serialization, package consumption.
+- Translate "enterprise-grade" or "production-ready" into a risk and seam matrix: inputs, states, failures, cleanup, cancellation, concurrency, resource ownership, untrusted boundaries, environment isolation, serialization, package consumption.
 - Grade the matrix on coverage of applicable seams, not on further interleavings against a seam already proven.
 - Test observable invariants at each seam with real implementations; use a dedicated real-service project for external behavior.
 - Treat "works with an external client" as unproven until one representative real client has driven it end to end.

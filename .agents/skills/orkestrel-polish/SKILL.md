@@ -55,8 +55,8 @@ over the same surface needs an instruction from the user.
    subagent with a clean context, blind to the others until reconciliation, run once, and no
    lane is dropped because an engine is dark. A narrow verdict request runs the selected lane once
    and stops.
-4. **Reconcile.** Confirmed findings get carriers; refuted findings die on the record with
-   the evidence that killed them; conflicts get a dated ruling. Then walk the reconciled
+4. **Reconcile.** Confirmed findings get carriers; refuted findings close on the record with
+   the evidence that refuted them; conflicts get a dated ruling. Then walk the reconciled
    list once and name the fix-brief item carrying each finding — a finding with no carrier
    is a dropped finding, and it will cost the next round.
 5. **Dispatch serialized fix units,** objective lane first because it changes the ground
@@ -82,7 +82,7 @@ over the same surface needs an instruction from the user.
 - Do not narrow a selector, add a local exception, or restyle one instance to make a
   capture pass while the underlying rule stays wrong.
 - When a law of the repository genuinely conflicts with the surface's required anatomy,
-  stop and report both horns with evidence. An improvised local exception poisons an
+  stop and report both horns with evidence. An improvised local exception voids an
   enforced invariant.
 
 ## Return the fixed verdict shape

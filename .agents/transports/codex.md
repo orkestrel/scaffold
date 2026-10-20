@@ -47,7 +47,7 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<un
 
 ## Routing exclusion
 
-For harnesses that route `opus` to Claude, route a unit that authors sandbox escapes, resolution-bypassing imports, injection payloads, or credential probes to `opus` from the start and record the Codex bench dark for that unit only. For native Codex roles, report a harness refusal through the deviation protocol; the `opus` role uses the same harness.
+For harnesses that route `opus` to Claude, route a unit that authors path-containment, import-resolution-boundary, unescaped-input, or credential-exposure proofs to `opus` from the start and record the Codex bench dark for that unit only. For native Codex roles, report a harness refusal through the deviation protocol; the `opus` role uses the same harness.
 
 ## Journals
 

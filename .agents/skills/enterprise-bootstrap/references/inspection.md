@@ -96,7 +96,7 @@ a pass label alone.
   definition locations, and custom-painted properties reached in each theme and state.
 - **Reading.** Parse declarations, not color-looking text in comments or strings. Permit raw colors
   only in the named primitive definitions; reject literals in component paint, unresolved or cyclic
-  references, and a component bypassing semantic tokens. Check RGB partners where consumed. A theme
+  references, and a component skipping semantic tokens. Check RGB partners where consumed. A theme
   pair may resolve identically unless the design contract requires it to differ.
 - **Negative control.** Accept a valid primitive definition as a positive fixture. Feed a literal
   component fill and an undefined token reference; append both to a harness stylesheet through the

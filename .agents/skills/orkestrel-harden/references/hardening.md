@@ -10,7 +10,7 @@ List every boundary where assumptions can fail:
 - partial work, abort, timeout, retry, pause/resume, stop/destroy, and cleanup;
 - concurrency, reentrancy, ordering, idempotency, fairness, and backpressure;
 - filesystem, process, socket, protocol, browser, model, and network boundaries;
-- hostile strings, paths, headers, frames, JSON, prototypes, getters, and proxies;
+- malformed or unexpected strings, paths, headers, frames, JSON, prototypes, getters, and proxies;
 - resource ownership, leaks, teardown, and pressure;
 - environment isolation and unsupported-host behavior;
 - serialization, restore, public exports, and consumer ergonomics.
@@ -78,7 +78,7 @@ For every fetch, write, delete, extraction, path, protocol, or authentication bo
 - fail closed when an allowlist or target cannot be established;
 - avoid logging secrets or untrusted full payloads;
 - make destructive scope explicit and recoverable where practical;
-- prove malformed, partial, oversized, and adversarial input behavior.
+- prove malformed, partial, oversized, and unexpected input behavior.
 
 ## Audit the tests themselves
 

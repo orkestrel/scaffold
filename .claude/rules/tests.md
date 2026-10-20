@@ -267,7 +267,7 @@ function retryUntil<T>(
 
 ### Scratch
 
-Import `createScratch` from `@orkestrel/test/server` when a proof needs real files. It allocates a temporary directory it owns, contains every path against escape, and removes the directory on `destroy`:
+Import `createScratch` from `@orkestrel/test/server` when a proof needs real files. It allocates a temporary directory it owns, keeps every path inside that directory, and removes the directory on `destroy`:
 
 ```ts
 interface ScratchInterface {

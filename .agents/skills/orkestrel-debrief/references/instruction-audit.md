@@ -1,7 +1,7 @@
 # Auditing the instruction set
 
 The method for judging the agents, rules, skills, and orchestration contract against a
-campaign's record. The instruction layer is code — it gets the same adversarial,
+campaign's record. The instruction layer is code — it gets the same skeptical,
 evidence-first treatment as any surface.
 
 ## Blind passes, one brief
@@ -21,8 +21,8 @@ into the brief. A copied list drops a lens silently, and the lane that lost it r
 full coverage.
 
 Reconcile into rulings; every divergence gets a ruled row with the reason. Convergent
-findings adopt without contest; a finding neither lane can substantiate dies on the
-record.
+findings adopt without contest; a finding neither lane can substantiate is dropped on
+the record.
 
 ## The subjective lens list
 

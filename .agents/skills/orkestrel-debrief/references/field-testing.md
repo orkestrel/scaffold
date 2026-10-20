@@ -61,7 +61,7 @@ What the field passes repeatedly prove:
   runs; a refusal that names everything converges even a 2B model.
 - **Strictness with teaching beats tolerance.** Never coerce, never silently drop;
   refuse with the correction in the message. Encode untrusted identifiers (JSON-encoded,
-  length-capped) so hostile input cannot forge or balloon a diagnostic.
+  length-capped) so malformed input cannot fake or balloon a diagnostic.
 - **Acknowledge or state, never both.** Mutations return acknowledgements; reads return
   state; the split is stated in both tools' descriptions so neither is polled for the
   other's job.

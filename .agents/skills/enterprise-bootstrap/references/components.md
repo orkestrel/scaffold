@@ -748,7 +748,7 @@ Always wrap skeletons in `aria-hidden="true"` — they are visual scaffolding, n
 </button>
 ```
 
-Popovers are **opt-in**: they do nothing until initialized in JS (see [JavaScript initialization](#javascript-initialization)). Only attach them to focusable elements; wrap disabled elements in a `<span tabindex="0">`. `data-bs-html="true"` with untrusted content is an XSS vector.
+Popovers are **opt-in**: they do nothing until initialized in JS (see [JavaScript initialization](#javascript-initialization)). Only attach them to focusable elements; wrap disabled elements in a `<span tabindex="0">`. `data-bs-html="true"` renders untrusted content as unescaped HTML.
 
 ### Progress
 
@@ -980,7 +980,7 @@ Toasts are **opt-in** — hidden until `.show()` is called (or shown through a t
 </button>
 ```
 
-Tooltips are **opt-in** (JS init required; see [JavaScript initialization](#javascript-initialization)). Only attach to focusable elements so keyboard users can trigger them; never put essential information _only_ in a tooltip, and never report form errors through a tooltip. `data-bs-html` with untrusted content is an XSS vector.
+Tooltips are **opt-in** (JS init required; see [JavaScript initialization](#javascript-initialization)). Only attach to focusable elements so keyboard users can trigger them; never put essential information _only_ in a tooltip, and never report form errors through a tooltip. `data-bs-html` renders untrusted content as unescaped HTML.
 
 ## JavaScript Initialization
 

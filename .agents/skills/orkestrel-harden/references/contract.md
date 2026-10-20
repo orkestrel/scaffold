@@ -21,7 +21,7 @@ Inventory local code involving:
 - JSON parsing and narrowing;
 - `Result`, success/failure outcomes, and safe exception capture;
 - contract shapes, compiled guards/parsers/schemas/generators/reporters;
-- finite/integer checks, error narrowing, and hostile-boundary containment.
+- finite/integer checks, error narrowing, and untrusted-boundary containment.
 
 For each local symbol, record:
 
@@ -46,7 +46,7 @@ Do not force contract abstractions into plain control flow where they obscure be
 
 Test every adopted boundary for relevant invariants:
 
-- guards are total for adversarial values and hostile prototypes;
+- guards are total for any value, including revoked proxies, throwing accessors, and exotic prototypes;
 - parsed values satisfy the paired guard;
 - guard-valid values retain identity when promised;
 - invalid or ambiguous values fail in the documented form;

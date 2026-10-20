@@ -128,7 +128,7 @@ rest of the layer either fits inside it or takes another approval.
   its own URL.
 - Relay every new URL to the user the moment it appears, through a journal watcher, and never
   pause the chain to wait for a click: a poll outlives the relay.
-- Tell the user to click only the URL last in log order. A click on a superseded URL poisons the
+- Tell the user to click only the URL last in log order. A click on a superseded URL invalidates the
   live attempt, and the current poll then fails `403 Forbidden - GET /-/v1/done` mid-flight.
   § Read a `403` on the poll owns the recovery.
 - **Never retry a publish that is still waiting for its authorization.** Each `npm publish`
@@ -151,7 +151,7 @@ the same status. Rule from the evidence, never from which cause reads likelier.
 
 - Nobody clicked inside the session's life. The poll ran out its 45 seconds against a URL no one
   opened, and the registry closed the session.
-- The user clicked a superseded URL and poisoned the live attempt. The poll fails mid-flight while
+- The user clicked a superseded URL and invalidated the live attempt. The poll fails mid-flight while
   the user is looking at a page that reports success.
 - The registry refused the attempt's first poll, seconds after the mint and before anyone could
   click, because the poll left from an egress address other than the one that minted the session.
@@ -160,7 +160,7 @@ the same status. Rule from the evidence, never from which cause reads likelier.
   survives its first poll and relaying that one alone, per § Reach the approval.
 - Tell those causes apart from the log and the user, never from the status alone. A single minted
   URL that nobody opened in time is the abandon. A log carrying a URL the running attempt
-  superseded, with the user reporting a click, is the poisoned attempt. A drop within seconds of
+  superseded, with the user reporting a click, is the invalidated attempt. A drop within seconds of
   the mint, before any relay, is the egress refusal.
 - Recover the same way whichever it was: read the registry for the version, confirm no publish
   process is live, then mint exactly one fresh attempt with the user at the keyboard.
