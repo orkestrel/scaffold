@@ -556,7 +556,7 @@
 			"storage": "claude/rules/documentation.md",
 			"destination": ".claude/rules/documentation.md",
 			"executable": false,
-			"digest": "f9de38b2cf597170ad541a013b1a81005c759b1e25775f7912f2335e2faf6e4d"
+			"digest": "91617ca0c859cb0757fbca5b7765c85bc8c4cf9bbd7bbbcc5f6d10837eb615ea"
 		},
 		{
 			"storage": "claude/rules/names.md",
@@ -796,19 +796,19 @@
 			"storage": "dotfiles/editorconfig",
 			"destination": ".editorconfig",
 			"executable": false,
-			"digest": "20132367bcd3e93647db343b7aa11c0598e72d18034d63b11c70425119a8d0cb"
+			"digest": "2d0f63b507f7805ecdd0c51611c7a3d2c0b2acce74909e1201ceec759d2b53e2"
 		},
 		{
 			"storage": "dotfiles/gitattributes",
 			"destination": ".gitattributes",
 			"executable": false,
-			"digest": "3803fcf1d027f2581cc2ef6ccfb4cf62c3e761e8709245b8d5bc73add99e1b6c"
+			"digest": "e8357340f3be5d44d0ba72d2d7995119aa8ccd7906be2881667f02e7916ffa7a"
 		},
 		{
 			"storage": "dotfiles/gitignore",
 			"destination": ".gitignore",
 			"executable": false,
-			"digest": "2472976473578fb70df5569db6d0e752352ea909d11f18d0d7212c61417f4480"
+			"digest": "e8789a7b46ab16a8a4127127fa5e9f131f7fb559936c878ef07d59afafcc08cb"
 		},
 		{
 			"storage": "dotfiles/mcp.json",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "25a54352e2e8f3838c0d941d9b79bca0d7bde1a6126eb24ef8e20b51b381f03d"
+			"digest": "663a080b711dddd2c66712c75d9248c565d0bac66c5d5c84d57f6bc1b70b93c8"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2132,5 +2132,5 @@
 			]
 		}
 	],
-	"digest": "20c262931139ddb9c8dfe220ba679a83176db0b3ff29921205bb60b4eebcc1df"
+	"digest": "2e117adf95b9760151bb045669dda5f74608fb1297415aa5894db1db3a5ac2d7"
 }

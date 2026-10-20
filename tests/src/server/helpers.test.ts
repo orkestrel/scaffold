@@ -16,6 +16,7 @@ import { once } from 'node:events'
 import { dirname, join, parse } from 'node:path'
 import { Worker } from 'node:worker_threads'
 import { arrayOf, isRecord, isString } from '@orkestrel/contract'
+import { executeSync } from '@orkestrel/process/server'
 import { captureError, createRecorder, requireValue } from '@orkestrel/test'
 import {
 	ARTIFACT_TEMPLATES,
@@ -2850,6 +2851,39 @@ parentPort.postMessage('ready')`,
 			workspace.destroy()
 		}
 	})
+
+	it('stages no file that git diff --check reports', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const entries = stageHost(WORKSPACE_ROOT, join(workspace.path, 'host'))
+			const paths = entries.map((entry) => entry.destination)
+			expect(paths).toEqual(
+				expect.arrayContaining([
+					'.editorconfig',
+					'.gitattributes',
+					'.gitignore',
+					'guides/scaffold.md',
+				]),
+			)
+			const tracked = executeSync(
+				{ file: 'git', arguments: ['ls-files', '--error-unmatch', '-z', '--', ...paths] },
+				{ workspace: WORKSPACE_ROOT },
+			)
+			expect(tracked.stdout.split('\0').filter(Boolean).toSorted()).toStrictEqual(paths.toSorted())
+			const empty = executeSync(
+				{ file: 'git', arguments: ['hash-object', '-t', 'tree', '--stdin'] },
+				{ workspace: WORKSPACE_ROOT, input: '' },
+			).stdout.trim()
+			const check = executeSync(
+				{ file: 'git', arguments: ['diff', '--check', empty, '--', ...paths] },
+				{ workspace: WORKSPACE_ROOT, strict: false },
+			)
+			expect(check.stdout).toBe('')
+			expect(check.code).toBe(0)
+		} finally {
+			workspace.destroy()
+		}
+	}, 10000)
 
 	it('records the exact digest of every staged file', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })

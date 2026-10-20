@@ -2182,29 +2182,30 @@ Nothing is fixed except the manifest.
   `test.browser.commands`. `appVue` and each `journey:<variant>` project keep it through the
   browser configuration they spread. Scaffold claims the file by presence, so `repair` and
   `overwrite` write the seed into a target that lacks it and keep the commands you register.
-- The root configuration bundles `configs/commands.ts` into every configuration load, builds
-  included, and the bundle resolves no workspace alias. A native import of `src/server/index.ts`
-  from a command body fails with `ERR_MODULE_NOT_FOUND` on that module's own `@src/core` import.
-  Import only a `node:` module or a package the manifest declares in `dependencies` or
-  `devDependencies` at the top of the file. Load workspace source inside the command body through
-  `context.project.vitest.import`, which runs on the root Vite server and its `resolve.alias`, and
-  narrow the module it returns as `unknown`. The following module registers a `greeting` command
-  that returns the `message` export of `src/server/index.ts`:
 
-  ```ts
-  import type { BrowserCommandContext, BrowserConfigOptions } from 'vitest/node'
-  import { fileURLToPath } from 'node:url'
+The root configuration bundles `configs/commands.ts` into every configuration load, builds
+included, and the bundle resolves no workspace alias. A native import of `src/server/index.ts`
+from a command body fails with `ERR_MODULE_NOT_FOUND` on that module's own `@src/core` import.
+Import only a `node:` module or a package the manifest declares in `dependencies` or
+`devDependencies` at the top of the file. Load workspace source inside the command body through
+`context.project.vitest.import`, which runs on the root Vite server and its `resolve.alias`, and
+narrow the module it returns as `unknown`. The following module registers a `greeting` command
+that returns the `message` export of `src/server/index.ts`:
 
-  const SERVER_ENTRY = fileURLToPath(new URL('../src/server/index.ts', import.meta.url))
+```ts
+import type { BrowserCommandContext, BrowserConfigOptions } from 'vitest/node'
+import { fileURLToPath } from 'node:url'
 
-  export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> = Object.freeze({
-  	greeting: async (context: BrowserCommandContext): Promise<string | undefined> => {
-  		const loaded = await context.project.vitest.import<unknown>(SERVER_ENTRY)
-  		if (typeof loaded !== 'object' || loaded === null || !('message' in loaded)) return undefined
-  		return typeof loaded.message === 'string' ? loaded.message : undefined
-  	},
-  })
-  ```
+const SERVER_ENTRY = fileURLToPath(new URL('../src/server/index.ts', import.meta.url))
+
+export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> = Object.freeze({
+	greeting: async (context: BrowserCommandContext): Promise<string | undefined> => {
+		const loaded = await context.project.vitest.import<unknown>(SERVER_ENTRY)
+		if (typeof loaded !== 'object' || loaded === null || !('message' in loaded)) return undefined
+		return typeof loaded.message === 'string' ? loaded.message : undefined
+	},
+})
+```
 
 - One template artifact per source and test file the selection needs: an `index.ts` barrel per
   selected environment, `main.ts` and `index.html` for an application browser, `tests/setup.ts`

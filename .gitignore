@@ -47,4 +47,3 @@ playwright-report/
 
 # Agent worktrees (created by an isolated subagent dispatch, never committed)
 .claude/worktrees/
-
