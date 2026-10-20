@@ -3075,9 +3075,9 @@ export function readPolicySurface(root: string): PolicySurfacePopulation {
  *
  * @remarks
  * Source names claimed by the target's own hosted guide are grandfathered. Setup names have no
- * grandfather. Catalog rows come from beside the guides: with an installed host, from the staged
- * catalog and never from the target's own table, which can list a package without a guide in that
- * host. An absent installed host falls back to checkout guides only with catalog coverage.
+ * grandfather. Catalog rows come from beside the guides: when reading installed guides, from the
+ * staged catalog and never from the target's own table, which can list a package without a guide in
+ * that host. An absent installed host falls back to checkout guides only with catalog coverage.
  * Missing comparison evidence and unread barrel statements produce surface violations.
  *
  * @param root - The workspace root to inspect.
