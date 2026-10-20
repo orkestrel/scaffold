@@ -1942,6 +1942,23 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
+	it('emits each distribution proof byte for byte from the newest frozen release', () => {
+		const [, proofs] = requireValue(
+			Object.entries(DISTRIBUTION_PROOF_TEXTS)
+				.sort(([left], [right]) => left.localeCompare(right, undefined, { numeric: true }))
+				.at(-1),
+		)
+		for (const [variant, text] of Object.entries(proofs)) {
+			const artifacts = blueprintToTestArtifacts(
+				createBlueprint('proof', { src: variant === 'browser' ? ['browser'] : ['core'] }),
+			)
+			const proof = requireValue(
+				artifacts.find(({ path }) => path === 'tests/distribution.test.ts'),
+			)
+			expect(proof.content).toBe(text)
+		}
+	})
+
 	it.each(Object.entries(DISTRIBUTION_PROOF_TEXTS['0.0.104']))(
 		'typechecks and imports the frozen 0.0.104 %s proof against the current harness',
 		(variant, text) => {
