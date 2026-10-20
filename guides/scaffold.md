@@ -2265,11 +2265,13 @@ export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> =
   harness's suite stages its consumer when the proof's `beforeAll` hook starts it; listing the
   project creates no distribution staging directory. The proof registers the harness's case table,
   including the installed source-map scan, the declaration-copy scan, and the manifest fixed point
-  under `npm pkg fix`. The source-map scan reads JavaScript maps in each environment and reports
-  sibling sources or a map with no source of its own environment. The declaration scan reads
+  under `npm pkg fix`. The source-map scan reads each output's `sourceMappingURL` map, including
+  inline data maps, or its sibling map when the comment is absent. Relative map references resolve
+  at the output; relative sources and roots resolve at the map, and file URLs become host paths.
+  The scan reports sibling sources or a map with no source of its own environment. The declaration scan reads
   top-level declared names, including unexported names, groups declaration formats by face, and
   refuses a roll-up declaring no names when its workspace source entry exports names. A built
-  JavaScript face holding code requires a source map. An empty publication passes each scan with
+  JavaScript output holding code requires its own readable source map. An empty publication passes each scan with
   its reason: no built face holds code, or no source entry exports names. A single declaration
   face passes the copy check after its required-content check. The manifest check runs npm on a
   scratch copy and reports each changed top-level key. A published browser environment adds the

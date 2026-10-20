@@ -1827,7 +1827,7 @@ import {
 {{transport}}import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative as relativePath, resolve, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { parseSync } from 'vite'
 {{launcher}}
@@ -2985,17 +2985,17 @@ export function readDistributionFace(installed: string, path: string): string | 
  * Scans installed JavaScript maps for sources copied from another environment.
  * @param installed - The installed package root.
  * @returns The copied sources and unreadable maps.
- * @throws Thrown when an installed JavaScript face holds code but has no maps.
+ * @throws Thrown when a code-bearing output has no readable map of its own.
  */
 export function scanDistributionSourceMaps(installed: string): readonly string[] {
 	const files = collectDistributionFiles(join(installed, 'dist')).filter(
 		(path) => readDistributionFace(installed, path) !== undefined,
 	)
-	const maps = files.filter((path) => /\\.(?:js|cjs|mjs)\\.map$/u.test(path))
-	const unmapped = files.filter(
-		(path) =>
-			/\\.(?:js|cjs|mjs)$/u.test(path) &&
-			parseSync(path, readFileSync(path, 'utf8')).program.body.some(
+	const outputs = files
+		.filter((path) => /\\.(?:js|cjs|mjs)$/u.test(path))
+		.map((path) => {
+			const parsed = parseSync(path, readFileSync(path, 'utf8'))
+			const code = parsed.program.body.some(
 				(statement) =>
 					statement.type !== 'EmptyStatement' &&
 					!(
@@ -3004,29 +3004,83 @@ export function scanDistributionSourceMaps(installed: string): readonly string[]
 						statement.specifiers.length === 0 &&
 						statement.source === null
 					),
-			) &&
-			!maps.some(
-				(map) => readDistributionFace(installed, map) === readDistributionFace(installed, path),
-			),
-	)
-	if (unmapped.length > 0) throw new Error(\`Unreadable source maps for \${unmapped.join(', ')}\`)
+			)
+			const reference = parsed.comments
+				.flatMap((comment) => {
+					const match = /^[@#]\\s*sourceMappingURL=(\\S+)\\s*$/u.exec(comment.value)
+					return match?.[1] === undefined ? [] : [match[1]]
+				})
+				.at(-1)
+			try {
+				const inline = reference?.startsWith('data:') === true
+				const target = inline
+					? path
+					: reference === undefined
+						? \`\${path}.map\`
+						: fileURLToPath(new URL(reference.replaceAll('\\\\', '/'), pathToFileURL(path)))
+				return {
+					path: target,
+					face: readDistributionFace(installed, path),
+					code,
+					reference: inline ? reference : undefined,
+				}
+			} catch {
+				throw new Error(\`Unreadable source maps for \${path}\`)
+			}
+		})
+	const maps = [
+		...outputs.filter(
+			({ path, code, reference }) => code || reference !== undefined || existsSync(path),
+		),
+		...files
+			.filter(
+				(path) =>
+					/\\.(?:js|cjs|mjs)\\.map$/u.test(path) && !outputs.some((output) => output.path === path),
+			)
+			.map((path) => ({
+				path,
+				face: readDistributionFace(installed, path),
+				code: false,
+				reference: undefined,
+			})),
+	]
 	if (maps.length === 0)
 		console.info('No built JavaScript face holds code, so no source map is required')
-	return maps.flatMap((path) => {
-		const face = readDistributionFace(installed, path)
+	return maps.flatMap(({ path, face, code, reference }) => {
 		const label = relativePath(installed, path).split(sep).join('/')
 		try {
-			const map = readDistributionJSON(path)
+			const payload =
+				reference === undefined
+					? undefined
+					: /^data:application\\/json(?:;charset=[^;,]+)?(;base64)?,(.*)$/iu.exec(reference)
+			const map: unknown =
+				reference === undefined
+					? readDistributionJSON(path)
+					: payload?.[2] === undefined
+						? undefined
+						: JSON.parse(
+								payload[1] === undefined
+									? decodeURIComponent(payload[2])
+									: Buffer.from(payload[2], 'base64').toString('utf8'),
+							)
 			if (
 				!isDistributionRecord(map) ||
 				!isDistributionNames(map.sources) ||
 				(map.sourceRoot !== undefined && typeof map.sourceRoot !== 'string')
 			) {
-				return [\`\${label}: unreadable source map\`]
+				throw new Error('Unreadable source map')
 			}
 			const root = typeof map.sourceRoot === 'string' ? map.sourceRoot : ''
+			const directory = root.startsWith('file:')
+				? fileURLToPath(new URL(root))
+				: resolve(dirname(path), root.replaceAll('\\\\', '/'))
 			const sources = map.sources.map((source) =>
-				relativePath(installed, resolve(dirname(path), root, source))
+				relativePath(
+					resolve(installed),
+					source.startsWith('file:')
+						? fileURLToPath(new URL(source))
+						: resolve(directory, source.replaceAll('\\\\', '/')),
+				)
 					.split(sep)
 					.join('/'),
 			)
@@ -3040,6 +3094,7 @@ export function scanDistributionSourceMaps(installed: string): readonly string[]
 					: [\`\${label}: unreadable source map (no src/\${face}/ source)\`]),
 			]
 		} catch {
+			if (code) throw new Error(\`Unreadable source maps for \${path}\`)
 			return [\`\${label}: unreadable source map\`]
 		}
 	})

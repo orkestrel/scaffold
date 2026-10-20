@@ -2,6 +2,7 @@ import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { execute } from '@orkestrel/process/server'
 import { captureError, requireValue } from '@orkestrel/test'
@@ -1604,6 +1605,182 @@ describe('emitted browser resolver', () => {
 })
 
 describe('emitted distribution classifier', () => {
+	it('A8.1 resolves file URL sources beside relative own sources', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-url-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {})
+			workspace.write('installed/dist/src/server/index.js', 'export const server = 1\n')
+			workspace.write(
+				'installed/dist/src/server/index.js.map',
+				JSON.stringify({
+					version: 3,
+					sources: [
+						'../../../src/server/index.ts',
+						pathToFileURL(join(installed, 'src/core/errors.ts')).href,
+					],
+				}),
+			)
+			expect(
+				driveModule(file, 'scan', [
+					`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				]),
+			).toEqual([['dist/src/server/index.js.map: src/core/errors.ts']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('A8.1 resolves file URL sourceRoot and backslash sources at the map location', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-root-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {})
+			workspace.write('installed/dist/src/server/index.js', 'export const server = 1\n')
+			for (const root of [pathToFileURL(join(installed, 'src') + '/').href, '..\\..\\..\\src']) {
+				workspace.write(
+					'installed/dist/src/server/index.js.map',
+					JSON.stringify({
+						version: 3,
+						sourceRoot: root,
+						sources: ['server/index.ts', 'core/errors.ts'],
+					}),
+				)
+				expect(
+					driveModule(file, 'scan', [
+						`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+					]),
+				).toEqual([['dist/src/server/index.js.map: src/core/errors.ts']])
+			}
+			workspace.write(
+				'installed/dist/src/server/index.js.map',
+				JSON.stringify({
+					version: 3,
+					sources: ['..\\..\\..\\src\\server\\index.ts', '..\\..\\..\\src\\core\\errors.ts'],
+				}),
+			)
+			expect(
+				driveModule(file, 'scan', [
+					`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				]),
+			).toEqual([['dist/src/server/index.js.map: src/core/errors.ts']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('A8.1 refuses an unmapped output beside an unrelated map in the same face', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-own-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/server/index.js': 'export class CoreCopy {}\n',
+				'dist/src/server/index.cjs': 'exports.server = 1\n',
+				'dist/src/server/index.cjs.map': JSON.stringify({
+					version: 3,
+					sources: ['../../../src/server/index.ts'],
+				}),
+			})
+			expect(() =>
+				driveModule(file, 'scan', [
+					`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				]),
+			).toThrow('Unreadable source maps')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('A8.1 inspects inline maps even beside an unrelated external map', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-inline-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const map = JSON.stringify({
+				version: 3,
+				sources: ['../../../src/server/index.ts', '../../../src/core/errors.ts'],
+			})
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/server/index.cjs.map': JSON.stringify({
+					version: 3,
+					sources: ['../../../src/server/index.ts'],
+				}),
+			})
+			for (const reference of [
+				`data:application/json;base64,${Buffer.from(map).toString('base64')}`,
+				`data:application/json;charset=utf-8,${encodeURIComponent(map)}`,
+			]) {
+				workspace.write(
+					'installed/dist/src/server/index.js',
+					`export class CoreCopy {}\n//# sourceMappingURL=${reference}\n`,
+				)
+				expect(
+					driveModule(file, 'scan', [
+						`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+					]),
+				).toEqual([['dist/src/server/index.js: src/core/errors.ts']])
+			}
+			workspace.remove('installed/dist/src/server/index.cjs.map')
+			expect(
+				driveModule(file, 'scan', [
+					`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				]),
+			).toEqual([['dist/src/server/index.js: src/core/errors.ts']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('A8.1 follows external map comments relative to the output and sources relative to the map', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-reference-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'maps/renamed.json': JSON.stringify({
+					version: 3,
+					sourceRoot: '../src',
+					sources: ['server/index.ts', 'core/errors.ts'],
+				}),
+				'dist/src/server/index.js.map': JSON.stringify({
+					version: 3,
+					sources: ['../../../src/server/index.ts'],
+				}),
+			})
+			for (const reference of [
+				'../../../maps/renamed.json',
+				'..\\..\\..\\maps\\renamed.json',
+				pathToFileURL(join(installed, 'maps/renamed.json')).href,
+			]) {
+				workspace.write(
+					'installed/dist/src/server/index.js',
+					`export const server = 1\n/*# sourceMappingURL=${reference} */\n`,
+				)
+				expect(
+					driveModule(file, 'scan', [
+						`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+					]),
+				).toEqual([['maps/renamed.json: src/core/errors.ts']])
+			}
+			for (const reference of [
+				'missing.map',
+				'https://example.invalid/server.map',
+				'data:application/json;base64,e30=',
+				'data:application/json,%7B',
+			]) {
+				workspace.write(
+					'installed/dist/src/server/index.js',
+					`export const server = 1\n//# sourceMappingURL=${reference}\n`,
+				)
+				expect(() =>
+					driveModule(file, 'scan', [
+						`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+					]),
+				).toThrow('Unreadable source maps')
+			}
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
 	it('A8.1 reports sibling sources in every JavaScript map format and refuses unreadable populations', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-scan-' })
 		try {
