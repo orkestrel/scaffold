@@ -60,6 +60,10 @@ Use only the environments a project needs, and keep the root dependency model in
 
 Give every selected environment and every face an alias: `src/styles`, each `src/<name>` styles extension, and each axis the `vue` extension occupies. Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compilerOptions.paths`; keep both aligned.
 
+Import a sibling environment through its alias. In `src/browser`, `src/server`, `src/vue`, and `src/bin`, a
+relative path to `src/core`, `src/browser`, or `src/server` bundles a private copy of that environment into the
+face, so the vendored `.oxlintrc.json` refuses it with a message naming the alias.
+
 ## Configuration authority
 
 - `tsconfig.json`: shared compiler options, all-tree types, and path aliases.

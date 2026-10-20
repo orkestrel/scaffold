@@ -1321,8 +1321,10 @@ The `vue` extension gives each axis it occupies a face of its own:
   `vue-tsc`, `build:app:vue`, `dev:vue`, and `test:app:vue`. While `app/vue` is occupied, the root
   `check` script typechecks the whole tree through `vue-tsc` in place of `tsc`.
 
-The vendored `.oxlintrc.json` holds each face to the import direction `AGENTS.md` § Project model
-fixes, and the vendored `tests/config.test.ts` drives those directions through Oxlint.
+The vendored `.oxlintrc.json` holds each face to the import direction `AGENTS.md` § Project model fixes, and
+refuses a relative import of a sibling environment from `src/browser`, `src/server`, `src/vue`, and `src/bin` with
+a message naming the alias, because a face's build bundles what a relative path reaches. The vendored
+`tests/config.test.ts` drives those directions through Oxlint.
 
 Every published face's build decides its externals through `resolveExternal` from the vendored
 `configs/helpers.ts`. Node builtins, `@orkestrel/*` packages, declared peers with their subpaths,

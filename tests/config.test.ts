@@ -2916,72 +2916,89 @@ createSomething({
 					const pattern = readConfigRecord(patternValue)
 					const message = pattern.message
 					if (typeof message !== 'string') throw new Error('Missing pattern message')
-					const listed: ReadonlyArray<readonly [string, boolean]> = message.includes('URL schemes')
-						? [
-								['https://host/x', true],
-								['data:text/plain,x', true],
-								['node:fs', false],
-								['n:entry', true],
-								['no:entry', true],
-								['nod:entry', true],
-								['nodea:entry', true],
-								['1bad:entry', false],
-								['./data:entry', false],
-							]
-						: message.includes('noncanonical dot')
+					const alias = /@src\/(core|browser|server) alias/u.exec(message)?.[1]
+					const listed: ReadonlyArray<readonly [string, boolean]> =
+						alias !== undefined
 							? [
-									['../core/../server/index.js', true],
-									['../core/./index.js', true],
-									['../core/index.js', false],
-									['./index.js', false],
-									['../../core/index.js', false],
-									['.../../index.js', true],
-									['.name/../index.js', true],
+									[`../${alias}/index.js`, true],
+									[`../../${alias}/types.js`, true],
+									[`../../src/${alias}/index.js`, true],
+									[`../${alias}`, true],
+									[`../${alias}/`, true],
+									[`../${alias}?raw`, true],
+									[`../${alias}#fragment`, true],
+									[`@src/${alias}`, false],
+									[`./${alias}/index.js`, false],
+									[`../${alias}x/index.js`, false],
+									[`../${alias}.ext/index.js`, false],
 								]
-							: message.includes('sibling sheet')
+							: message.includes('URL schemes')
 								? [
-										['@src/print', true],
-										['../print/index.js', true],
-										['@src/core', false],
-										['@src/browser', false],
-										['@src/vue', false],
-										['@app/core', false],
-										['@app/browser', false],
-										['@src/corex', true],
-										['@src/', true],
-										['../src/print/index.js', true],
-										['../browser?x', true],
-										['../print.ext/index.js', false],
-										...(Array.isArray(block.files) &&
-										block.files.some(
-											(file: unknown) => typeof file === 'string' && file.startsWith('app/vue/'),
-										)
-											? [['@app/print', true] as const]
-											: []),
+										['https://host/x', true],
+										['data:text/plain,x', true],
+										['node:fs', false],
+										['n:entry', true],
+										['no:entry', true],
+										['nod:entry', true],
+										['nodea:entry', true],
+										['1bad:entry', false],
+										['./data:entry', false],
 									]
-								: [
-										[
-											message.includes('absolute paths')
-												? '/machine/module.js'
-												: message.includes('normalized traversal')
-													? './../core/index.js'
-													: message.includes('forward slashes')
-														? '..\\core\\index.js'
-														: message.includes('compiler API')
-															? 'typescript'
-															: message.includes('private app')
-																? '@app/core'
-																: message.includes('stylesheets')
-																	? './index.css'
-																	: message.includes('host-independent') ||
-																		  message.includes('Node or server')
-																		? 'node:fs'
-																		: message.includes('Vue extension')
-																			? '@src/vue'
-																			: '@src/browser',
-											true,
-										],
-									]
+								: message.includes('noncanonical dot')
+									? [
+											['../core/../server/index.js', true],
+											['../core/./index.js', true],
+											['../core/index.js', false],
+											['./index.js', false],
+											['../../core/index.js', false],
+											['.../../index.js', true],
+											['.name/../index.js', true],
+										]
+									: message.includes('sibling sheet')
+										? [
+												['@src/print', true],
+												['../print/index.js', true],
+												['@src/core', false],
+												['@src/browser', false],
+												['@src/vue', false],
+												['@app/core', false],
+												['@app/browser', false],
+												['@src/corex', true],
+												['@src/', true],
+												['../src/print/index.js', true],
+												['../browser?x', true],
+												['../print.ext/index.js', false],
+												...(Array.isArray(block.files) &&
+												block.files.some(
+													(file: unknown) =>
+														typeof file === 'string' && file.startsWith('app/vue/'),
+												)
+													? [['@app/print', true] as const]
+													: []),
+											]
+										: [
+												[
+													message.includes('absolute paths')
+														? '/machine/module.js'
+														: message.includes('normalized traversal')
+															? './../core/index.js'
+															: message.includes('forward slashes')
+																? '..\\core\\index.js'
+																: message.includes('compiler API')
+																	? 'typescript'
+																	: message.includes('private app')
+																		? '@app/core'
+																		: message.includes('stylesheets')
+																			? './index.css'
+																			: message.includes('host-independent') ||
+																				  message.includes('Node or server')
+																				? 'node:fs'
+																				: message.includes('Vue extension')
+																					? '@src/vue'
+																					: '@src/browser',
+													true,
+												],
+											]
 					const face =
 						message.includes('another styles face') && typeof pattern.regex === 'string'
 							? /@src\/(bootstrap|tailwindcss|styles)\(/u.exec(pattern.regex)?.[1]
@@ -3135,21 +3152,34 @@ createSomething({
 										]),
 								]
 							: []),
+						...(['src/browser', 'src/server', 'src/vue', 'src/bin'].includes(owner)
+							? ['../core/index.js', '../../src/core/index.js']
+							: []),
+						...(owner === 'src/vue' ? ['../browser/index.js', '../../src/browser/index.js'] : []),
+						...(owner === 'src/bin' ? ['../server/index.js', '../../src/server/index.js'] : []),
 					]
 					const admitted = [
 						...(owner.endsWith('/vue')
 							? [
 									'@src/core',
 									'@src/browser',
-									'../core/index.js',
-									'../browser/index.js',
 									'vue',
 									'@vue/runtime-core',
 									...(owner.startsWith('app/')
-										? ['@app/core', '@app/browser', '@src/vue', '../../src/vue/index.js']
+										? [
+												'@app/core',
+												'@app/browser',
+												'@src/vue',
+												'../../src/vue/index.js',
+												'../browser/index.js',
+											]
 										: []),
 								]
 							: ['@src/core']),
+						...(['src/browser', 'src/server', 'src/vue', 'src/bin'].includes(owner)
+							? []
+							: ['../core/index.js']),
+						...(owner === 'src/bin' ? ['@src/server'] : []),
 						...(sheet
 							? [
 									...faces
@@ -3177,7 +3207,6 @@ createSomething({
 								[
 									...admitted,
 									'./index.js',
-									'../core/index.js',
 									...(owner.endsWith('/server') || owner === 'src/bin' ? ['node:fs'] : []),
 								],
 								false,

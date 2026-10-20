@@ -604,7 +604,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "97223cfa067ad2c2dd38bf266ba98cff98e4e135f677af1e2dc23031d827784a"
+			"digest": "0330b4033b6e013d3605786a6ffb8f97716f454959bc157e87d9a54677cd7a0b"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -832,7 +832,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "58ad7a7bd67ea6f66afc76e17efcc407571bf9bc07d59b09a1db6d757731d4fd"
+			"digest": "9e670eb0f05ef90acd01d28d024771eb99f013aaaff0d6086ddc968a6d1c088e"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "29596810f257e5a77d609a6325f1009f993af0139b0e432994bf69d8ec445b78"
+			"digest": "d810e63b8d6a5ce834a2b035cb64d975253b750a7c5c080b625b32ea277c4785"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1192,7 +1192,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "6c896b80c309ef15cdf21d01fdf5f3d41dfca9aef800d564531463c800d3fa36"
+			"digest": "548c110439e4f9cf6321bd49e95b696602e14024a65ca59c875ac79bbbb28b91"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2132,5 +2132,5 @@
 			]
 		}
 	],
-	"digest": "f301f16fc911a5faf07a6feb09cd8d54fd220baa837f9786813309f252f5e704"
+	"digest": "e54365f8a8d23d5ec07e9e1e89166010cdd56cb0f72742e7ff54f03347013bcd"
 }
