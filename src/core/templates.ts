@@ -1807,8 +1807,10 @@ import {
 } from 'node:fs'
 {{transport}}import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative as relativePath, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isDeepStrictEqual } from 'node:util'
+import { parseSync } from 'vite'
 {{launcher}}
 /** Defines the lifecycle and installed consumer read by a distribution proof. */
 export interface DistributionSuiteInterface {
@@ -2931,6 +2933,241 @@ export function createDistributionSuite(): DistributionSuiteInterface {
 }
 
 /**
+ * Collects physical files beneath an installed output directory.
+ * @param directory - The output directory to walk.
+ * @returns The installed files, or an empty list when the directory is absent.
+ */
+export function collectDistributionFiles(directory: string): readonly string[] {
+	if (!existsSync(directory)) return []
+	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+		const path = join(directory, entry.name)
+		return entry.isDirectory() ? collectDistributionFiles(path) : entry.isFile() ? [path] : []
+	})
+}
+
+/**
+ * Reads the source environment owning an installed output path.
+ * @param installed - The installed package root.
+ * @param path - The output file.
+ * @returns The source environment, or undefined outside a JavaScript face.
+ */
+export function readDistributionFace(installed: string, path: string): string | undefined {
+	const [output, axis, face] = relativePath(installed, path).split(sep)
+	return output === 'dist'
+		? axis === 'src'
+			? face
+			: axis === 'bin'
+				? 'bin'
+				: undefined
+		: undefined
+}
+
+/**
+ * Scans installed JavaScript maps for sources copied from another environment.
+ * @param installed - The installed package root.
+ * @returns The copied sources and unreadable maps.
+ * @throws Thrown when an installed JavaScript face holds code but has no maps.
+ */
+export function scanDistributionSourceMaps(installed: string): readonly string[] {
+	const files = collectDistributionFiles(join(installed, 'dist')).filter(
+		(path) => readDistributionFace(installed, path) !== undefined,
+	)
+	const maps = files.filter((path) => /\\.(?:js|cjs|mjs)\\.map$/u.test(path))
+	const unmapped = files.filter(
+		(path) =>
+			/\\.(?:js|cjs|mjs)$/u.test(path) &&
+			parseSync(path, readFileSync(path, 'utf8')).program.body.some(
+				(statement) =>
+					statement.type !== 'EmptyStatement' &&
+					!(
+						statement.type === 'ExportNamedDeclaration' &&
+						statement.declaration === null &&
+						statement.specifiers.length === 0 &&
+						statement.source === null
+					),
+			) &&
+			!maps.some(
+				(map) => readDistributionFace(installed, map) === readDistributionFace(installed, path),
+			),
+	)
+	if (unmapped.length > 0) throw new Error(\`Unreadable source maps for \${unmapped.join(', ')}\`)
+	if (maps.length === 0)
+		console.info('No built JavaScript face holds code, so no source map is required')
+	return maps.flatMap((path) => {
+		const face = readDistributionFace(installed, path)
+		const label = relativePath(installed, path).split(sep).join('/')
+		try {
+			const map = readDistributionJSON(path)
+			if (
+				!isDistributionRecord(map) ||
+				!isDistributionNames(map.sources) ||
+				(map.sourceRoot !== undefined && typeof map.sourceRoot !== 'string')
+			) {
+				return [\`\${label}: unreadable source map\`]
+			}
+			const root = typeof map.sourceRoot === 'string' ? map.sourceRoot : ''
+			const sources = map.sources.map((source) =>
+				relativePath(installed, resolve(dirname(path), root, source))
+					.split(sep)
+					.join('/'),
+			)
+			const copied = sources.filter(
+				(source) => source.startsWith('src/') && !source.startsWith(\`src/\${face}/\`),
+			)
+			return [
+				...copied.map((source) => \`\${label}: \${source}\`),
+				...(sources.some((source) => source.startsWith(\`src/\${face}/\`))
+					? []
+					: [\`\${label}: unreadable source map (no src/\${face}/ source)\`]),
+			]
+		} catch {
+			return [\`\${label}: unreadable source map\`]
+		}
+	})
+}
+
+/**
+ * Reads top-level names declared by a roll-up, including unexported declarations.
+ * @param path - The installed declaration file.
+ * @returns The declared names. Refuses syntax errors and unreadable binding patterns.
+ */
+export function readDistributionNames(path: string): readonly string[] {
+	const source = parseSync(path, readFileSync(path, 'utf8'))
+	if (source.errors.length > 0) throw new Error(\`Unreadable declarations at \${path}\`)
+	return source.program.body.flatMap((statement) => {
+		const declaration =
+			statement.type === 'ExportNamedDeclaration' || statement.type === 'ExportDefaultDeclaration'
+				? statement.declaration
+				: statement
+		if (declaration === null) return []
+		if (declaration.type === 'VariableDeclaration') {
+			return declaration.declarations.map((binding) => {
+				if (binding.id.type !== 'Identifier')
+					throw new Error(\`Unreadable declaration binding at \${path}\`)
+				return binding.id.name
+			})
+		}
+		if (
+			declaration.type === 'ClassDeclaration' ||
+			declaration.type === 'FunctionDeclaration' ||
+			declaration.type === 'TSDeclareFunction' ||
+			declaration.type === 'TSInterfaceDeclaration' ||
+			declaration.type === 'TSTypeAliasDeclaration' ||
+			declaration.type === 'TSEnumDeclaration' ||
+			declaration.type === 'TSModuleDeclaration'
+		) {
+			return declaration.id?.type === 'Identifier' ? [declaration.id.name] : []
+		}
+		return []
+	})
+}
+
+/**
+ * Checks whether a source entry exports names, following local star exports.
+ * @param path - The source entry to inspect.
+ * @param ancestors - The entries already visited on this export path.
+ * @returns True if the entry exports a name; false otherwise.
+ */
+export function matchesDistributionSourceExports(
+	path: string,
+	ancestors: readonly string[] = [],
+): boolean {
+	if (ancestors.includes(path)) return false
+	const source = parseSync(path, readFileSync(path, 'utf8'))
+	if (source.errors.length > 0) throw new Error(\`Unreadable source exports at \${path}\`)
+	return source.program.body.some((statement) => {
+		if (statement.type === 'ExportDefaultDeclaration') return ancestors.length === 0
+		if (statement.type === 'ExportNamedDeclaration')
+			return (
+				statement.declaration !== null ||
+				statement.specifiers.some((specifier) => {
+					const name =
+						specifier.exported.type === 'Identifier'
+							? specifier.exported.name
+							: specifier.exported.value
+					return ancestors.length === 0 || name !== 'default'
+				})
+			)
+		if (statement.type !== 'ExportAllDeclaration') return false
+		if (statement.exported !== null || !statement.source.value.startsWith('.')) return true
+		const target = resolve(dirname(path), statement.source.value.replace(/\\.js$/u, '.ts'))
+		return matchesDistributionSourceExports(target, [...ancestors, path])
+	})
+}
+
+/**
+ * Scans installed declaration faces for names declared by multiple environments.
+ * @param installed - The installed package root.
+ * @param source - The workspace holding the source entries being published.
+ * @returns The repeated names with their declaring faces.
+ * @throws Thrown when a source entry exports names but its roll-up declares none.
+ */
+export function scanDistributionDeclarations(
+	installed: string,
+	source: string = DISTRIBUTION_ROOT,
+): readonly string[] {
+	const declarations = collectDistributionFiles(join(installed, 'dist'))
+		.filter(matchesDistributionDeclaration)
+		.map((path) => ({
+			path,
+			face: readDistributionFace(installed, path),
+			names: readDistributionNames(path),
+		}))
+	const entries = collectDistributionFiles(join(source, 'src')).filter((path) => {
+		const parts = relativePath(source, path).split(sep)
+		return parts.length === 3 && parts[2] === 'index.ts'
+	})
+	const published = entries.filter((path) => matchesDistributionSourceExports(path))
+	for (const path of published) {
+		const face = relativePath(source, path).split(sep)[1]
+		if (!declarations.some((entry) => entry.face === face && entry.names.length > 0))
+			throw new Error(
+				\`The \${face} source entry exports names but its declaration roll-up declares none\`,
+			)
+	}
+	if (published.length === 0)
+		console.info('No source entry exports names, so no declaration names are required')
+	const names = [...new Set(declarations.flatMap((entry) => entry.names))].sort()
+	return names.flatMap((name) => {
+		const faces = [
+			...new Set(
+				declarations
+					.filter((entry) => entry.names.includes(name))
+					.map((entry) => entry.face)
+					.filter((face) => face !== undefined),
+			),
+		].sort()
+		return faces.length > 1 ? [\`\${name}: \${faces.join(', ')}\`] : []
+	})
+}
+
+/**
+ * Checks the installed manifest against npm's normalization in an owned scratch copy.
+ * @param installed - The installed package root, read only.
+ * @param scratch - The suite's owned scratch root and npm cache parent.
+ * @returns The top-level keys changed by npm. Refuses an unsuccessful npm command.
+ */
+export function checkDistributionManifest(installed: string, scratch: string): readonly string[] {
+	const directory = mkdtempSync(join(scratch, 'manifest-'))
+	try {
+		const path = join(directory, 'package.json')
+		writeFileSync(path, readFileSync(join(installed, 'package.json')))
+		const before = readDistributionJSON(path)
+		const result = runDistributionNpm(['pkg', 'fix'], directory, scratch)
+		if (result.status !== 0)
+			throw new Error(\`npm pkg fix failed: \${readDistributionOutput(result)}\`)
+		const after = readDistributionJSON(path)
+		if (!isDistributionRecord(before) || !isDistributionRecord(after))
+			throw new Error('Unreadable manifest')
+		return [...new Set([...Object.keys(before), ...Object.keys(after)])]
+			.filter((key) => !isDeepStrictEqual(before[key], after[key]))
+			.sort()
+	} finally {
+		rmSync(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+	}
+}
+
+/**
  * Builds independently registered observations over the suite's installed consumer.
  * @param suite - The lifecycle shared by the proof's hooks and observations.
  * @returns The case rows whose observations each require one assertion.
@@ -3015,6 +3252,38 @@ export function buildDistributionCases(
 					},
 				}
 			},
+		},
+		{
+			label: 'keeps installed JavaScript sources in their own environment [requires the registry]',
+			observe: (context) => {
+				const stage = suite.read(context)
+				return { actual: scanDistributionSourceMaps(stage.installed), expected: [] }
+			},
+		},
+		{
+			label: 'declares each installed name in one environment [requires the registry]',
+			observe: (context) => {
+				const stage = suite.read(context)
+				const faces = new Set(
+					collectDistributionFiles(join(stage.installed, 'dist'))
+						.filter(matchesDistributionDeclaration)
+						.map((path) => readDistributionFace(stage.installed, path))
+						.filter((face) => face !== undefined),
+				)
+				const findings = scanDistributionDeclarations(stage.installed)
+				if (faces.size <= 1)
+					console.info(
+						'Fewer than two declaration faces are installed, so no cross-face copy exists',
+					)
+				return { actual: findings, expected: [] }
+			},
+		},
+		{
+			label: 'keeps the installed manifest fixed under npm pkg fix [requires the registry]',
+			observe: (context) => ({
+				actual: checkDistributionManifest(suite.read(context).installed, suite.scratch),
+				expected: [],
+			}),
 		},
 		{
 			label: 'packs one archive and installs it in isolation [requires the registry]',

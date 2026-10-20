@@ -2251,7 +2251,16 @@ export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> =
   The proof is claimed by presence rather than birth, so a workspace that replaces it keeps its
   replacement. The harness is claimed by content, so `repair` restores its planned bytes. The
   harness's suite stages its consumer when the proof's `beforeAll` hook starts it; listing the
-  project creates no distribution staging directory. A published browser environment adds the
+  project creates no distribution staging directory. The proof registers the harness's case table,
+  including the installed source-map scan, the declaration-copy scan, and the manifest fixed point
+  under `npm pkg fix`. The source-map scan reads JavaScript maps in each environment and reports
+  sibling sources or a map with no source of its own environment. The declaration scan reads
+  top-level declared names, including unexported names, groups declaration formats by face, and
+  refuses a roll-up declaring no names when its workspace source entry exports names. A built
+  JavaScript face holding code requires a source map. An empty publication passes each scan with
+  its reason: no built face holds code, or no source entry exports names. A single declaration
+  face passes the copy check after its required-content check. The manifest check runs npm on a
+  scratch copy and reports each changed top-level key. A published browser environment adds the
   real-browser stage to both: the harness bundles the installed package with the workspace's own
   `configs/browsers.ts` resolution, serves the bundle over a loopback server, and drives it in
   Playwright Chromium, and the proof registers that stage through `checkDistributionBrowser`.
@@ -2587,13 +2596,13 @@ Separately, a filled, exporting `tests/setup*.ts` module that no `tests/setup*.t
 proof covers raises the non-blocking `setup` question in `audit`, which names the modules and the proof to add.
 For setup modules the workspace authors, the workspace supplies the behavior proof; the setup modules scaffold seeds arrive with their sibling proofs.
 
-The generated proof partitions the installed `exports` map rather than sampling it. Every published
+The harness imported by the generated proof partitions the installed `exports` map rather than sampling it. Every published
 subpath lands in exactly one of driven, undeclared, or excluded, and a totality assertion holds that
-partition against the map's own subpath list, so a subpath the proof classifies into none of them
+partition against the map's own subpath list, so a subpath the harness classifies into none of them
 reddens instead of disappearing. Another assertion beside it names every driven subpath whose entry
 resolves no Node target and no browser target: each drive retires itself for such a subpath, so
 membership of the partition alone would leave one measured by nothing. Together they hold that every
-published subpath is driven, or is named where the proof cannot drive it.
+published subpath is driven, or is named where the harness cannot drive it.
 
 A subpath is driven when its entry resolves a declaration, and each measurement resolves that entry
 under the conditions of the driver taking it rather than under one shared set. The Node ESM runtime
@@ -2634,7 +2643,7 @@ one answered first. That is what drives a `require`-only subpath declaring its t
 adjacent declaration TypeScript substitutes from its runtime target.
 
 An entry's published names are checked against its own declarations by the type system rather than
-by a walk the proof carries. Each drive writes the runtime's own key list into a generated consumer
+by a walk the harness carries. Each drive writes the runtime's own key list into a generated consumer
 module as a literal and lets the workspace's compiler judge that module under the driver's own
 resolution, in both directions. `Record<keyof typeof entry, true>` takes the literal, so a name the
 declarations carry and the runtime does not lands there. `Record<keyof typeof published, true>`
@@ -2654,14 +2663,14 @@ rather than the JavaScript one, and the addon publishes names to whatever loads 
 extension the name carries rather than a denylist of asset extensions. Reading the
 file name rather than the whole path is load-bearing: `./dist/bundle.js/feature` and
 `./dist/v1.2/index` are modules, and reading the path gets each of them wrong. What the rule
-excludes is stated where the proof is emitted: an extensionless file published for a reader, such as
+excludes is stated where the harness is emitted: an extensionless file published for a reader, such as
 a `LICENSE` at a subpath, reports undeclared until it is given an extension or a declaration. That
-is the safe direction: the proof names a subpath it cannot vouch for rather than passing one it
+is the safe direction: the harness names a subpath it cannot vouch for rather than passing one it
 never measured.
 
 A subpath is excluded when it resolves no declaration and names no runtime target: the
 `./package.json` pointer, a published stylesheet, and a WebAssembly binary are read rather than
-imported, and the proof names them where it excludes them.
+imported, and the harness names them where it excludes them.
 
 Classification reads every target the entry names under every condition, and the members of a
 fallback list with them: Node reads an array in an exports entry as a list of fallbacks, and a
@@ -2678,21 +2687,21 @@ A `./*` subpath pattern is read as an ordinary subpath, with no expansion of the
 naming a runtime target reddens rather than landing in excluded. That is deliberate: excluding the
 pattern would account for a whole family of published subpaths and measure none of them, which is
 the silence this partition exists to close. Measuring the family means expanding the pattern against
-the installed tree and driving each match, which this proof does not do. A maintainer meeting that
-red is reading the honest answer — the proof does not measure that family — rather than a defect in
-the proof.
+the installed tree and driving each match, which this harness does not do. A maintainer meeting that
+red is reading the honest answer — the harness does not measure that family — rather than a defect in
+the harness.
 
 The proof generated for a workspace publishing no browser face asserts that no browser face exists.
-That variant drives a Node import and a Node require and carries no browser branch, because the
+That variant registers the harness's Node import and Node require cases and carries no browser branch, because the
 branch follows a published browser face on the `src` axis: the browser drive measures the packed
 artifact, and only a published face is packed. A workspace that selects `browser` on its `app` axis
 alone declares `playwright` and `@vitest/browser-playwright` and gets `configs/browsers.ts` emitted,
 and its proof still carries no branch: the selector reads the `src` axis, and a generated manifest
-packs `dist/src`, so an application face is neither selected nor packed. The imports the branch
+packs `dist/src`, so an application face is neither selected nor packed. The imports the harness's branch
 needs are declared by either axis, so they do not select the branch. The `vite` import selects
 nothing either: every workspace declares `vite`, whatever it publishes. In a core-only workspace,
 those imports resolve to nothing, and emitting the branch there would fail its own `check` and
-`lint:check` gates. Its Node cases retire themselves for a browser face, so a face published after
+`lint:check` gates. The harness's Node cases retire themselves for a browser face, so a face published after
 the file was written would leave nothing measuring it. The assertion reddens instead, and names the
 subpath a browser branch is owed for. The remedy it carries is to delete the file and run `repair`,
 which writes the variant that carries the branch — the same route presence ownership already gives

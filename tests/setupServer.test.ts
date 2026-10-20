@@ -120,6 +120,8 @@ import {
 	executeOllamaHook,
 	executeOllamaSetup,
 	writeDistributionHarness,
+	writeDistributionFixture,
+	buildDistributionObservation,
 	FILESYSTEM_PATH_CASES,
 	findRefusals,
 	FLEET_ARTIFACT_COUNT,
@@ -2252,6 +2254,28 @@ describe('the emitted-template staging', () => {
 				'export async function checkDistributionBrowser',
 			)
 			expect(workspace.has('configs/browsers.ts')).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('writes exact installed fixture bytes and builds its case observation', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/server/index.js': 'export {}\n',
+			})
+			expect(installed).toBe(join(workspace.path, 'installed'))
+			expect(workspace.read('src/core/index.ts')).toBe('export class Control {}\n')
+			expect(workspace.read('installed/dist/src/server/index.js')).toBe('export {}\n')
+			expect(workspace.read('installed/package.json')).toContain('distribution-control')
+			const file = writeDistributionHarness(workspace)
+			const expression = buildDistributionObservation(
+				installed,
+				workspace.path,
+				'installed manifest fixed',
+			)
+			expect(driveModule(file, 'classifier', [expression])).toEqual([{ actual: [], expected: [] }])
 		} finally {
 			workspace.destroy()
 		}

@@ -4687,6 +4687,50 @@ export function writeDistributionHarness(workspace: ScratchInterface, browser = 
 }
 
 /**
+ * Writes an installed artifact fixture beneath the scratch workspace.
+ * @param workspace - The owned scratch workspace.
+ * @param files - The installed paths and their exact contents.
+ * @returns The installed package root.
+ */
+export function writeDistributionFixture(
+	workspace: ScratchInterface,
+	files: Readonly<Record<string, string>>,
+): string {
+	workspace.write('src/core/index.ts', 'export class Control {}\n')
+	workspace.write(
+		'installed/package.json',
+		JSON.stringify({
+			name: 'distribution-control',
+			version: '1.0.0',
+			type: 'module',
+			exports: { '.': './dist/src/core/index.d.ts' },
+		}),
+	)
+	for (const [path, content] of Object.entries(files)) workspace.write(`installed/${path}`, content)
+	return join(workspace.path, 'installed')
+}
+
+/**
+ * Builds an expression driving a harness case against an installed fixture.
+ * @param installed - The installed package root.
+ * @param scratch - The suite scratch root.
+ * @param label - The distinguishing text in the case label.
+ * @returns The awaited observation expression for the classifier namespace.
+ */
+export function buildDistributionObservation(
+	installed: string,
+	scratch: string,
+	label: string,
+): string {
+	return `await classifier.buildDistributionCases({
+		scratch: ${JSON.stringify(scratch)}, start() {}, destroy() {},
+		read() { return { installed: ${JSON.stringify(installed)} } },
+	}).find(row => row.label.includes(${JSON.stringify(label)})).observe({
+		skip(reason) { throw new Error(reason) },
+	})`
+}
+
+/**
  * Builds one managed Playwright browsers directory from the entries named.
  *
  * One managed Playwright browsers directory, built from the entries named. Each

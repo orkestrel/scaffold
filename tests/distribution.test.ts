@@ -160,7 +160,9 @@ describe('installed package consumer', () => {
 			if (!isRecord(manifest.scripts)) {
 				throw new Error('The adopter declares no scripts')
 			}
-			expect(Object.hasOwn(manifest.scripts, 'test:setup:browser')).toBe(true)
+			expect(workspace.has('generated/tests/setupBrowser.test.ts')).toBe(false)
+			expect(workspace.has('generated/tests/setupStyles.test.ts')).toBe(false)
+			expect(Object.hasOwn(manifest.scripts, 'test:setup:browser')).toBe(false)
 			expect(Object.hasOwn(manifest.scripts, 'test:setup')).toBe(false)
 			for (const script of [
 				'lint:check',
@@ -1389,6 +1391,11 @@ describe('installed package consumer', () => {
 				for (const [path, content] of Object.entries(GENERATED_VUE_SETUP_FILES)) {
 					workspace.write(`generated/${path}`, content)
 				}
+				const manifest = parseJSON(requireValue(workspace.read('generated/package.json')))
+				if (!isRecord(manifest) || !isRecord(manifest.scripts))
+					throw new Error('The browser-proof adopter declares no scripts')
+				expect(workspace.has('generated/tests/setupBrowser.test.ts')).toBe(true)
+				expect(Object.hasOwn(manifest.scripts, 'test:setup:browser')).toBe(true)
 				const proof = executeSync(
 					{
 						file: process.execPath,

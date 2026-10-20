@@ -50,6 +50,8 @@ import {
 	DISTRIBUTION_LIFECYCLE_TEXT,
 	ensureTmpRoot,
 	writeDistributionHarness,
+	writeDistributionFixture,
+	buildDistributionObservation,
 	findRefusals,
 	stageResolver,
 	stageRootConfig,
@@ -1553,6 +1555,298 @@ describe('emitted browser resolver', () => {
 })
 
 describe('emitted distribution classifier', () => {
+	it('A8.1 reports sibling sources in every JavaScript map format and refuses unreadable populations', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-scan-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			for (const extension of ['js', 'cjs', 'mjs']) {
+				const path = `dist/src/server/index.${extension}.map`
+				const installed = writeDistributionFixture(workspace, {
+					[`dist/src/server/index.${extension}`]: 'export {}\n',
+					[path]: JSON.stringify({
+						version: 3,
+						sources: ['../../../src/server/index.ts', '../../../src/core/errors.ts'],
+					}),
+					'dist/src/server/ignored.css.map': '{',
+				})
+				const [copied] = driveModule(file, 'classifier', [
+					`classifier.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				])
+				expect(copied).toEqual([`${path}: src/core/errors.ts`])
+				workspace.write(
+					`installed/${path}`,
+					JSON.stringify({ version: 3, sourceRoot: '../../../src', sources: ['server/index.ts'] }),
+				)
+				expect(
+					driveModule(file, 'classifier', [
+						buildDistributionObservation(installed, workspace.path, 'JavaScript sources'),
+					]),
+				).toEqual([{ actual: [], expected: [] }])
+				workspace.write(`installed/${path}`, JSON.stringify({ version: 3, sources: ['vendor.ts'] }))
+				expect(
+					driveModule(file, 'classifier', [
+						`classifier.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+					]),
+				).toEqual([[`${path}: unreadable source map (no src/server/ source)`]])
+				workspace.write(`installed/${path}`, '{')
+				expect(
+					driveModule(file, 'classifier', [
+						`classifier.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+					]),
+				).toEqual([[`${path}: unreadable source map`]])
+				workspace.remove(`installed/${path}`)
+				workspace.remove(`installed/dist/src/server/index.${extension}`)
+			}
+			const installed = join(workspace.path, 'installed')
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'JavaScript sources'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+			workspace.write('installed/dist/bin/main.js', 'console.log("control")\n')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					`classifier.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				]),
+			).toThrow('Unreadable source maps')
+			workspace.write(
+				'installed/dist/bin/main.js.map',
+				JSON.stringify({ sources: ['../../src/bin/main.ts'] }),
+			)
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'JavaScript sources'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('A8.2 reports unexported declaration copies and refuses a roll-up missing source exports', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-declaration-scan-',
+		})
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/core/index.d.ts': 'export declare class Control {}\n',
+				'dist/src/core/index.d.cts': 'export declare class Control {}\n',
+				'dist/src/server/index.d.ts': 'declare class Control {}\nexport declare class Server {}\n',
+			})
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toEqual([{ actual: ['Control: core, server'], expected: [] }])
+			workspace.write(
+				'installed/dist/src/server/index.d.ts',
+				"import { Control } from 'distribution-control'\nexport declare class Server {}\n",
+			)
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+			workspace.write('installed/dist/src/core/index.d.ts', 'export {}\n')
+			workspace.write('installed/dist/src/core/index.d.cts', 'export {}\n')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					`classifier.scanDistributionDeclarations(${JSON.stringify(installed)})`,
+				]),
+			).toThrow('The core source entry exports names but its declaration roll-up declares none')
+			workspace.remove('installed/dist/src/server/index.d.ts')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toThrow('The core source entry exports names but its declaration roll-up declares none')
+			workspace.write('installed/dist/src/core/index.d.ts', 'export declare class Control {}\n')
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+			workspace.write('installed/dist/src/core/index.d.ts', 'export declare class {\n')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					`classifier.scanDistributionDeclarations(${JSON.stringify(installed)})`,
+				]),
+			).toThrow('Unreadable declarations')
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('A8 maps pass when no built face holds code and explain the empty population', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-empty-maps-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/core/index.js': '// Empty publication.\nexport {}\n',
+				'dist/src/core/index.cjs': '\n',
+			})
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'JavaScript sources'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('A8 maps refuse a built face holding code without a source map', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-missing-maps-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/server/index.js': 'export const control = 1\n',
+			})
+			expect(() =>
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'JavaScript sources'),
+				]),
+			).toThrow('Unreadable source maps')
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('A8 declarations pass when the source entry exports no names and explain the empty population', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-empty-names-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/core/index.d.ts': 'export {}\n',
+				'dist/src/core/index.d.cts': 'export {}\n',
+			})
+			workspace.write('src/core/index.ts', "export * from './helpers.js'\n")
+			workspace.write('src/core/helpers.ts', 'const internal = 1\nexport {}\n')
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+			workspace.remove('installed/dist/src/core/index.d.ts')
+			workspace.remove('installed/dist/src/core/index.d.cts')
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('A8 declarations refuse source exports without declaration names', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-missing-names-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {
+				'dist/src/core/index.d.ts': 'export {}\n',
+			})
+			workspace.write('src/core/index.ts', "export * from './helpers.js'\n")
+			workspace.write('src/core/helpers.ts', 'export interface Control {}\n')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toThrow('The core source entry exports names but its declaration roll-up declares none')
+			workspace.remove('installed/dist/src/core/index.d.ts')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'declares each installed name'),
+				]),
+			).toThrow('The core source entry exports names but its declaration roll-up declares none')
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('reads source export presence through empty barrels, cycles, aliases, and type declarations', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-source-exports-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const entry = workspace.write('entry.ts', "export * from './helpers.js'\n")
+			workspace.write('helpers.ts', "export * from './entry.js'\n")
+			expect(
+				driveModule(file, 'classifier', [
+					`classifier.matchesDistributionSourceExports(${JSON.stringify(entry)})`,
+				]),
+			).toEqual([false])
+			for (const content of [
+				'export interface Control {}\n',
+				'const internal = 1\nexport { internal as control }\n',
+				"export * as controls from './entry.js'\n",
+			]) {
+				workspace.write('helpers.ts', content)
+				expect(
+					driveModule(file, 'classifier', [
+						`classifier.matchesDistributionSourceExports(${JSON.stringify(entry)})`,
+					]),
+				).toEqual([true])
+			}
+			for (const content of [
+				'export default 1\n',
+				'const internal = 1\nexport { internal as default }\n',
+			]) {
+				const leaf = workspace.write('helpers.ts', content)
+				expect(
+					driveModule(file, 'classifier', [
+						`classifier.matchesDistributionSourceExports(${JSON.stringify(entry)})`,
+						`classifier.matchesDistributionSourceExports(${JSON.stringify(leaf)})`,
+					]),
+				).toEqual([false, true])
+			}
+			workspace.write('helpers.ts', 'export class {\n')
+			expect(() =>
+				driveModule(file, 'classifier', [
+					`classifier.matchesDistributionSourceExports(${JSON.stringify(entry)})`,
+				]),
+			).toThrow('Unreadable source exports')
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
+	it('A8.3 reports npm manifest normalization and accepts blueprint bin output without touching installed bytes', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-manifest-fix-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {})
+			const manifest = {
+				name: 'distribution-control',
+				version: '1.0.0',
+				bin: { control: './dist/bin/main.js' },
+			}
+			const text = JSON.stringify(manifest)
+			workspace.write('installed/package.json', text)
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'installed manifest fixed'),
+				]),
+			).toEqual([{ actual: ['bin'], expected: [] }])
+			expect(workspace.read('installed/package.json')).toBe(text)
+			const blueprint = blueprintToManifest(
+				createBlueprint('widget', { src: ['core', 'server'], bin: true }),
+			)
+			const generated: unknown = JSON.parse(blueprint)
+			expect(generated).toHaveProperty('bin', { widget: 'dist/bin/main.js' })
+			workspace.write('installed/package.json', blueprint)
+			expect(
+				driveModule(file, 'classifier', [
+					buildDistributionObservation(installed, workspace.path, 'installed manifest fixed'),
+				]),
+			).toEqual([{ actual: [], expected: [] }])
+			expect(workspace.names().filter((name) => name.startsWith('manifest-'))).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
+
 	it('drives the emitted suite lifecycle against real scratch directories', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
@@ -1639,9 +1933,10 @@ describe('emitted distribution classifier', () => {
 							'playwright',
 							'playwright',
 							'vite',
+							'vite',
 							'vitest',
 						].sort()
-					: ['vitest'],
+					: ['vite', 'vitest'],
 			)
 			expect(module.content).not.toMatch(/\b(?:describe|it|expect)\s*\(/u)
 		}
