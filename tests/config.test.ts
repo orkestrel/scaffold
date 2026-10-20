@@ -719,7 +719,7 @@ describe('root configuration', () => {
 				.filter(([, path]) => existsSync(resolve(POLICY_ROOT, path)))
 				.map(([label, , include, setup]): [string, PolicyProject] => [label, { include, setup }]),
 			...['policy', 'config', 'guides', 'conformance', 'tree', 'distribution', 'integration']
-				.filter((label) => existsSync(resolve(POLICY_ROOT, `tests/${label}.test.ts`)))
+				.filter((label) => readdirSync(resolve(POLICY_ROOT, 'tests')).includes(`${label}.test.ts`))
 				.map((label): [string, PolicyProject] => [
 					label,
 					{
