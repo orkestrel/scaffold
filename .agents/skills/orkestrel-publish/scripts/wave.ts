@@ -1,9 +1,9 @@
 // Run one repository's release visit, or print the fleet's layer order. Run from the checkout root:
-//   node .agents/skills/orkestrel-publish/scripts/wave.ts --visit [--target DIR] [--offline] [--from STEP] [--to STEP] [--prior VERSION] [--dry-run] [--json] [--out FILE]
+//   node .agents/skills/orkestrel-publish/scripts/wave.ts --visit [--target DIR] [--offline] [--regenerate] [--from STEP] [--to STEP] [--prior VERSION] [--dry-run] [--json] [--out FILE]
 //   node .agents/skills/orkestrel-publish/scripts/wave.ts --plan [--catalog PATH] [--json]
 // --visit runs the visit `wave.md` § Visit a repository fixes, in order, stopping at the first step
 // that fails: pin (read `scaffold audit --json`, whose drift exit is the reading the pin closes, then
-// re-pin every @orkestrel range to the registry caret and install), commit (`git commit --only` of
+// re-pin every range the audit release readings name to the registry caret and install), commit (`git commit --only` of
 // the manifest and lockfile as the preparation commit), overwrite (`scaffold overwrite --json`, then
 // `scaffold audit` exiting 0; offline, an exit of 1 whose note names the catalog refusal is
 // accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
@@ -11,7 +11,7 @@
 // every declared range matches the registry; on @orkestrel/scaffold itself an audit exit of 1 is
 // read as the expected foreign-path findings of its own canonical sources), install,
 // pins (the self-pin sweep with --prior or the manifest version and every range the visit moved; hits are reported, not
-// fatal), format, gates (format:check, lint:check, check, build, test), and compare (the rebuilt
+// fatal), format, record (commit the overwrite paths), gates (format:check, lint:check, check, build, test), and compare (the rebuilt
 // dist against the published tarball, and the final runtime dependency set against the published
 // manifest `npm view NAME --json` serves; both readings are reported, not fatal). The summary
 // carries each step's exit and duration, a failed step's refusal (the `code: message` envelope or
@@ -19,14 +19,28 @@
 // Markdown row for `.orkestrel/release.md`. --dry-run prints the commands and runs nothing, so its
 // ruling is unanswered. --plan reads the marker-bounded catalog table in
 // `.claude/agents/orkestrel.md` and prints the packages by layer. Exit 0 when every step passed, 1
-// when a step failed, 2 when a reading failed, 64 on usage.
+// when a step failed, 2 when a reading failed, 64 on usage, including --plan --regenerate.
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs'
-import { basename, dirname, extname, join } from 'node:path'
+import { createHash } from 'node:crypto'
+import {
+	copyFileSync,
+	existsSync,
+	lstatSync,
+	readFileSync,
+	mkdirSync,
+	renameSync,
+	unlinkSync,
+	writeFileSync,
+} from 'node:fs'
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
 	parseJsonRecord,
+	isRecord,
+	normalizeSlashes,
+	removeTree,
+	scanLocalSpecs,
 	readJsonObject,
 	readMissingFlags,
 	readOption,
@@ -42,6 +56,7 @@ const STEPS: readonly string[] = [
 	'install',
 	'pins',
 	'format',
+	'record',
 	'gates',
 	'compare',
 ]
@@ -71,11 +86,14 @@ interface StepResult {
 	readonly exit: number | undefined
 	readonly durationMs: number
 	readonly note: string | undefined
+	readonly journal?: string
+	readonly superseded?: true
 }
 
 interface Verdict {
 	readonly exit: number | undefined
 	readonly note: string | undefined
+	readonly superseded?: true
 }
 
 interface RangeMove {
@@ -103,7 +121,17 @@ interface Runner {
 	readonly target: string
 	readonly dry: boolean
 	readonly offline: boolean
+	readonly regenerate: boolean
+	readonly directory: string | undefined
 	readonly steps: StepResult[]
+}
+
+interface OverwriteReceipt {
+	readonly head: string
+	readonly version: string
+	readonly offline: boolean
+	readonly written: readonly string[]
+	readonly removed: readonly string[]
 }
 
 function readManifest(target: string): Record<string, unknown> | undefined {
@@ -184,8 +212,8 @@ function describeFailure(result: SpawnSyncReturns<string>): string | undefined {
 	const note = readString(value, 'note')
 	if (note !== undefined) return note
 	return result.stderr
-		.trim()
 		.split(/\r\n|\n/)
+		.filter((line) => line.trim() !== '')
 		.slice(-3)
 		.join(' | ')
 }
@@ -203,6 +231,7 @@ function runStep(
 	args: readonly string[],
 	cwd: string,
 	judge: (result: SpawnSyncReturns<string>) => Verdict = readVerdict,
+	input?: string,
 ): SpawnSyncReturns<string> | undefined {
 	const command = describeCommand(file, args)
 	if (runner.dry) {
@@ -215,10 +244,11 @@ function runStep(
 		encoding: 'utf8',
 		windowsHide: true,
 		maxBuffer: 64 * 1024 * 1024,
+		...(input === undefined ? {} : { input }),
 	})
 	const durationMs = Date.now() - started
 	const verdict = judge(result)
-	runner.steps.push({ step, command, exit: verdict.exit, durationMs, note: verdict.note })
+	appendResult(runner, step, command, result, durationMs, verdict)
 	return result
 }
 
@@ -260,31 +290,90 @@ function runNpmStep(
 	runner: Runner,
 	step: string,
 	args: readonly string[],
+	judge: (result: SpawnSyncReturns<string>) => Verdict = readVerdict,
 ): SpawnSyncReturns<string> | undefined {
 	const command = `npm ${args.join(' ')}`
 	if (runner.dry) {
-		runner.steps.push({ step, command, exit: undefined, durationMs: 0, note: 'dry run' })
+		runner.steps.push({
+			step,
+			command,
+			exit: undefined,
+			durationMs: 0,
+			note:
+				runner.regenerate && args[0] === 'install'
+					? 'dry run (regenerates on ERESOLVE)'
+					: 'dry run',
+		})
 		return undefined
 	}
 	const started = Date.now()
 	const result = runNpm(args, runner.target)
-	runner.steps.push({
-		step,
-		command,
-		exit: result.status ?? undefined,
-		durationMs: Date.now() - started,
-		note: describeFailure(result),
-	})
+	appendResult(runner, step, command, result, Date.now() - started, judge(result))
 	return result
 }
 
-function recordStep(runner: Runner, step: string, command: string, note: string): void {
-	runner.steps.push({ step, command, exit: runner.dry ? undefined : 0, durationMs: 0, note })
+function writeJournal(
+	runner: Runner,
+	step: string,
+	command: string,
+	exit: number | undefined,
+	stdout: string,
+	stderr: string,
+): string | undefined {
+	if (runner.directory === undefined) return undefined
+	mkdirSync(runner.directory, { recursive: true })
+	const path = join(
+		runner.directory,
+		`${String(runner.steps.length + 1).padStart(2, '0')}-${step}.log`,
+	)
+	writeFileSync(
+		path,
+		`command: ${command}\nexit: ${String(exit)}\nstdout:\n${stdout}\nstderr:\n${stderr}\n`,
+	)
+	return path
+}
+
+function appendResult(
+	runner: Runner,
+	step: string,
+	command: string,
+	result: SpawnSyncReturns<string>,
+	durationMs: number,
+	verdict: Verdict,
+): void {
+	const journal = writeJournal(
+		runner,
+		step,
+		command,
+		result.status ?? undefined,
+		result.stdout ?? '',
+		result.stderr ?? '',
+	)
+	runner.steps.push({
+		step,
+		command,
+		durationMs,
+		...verdict,
+		...(journal === undefined ? {} : { journal }),
+	})
+}
+
+function appendStep(runner: Runner, step: string, command: string, note: string, exit = 0): void {
+	const journal = runner.dry ? undefined : writeJournal(runner, step, command, exit, note, '')
+	runner.steps.push({
+		step,
+		command,
+		exit: runner.dry ? undefined : exit,
+		durationMs: 0,
+		note,
+		...(journal === undefined ? {} : { journal }),
+	})
 }
 
 function failed(runner: Runner): boolean {
 	return runner.steps.some(
 		(entry) =>
+			entry.superseded !== true &&
 			entry.exit !== undefined &&
 			entry.exit !== 0 &&
 			entry.step !== 'pins' &&
@@ -292,8 +381,385 @@ function failed(runner: Runner): boolean {
 	)
 }
 
-// A release moves a declared range to its registry caret when the range differs, and a later release
-// of the same name reads the range the earlier one wrote.
+function extractConflict(result: SpawnSyncReturns<string>): string | undefined {
+	const output = `${result.stdout}\n${result.stderr}`
+	if (!/\bcode ERESOLVE\b/u.test(output)) return undefined
+	const lines = output.split(/\r\n|\n/)
+	return (
+		(
+			lines.find((line) => line.includes('Conflicting peer dependency:')) ??
+			lines.find((line) => line.includes('Could not resolve dependency:'))
+		)?.replace(/^npm (?:error|ERR!)\s*/u, '') ?? 'the install could not move a locked peer'
+	)
+}
+
+function runInstall(runner: Runner, step: string): void {
+	// npm can unlink a node_modules junction before reporting its resolution failure.
+	if (
+		!runner.dry &&
+		runner.regenerate &&
+		existsSync(join(runner.target, 'node_modules')) &&
+		lstatSync(join(runner.target, 'node_modules')).isSymbolicLink()
+	) {
+		appendStep(
+			runner,
+			step,
+			'regenerate lock and modules',
+			'ERESOLVE; regeneration refused: node_modules is a link',
+			1,
+		)
+		return
+	}
+	const installed = runNpmStep(runner, step, ['install'], (result) => {
+		const conflict = extractConflict(result)
+		return conflict === undefined || result.status === 0
+			? readVerdict(result)
+			: {
+					exit: result.status ?? 1,
+					note: `ERESOLVE (${conflict}): pass --regenerate and resume with --from ${step} to replace package-lock.json and node_modules from the manifest`,
+					...(runner.regenerate ? { superseded: true } : {}),
+				}
+	})
+	if (
+		installed !== undefined &&
+		installed.status !== 0 &&
+		extractConflict(installed) !== undefined &&
+		runner.regenerate
+	)
+		regenerateLock(runner, step, installed)
+}
+
+function refuseLocalSpecs(runner: Runner, step: string): boolean {
+	const specs = scanLocalSpecs(readManifest(runner.target) ?? {})
+	if (specs.length === 0) return false
+	appendStep(
+		runner,
+		step,
+		'scan manifest specs',
+		`local dependency specs: ${specs.map(([path, spec]) => `${path}: ${spec}`).join(', ')}; restore the pins first`,
+		1,
+	)
+	return true
+}
+
+function readRegenerationRefusal(runner: Runner): string | undefined {
+	if (
+		runStep(
+			runner,
+			'regenerate',
+			'git',
+			['ls-files', '--error-unmatch', 'package-lock.json'],
+			runner.target,
+		)?.status !== 0
+	)
+		return 'package-lock.json is untracked'
+	const status = runStep(
+		runner,
+		'regenerate',
+		'git',
+		['status', '--porcelain', '--', 'package-lock.json'],
+		runner.target,
+	)
+	if (status?.status !== 0 || status.stdout.trim() !== '')
+		return 'package-lock.json carries uncommitted changes'
+	const manifest = readManifest(runner.target)
+	const specs = scanLocalSpecs(manifest ?? {})
+	if (specs.length > 0)
+		return `local dependency specs: ${specs.map(([path, spec]) => `${path}: ${spec}`).join(', ')}`
+	if (manifest !== undefined && 'workspaces' in manifest) return 'the manifest declares workspaces'
+	if (
+		runStep(
+			runner,
+			'regenerate',
+			'git',
+			['check-ignore', '-q', 'tmp/units/wave/probe'],
+			runner.target,
+		)?.status !== 0
+	)
+		return 'tmp/ is not git-ignored'
+	const root = runStep(runner, 'regenerate', 'git', ['rev-parse', '--show-toplevel'], runner.target)
+	if (
+		root?.status !== 0 ||
+		normalizeSlashes(resolve(root.stdout.trim())) !== normalizeSlashes(resolve(runner.target))
+	)
+		return 'the target is not the root of its work tree'
+	return undefined
+}
+
+function moveModules(source: string, target: string, attempt = 0): void {
+	try {
+		renameSync(source, target)
+	} catch (error) {
+		if (!isRecord(error) || (error.code !== 'EBUSY' && error.code !== 'EPERM') || attempt >= 9)
+			throw error
+		Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100)
+		moveModules(source, target, attempt + 1)
+	}
+}
+
+function regenerateLock(runner: Runner, step: string, conflict: SpawnSyncReturns<string>): void {
+	const refusal = readRegenerationRefusal(runner)
+	if (refusal !== undefined || runner.directory === undefined) {
+		appendStep(
+			runner,
+			step,
+			'regenerate lock and modules',
+			`ERESOLVE; regeneration refused: ${refusal ?? 'tmp/ is not git-ignored'}`,
+			1,
+		)
+		return
+	}
+	const lock = join(runner.target, 'package-lock.json')
+	const modules = join(runner.target, 'node_modules')
+	const backup = join(runner.directory, 'package-lock.before.json')
+	const moved = join(runner.directory, 'node_modules.before')
+	const manifest = readFileSync(join(runner.target, 'package.json'))
+	const before = createHash('sha256').update(readFileSync(lock)).digest('hex')
+	try {
+		mkdirSync(runner.directory, { recursive: true })
+		copyFileSync(lock, backup)
+		moveModules(modules, moved)
+	} catch (error) {
+		appendStep(
+			runner,
+			step,
+			'regenerate lock and modules',
+			`ERESOLVE; regeneration refused: ${isRecord(error) ? String(error.code) : ''} in use; stop the processes that hold it; ${String(error)}`,
+			1,
+		)
+		return
+	}
+	try {
+		unlinkSync(lock)
+		const started = Date.now()
+		const installed = runNpm(['install'], runner.target)
+		const duration = Date.now() - started
+		const listed =
+			installed.status === 0 ? runNpm(['ls', '--all', '--json'], runner.target) : undefined
+		const unchanged = manifest.equals(readFileSync(join(runner.target, 'package.json')))
+		const proved = installed.status === 0 && existsSync(lock) && listed?.status === 0 && unchanged
+		const after = existsSync(lock)
+			? createHash('sha256').update(readFileSync(lock)).digest('hex')
+			: 'absent'
+		if (!proved) {
+			const restored = restoreLock(runner.target, moved, backup)
+			appendStep(
+				runner,
+				step,
+				'regenerate lock and modules',
+				`ERESOLVE; ${restored}; lock SHA-256 ${before} -> ${after}${unchanged ? '' : '; manifest bytes changed'}`,
+				1,
+			)
+		} else {
+			removeTree(moved)
+			const names = [
+				...new Set(
+					[
+						...`${conflict.stdout}\n${conflict.stderr}`.matchAll(
+							/(?:node_modules\/)((?:@[^/\s]+\/)?[^/\s]+)/gu,
+						),
+					].flatMap((match) => (match[1] === undefined ? [] : [match[1]])),
+				),
+			]
+			const versions = names
+				.map(
+					(name) =>
+						`${name}@${readString(readManifest(join(modules, name)), 'version') ?? 'absent'}`,
+				)
+				.join(', ')
+			appendStep(
+				runner,
+				step,
+				'regenerate lock and modules',
+				`lock SHA-256 ${before} -> ${after}; installed ${versions}`,
+			)
+		}
+		appendResult(
+			runner,
+			step,
+			'npm install (regenerated)',
+			installed,
+			duration,
+			readVerdict(installed),
+		)
+		if (listed !== undefined)
+			appendResult(runner, step, 'npm ls --all --json', listed, 0, readVerdict(listed))
+	} catch (error) {
+		const restored = restoreLock(runner.target, moved, backup)
+		appendStep(
+			runner,
+			step,
+			'regenerate lock and modules',
+			`ERESOLVE; ${String(error)}; ${restored}`,
+			1,
+		)
+	}
+}
+
+function restoreLock(target: string, moved: string, backup: string): string {
+	try {
+		removeTree(join(target, 'node_modules'))
+		moveModules(moved, join(target, 'node_modules'))
+		copyFileSync(backup, join(target, 'package-lock.json'))
+		return 'tree and lock restored'
+	} catch (error) {
+		return `rollback failed: ${String(error)}; backups: ${backup}; ${moved}`
+	}
+}
+
+function readDirtyPaths(text: string): readonly string[] {
+	const [entry, ...rest] = text.split('\0')
+	if (entry === undefined || entry === '') return []
+	const renamed = /[RC]/u.test(entry.slice(0, 2))
+	const original = renamed ? rest[0] : undefined
+	return [
+		entry.slice(3),
+		...(original === undefined ? [] : [original]),
+		...readDirtyPaths((renamed ? rest.slice(1) : rest).join('\0')),
+	]
+}
+
+function readReceipt(target: string): OverwriteReceipt | undefined {
+	try {
+		const value = parseJsonRecord(
+			readFileSync(join(target, 'tmp', 'units', 'wave', 'overwrite.json'), 'utf8'),
+		)
+		if (
+			value === undefined ||
+			typeof value.head !== 'string' ||
+			typeof value.version !== 'string' ||
+			typeof value.offline !== 'boolean' ||
+			!Array.isArray(value.written) ||
+			!value.written.every((path) => typeof path === 'string') ||
+			!Array.isArray(value.removed) ||
+			!value.removed.every((path) => typeof path === 'string')
+		)
+			return undefined
+		return {
+			head: value.head,
+			version: value.version,
+			offline: value.offline,
+			written: value.written,
+			removed: value.removed,
+		}
+	} catch {
+		return undefined
+	}
+}
+
+function runRecord(runner: Runner, name: string | undefined): void {
+	if (name === SCAFFOLD) {
+		appendStep(runner, 'record', 'git commit', `skipped: ${SCAFFOLD}`)
+		return
+	}
+	if (refuseLocalSpecs(runner, 'record')) return
+	if (runner.dry) {
+		runStep(
+			runner,
+			'record',
+			'git',
+			['add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
+			runner.target,
+		)
+		runStep(
+			runner,
+			'record',
+			'git',
+			['commit', '-m', 'Overwrite with scaffold <version>'],
+			runner.target,
+		)
+		return
+	}
+	const status = runStep(
+		runner,
+		'record',
+		'git',
+		['status', '--porcelain=v1', '-z', '--untracked-files=all'],
+		runner.target,
+	)
+	if (status?.status !== 0) return
+	const dirty = [...new Set(readDirtyPaths(status.stdout))]
+	if (dirty.length === 0) {
+		appendStep(runner, 'record', 'git commit', 'nothing to commit')
+		return
+	}
+	const receipt = readReceipt(runner.target)
+	const head = runStep(runner, 'record', 'git', ['rev-parse', 'HEAD'], runner.target)
+	if (receipt === undefined || head?.status !== 0 || receipt.head !== head.stdout.trim()) {
+		appendStep(
+			runner,
+			'record',
+			'attribute overwrite paths',
+			`uncommitted changes the visit cannot attribute to an overwrite at HEAD: ${dirty.join(', ')}`,
+			1,
+		)
+		return
+	}
+	if (receipt.offline) {
+		appendStep(
+			runner,
+			'record',
+			'git commit',
+			'an offline overwrite stays uncommitted until scaffold publishes',
+		)
+		return
+	}
+	const allowed = [...receipt.written, ...receipt.removed, 'package.json', 'package-lock.json'].map(
+		(path) => normalizeSlashes(relative(runner.target, resolve(runner.target, path))),
+	)
+	const outside = dirty.filter(
+		(path) =>
+			!allowed.some(
+				(entry) =>
+					entry !== '' &&
+					entry !== '..' &&
+					!entry.startsWith('../') &&
+					!isAbsolute(entry) &&
+					(path === entry ||
+						(receipt.written.some(
+							(written) =>
+								normalizeSlashes(relative(runner.target, resolve(runner.target, written))) ===
+								entry,
+						) &&
+							path.startsWith(`${entry}/`))),
+			),
+	)
+	if (outside.length > 0) {
+		appendStep(
+			runner,
+			'record',
+			'contain overwrite paths',
+			`dirty paths outside the overwrite: ${outside.join(', ')}`,
+			1,
+		)
+		return
+	}
+	runStep(
+		runner,
+		'record',
+		'git',
+		['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
+		runner.target,
+		readVerdict,
+		`${dirty.join('\0')}\0`,
+	)
+	if (failed(runner)) return
+	runStep(
+		runner,
+		'record',
+		'git',
+		['commit', '-m', `Overwrite with scaffold ${receipt.version}`],
+		runner.target,
+	)
+	if (failed(runner)) return
+	runStep(runner, 'record', 'git', ['status', '--porcelain'], runner.target, (result) =>
+		result.status === 0 && result.stdout.trim() !== ''
+			? { exit: 1, note: `tree remains dirty: ${result.stdout}` }
+			: readVerdict(result),
+	)
+}
+
+// A later release of the same name reads the range the earlier reading wrote.
 function computeRanges(ranges: Record<string, unknown>, releases: readonly Release[]): RangeMove {
 	return releases.reduce<RangeMove>(
 		(state, release) => {
@@ -347,19 +813,20 @@ function runPin(
 		const releases = readReleases(audit.stdout)
 		if (releases === undefined || (audit.status !== 0 && audit.status !== 1)) return
 		const moved = writeRanges(runner.target, releases)
-		recordStep(
+		appendStep(
 			runner,
 			'pin',
-			'rewrite @orkestrel ranges to the registry caret',
+			'rewrite audit release ranges to the registry caret',
 			moved.length === 0 ? 'no range moved' : moved.join(', '),
 		)
 	} else {
-		recordStep(runner, 'pin', 'rewrite @orkestrel ranges to the registry caret', 'dry run')
+		appendStep(runner, 'pin', 'rewrite audit release ranges to the registry caret', 'dry run')
 	}
-	runNpmStep(runner, 'pin', ['install'])
+	runInstall(runner, 'pin')
 }
 
 function runCommit(runner: Runner): void {
+	if (refuseLocalSpecs(runner, 'commit')) return
 	const status = runStep(
 		runner,
 		'commit',
@@ -384,7 +851,7 @@ function runCommit(runner: Runner): void {
 			runner.target,
 		)
 	} else {
-		recordStep(runner, 'commit', 'git commit', 'manifest and lockfile already committed')
+		appendStep(runner, 'commit', 'git commit', 'manifest and lockfile already committed')
 	}
 }
 
@@ -394,7 +861,7 @@ function runOverwrite(
 	scaffoldPrefix: readonly string[],
 	offline: readonly string[],
 ): void {
-	runStep(
+	const overwrite = runStep(
 		runner,
 		'overwrite',
 		scaffoldFile,
@@ -402,6 +869,27 @@ function runOverwrite(
 		runner.target,
 		(result) => judgeOverwrite(result, runner.offline),
 	)
+	if (overwrite !== undefined && !failed(runner) && runner.directory !== undefined) {
+		const receipt = readJsonObject(overwrite.stdout)
+		const head = runStep(runner, 'overwrite', 'git', ['rev-parse', 'HEAD'], runner.target)
+		const installed = readManifest(join(runner.target, 'node_modules', '@orkestrel', 'scaffold'))
+		const version = readString(installed, 'version')
+		if (
+			head?.status === 0 &&
+			version !== undefined &&
+			Array.isArray(receipt?.written) &&
+			receipt.written.every((path) => typeof path === 'string') &&
+			Array.isArray(receipt.removed) &&
+			receipt.removed.every((path) => typeof path === 'string')
+		) {
+			const path = join(runner.target, 'tmp', 'units', 'wave', 'overwrite.json')
+			mkdirSync(dirname(path), { recursive: true })
+			writeFileSync(
+				path,
+				`${JSON.stringify({ head: head.stdout.trim(), version, offline: runner.offline, written: receipt.written, removed: receipt.removed })}\n`,
+			)
+		}
+	}
 	if (!failed(runner)) {
 		runStep(
 			runner,
@@ -434,18 +922,17 @@ function runVerify(
 	const drift = releases.filter(
 		(release) => release.latest !== undefined && release.range !== `^${release.latest}`,
 	)
-	runner.steps.push({
-		step: 'verify',
-		command: 'compare every declared range with the registry',
-		exit: drift.length === 0 ? 0 : 1,
-		durationMs: 0,
-		note:
-			drift.length === 0
-				? undefined
-				: drift
-						.map((release) => `${release.name} ${release.range} vs ${String(release.latest)}`)
-						.join(', '),
-	})
+	appendStep(
+		runner,
+		'verify',
+		'compare every declared range with the registry',
+		drift.length === 0
+			? 'all declared ranges match'
+			: drift
+					.map((release) => `${release.name} ${release.range} vs ${String(release.latest)}`)
+					.join(', '),
+		drift.length === 0 ? 0 : 1,
+	)
 }
 
 function runPins(
@@ -458,7 +945,7 @@ function runPins(
 		.filter(([name, range]) => after.get(name) !== range)
 		.flatMap(([, range]) => ['--range', range])
 	if (version === undefined) {
-		recordStep(runner, 'pins', basename(PINS), 'no prior version to sweep for; pass --prior')
+		appendStep(runner, 'pins', basename(PINS), 'no prior version to sweep for; pass --prior')
 		return undefined
 	}
 	const swept = runStep(
@@ -484,7 +971,7 @@ function runCompare(runner: Runner, name: string | undefined): Ruling {
 					? false
 					: undefined
 	if (name === undefined) {
-		recordStep(runner, 'compare', 'npm view', 'the manifest names no package to read')
+		appendStep(runner, 'compare', 'npm view', 'the manifest names no package to read')
 		return { distMoved, rangesMoved: undefined, ranges: undefined, hits: undefined }
 	}
 	const view = runNpmStep(runner, 'compare', ['view', name, '--json'])
@@ -517,12 +1004,6 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 	}
 	const [scaffoldFile, ...scaffoldPrefix] = scaffold
 	if (scaffoldFile === undefined) return undefined
-	const runner: Runner = {
-		target,
-		dry: argv.includes('--dry-run'),
-		offline: argv.includes('--offline'),
-		steps: [],
-	}
 	const from = STEPS.indexOf(readOption(argv, '--from') ?? 'pin')
 	const to = STEPS.indexOf(readOption(argv, '--to') ?? 'compare')
 	const selected = new Set(STEPS.slice(from, to + 1))
@@ -533,13 +1014,25 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 	}
 	const name = readString(manifest, 'name')
 	const version = readString(manifest, 'version')
+	const runner: Runner = {
+		target: resolve(target),
+		dry: argv.includes('--dry-run'),
+		offline: argv.includes('--offline'),
+		regenerate: argv.includes('--regenerate'),
+		directory:
+			argv.includes('--dry-run') ||
+			(name === SCAFFOLD && from === STEPS.indexOf('record') && to === from)
+				? undefined
+				: readJournalDirectory(resolve(target)),
+		steps: [],
+	}
 	const before = readRanges(manifest, RANGE_FIELDS)
 	const offline = runner.offline ? ['--offline'] : []
 	if (selected.has('pin')) runPin(runner, scaffoldFile, scaffoldPrefix, offline)
 	if (selected.has('commit') && !failed(runner)) runCommit(runner)
 	if (selected.has('overwrite') && !failed(runner)) {
 		if (name === SCAFFOLD) {
-			recordStep(
+			appendStep(
 				runner,
 				'overwrite',
 				describeCommand(scaffoldFile, [...scaffoldPrefix, 'overwrite', '--json', ...offline]),
@@ -550,12 +1043,13 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 	if (selected.has('verify') && !failed(runner)) {
 		runVerify(runner, scaffoldFile, scaffoldPrefix, offline, name === SCAFFOLD)
 	}
-	if (selected.has('install') && !failed(runner)) runNpmStep(runner, 'install', ['install'])
+	if (selected.has('install') && !failed(runner)) runInstall(runner, 'install')
 	const hits =
 		selected.has('pins') && !failed(runner)
 			? runPins(runner, before, readOption(argv, '--prior') ?? version)
 			: undefined
 	if (selected.has('format') && !failed(runner)) runNpmStep(runner, 'format', ['run', 'format'])
+	if (selected.has('record') && !failed(runner)) runRecord(runner, name)
 	if (selected.has('gates') && !failed(runner)) {
 		for (const gate of GATES) {
 			if (failed(runner)) break
@@ -582,6 +1076,23 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 		ruling,
 		row: `| ${name ?? target} | ${version ?? '?'} | ${bump} | ${reading} | round |`,
 	}
+}
+
+function readJournalDirectory(target: string): string | undefined {
+	const inside = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], {
+		cwd: target,
+		encoding: 'utf8',
+		windowsHide: true,
+	})
+	if (inside.status !== 0 || inside.stdout.trim() !== 'true') return undefined
+	const ignored = spawnSync('git', ['check-ignore', '-q', 'tmp/units/wave/probe'], {
+		cwd: target,
+		encoding: 'utf8',
+		windowsHide: true,
+	})
+	return ignored.status === 0
+		? join(target, 'tmp', 'units', 'wave', new Date().toISOString().replace(/[:.]/gu, '-'))
+		: undefined
 }
 
 function readLayers(catalogPath: string): ReadonlyMap<string, readonly string[]> | undefined {
@@ -612,7 +1123,7 @@ function renderVisit(visit: Visit): string {
 	const lines = [
 		...visit.steps.map(
 			(entry) =>
-				`wave: ${entry.step.padEnd(9)} exit=${entry.exit === undefined ? 'dry' : String(entry.exit)} ${String(entry.durationMs).padStart(7)} ms  ${entry.command}${entry.note === undefined ? '' : `  (${entry.note})`}`,
+				`wave: ${entry.step.padEnd(9)} exit=${entry.exit === undefined ? 'dry' : String(entry.exit)} ${String(entry.durationMs).padStart(7)} ms  ${entry.command}${entry.note === undefined ? '' : `  (${entry.note})`}${entry.journal === undefined ? '' : `  journal=${entry.journal}`}`,
 		),
 		`wave: ruling dist ${describeReading(visit.ruling.distMoved, 'moved', 'same')}, ranges ${describeReading(visit.ruling.rangesMoved, 'moved', 'same')}${visit.ruling.hits === undefined ? '' : `, ${visit.ruling.hits} self-pin hit(s)`}`,
 		...(visit.ruling.ranges ?? []).map((range) => `wave: range ${range}`),
@@ -639,6 +1150,10 @@ function main(argv: readonly string[]): number {
 		return 64
 	}
 	if (argv.includes('--plan')) {
+		if (argv.includes('--regenerate')) {
+			console.error('wave: --regenerate requires --visit, not --plan')
+			return 64
+		}
 		const layers = readLayers(readOption(argv, '--catalog') ?? CATALOG)
 		if (layers === undefined) {
 			console.error('wave: no marker-bounded catalog table; run scaffold catalog first')
@@ -650,7 +1165,7 @@ function main(argv: readonly string[]): number {
 	}
 	if (!argv.includes('--visit')) {
 		console.error(
-			'usage: wave.ts --visit [--target DIR] [--offline] [--from STEP] [--to STEP] [--prior VERSION] [--dry-run] [--json] [--out FILE] | --plan [--catalog PATH] [--json]',
+			'usage: wave.ts --visit [--target DIR] [--offline] [--regenerate] [--from STEP] [--to STEP] [--prior VERSION] [--dry-run] [--json] [--out FILE] | --plan [--catalog PATH] [--json]',
 		)
 		return 64
 	}
@@ -679,6 +1194,7 @@ function main(argv: readonly string[]): number {
 	}
 	return visit.steps.some(
 		(entry) =>
+			entry.superseded !== true &&
 			entry.exit !== undefined &&
 			entry.exit !== 0 &&
 			entry.step !== 'pins' &&

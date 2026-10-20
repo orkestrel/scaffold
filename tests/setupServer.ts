@@ -5260,6 +5260,7 @@ export interface TestSwapPublished {
 	readonly name: string
 	readonly version: string
 	readonly dependencies: Readonly<Record<string, string>>
+	readonly peers?: Readonly<Record<string, unknown>>
 	readonly archive: Uint8Array
 	readonly integrity: string
 	readonly shasum: string
@@ -5413,6 +5414,7 @@ export function buildSwapPackument(
 					name,
 					version: version.version,
 					dependencies: version.dependencies,
+					...version.peers,
 					dist: {
 						tarball: `${base}/${name}/-/${name.split('/').at(-1) ?? name}-${version.version}.tgz`,
 						integrity: version.integrity,
@@ -5502,6 +5504,11 @@ export async function createSwapRegistry(
 						)
 					: {},
 				archive,
+				peers: Object.fromEntries(
+					['peerDependencies', 'peerDependenciesMeta'].flatMap((field) =>
+						isRecord(manifest[field]) ? [[field, manifest[field]]] : [],
+					),
+				),
 				integrity: `sha512-${createHash('sha512').update(archive).digest('base64')}`,
 				shasum: createHash('sha1').update(archive).digest('hex'),
 			}
@@ -5854,6 +5861,206 @@ export function checkFormatting(path: string): number | null {
 	).status
 }
 
+/** Describes an installed exact-peer wave fixture and its loopback registry. */
+export interface TestWaveSession {
+	readonly scratch: ScratchInterface
+	readonly target: string
+	readonly registry: TestSwapRegistryInterface
+	readonly environment: Readonly<Record<string, string>>
+	destroy(): Promise<void>
+}
+
+/** Holds the identity inherited by wave fixture commits. */
+export const WAVE_IDENTITY: Readonly<Record<string, string>> = Object.freeze({
+	GIT_AUTHOR_NAME: 'Wave Fixture',
+	GIT_AUTHOR_EMAIL: 'wave@orkestrel.invalid',
+	GIT_COMMITTER_NAME: 'Wave Fixture',
+	GIT_COMMITTER_EMAIL: 'wave@orkestrel.invalid',
+	GIT_CONFIG_COUNT: '1',
+	GIT_CONFIG_KEY_0: 'commit.gpgsign',
+	GIT_CONFIG_VALUE_0: 'false',
+})
+
+/**
+ * Creates the locked peer cluster whose probe re-pin npm refuses with ERESOLVE.
+ *
+ * @param prefix - The owned scratch allocation prefix.
+ * @returns The committed consumer and its registry lifetime.
+ * @throws Thrown when the baseline install fails.
+ */
+export async function createWaveSession(prefix: string): Promise<TestWaveSession> {
+	mkdirSync(join(WORKSPACE_ROOT, 'tmp', 'units'), { recursive: true })
+	const scratch = createScratch({ parent: join(WORKSPACE_ROOT, 'tmp', 'units'), prefix })
+	try {
+		const directories = ['1.0.0', '1.0.1'].flatMap((version) =>
+			['vt', 'bp', 'br', 'pr'].map((name) =>
+				writeSwapPackage(scratch.path, `${name}-${version}`, {
+					name,
+					version,
+					...(name === 'vt'
+						? {
+								peerDependencies: { bp: version },
+								peerDependenciesMeta: { bp: { optional: true } },
+							}
+						: {}),
+					...(name === 'bp'
+						? { peerDependencies: { vt: version }, dependencies: { br: version } }
+						: {}),
+					...(name === 'br' ? { peerDependencies: { vt: version } } : {}),
+					...(name === 'pr'
+						? {
+								peerDependencies: { vt: `^${version}` },
+								peerDependenciesMeta: { vt: { optional: true } },
+							}
+						: {}),
+				}),
+			),
+		)
+		const registry = await createSwapRegistry(scratch.path, directories)
+		try {
+			const target = scratch.ensure('consumer')
+			const environment = { ...buildSwapEnvironment(scratch.path, registry.url), ...WAVE_IDENTITY }
+			scratch.write('consumer/.gitignore', 'tmp/\nnode_modules/\n')
+			scratch.write(
+				'consumer/package.json',
+				renderPackageManifest({
+					name: '@fixture/wave',
+					version: '1.0.0',
+					devDependencies: { vt: '1.0.0', bp: '1.0.0', pr: '1.0.0' },
+				}),
+			)
+			const installed = await spawnNpm(['install', '--ignore-scripts'], {
+				workspace: target,
+				environment,
+			})
+			if (installed.code !== 0) throw new Error(`Wave baseline failed: ${installed.stderr}`)
+			const manifest = {
+				name: '@fixture/wave',
+				version: '1.0.0',
+				devDependencies: { vt: '^1.0.0', bp: '^1.0.0', pr: '^1.0.0' },
+			}
+			scratch.write('consumer/package.json', renderPackageManifest(manifest))
+			const lock: unknown = parseJSON(scratch.read('consumer/package-lock.json') ?? '')
+			if (!isRecord(lock) || !isRecord(lock.packages) || !isRecord(lock.packages['']))
+				throw new Error('Wave lock root absent')
+			scratch.write(
+				'consumer/package-lock.json',
+				renderPackageManifest({
+					...lock,
+					packages: {
+						...lock.packages,
+						'': { ...lock.packages[''], devDependencies: manifest.devDependencies },
+					},
+				}),
+			)
+			scratch.write(
+				'consumer/dist/bin/main.js',
+				[
+					"const { appendFileSync } = require('node:fs')",
+					"appendFileSync('tmp/calls.txt', process.argv.slice(2).join(' ') + '\\n')",
+					`console.log(JSON.stringify({ releases: [{ name: 'pr', range: '^1.0.0', latest: '1.0.1' }] }))`,
+				].join('\n'),
+			)
+			scratch.ensure('consumer/tmp')
+			createRepository(target)
+			trackFiles(target)
+			commitFiles(target)
+			return {
+				scratch,
+				target,
+				registry,
+				environment,
+				destroy: async () => {
+					await registry.destroy()
+					scratch.destroy()
+				},
+			}
+		} catch (error) {
+			await registry.destroy()
+			throw error
+		}
+	} catch (error) {
+		scratch.destroy()
+		throw error
+	}
+}
+
+/** Describes a committed recorder fixture for overwrite attribution. */
+export interface TestWaveRecording {
+	readonly scratch: ScratchInterface
+	readonly target: string
+	readonly environment: Readonly<Record<string, string>>
+}
+
+/**
+ * Creates a repository whose scaffold boundary records writes from an inert receipt.
+ *
+ * @param prefix - The scratch allocation prefix.
+ * @returns The fixture with git identity supplied through the child environment.
+ */
+export function createWaveRecording(prefix: string): TestWaveRecording {
+	const scratch = createScratch({ prefix })
+	const target = scratch.path
+	scratch.write('.gitignore', 'tmp/\nnode_modules/\n')
+	scratch.write(
+		'package.json',
+		renderPackageManifest({
+			name: '@fixture/record',
+			version: '1.0.0',
+			scripts: { format: 'node format.js', 'format:check': 'node gate.js' },
+		}),
+	)
+	scratch.write('format.js', '')
+	scratch.write(
+		'gate.js',
+		"process.stderr.write(Array.from({length:10},(_,index)=>'gate line '+index).join('\\n')+'\\n');process.exitCode=1\n",
+	)
+	scratch.write('removed.txt', 'remove this entry\n')
+	scratch.write(
+		'node_modules/@orkestrel/scaffold/package.json',
+		'{"name":"@orkestrel/scaffold","version":"9.9.9"}\n',
+	)
+	scratch.write(
+		'node_modules/@orkestrel/scaffold/dist/bin/main.js',
+		[
+			"const { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } = require('node:fs')",
+			"const { dirname } = require('node:path')",
+			'const args = process.argv.slice(2)',
+			"appendFileSync('tmp/calls.txt', args.join(' ') + '\\n')",
+			"if (args[0] === 'overwrite') {",
+			"  const receipt = JSON.parse(readFileSync('tmp/answer.json', 'utf8'))",
+			"  for (const path of [...receipt.written, ...(receipt.stray || [])]) { mkdirSync(dirname(path), {recursive:true}); writeFileSync(path, 'fixture overwrite\\n') }",
+			"  for (const path of receipt.removed) { if (existsSync(path)) { if (lstatSync(path).isSymbolicLink()) throw new Error('Fixture refuses to delete a link'); unlinkSync(path) } }",
+			"  console.log(JSON.stringify({...receipt, ...(args.includes('--offline') ? {note: \"'catalog' does not take --offline\"} : {})}))",
+			"  if (args.includes('--offline')) process.exitCode = 1",
+			"} else if (args.includes('--json')) console.log(JSON.stringify({releases:[]}))",
+		].join('\n'),
+	)
+	scratch.write(
+		'tmp/answer.json',
+		JSON.stringify({ written: ['configs/fixture.ts'], removed: ['removed.txt'] }),
+	)
+	createRepository(target)
+	trackFiles(target)
+	commitFiles(target)
+	return {
+		scratch,
+		target,
+		environment: { ...buildSwapEnvironment(scratch.ensure('tmp')), ...WAVE_IDENTITY },
+	}
+}
+
+/** Lists the regeneration refusals and the reason each fixture must report. */
+export const WAVE_REFUSALS: ReadonlyArray<readonly [string, string]> = Object.freeze([
+	['link', 'node_modules is a link'],
+	['untracked', 'package-lock.json is untracked'],
+	['dirty', 'package-lock.json carries uncommitted changes'],
+	['local', 'local dependency specs: overrides.unused'],
+	['workspaces', 'the manifest declares workspaces'],
+	['ignored', 'tmp/ is not git-ignored'],
+	['nested', 'the target is not the root of its work tree'],
+])
+
 /** Lists the steps the publish wave runs for each package, in order. */
 export const WAVE_STEPS: readonly string[] = Object.freeze([
 	'pin',
@@ -5863,6 +6070,7 @@ export const WAVE_STEPS: readonly string[] = Object.freeze([
 	'install',
 	'pins',
 	'format',
+	'record',
 	'gates',
 	'compare',
 ])
