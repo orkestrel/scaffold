@@ -1126,7 +1126,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "56d10ea64af7a6fdd756ee37c2f78cdb229a8cca58077c2f2c33f8ffc02c19b2"
+			"digest": "b1862ca555a89bd91c42c4ce643b72e7fc54a2a0bab53306f9826b232d072fce"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -2150,5 +2150,5 @@
 			]
 		}
 	],
-	"digest": "964254ccd69588e07f59b9fb155dba9aec3f82abaaea372305c40c540eebf087"
+	"digest": "dc727d06096cb56e1cc82cabea965cd6effd4439d1c0230b9e2c1c6ae9fee7c8"
 }
