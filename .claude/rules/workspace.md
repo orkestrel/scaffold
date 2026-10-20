@@ -184,8 +184,8 @@ one environment, so each is its own project:
 - Define the Node `setup` project when `global` selects its seeded proof or a root file matches
   `tests/setup*.test.ts`, exact-case, other than `tests/setupBrowser.test.ts` and
   `tests/setupStyles.test.ts`. Include those matching files and exclude both browser proofs.
-  Define `setup:browser` when a sheet face or the themes target selects its seeded proof, or either
-  exact-case browser proof exists; collect those browser proof paths alone. For each registered project, emit
+  Define `setup:browser` when either exact-case browser proof exists; collect those browser proof
+  paths alone. For each registered project, emit
   its `test:setup` or `test:setup:browser` script and run it from `test`; otherwise emit neither its
   project nor its script.
 - Define the `studies` project when at least one exact-case `*.test.ts` file sits beneath
