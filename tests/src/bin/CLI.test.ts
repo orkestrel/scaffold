@@ -906,7 +906,7 @@ describe('CLI new', () => {
 				expect(result.written).toContain(path)
 			}
 			expect(JSON.parse(requireValue(workspace.read('fresh/package.json')))).toHaveProperty('bin', {
-				widget: './dist/bin/main.js',
+				widget: 'dist/bin/main.js',
 			})
 
 			const audited = createSink()

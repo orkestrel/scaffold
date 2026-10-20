@@ -38,6 +38,7 @@ await new GuideCommand({
 		blueprintToWritableScripts,
 		Compiler,
 		createBlueprint,
+		DEFAULT_ENGINES,
 		FRAMEWORK_MATRIX,
 		FRAMEWORKS,
 		HOST_PATHS,
@@ -45,6 +46,7 @@ await new GuideCommand({
 		isScaffoldError,
 		isSheetName,
 		isSurface,
+		MINIMUM_NODE_VERSION,
 		parseExtension,
 		RESERVED_SHEET_NAMES,
 		ScaffoldError,
@@ -143,6 +145,13 @@ await new GuideCommand({
 			if (typeof declared !== 'string') {
 				throw new Error('The package manifest declares no engines.node range')
 			}
+			expect(declared).toBe(DEFAULT_ENGINES)
+			const workflow = readFileSync(
+				fileURLToPath(new URL('../.github/workflows/ci.yml', import.meta.url)),
+				'utf8',
+			)
+			const matrix = /^[\t ]*node: \['(?<floor>\d+\.\d+\.\d+)', '24'\][\t ]*$/mu.exec(workflow)
+			expect(matrix?.groups?.floor).toBe(MINIMUM_NODE_VERSION)
 			const readme = requireValue(files['README.md'])
 			const stated = /Node (?<floor>\d+\.\d+\.\d+) or later/u.exec(readme)?.groups?.floor
 			expect(stated).toBe(declared.replace(/^>=/u, ''))

@@ -171,6 +171,9 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 /** Names the executable entry whose presence makes a workspace `bin`. */
 export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 
+/** Names the built executable a bin workspace's manifest command runs. */
+export const BIN_OUTPUT_PATH = 'dist/bin/main.js'
+
 /**
  * Lists the paths a target receives from the vendored data root, frozen.
  *

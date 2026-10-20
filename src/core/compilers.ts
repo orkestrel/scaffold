@@ -36,6 +36,7 @@ import {
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
 	BIN_ENTRY_PATH,
+	BIN_OUTPUT_PATH,
 	BROWSE_DEV_DEPENDENCIES,
 	BROWSE_UPSTREAM,
 	CATALOG_AGENT_PATH,
@@ -1048,7 +1049,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 					},
 				}
 			: {}),
-		...(blueprint.bin ? { bin: { [blueprint.name]: './dist/bin/main.js' } } : {}),
+		...(blueprint.bin ? { bin: { [blueprint.name]: BIN_OUTPUT_PATH } } : {}),
 		files: [
 			blueprint.bin || publishes ? 'dist/src' : 'dist/app',
 			...(blueprint.bin ? ['dist/bin'] : []),
@@ -1064,7 +1065,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 						targets.length > 0 || blueprint.bin
 							? [
 									...(targets.length > 0 ? ['**/*.css', '**/*.scss'] : []),
-									...(blueprint.bin ? [`./${BIN_ENTRY_PATH}`, './dist/bin/main.js'] : []),
+									...(blueprint.bin ? [`./${BIN_ENTRY_PATH}`, `./${BIN_OUTPUT_PATH}`] : []),
 								]
 							: false,
 					...(blueprint.src.length > 0 ? entry : {}),

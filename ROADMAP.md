@@ -2,7 +2,7 @@ Each item is a chunk that reaches green before the next. An item keeps its numbe
 item leaves this file and its number is never reused, so a commit message citing an item by number
 stays true.
 
-- **2.** Make a generated workspace state its supported runtime across its `engines.node` field, its `@types/node` range, and its build `target` setting. Pin Scaffold's `engines.node` field to the `MINIMUM_NODE_VERSION` constant with an executed assertion, and prove a workspace on the declared minimum runs its own gates.
+- **2.** Align a generated workspace's `@types/node` range and build `target` setting with its supported runtime.
 - **3.** Exclude the dependencies named by the `DECLARATION_DEV_DEPENDENCIES` constant from a blueprint whose configuration calls no `declarationRollup` function, and keep them for every blueprint that builds declarations.
 - **4.** Assert in the `tests/guides.test.ts` file that every generated manifest carries the same `devEngines.packageManager` record. In the isolated `tests/distribution.test.ts` file, prove that npm 11.6.0 installs a generated workspace and that npm 10.9.0 refuses it with the `EBADDEVENGINES` code before dependency resolution.
 - **5.** Write TSDoc for the `hasAsciiUrlControl` function, the `PACKAGE_MANIFEST_BYTES` constant, and the `ENVIRONMENT_MODULE_BYTES` constant in the `configs/helpers.ts` file, the `POLICY_SUPPRESSION_DIRECTIVE` constant in the `tests/setupPolicy.ts` file, and the `SCRATCH_PREFIX` constant in the `tests/setupServer.ts` file.
