@@ -1337,8 +1337,9 @@ The `vue` extension gives each axis it occupies a face of its own:
   `check` script typechecks the whole tree through `vue-tsc` in place of `tsc`.
 
 The vendored `.oxlintrc.json` holds each face to the import direction `AGENTS.md` § Project model fixes, and
-refuses a relative import of a sibling environment from `src/browser`, `src/server`, `src/vue`, and `src/bin` with
-a message naming the alias, because a face's build bundles what a relative path reaches. The vendored
+refuses, from `src/browser`, `src/server`, `src/vue`, and `src/bin`, a relative path to `src/core`, to
+`src/browser` from `src/vue`, or to `src/server` from `src/bin` with a message naming the alias, because a face's
+build bundles what a relative path reaches. The vendored
 `tests/config.test.ts` drives those directions through Oxlint.
 
 Every published face's build decides its externals through `resolveExternal` from the vendored
@@ -1604,7 +1605,7 @@ planned files only during materialize and leaves later edits or deletions alone.
 leaves the bytes you wrote alone. Scaffold content-owns `tests/setupPolicy.ts`,
 `tests/policy.test.ts`, and `tests/config.test.ts`, and in a publishing workspace the
 `tests/setupDistribution.ts` harness; `repair` and `overwrite` restore those files when their bytes
-drift or the files are missing, and leave the plan-owned `tests/distribution.test.ts` proof beside
+drift or the files are missing, and leave the presence-owned `tests/distribution.test.ts` proof beside
 the harness as it stands.
 
 `tests/policy.test.ts` proves the path- and text-shaped laws, and the vendored oxlint plugin

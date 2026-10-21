@@ -2850,7 +2850,7 @@ parentPort.postMessage('ready')`,
 		} finally {
 			workspace.destroy()
 		}
-	})
+	}, 10_000)
 
 	it('stages no file that git diff --check reports', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })

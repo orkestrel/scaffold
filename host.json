@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-harden/SKILL.md",
 			"destination": ".agents/skills/orkestrel-harden/SKILL.md",
 			"executable": false,
-			"digest": "2657af2adba5be9a82fb96ad67239f9931e34a7cfec0a23a30a7c3f433d83206"
+			"digest": "707a8f22f77f8090433dd410108ffc4b794c43ddab891bb47574909482a386ae"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/agents/openai.yaml",
@@ -298,7 +298,7 @@
 			"storage": "agents/skills/orkestrel-harden/scripts/titles.ts",
 			"destination": ".agents/skills/orkestrel-harden/scripts/titles.ts",
 			"executable": false,
-			"digest": "d8c9ba25cba5bdcbf9e6b4637c233a68a7c6a62eada30af57baa65e7a48e1aa7"
+			"digest": "97ff274531962f4beedc88891a878db9b93b85619727f74b3296a0147bfdcd36"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
@@ -418,7 +418,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/wave.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/wave.ts",
 			"executable": false,
-			"digest": "c1c1089a7f88c80911dec29413eb51d8b95f26f53ffae316fe4db718ced3c326"
+			"digest": "ce1491c438682064f2c0a60797d47a78aef5bef0a457923044c7e66b5c13027c"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/window.ts",
@@ -622,7 +622,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "d3ef6baa67e57b4d63aaef5fd28d7b602c2a59d6d89a5ba130e68a17c10708df"
+			"digest": "7f6ecd963a7eef01c3a9c215e1dd73ee4929c4c563cac7b518eedf4259213371"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1066,7 +1066,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "f12ce89d518f7b923f0fca2d282cef72b103a3bcb4617c1eda017430c201eed3"
+			"digest": "145806a4116276ffefc4f2eea08887a7238cb1b572b8f03c1f07392914a7efe7"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2150,5 +2150,5 @@
 			]
 		}
 	],
-	"digest": "8bf68b387fc0ee92966694d5a7d0915c5358f270345f325a20999cf9294a27ba"
+	"digest": "a9e32e7c926996297b237b038a9daf0aa07e7afb7293fb0c205d3e8151c10de6"
 }

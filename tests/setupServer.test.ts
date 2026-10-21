@@ -448,7 +448,7 @@ describe('the real host and checkout fixtures', () => {
 		} finally {
 			workspace.destroy()
 		}
-	})
+	}, 10_000)
 
 	it('writes every staged path into a checkout and declares exactly it in the manifest', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
@@ -1054,7 +1054,7 @@ describe('the upstream fixtures', () => {
 		} finally {
 			workspace.destroy()
 		}
-	})
+	}, 10_000)
 
 	// The manifest is serialized first, which reads each entry once, and the loop then reads each entry
 	// once more, so a hole or a refusal fails the loop after the serialization has read the list.

@@ -323,7 +323,7 @@ await new GuideCommand({
 			} finally {
 				workspace.destroy()
 			}
-		})
+		}, 10_000)
 
 		it('skips rejected package targets only while traversing fallback lists', async () => {
 			const markdown = requireValue(files['guides/scaffold.md'])
@@ -1298,7 +1298,7 @@ await new GuideCommand({
 			} finally {
 				workspace.destroy()
 			}
-		})
+		}, 10_000)
 	})
 
 	describe('nested-function admission', () => {

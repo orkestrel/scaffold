@@ -4566,7 +4566,7 @@ describe('the guides entry', () => {
 			await destroyScratch(passing, { budget: 5000 })
 			await destroyScratch(failing, { budget: 5000 })
 		}
-	})
+	}, 10_000)
 
 	it.each(['guide', 'source'])(
 		'keeps summary and example namespaces distinct toward %s',

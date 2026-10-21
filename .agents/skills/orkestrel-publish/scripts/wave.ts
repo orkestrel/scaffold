@@ -663,7 +663,7 @@ function validateWavePath(target: string, destination: string): void {
 	const path = resolve(destination)
 	const location = relative(root, path)
 	if (location === '..' || location.startsWith(`..${sep}`) || isAbsolute(location))
-		throw new Error(`unsafe wave path: ${path} escapes ${root}`)
+		throw new Error(`unsafe wave path: ${path} resolves outside ${root}`)
 	const physical = realpathSync(root)
 	const segments = location === '' ? [] : location.split(sep)
 	for (const entry of [

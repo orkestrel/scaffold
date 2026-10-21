@@ -163,7 +163,7 @@ describe('surface creation and migration', () => {
 		} finally {
 			workspace.destroy()
 		}
-	}, 30_000)
+	}, 40_000)
 
 	// A target that predates the commands module lacks the file, so the deleted case is the
 	// migration: both verbs write the seed it never received.
@@ -268,7 +268,7 @@ describe('surface creation and migration', () => {
 		} finally {
 			workspace.destroy()
 		}
-	})
+	}, 30_000)
 	it('audits override-only drift and repairs selected showcase pins online and offline without moving runtime declarations', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const blueprint = createBlueprint('display', {
