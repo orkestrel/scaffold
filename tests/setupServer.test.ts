@@ -2307,22 +2307,50 @@ describe('the emitted-template staging', () => {
 })
 
 describe('the command fixtures served from a registry', () => {
-	it('seeds the committed overwrite recorder and isolates its npm cache under tmp', () => {
-		const fixture = createWaveRecording('orkestrel-wave-recording-')
+	it('O1 uses the real built scaffold executable in a generated recording workspace', async () => {
+		const fixture = await createWaveRecording('orkestrel-wave-real-cli-')
+		try {
+			expect(
+				readFileSync(
+					join(fixture.target, 'node_modules/@orkestrel/scaffold/dist/bin/main.js'),
+				).equals(readFileSync(join(WORKSPACE_ROOT, 'dist/bin/main.js'))),
+			).toBe(true)
+			expect(fixture.scratch.has('src/core/index.ts')).toBe(true)
+			expect(fixture.scratch.read('AGENTS.md')).toContain('@orkestrel/scaffold')
+			fixture.scratch.write('package.json', '{"version":"1.0.0"}\n')
+			const audit = spawnSync(
+				process.execPath,
+				[
+					join(fixture.target, 'node_modules/@orkestrel/scaffold/dist/bin/main.js'),
+					'audit',
+					'--offline',
+					'--json',
+				],
+				{ cwd: fixture.target, encoding: 'utf8' },
+			)
+			expect(audit.status).toBe(1)
+			expect(JSON.parse(audit.stdout)).toMatchObject({
+				error: { code: 'TARGET', message: expect.stringContaining('no package name') },
+			})
+		} finally {
+			await fixture.destroy()
+		}
+	})
+	it('seeds the committed overwrite target and isolates its npm cache under tmp', async () => {
+		const fixture = await createWaveRecording('orkestrel-wave-recording-')
 		try {
 			expect(fixture.scratch.read('node_modules/@orkestrel/scaffold/package.json')).toContain(
-				'9.9.9',
+				String(readInstalledRecord(WORKSPACE_ROOT).version),
 			)
-			expect(fixture.scratch.read('tmp/answer.json')).toBe(
-				JSON.stringify({ written: ['configs/fixture.ts'], removed: ['removed.txt'] }),
-			)
+			expect(fixture.scratch.read('.editorconfig')).toBe('stale\n')
+			expect(fixture.scratch.has('.claude/rules/removed.md')).toBe(true)
 			expect(fixture.environment.npm_config_cache).toBe(join(fixture.target, 'tmp', 'npm-cache'))
 			expect(
 				spawnSync('git', ['status', '--porcelain'], { cwd: fixture.target, encoding: 'utf8' })
 					.stdout,
 			).toBe('')
 		} finally {
-			fixture.scratch.destroy()
+			await fixture.destroy()
 		}
 	})
 	it('serves the A0 exact-peer shape and reproduces ERESOLVE on a probe re-pin', async () => {

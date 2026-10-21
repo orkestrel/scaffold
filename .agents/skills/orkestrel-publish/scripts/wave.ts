@@ -789,13 +789,7 @@ function runRecord(runner: Runner, name: string | undefined): void {
 					entry !== '..' &&
 					!entry.startsWith('../') &&
 					!isAbsolute(entry) &&
-					(path === entry ||
-						(receipt.written.some(
-							(written) =>
-								normalizeSlashes(relative(runner.target, resolve(runner.target, written))) ===
-								entry,
-						) &&
-							path.startsWith(`${entry}/`))),
+					path === entry,
 			),
 	)
 	if (outside.length > 0) {

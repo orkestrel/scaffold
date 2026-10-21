@@ -5928,68 +5928,130 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 	}
 }
 
-/** Describes a committed recorder fixture for overwrite attribution. */
+/** Describes a generated core workspace and its isolated child environment. */
 export interface TestWaveRecording {
 	readonly scratch: ScratchInterface
 	readonly target: string
 	readonly environment: Readonly<Record<string, string>>
 }
 
+/** Describes a generated overwrite target and the lifetime of its upstream protocol fixture. */
+export interface TestWaveOverwrite extends TestWaveRecording {
+	destroy(): Promise<void>
+}
+
 /**
- * Creates a repository whose scaffold boundary records writes from an inert receipt.
+ * Generates a core workspace with this checkout's built executable and commits its baseline.
+ *
+ * @param prefix - The owned scratch allocation prefix.
+ * @returns The generated workspace with the actual scaffold checkout linked as its installed host.
+ * @throws Thrown when generation fails.
+ */
+export function createWaveWorkspace(prefix: string): TestWaveRecording {
+	const scratch = createScratch({ prefix })
+	try {
+		const environment = { ...buildSwapEnvironment(join(scratch.path, 'tmp')), ...WAVE_IDENTITY }
+		const generated = runSkillScript(
+			'dist/bin/main.js',
+			['new', 'record', '--src', 'core', '--offline', '--target', scratch.path, '--json'],
+			{ env: environment },
+		)
+		if (generated.status !== 0)
+			throw new Error(`Wave generation failed: ${generated.stdout}${generated.stderr}`)
+		scratch.ensure('node_modules/@orkestrel')
+		scratch.link('node_modules/@orkestrel/scaffold', WORKSPACE_ROOT)
+		createRepository(scratch.path)
+		trackFiles(scratch.path)
+		commitFiles(scratch.path)
+		return { scratch, target: scratch.path, environment }
+	} catch (error) {
+		scratch.destroy()
+		throw error
+	}
+}
+
+/**
+ * Creates a generated repository whose real scaffold overwrite repairs and removes tracked files.
  *
  * @param prefix - The scratch allocation prefix.
- * @returns The fixture with git identity supplied through the child environment.
+ * @returns The fixture with loopback registry and repository endpoints and an owned cleanup method.
+ * @throws Thrown when generation or upstream fixture setup fails.
  */
-export function createWaveRecording(prefix: string): TestWaveRecording {
-	const scratch = createScratch({ prefix })
-	const target = scratch.path
-	scratch.write('.gitignore', 'tmp/\nnode_modules/\n')
-	scratch.write(
-		'package.json',
-		renderPackageManifest({
-			name: '@fixture/record',
-			version: '1.0.0',
-			scripts: { format: 'node format.js', 'format:check': 'node gate.js' },
-		}),
-	)
-	scratch.write('format.js', '')
-	scratch.write(
-		'gate.js',
-		"process.stderr.write(Array.from({length:10},(_,index)=>'gate line '+index).join('\\n')+'\\n');process.exitCode=1\n",
-	)
-	scratch.write('removed.txt', 'remove this entry\n')
-	scratch.write(
-		'node_modules/@orkestrel/scaffold/package.json',
-		'{"name":"@orkestrel/scaffold","version":"9.9.9"}\n',
-	)
-	scratch.write(
-		'node_modules/@orkestrel/scaffold/dist/bin/main.js',
-		[
-			"const { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } = require('node:fs')",
-			"const { dirname } = require('node:path')",
-			'const args = process.argv.slice(2)',
-			"appendFileSync('tmp/calls.txt', args.join(' ') + '\\n')",
-			"if (args[0] === 'overwrite') {",
-			"  const receipt = JSON.parse(readFileSync('tmp/answer.json', 'utf8'))",
-			"  for (const path of [...receipt.written, ...(receipt.stray || [])]) { mkdirSync(dirname(path), {recursive:true}); writeFileSync(path, 'fixture overwrite\\n') }",
-			"  for (const path of receipt.removed) { if (existsSync(path)) { if (lstatSync(path).isSymbolicLink()) throw new Error('Fixture refuses to delete a link'); unlinkSync(path) } }",
-			"  console.log(JSON.stringify({...receipt, ...(args.includes('--offline') ? {note: \"'catalog' does not take --offline\"} : {})}))",
-			"  if (args.includes('--offline')) process.exitCode = 1",
-			"} else if (args.includes('--json')) console.log(JSON.stringify({releases:[]}))",
-		].join('\n'),
-	)
-	scratch.write(
-		'tmp/answer.json',
-		JSON.stringify({ written: ['configs/fixture.ts'], removed: ['removed.txt'] }),
-	)
-	createRepository(target)
-	trackFiles(target)
-	commitFiles(target)
-	return {
-		scratch,
-		target,
-		environment: { ...buildSwapEnvironment(scratch.ensure('tmp')), ...WAVE_IDENTITY },
+export async function createWaveRecording(prefix: string): Promise<TestWaveOverwrite> {
+	const fixture = createWaveWorkspace(prefix)
+	try {
+		const { scratch, target } = fixture
+		const manifest = readInstalledRecord(target)
+		const dependencies = ['dependencies', 'devDependencies'].flatMap((field) =>
+			isRecord(manifest[field]) ? Object.entries(manifest[field]) : [],
+		)
+		const server = await createUpstreamServer({
+			...buildInstalledHostReplies(readHostFloor(join(WORKSPACE_ROOT, 'dist', 'host'))),
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: buildOrganization(
+					dependencies.map(([name]) => name).filter((name) => name.startsWith('@orkestrel/')),
+				),
+			},
+			...Object.fromEntries(
+				dependencies.map(([name, range]) => {
+					if (!isString(range)) throw new Error(`No registry range for ${name}`)
+					return [
+						`/${name.replace('/', '%2F')}`,
+						{ status: 200, body: buildPackument(range.replace(/^\^/u, '')) },
+					]
+				}),
+			),
+			...Object.fromEntries(
+				dependencies
+					.filter(([name]) => name.startsWith('@orkestrel/'))
+					.map(([name]) => {
+						const short = name.slice('@orkestrel/'.length)
+						return [
+							`/orkestrel/${short}/refs/heads/main/guides/${short}.md`,
+							{
+								status: 200,
+								body: readFileSync(join(WORKSPACE_ROOT, 'guides', `${short}.md`), 'utf8'),
+								type: 'text/plain',
+							},
+						]
+					}),
+			),
+		})
+		try {
+			const environment = {
+				...fixture.environment,
+				ORKESTREL_SCAFFOLD_REGISTRY: server.base,
+				ORKESTREL_SCAFFOLD_REPOSITORY: server.base,
+			}
+			const catalog = await spawnSkillScript(
+				'dist/bin/main.js',
+				['catalog', '--target', target, '--json'],
+				{ env: environment },
+			)
+			if (catalog.status !== 0)
+				throw new Error(
+					`Wave catalog failed: ${JSON.stringify({ status: catalog.status, error: catalog.json?.error, note: catalog.json?.note, membership: catalog.json?.membership })} ${catalog.stderr}`,
+				)
+			scratch.write('.editorconfig', 'stale\n')
+			scratch.write('.claude/rules/removed.md', 'superseded instructions\n')
+			trackFiles(target)
+			commitFiles(target)
+			return {
+				...fixture,
+				environment,
+				destroy: async () => {
+					await server.destroy()
+					scratch.destroy()
+				},
+			}
+		} catch (error) {
+			await server.destroy()
+			throw error
+		}
+	} catch (error) {
+		fixture.scratch.destroy()
+		throw error
 	}
 }
 

@@ -21,6 +21,7 @@ import {
 	createSink,
 	createUpstreamServer,
 	createWaveRecording,
+	createWaveWorkspace,
 	createWaveSession,
 	readInstalledRecord,
 	renderPackageManifest,
@@ -37,6 +38,60 @@ import {
 } from '../../../../setupServer.js'
 
 describe('wave.ts', () => {
+	it('F20 refuses an unreported descendant of a reported file and preserves HEAD', () => {
+		const fixture = createWaveWorkspace('orkestrel-wave-descendant-')
+		try {
+			fixture.scratch.write('.editorconfig', 'stale\n')
+			trackFiles(fixture.target)
+			commitFiles(fixture.target)
+			const repaired = runSkillScript(
+				'dist/bin/main.js',
+				['repair', '--offline', '--target', fixture.target, '--json'],
+				{ env: fixture.environment },
+			)
+			expect(repaired.status).toBe(0)
+			expect(repaired.json?.written).toEqual(['.editorconfig'])
+			const head = spawnSync('git', ['rev-parse', 'HEAD'], {
+				cwd: fixture.target,
+				encoding: 'utf8',
+			}).stdout
+			fixture.scratch.write(
+				'tmp/units/wave/overwrite.json',
+				JSON.stringify({
+					head: head.trim(),
+					version: readInstalledRecord(WORKSPACE_ROOT).version,
+					offline: false,
+					written: repaired.json?.written,
+					removed: repaired.json?.removed,
+				}),
+			)
+			if (lstatSync(join(fixture.target, '.editorconfig')).isSymbolicLink())
+				throw new Error('Fixture refuses to delete a link')
+			unlinkSync(join(fixture.target, '.editorconfig'))
+			fixture.scratch.write('.editorconfig/unreported.txt', 'unreported\n')
+			const run = runSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'record', '--to', 'record', '--json'],
+				{ cwd: fixture.target, env: fixture.environment },
+			)
+			expect(run.status).toBe(1)
+			expect(run.stdout).toContain(
+				'dirty paths outside the overwrite: .editorconfig/unreported.txt',
+			)
+			expect(
+				spawnSync('git', ['rev-parse', 'HEAD'], { cwd: fixture.target, encoding: 'utf8' }).stdout,
+			).toBe(head)
+			expect(
+				spawnSync('git', ['diff', '--cached', '--name-only'], {
+					cwd: fixture.target,
+					encoding: 'utf8',
+				}).stdout,
+			).toBe('')
+		} finally {
+			fixture.scratch.destroy()
+		}
+	}, 30_000)
+
 	it('F2 executes the documented peer-only and tilde audit examples', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-scope-' })
 		const server = await createUpstreamServer(FLEET_RELEASE_REPLIES)
@@ -257,9 +312,21 @@ describe('wave.ts', () => {
 	)
 
 	it('O2 completes the overwrite commit manually after an unrelated commit and resumes at gates', async () => {
-		const fixture = createWaveRecording('orkestrel-wave-manual-recovery-')
+		const fixture = await createWaveRecording('orkestrel-wave-manual-recovery-')
 		try {
 			fixture.scratch.write('gate.js', "process.stdout.write('recovery gate reached\\n')\n")
+			trackFiles(fixture.target)
+			commitFiles(fixture.target)
+			const options = { cwd: fixture.target, env: fixture.environment }
+			expect(
+				(
+					await spawnSkillScript(
+						WAVE_SCRIPT,
+						['--visit', '--from', 'overwrite', '--to', 'overwrite', '--json'],
+						options,
+					)
+				).status,
+			).toBe(0)
 			fixture.scratch.write(
 				'package.json',
 				renderPackageManifest({
@@ -273,22 +340,7 @@ describe('wave.ts', () => {
 					},
 				}),
 			)
-			trackFiles(fixture.target)
-			commitFiles(fixture.target)
-			fixture.scratch.write(
-				'tmp/answer.json',
-				JSON.stringify({ written: ['configs/fixture.ts'], removed: [], stray: ['src/stray.ts'] }),
-			)
-			const options = { cwd: fixture.target, env: fixture.environment }
-			expect(
-				(
-					await spawnSkillScript(
-						WAVE_SCRIPT,
-						['--visit', '--from', 'overwrite', '--to', 'overwrite', '--json'],
-						options,
-					)
-				).status,
-			).toBe(0)
+			fixture.scratch.write('src/stray.ts', 'unreported\n')
 			fixture.scratch.write('package-lock.json', '{"lockfileVersion":3}\n')
 			const refused = await spawnSkillScript(
 				WAVE_SCRIPT,
@@ -317,15 +369,35 @@ describe('wave.ts', () => {
 				spawnSync('git', ['rev-parse', 'HEAD'], { cwd: fixture.target, encoding: 'utf8' }).stdout,
 			).toBe(head)
 			expect(
-				spawnSync('git', ['add', '--', 'configs/fixture.ts', 'package.json', 'package-lock.json'], {
-					cwd: fixture.target,
-				}).status,
+				spawnSync(
+					'git',
+					[
+						'add',
+						'-A',
+						'--',
+						'.editorconfig',
+						'.claude/rules/removed.md',
+						'package.json',
+						'package-lock.json',
+					],
+					{
+						cwd: fixture.target,
+					},
+				).status,
 			).toBe(0)
 			expect(
-				spawnSync('git', ['commit', '-m', 'Overwrite with scaffold 9.9.9'], {
-					cwd: fixture.target,
-					env: { ...process.env, ...fixture.environment },
-				}).status,
+				spawnSync(
+					'git',
+					[
+						'commit',
+						'-m',
+						`Overwrite with scaffold ${String(readInstalledRecord(WORKSPACE_ROOT).version)}`,
+					],
+					{
+						cwd: fixture.target,
+						env: { ...process.env, ...fixture.environment },
+					},
+				).status,
 			).toBe(0)
 			expect(
 				spawnSync('git', ['show', '--format=', '--name-only', 'HEAD'], {
@@ -335,7 +407,7 @@ describe('wave.ts', () => {
 					.stdout.split(/\r\n|\n/)
 					.filter(Boolean)
 					.sort(),
-			).toEqual(['configs/fixture.ts', 'package-lock.json'])
+			).toEqual(['.claude/rules/removed.md', '.editorconfig', 'package-lock.json', 'package.json'])
 			expect(
 				spawnSync('git', ['status', '--porcelain'], { cwd: fixture.target, encoding: 'utf8' })
 					.stdout,
@@ -363,7 +435,7 @@ describe('wave.ts', () => {
 			expect(wave).toContain('complete the intended overwrite commit by hand')
 			expect(wave).toContain('resume with `--from gates`')
 		} finally {
-			fixture.scratch.destroy()
+			await fixture.destroy()
 		}
 	}, 30_000)
 
@@ -559,11 +631,33 @@ describe('wave.ts', () => {
 	)
 
 	it('records exactly the reported overwrite paths in a clean commit', async () => {
-		const fixture = createWaveRecording('orkestrel-wave-record-')
+		const fixture = await createWaveRecording('orkestrel-wave-record-')
 		try {
+			const overwrite = await spawnSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'overwrite', '--to', 'overwrite', '--json'],
+				{ cwd: fixture.target, env: fixture.environment },
+			)
+			expect(overwrite.status).toBe(0)
+			expect(JSON.parse(fixture.scratch.read('tmp/units/wave/overwrite.json') ?? '')).toMatchObject(
+				{
+					version: readInstalledRecord(WORKSPACE_ROOT).version,
+					offline: false,
+					written: ['.editorconfig'],
+					removed: ['.claude/rules/removed.md'],
+				},
+			)
+			fixture.scratch.write(
+				'package.json',
+				renderPackageManifest({
+					...readInstalledRecord(fixture.target),
+					description: 'Converged manifest.',
+				}),
+			)
+			fixture.scratch.write('package-lock.json', '{"lockfileVersion":3}\n')
 			const run = await spawnSkillScript(
 				WAVE_SCRIPT,
-				['--visit', '--from', 'overwrite', '--to', 'record', '--json'],
+				['--visit', '--from', 'record', '--to', 'record', '--json'],
 				{ cwd: fixture.target, env: fixture.environment },
 			)
 			expect(run.status).toBe(0)
@@ -572,7 +666,7 @@ describe('wave.ts', () => {
 					cwd: fixture.target,
 					encoding: 'utf8',
 				}).stdout.trim(),
-			).toBe('Overwrite with scaffold 9.9.9')
+			).toBe(`Overwrite with scaffold ${String(readInstalledRecord(WORKSPACE_ROOT).version)}`)
 			expect(
 				spawnSync('git', ['show', '--format=', '--name-only', 'HEAD'], {
 					cwd: fixture.target,
@@ -581,30 +675,33 @@ describe('wave.ts', () => {
 					.stdout.split(/\r\n|\n/)
 					.filter(Boolean)
 					.sort(),
-			).toEqual(['configs/fixture.ts', 'package-lock.json', 'removed.txt'])
+			).toEqual(['.claude/rules/removed.md', '.editorconfig', 'package-lock.json', 'package.json'])
 			expect(
 				spawnSync('git', ['status', '--porcelain'], { cwd: fixture.target, encoding: 'utf8' })
 					.stdout,
 			).toBe('')
 		} finally {
-			fixture.scratch.destroy()
+			await fixture.destroy()
 		}
 	}, 30_000)
 
 	it('refuses an unreported dirty path and preserves HEAD', async () => {
-		const fixture = createWaveRecording('orkestrel-wave-stray-')
+		const fixture = await createWaveRecording('orkestrel-wave-stray-')
 		try {
 			const head = spawnSync('git', ['rev-parse', 'HEAD'], {
 				cwd: fixture.target,
 				encoding: 'utf8',
 			}).stdout
-			fixture.scratch.write(
-				'tmp/answer.json',
-				JSON.stringify({ written: ['configs/fixture.ts'], removed: [], stray: ['src/stray.ts'] }),
+			const overwrite = await spawnSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'overwrite', '--to', 'overwrite', '--json'],
+				{ cwd: fixture.target, env: fixture.environment },
 			)
+			expect(overwrite.status).toBe(0)
+			fixture.scratch.write('src/stray.ts', 'unreported\n')
 			const run = await spawnSkillScript(
 				WAVE_SCRIPT,
-				['--visit', '--from', 'overwrite', '--to', 'record', '--json'],
+				['--visit', '--from', 'record', '--to', 'record', '--json'],
 				{ cwd: fixture.target, env: fixture.environment },
 			)
 			expect(run.status).toBe(1)
@@ -613,20 +710,26 @@ describe('wave.ts', () => {
 				spawnSync('git', ['rev-parse', 'HEAD'], { cwd: fixture.target, encoding: 'utf8' }).stdout,
 			).toBe(head)
 		} finally {
-			fixture.scratch.destroy()
+			await fixture.destroy()
 		}
 	}, 30_000)
 
 	it('leaves an offline overwrite uncommitted', async () => {
-		const fixture = createWaveRecording('orkestrel-wave-offline-')
+		const fixture = await createWaveRecording('orkestrel-wave-offline-')
 		try {
 			const head = spawnSync('git', ['rev-parse', 'HEAD'], {
 				cwd: fixture.target,
 				encoding: 'utf8',
 			}).stdout
+			const overwrite = await spawnSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--offline', '--from', 'overwrite', '--to', 'overwrite', '--json'],
+				{ cwd: fixture.target, env: fixture.environment },
+			)
+			expect(overwrite.status).toBe(0)
 			const run = await spawnSkillScript(
 				WAVE_SCRIPT,
-				['--visit', '--offline', '--from', 'overwrite', '--to', 'record', '--json'],
+				['--visit', '--from', 'record', '--to', 'record', '--json'],
 				{ cwd: fixture.target, env: fixture.environment },
 			)
 			expect(run.status).toBe(0)
@@ -637,12 +740,12 @@ describe('wave.ts', () => {
 				spawnSync('git', ['rev-parse', 'HEAD'], { cwd: fixture.target, encoding: 'utf8' }).stdout,
 			).toBe(head)
 		} finally {
-			fixture.scratch.destroy()
+			await fixture.destroy()
 		}
 	}, 30_000)
 
 	it('refuses a stale or absent receipt for dirty paths and accepts a clean tree', async () => {
-		const fixture = createWaveRecording('orkestrel-wave-stale-')
+		const fixture = createWaveWorkspace('orkestrel-wave-stale-')
 		try {
 			fixture.scratch.write('configs/fixture.ts', 'dirty\n')
 			const options = { cwd: fixture.target, env: fixture.environment }
@@ -689,8 +792,19 @@ describe('wave.ts', () => {
 	}, 30_000)
 
 	it('journals full failed-gate output while keeping the stderr tail in the note', async () => {
-		const fixture = createWaveRecording('orkestrel-wave-journal-')
+		const fixture = createWaveWorkspace('orkestrel-wave-journal-')
 		try {
+			fixture.scratch.write(
+				'gate.js',
+				"process.stderr.write(Array.from({length:10},(_,index)=>'gate line '+index).join('\\n')+'\\n');process.exitCode=1\n",
+			)
+			fixture.scratch.write(
+				'package.json',
+				renderPackageManifest({
+					...readInstalledRecord(fixture.target),
+					scripts: { 'format:check': 'node gate.js' },
+				}),
+			)
 			const run = await spawnSkillScript(
 				WAVE_SCRIPT,
 				['--visit', '--from', 'gates', '--to', 'gates', '--json'],
@@ -718,7 +832,7 @@ describe('wave.ts', () => {
 	}, 30_000)
 
 	it.each(['commit', 'record'])('refuses local manifest specs at %s', (step) => {
-		const fixture = createWaveRecording('orkestrel-wave-spec-')
+		const fixture = createWaveWorkspace('orkestrel-wave-spec-')
 		try {
 			fixture.scratch.write(
 				'package.json',
@@ -916,6 +1030,8 @@ describe('wave.ts', () => {
 				expect.objectContaining({ step: 'record', note: 'skipped: @orkestrel/scaffold' }),
 			])
 			expect(scratch.read('calls.txt')).toBe('audit --json\n')
+			if (lstatSync(join(scratch.path, 'calls.txt')).isSymbolicLink())
+				throw new Error('Fixture refuses to delete a link')
 			scratch.remove('calls.txt')
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
 			const other = runSkillScript(
@@ -1030,6 +1146,8 @@ describe('wave.ts', () => {
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run'], { cwd: scratch.path }).status,
 			).toBe(2)
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			if (lstatSync(join(scratch.path, 'dist')).isSymbolicLink())
+				throw new Error('Fixture refuses to delete a link')
 			scratch.remove('dist')
 			expect(
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run'], { cwd: scratch.path }).status,
