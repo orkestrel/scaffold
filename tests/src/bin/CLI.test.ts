@@ -5991,7 +5991,7 @@ describe('CLI overwrite', () => {
 			const written = result.written.filter(
 				(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
 			)
-			expect(written).toHaveLength(21)
+			expect(written).toHaveLength(24)
 			expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
 			expect(result.removed.toSorted()).toStrictEqual([
 				'.agents/skills/orkestrel-dispatch/SKILL.md',
