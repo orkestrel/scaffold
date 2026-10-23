@@ -352,7 +352,7 @@
 			"storage": "agents/skills/orkestrel-parallel/SKILL.md",
 			"destination": ".agents/skills/orkestrel-parallel/SKILL.md",
 			"executable": false,
-			"digest": "668e0dbee9064634d3cd540c3747f79286b42c98f7915252402afd2871fd6603"
+			"digest": "2a67dd6ca17a67248bc411dd833bd34275f4c3456021846741a9018375ad9aae"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/agents/openai.yaml",
@@ -2178,5 +2178,5 @@
 			]
 		}
 	],
-	"digest": "9ff553c030381b54f0e9cf35eebdc2410d982ef0b238f3cceb140d680af64a48"
+	"digest": "f9b542cd1414446dbb503989f51828b56a170084fe804e0ead1c530131c502d8"
 }
