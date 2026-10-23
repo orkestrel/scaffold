@@ -84,9 +84,9 @@ A large change runs these phases once each, in order, and ends when the exit cri
 
 - Fan out when the work is many small, fully specified, disjoint units: one cheap agent per unit with minimal context. Give the agents the same model, effort, agent type, tools, schema, and working directory when isolation and routing allow it, so their prompts share one cache prefix.
 - Judgment stays narrow: a design or review pass is at most the two lanes the size gate names, each in a clean context, blind to the other, and it runs once. Never fan judgment out further, and never run it as a loop.
-- One writer per checkout. Give parallel writers disjoint owned files; give a writer its own worktree under `tmp/worktrees/` only when two units must write the same files at once. Commit a checkpoint before a writing dispatch.
-- Shared files are report-only; a unit returns an exact patch.
-- Concurrent units validate read-only and scoped to their owned files. Never run tree-wide `format`, lint `--fix`, or `build` beside a live unit.
+- One writer per checkout, except under `orkestrel-parallel`: there, at most three writers share one checkout, each owns disjoint files and disjoint regions of shared files, and one runner lane owns every test, check, and build process. Otherwise give parallel writers disjoint owned files, and give a writer its own worktree under `tmp/worktrees/` only when two units must write the same files at once. Commit a checkpoint before a writing dispatch.
+- Shared files are report-only; a unit returns an exact patch. Under `orkestrel-parallel`, a writer edits its owned regions of a shared file directly.
+- Concurrent units validate read-only and scoped to their owned files; under `orkestrel-parallel`, the runner also runs read-only root checks and reports each finding to the lane that owns its file. Never run tree-wide `format`, lint `--fix`, or `build` beside a live unit.
 - One Grok lane at a time; queue the rest. An empty lane beside a live probe is starvation, not darkness.
 - The Orchestrator's own sweep is a writing dispatch: run it before or after the units, never beside them.
 

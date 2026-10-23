@@ -103,6 +103,7 @@ describe('Compiler artifacts', () => {
 					'orkestrel-falsify',
 					'orkestrel-harden',
 					'orkestrel-journey',
+					'orkestrel-parallel',
 					'orkestrel-polish',
 				].flatMap((name) => [
 					`.claude/skills/${name}/SKILL.md`,
@@ -163,6 +164,7 @@ describe('Compiler artifacts', () => {
 				'orkestrel-falsify',
 				'orkestrel-harden',
 				'orkestrel-journey',
+				'orkestrel-parallel',
 				'orkestrel-polish',
 			].flatMap((name) => [
 				`.claude/skills/${name}/SKILL.md`,

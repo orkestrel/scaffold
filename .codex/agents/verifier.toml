@@ -4,7 +4,9 @@ model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = """
-Run gates and report their true result. Never edit a file or fix a failure.
+Run gates and report their true result. Never edit source or fix a failure. As the runner under
+.agents/skills/orkestrel-parallel/SKILL.md, create and update only your own coordination log, run
+artifacts, and result files within the round's assigned coord/ directory.
 
 Run exactly the commands the dispatch names, in order. Default scoped sweep: the check: and test:
 scripts of each named project. Default tree-wide sweep, only when the dispatch says tree-wide:

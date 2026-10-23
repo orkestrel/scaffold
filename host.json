@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "9480ffa30200429b184e0ea5634aef234e0b623634a4a2a570e16460c5cf57ca"
+			"digest": "7d94cef5db0472bdf6fc1c18195e015eb39abfbdee2b6343f853540494b4f249"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -349,6 +349,24 @@
 			"digest": "638492208cc57c37fc120a265d1ba87f9674d15b051c0d6c62488f09c4561aad"
 		},
 		{
+			"storage": "agents/skills/orkestrel-parallel/SKILL.md",
+			"destination": ".agents/skills/orkestrel-parallel/SKILL.md",
+			"executable": false,
+			"digest": "668e0dbee9064634d3cd540c3747f79286b42c98f7915252402afd2871fd6603"
+		},
+		{
+			"storage": "agents/skills/orkestrel-parallel/agents/openai.yaml",
+			"destination": ".agents/skills/orkestrel-parallel/agents/openai.yaml",
+			"executable": false,
+			"digest": "48021b639670a3c238548d855c4bade882fad2282130ec6ce2d24af1e6e01b22"
+		},
+		{
+			"storage": "agents/skills/orkestrel-parallel/references/harnesses.md",
+			"destination": ".agents/skills/orkestrel-parallel/references/harnesses.md",
+			"executable": false,
+			"digest": "d32f608b6dd28b88f9fc98569988fd772b485ff3a59c7dfcd67d810d45e7303f"
+		},
+		{
 			"storage": "agents/skills/orkestrel-polish/SKILL.md",
 			"destination": ".agents/skills/orkestrel-polish/SKILL.md",
 			"executable": false,
@@ -550,7 +568,7 @@
 			"storage": "claude/agents/verifier.md",
 			"destination": ".claude/agents/verifier.md",
 			"executable": false,
-			"digest": "70a39011bafc32bd39ef4506daba4b6b4be019356c13dc2a03756eccd345833c"
+			"digest": "6541513f6c095014787869d11c70326baf5be3a36942d9088130cc2514b00f67"
 		},
 		{
 			"storage": "claude/rules/application.md",
@@ -685,6 +703,12 @@
 			"digest": "2b68330584955f4a6a552b5e642e1592bd1cf6285df1d954cb403a36f714b7d0"
 		},
 		{
+			"storage": "claude/skills/orkestrel-parallel/SKILL.md",
+			"destination": ".claude/skills/orkestrel-parallel/SKILL.md",
+			"executable": false,
+			"digest": "8cdefa80c939d310ffaf00286864a4798d3afce79b698318e69a79aadb6229e0"
+		},
+		{
 			"storage": "claude/skills/orkestrel-polish/SKILL.md",
 			"destination": ".claude/skills/orkestrel-polish/SKILL.md",
 			"executable": false,
@@ -778,7 +802,7 @@
 			"storage": "codex/agents/verifier.toml",
 			"destination": ".codex/agents/verifier.toml",
 			"executable": false,
-			"digest": "c143e57dbc715066e388c0682db90fc9c5908ece618a6f59b0005d0d5a3d69b4"
+			"digest": "5b02928029b3d09151fbdfc2b32d3f58487b2caab994c6090668daa7dd05a6d2"
 		},
 		{
 			"storage": "codex/config.toml",
@@ -1216,13 +1240,13 @@
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "093ef61f0b784706d8e1cba0fa1c6aa0acf227798c54d783f419d2f091e302d9"
+			"digest": "2d75352f79d79345eafebc843b55e9e9588e5cd6312ec2a54b6d7a05b7a167e1"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "2fb412f0585dc9c01d3b88d8c960920d3af62745415ed1bcf65a2e6753f9fdf8"
+			"digest": "4acf8c517630d903f5a8ef72cf990bef6e880a0d9c6c858d1658ecc6e2ed8a31"
 		}
 	],
 	"roots": [
@@ -1252,6 +1276,9 @@
 		".agents/skills/orkestrel-journey",
 		".agents/skills/orkestrel-journey/agents",
 		".agents/skills/orkestrel-journey/references",
+		".agents/skills/orkestrel-parallel",
+		".agents/skills/orkestrel-parallel/agents",
+		".agents/skills/orkestrel-parallel/references",
 		".agents/skills/orkestrel-polish",
 		".agents/skills/orkestrel-polish/agents",
 		".agents/skills/orkestrel-polish/references",
@@ -1275,6 +1302,7 @@
 		".claude/skills/orkestrel-falsify",
 		".claude/skills/orkestrel-harden",
 		".claude/skills/orkestrel-journey",
+		".claude/skills/orkestrel-parallel",
 		".claude/skills/orkestrel-polish",
 		".claude/skills/orkestrel-publish",
 		".claude/skills/orkestrel-scout",
@@ -2150,5 +2178,5 @@
 			]
 		}
 	],
-	"digest": "a9e32e7c926996297b237b038a9daf0aa07e7afb7293fb0c205d3e8151c10de6"
+	"digest": "ecf795788a16f75207e2bd9d9a0c1c02d8f708d58397a0d4d33e3e01747ebc5f"
 }

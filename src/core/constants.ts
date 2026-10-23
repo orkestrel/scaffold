@@ -407,6 +407,7 @@ export const TARGET_SKILL_NAMES: readonly string[] = Object.freeze([
 	'orkestrel-falsify',
 	'orkestrel-harden',
 	'orkestrel-journey',
+	'orkestrel-parallel',
 	'orkestrel-polish',
 ])
 

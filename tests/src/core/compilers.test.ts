@@ -4358,6 +4358,7 @@ describe('content artifact compilers', () => {
 			'orkestrel-falsify',
 			'orkestrel-harden',
 			'orkestrel-journey',
+			'orkestrel-parallel',
 			'orkestrel-polish',
 		]
 		const expected = names.flatMap((name) => [
