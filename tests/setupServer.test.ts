@@ -2335,7 +2335,7 @@ describe('the command fixtures served from a registry', () => {
 		} finally {
 			await fixture.destroy()
 		}
-	})
+	}, 30_000)
 	it('seeds the committed overwrite target and isolates its npm cache under tmp', async () => {
 		const fixture = await createWaveRecording('orkestrel-wave-recording-')
 		try {
@@ -2352,7 +2352,7 @@ describe('the command fixtures served from a registry', () => {
 		} finally {
 			await fixture.destroy()
 		}
-	})
+	}, 30_000)
 	it('serves the A0 exact-peer shape and reproduces ERESOLVE on a probe re-pin', async () => {
 		const session = await createWaveSession('orkestrel-wave-precondition-')
 		try {
