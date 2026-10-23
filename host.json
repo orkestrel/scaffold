@@ -538,7 +538,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "1707a6ec45f3a8cba1fc0382134935e225ddf35f0f96cf8d5d31320446345afb"
+			"digest": "0f1f2ca81f4f3d068111443bc3f732a7abe3450350bdc382bea33ccbf514e7b0"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -898,7 +898,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "daf0d233d6fae909afdc99b2c6b1594cbacd4ab1523bbecc6712444f379b194b"
+			"digest": "b5fa296bf5337e11da8e0c78ec8adbbb76ceb5c3261c3400b9e8ca9c77951c9e"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -958,7 +958,7 @@
 			"storage": "guides/form.md",
 			"destination": "guides/form.md",
 			"executable": false,
-			"digest": "d7326a7ae3d3db56e4af24170dd045712311dac84bde80142750b1a1aafd80fc"
+			"digest": "c96e74336646def8cb8eb38bb2aeec07a075af321a5a12e5e217452a582de6a3"
 		},
 		{
 			"storage": "guides/guide.md",
@@ -1024,7 +1024,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "842ac9497fae2fff001d2d4cdd68997545f7e6614030e49865778c28df304001"
+			"digest": "2dcfdbcf6df1df629f5902f394536c2fc37cbd14fe5e27e101f1ee5548a58c21"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1120,7 +1120,7 @@
 			"storage": "guides/study.md",
 			"destination": "guides/study.md",
 			"executable": false,
-			"digest": "e86dedce995879c104bb1f9ec7afa034a56348ef106c24050ebfbdfe04ae9946"
+			"digest": "7906d2b51653db0d9f78a48d1463c0a585197f5bbd2e79cc3b0380cc10938e70"
 		},
 		{
 			"storage": "guides/supervisor.md",
@@ -1132,7 +1132,7 @@
 			"storage": "guides/table.md",
 			"destination": "guides/table.md",
 			"executable": false,
-			"digest": "1afc1604d7ffe437828ddb5ead106e38ae0d86dcd8d556b101faf8e06477145c"
+			"digest": "31a509657873420ad4d922aa257b3aa0fa6e4f347ae653094178829a7cfef53e"
 		},
 		{
 			"storage": "guides/template.md",
@@ -1150,7 +1150,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "b1862ca555a89bd91c42c4ce643b72e7fc54a2a0bab53306f9826b232d072fce"
+			"digest": "b99f835d4e7dd612ad6d8245a3b39ab37de4b8c0719dc70e11527e071762162a"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -2178,5 +2178,5 @@
 			]
 		}
 	],
-	"digest": "ecf795788a16f75207e2bd9d9a0c1c02d8f708d58397a0d4d33e3e01747ebc5f"
+	"digest": "9ff553c030381b54f0e9cf35eebdc2410d982ef0b238f3cceb140d680af64a48"
 }
