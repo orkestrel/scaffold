@@ -113,7 +113,7 @@ describe('surface creation and migration', () => {
 			const original = requireValue(workspace.read('display/package.json'))
 			createRepository(target)
 			for (const [name, range] of [
-				['vite', '^8.3.4'],
+				['vite', '^8.3.5'],
 				['vite-plugin-singlefile', '2.3.3'],
 			] as const) {
 				for (const section of ['dependencies', 'devDependencies'] as const) {
@@ -307,7 +307,7 @@ describe('surface creation and migration', () => {
 			).toBe(EXIT_CLEAN)
 			const original = requireValue(workspace.read('display/package.json'))
 			expect(JSON.parse(original)).toMatchObject({
-				devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '2.3.3' },
+				devDependencies: { vite: '^8.3.5', 'vite-plugin-singlefile': '2.3.3' },
 				overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
 			})
 			workspace.write('display/package.json', original.replace('npm:picomatch@2.3.2', 'old'))
@@ -346,7 +346,7 @@ describe('surface creation and migration', () => {
 				const repaired = requireValue(workspace.read('display/package.json'))
 				expect(JSON.parse(repaired)).toMatchObject({
 					dependencies: { 'vite-plugin-singlefile': '2.3.3' },
-					devDependencies: { vite: '^8.3.4', 'unrelated-exact': '1.2.3' },
+					devDependencies: { vite: '^8.3.5', 'unrelated-exact': '1.2.3' },
 					overrides: {
 						unrelated: { child: 'keep' },
 						'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' },
@@ -437,7 +437,7 @@ describe('surface creation and migration', () => {
 					`${name}/package.json`,
 					original
 						.replace(/\s*"vite-plugin-singlefile": "2\.3\.3",?/u, '')
-						.replace('"vite": "^8.3.4"', '"vite": "^6.0.0"')
+						.replace('"vite": "^8.3.5"', '"vite": "^6.0.0"')
 						.replace('npm:picomatch@2.3.2', 'old'),
 				)
 				workspace.write(`${name}/vite.config.ts`, 'stale config')
@@ -454,7 +454,7 @@ describe('surface creation and migration', () => {
 				const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 				expect(result.note).toContain('catalog step did not complete')
 				expect(JSON.parse(requireValue(workspace.read(`${name}/package.json`)))).toMatchObject({
-					devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '2.3.3' },
+					devDependencies: { vite: '^8.3.5', 'vite-plugin-singlefile': '2.3.3' },
 					overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
 				})
 				expect(workspace.read(`${name}/vite.config.ts`)).not.toBe('stale config')
@@ -1824,7 +1824,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.3.4", "vitest": "^4.1.11",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.3.5", "vitest": "^4.1.12",`,
 					blocking: false,
 				},
 			])
