@@ -538,7 +538,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "0f1f2ca81f4f3d068111443bc3f732a7abe3450350bdc382bea33ccbf514e7b0"
+			"digest": "3a8756c323e1ea31e2f9879ed9a14477c34ed5eef1654c60d760a7357cff2f48"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -898,7 +898,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "b5fa296bf5337e11da8e0c78ec8adbbb76ceb5c3261c3400b9e8ca9c77951c9e"
+			"digest": "1b3c160ae18fe5c8d726a67e0a46a8fc4439267d84789cd7437caf0ca75e6d78"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -1090,7 +1090,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "145806a4116276ffefc4f2eea08887a7238cb1b572b8f03c1f07392914a7efe7"
+			"digest": "1bca2f3d385aa7ffcc2bbc870e7789e1e6c7b110ca0b772962b0531e1470b7cd"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2178,5 +2178,5 @@
 			]
 		}
 	],
-	"digest": "f9b542cd1414446dbb503989f51828b56a170084fe804e0ead1c530131c502d8"
+	"digest": "bfd5da9b524cab604a72ff7a9f09c3a52beaab8d9229260b2c3279dced3d2ef3"
 }
