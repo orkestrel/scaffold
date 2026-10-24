@@ -552,8 +552,8 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Own the caller's value before anything reads it, then guard the copy. A host
-	// handed in as a value is live until it is copied, so what the verification
-	// below measures is what every later read returns.
+	// handed in as a value is live until it is copied, so what the following verification
+	// measures is what every later read returns.
 	#own(host: Host): Host {
 		const owned = cloneValue(host)
 		if (isHost(owned)) return owned
@@ -1209,7 +1209,7 @@ export class Materializer implements MaterializerInterface {
 	// Stage one vendored file, under the storage name the manifest holds it as and
 	// with the executable bit that manifest records. The root is the one the caller
 	// named or the private one a value host was filled into, and the two are the
-	// same shape, so nothing below here reads the representation.
+	// same shape, so no subsequent operation reads the representation.
 	#copy(
 		transaction: WriteTransaction,
 		artifact: HostArtifact | HydratedArtifact,

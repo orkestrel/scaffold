@@ -194,7 +194,7 @@ export interface ManifestScript {
  *
  * @remarks
  * `text` is the brace character or the quoted string with its quotes, `index` is
- * where it starts in the scanned text, and `depth` counts the objects open once
+ * where it starts in the scanned text, and `depth` counts the objects open after
  * it is read, braces alone. `value` is set only for a string that a colon
  * follows, and is the offset of the first character after that colon and the
  * whitespace beside it, so the character at `value` begins the string's value.
@@ -377,7 +377,7 @@ export type CatalogEntry =
  * `range` is the declared range, and `latest` is the version the producer
  * selected. A found lookup carries that selected version; one that produced no
  * answer carries the cause and no selected version. `major`, when present, is
- * the stable major named by the registry's latest tag in the same answer.
+ * the stable major named by the registry's `latest` tag in the same answer.
  */
 export type Release =
 	| {

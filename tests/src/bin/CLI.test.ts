@@ -1651,7 +1651,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.3.4 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.5 within major 8.',
 					blocking: false,
 				},
 			])
@@ -4290,7 +4290,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.3.4 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.5 within major 8.',
 					blocking: false,
 				},
 			])
@@ -5110,7 +5110,7 @@ describe('CLI repair', () => {
 			expect(written).toContain(
 				'"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release && npm run verify"',
 			)
-			expect(written).toContain('"vite": "^8.3.4"')
+			expect(written).toContain('"vite": "^8.3.5"')
 			expect(workspace.read('target/vite.config.ts')).not.toBe('marker\n')
 
 			const audited = createSink()
@@ -5805,7 +5805,7 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const dependencies = { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.4' }
+			const dependencies = { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.5' }
 			const manifest = `${JSON.stringify(
 				{
 					name: '@orkestrel/sample',
@@ -6794,7 +6794,7 @@ describe('CLI overwrite', () => {
 				name: 'vite',
 				range: '~8.2.0',
 				lookup: 'found',
-				latest: '8.3.4',
+				latest: '8.3.5',
 				major: 8,
 			})
 			const manifest = workspace.read('target/package.json')
@@ -6803,7 +6803,7 @@ describe('CLI overwrite', () => {
 			expect(manifest).toContain(`"@orkestrel/scaffold": "^${published}"`)
 			// Nothing else in the manifest moved, which is the whole promise of
 			// rewriting a range in place rather than re-serializing the file.
-			expect(manifest).toContain('"vite": "^8.3.4"')
+			expect(manifest).toContain('"vite": "^8.3.5"')
 			expect(manifest).toContain('"description": "A sample workspace."')
 		} finally {
 			await server.destroy()

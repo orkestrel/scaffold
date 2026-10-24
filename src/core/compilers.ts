@@ -465,7 +465,7 @@ export function replaceManifestOverride(
 	const tokens = scanManifestTokens(manifest)
 	if (tokens === undefined) return undefined
 	// Each level descends into the object the previous level's value opened, so the fold carries
-	// that object's offset and stops once a level answers.
+	// that object's offset and stops after a level answers.
 	const outcome = path.reduce<{
 		readonly done: boolean
 		readonly open: number
@@ -3444,7 +3444,7 @@ export function dependenciesToQuestions(
  * ```
  */
 export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
-	// Each list is read where the sections below reach it, one entry at a time and once per pass, and
+	// Each list is read where the following sections reach it, one entry at a time and once per pass, and
 	// The iterator reads a hole in a list as an `undefined` entry, as a `for…of` over it would.
 	const own = `@orkestrel/${blueprint.name}`
 	return [
@@ -3522,7 +3522,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 				: []),
 		]),
 		// An extension's own questions are read with the extension, and the repeat of an earlier
-		// selection is judged once every extension has been read.
+		// selection is judged after every extension has been read.
 		...Iterator.from(blueprint.extensions)
 			.map((extension) => {
 				const selection = `${extension.surface}:${extension.name}`

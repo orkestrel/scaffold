@@ -224,7 +224,7 @@ export class CLI implements CLIInterface {
 	}
 
 	// One verb per branch, each answering with its own exit code. The switch is
-	// exhaustive over the command union, so a new verb fails to compile here.
+	// exhaustive over the command union, so an added verb fails to compile here.
 	async #dispatch(command: CLICommand): Promise<number> {
 		switch (command.verb) {
 			case 'new':
@@ -313,7 +313,7 @@ export class CLI implements CLIInterface {
 	// describe, through the vendored host a repair would write from, and write
 	// nothing whatever it finds.
 	//
-	// The host is load-bearing here where it once was not, so `--from` reaches the
+	// The audit requires the host, so `--from` reaches the
 	// comparison and a host that cannot be read refuses the run under its own
 	// coded reason. Refusing is the honest answer: the comparison this verb
 	// reports is the hydrated one, and a fallback to the pure compile would report
@@ -585,7 +585,7 @@ export class CLI implements CLIInterface {
 			// the audit's foreign findings: the strays beneath the vendored directories
 			// this plan expands, and the superseded instruction copies the target holds
 			// inside the canon. A path the plan claims is never a deletion candidate,
-			// and the repair above has already restored the ones that were missing, so
+			// and the preceding repair has already restored the ones that were missing, so
 			// this step cannot take a file the next audit would report missing.
 			// `--dirty` is expressed here and nowhere else: the waiver clears the
 			// refusal the observed dirty set would otherwise trigger downstream, and
@@ -961,8 +961,8 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Measure each fleet row against the registry's newest release and each
-	// foreign row against the newest release its declared major admits.
+	// Measure each fleet row against the registry's highest release and each
+	// foreign row against the highest release its declared major admits.
 	async #lookup(declared: readonly Dependency[]): Promise<readonly Release[]> {
 		if (declared.length === 0) return []
 		const upstream = new Upstream(this.#upstream)

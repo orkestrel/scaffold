@@ -40,7 +40,7 @@ export class ReadAllowance implements ReadAllowanceInterface {
 		this.#remaining = budget
 	}
 
-	/** The bytes the call has left; negative once a read overshoots the budget. */
+	/** The bytes the call has left; negative after a read overshoots the budget. */
 	get remaining(): number {
 		return this.#remaining
 	}

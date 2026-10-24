@@ -163,7 +163,7 @@ export const ORKESTREL_SCOPE = 'orkestrel'
  */
 export const SCAFFOLD_REPOSITORY = 'scaffold'
 
-/** Holds the note a release carries when its packument names no readable latest version. */
+/** Holds the note a release carries when its packument names no readable version under the `latest` tag. */
 export const UNREADABLE_VERSION_NOTE = 'the answer carries no readable latest version'
 
 /**

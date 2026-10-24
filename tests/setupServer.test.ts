@@ -2432,11 +2432,11 @@ describe('the command fixtures served from a registry', () => {
 	it('aligns the target manifest to the registry and keeps every other section the base builds', () => {
 		const aligned: unknown = JSON.parse(buildAlignedManifest())
 		expect(aligned).toMatchObject({
-			dependencies: { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.4' },
+			dependencies: { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.5' },
 			devDependencies: { '@orkestrel/guide': '^0.0.9' },
 			scripts: expect.any(Object),
 		})
-		expect(ALIGNED_MANIFEST_TEXT).toContain('"vite": "~8.3.4"')
+		expect(ALIGNED_MANIFEST_TEXT).toContain('"vite": "~8.3.5"')
 		expect(ALIGNED_MANIFEST_TEXT).not.toContain('~8.2.0')
 		expect(buildAlignedManifest(undefined, { custom: '1.0.0' })).toContain('"custom": "1.0.0"')
 		expect(buildAlignedManifest(undefined, undefined, 'not a record')).toContain(

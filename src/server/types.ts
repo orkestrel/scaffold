@@ -380,12 +380,12 @@ export interface UpstreamOptions {
  * Describes the byte allowance one upstream call spends across every read it makes.
  *
  * @remarks
- * `remaining` is the budget less every byte spent, and it goes negative once a
+ * `remaining` is the budget less every byte spent, and it goes negative after a
  * read overshoots, so a caller tells a call that has nothing left (`remaining`
  * at or below zero) from one that spent past its budget (`remaining` below zero).
  */
 export interface ReadAllowanceInterface {
-	/** The bytes the call has left; negative once a read overshoots the budget. */
+	/** The bytes the call has left; negative after a read overshoots the budget. */
 	readonly remaining: number
 	/**
 	 * Spends bytes a read consumed from the allowance.
@@ -459,7 +459,7 @@ export interface BytesReadResult {
 export interface UpstreamInterface {
 	readonly emitter: EmitterInterface<UpstreamEventMap>
 	/**
-	 * Looks up the newest release each declared range admits.
+	 * Looks up the highest release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.

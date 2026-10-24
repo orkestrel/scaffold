@@ -333,7 +333,7 @@ export const EXECUTABLE_PATHS: readonly string[] = Object.freeze([
  * beneath one of these prefixes is `orchestration`, and everything else that is
  * not source, tests, guides, docs, or a manifest is `configs`. A vendored path
  * and a foreign path found in a target are classified against the same list, so
- * a new harness directory is admitted once.
+ * an added harness directory is admitted once.
  */
 export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
 	'.agents/',

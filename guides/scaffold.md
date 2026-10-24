@@ -392,32 +392,32 @@ The inventory contracts carry these data members.
 
 #### Constants
 
-| Name                                | Kind  | Summary                                                                                          |
-| ----------------------------------- | ----- | ------------------------------------------------------------------------------------------------ |
-| `BRANCH_PATTERN`                    | const | Matches the Git branch syntax the repository endpoint accepts.                                   |
-| `DEFAULT_BRANCH`                    | const | Holds the repository branch a raw content read addresses when a caller names none.               |
-| `DEFAULT_REGISTRY_BASE`             | const | Holds the registry a version read addresses when a caller names none.                            |
-| `DEFAULT_REPOSITORY_BASE`           | const | Holds the raw content host a repository read addresses when a caller names none.                 |
-| `DEFAULT_UPSTREAM_CONCURRENCY`      | const | Sets the simultaneous upstream requests a reader opens with, under `MAX_UPSTREAM_CONCURRENCY`.   |
-| `DEFAULT_UPSTREAM_RETRIES`          | const | Sets the retries one upstream request is given when a caller names none.                         |
-| `DEFAULT_UPSTREAM_TIMEOUT`          | const | Sets the timeout one upstream request is given when a caller names none, in milliseconds.        |
-| `DIGEST_PATTERN`                    | const | Matches the exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits. |
-| `DRIVE_PATTERN`                     | const | Matches the drive prefix a Windows host path may open with.                                      |
-| `INVALID_SEGMENT_CHARACTER_PATTERN` | const | Matches the visible characters no host path segment may carry.                                   |
-| `MANIFEST_NAME`                     | const | Reserves the metadata name a staged vendored host writes at its own root.                        |
-| `MAX_BRANCH_LENGTH`                 | const | Caps the characters one repository branch may carry.                                             |
-| `MAX_ENDPOINT_LENGTH`               | const | Caps the characters one caller-supplied upstream endpoint may carry.                             |
-| `MAX_INVENTORY_PATHS`               | const | Caps the paths one target's working-tree inventory may report.                                   |
-| `MAX_PATH_DEPTH`                    | const | Caps the segments one host path may carry.                                                       |
-| `MAX_PATH_SEGMENT_BYTES`            | const | Caps the UTF-8 bytes one host path segment may encode to.                                        |
-| `MAX_UPSTREAM_CONCURRENCY`          | const | Caps the simultaneous upstream requests.                                                         |
-| `MAX_UPSTREAM_RETRIES`              | const | Caps the retries one upstream request may be given after a transport fault.                      |
-| `MAX_UPSTREAM_TIMEOUT`              | const | Caps the timeout one upstream request may be given, in milliseconds.                             |
-| `ORKESTREL_SCOPE`                   | const | Names the npm scope and repository owner the fleet's packages and sources are published under.   |
-| `PACKUMENT_MEDIA_TYPE`              | const | Names the media type that selects the registry's abbreviated packument.                          |
-| `RESERVED_SEGMENT_PATTERN`          | const | Matches the Windows device names that stay reserved even when an extension follows.              |
-| `SCAFFOLD_REPOSITORY`               | const | Names the repository this package's own vendored files are served from.                          |
-| `UNREADABLE_VERSION_NOTE`           | const | Holds the note a release carries when its packument names no readable latest version.            |
+| Name                                | Kind  | Summary                                                                                               |
+| ----------------------------------- | ----- | ----------------------------------------------------------------------------------------------------- |
+| `BRANCH_PATTERN`                    | const | Matches the Git branch syntax the repository endpoint accepts.                                        |
+| `DEFAULT_BRANCH`                    | const | Holds the repository branch a raw content read addresses when a caller names none.                    |
+| `DEFAULT_REGISTRY_BASE`             | const | Holds the registry a version read addresses when a caller names none.                                 |
+| `DEFAULT_REPOSITORY_BASE`           | const | Holds the raw content host a repository read addresses when a caller names none.                      |
+| `DEFAULT_UPSTREAM_CONCURRENCY`      | const | Sets the simultaneous upstream requests a reader opens with, under `MAX_UPSTREAM_CONCURRENCY`.        |
+| `DEFAULT_UPSTREAM_RETRIES`          | const | Sets the retries one upstream request is given when a caller names none.                              |
+| `DEFAULT_UPSTREAM_TIMEOUT`          | const | Sets the timeout one upstream request is given when a caller names none, in milliseconds.             |
+| `DIGEST_PATTERN`                    | const | Matches the exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits.      |
+| `DRIVE_PATTERN`                     | const | Matches the drive prefix a Windows host path may open with.                                           |
+| `INVALID_SEGMENT_CHARACTER_PATTERN` | const | Matches the visible characters no host path segment may carry.                                        |
+| `MANIFEST_NAME`                     | const | Reserves the metadata name a staged vendored host writes at its own root.                             |
+| `MAX_BRANCH_LENGTH`                 | const | Caps the characters one repository branch may carry.                                                  |
+| `MAX_ENDPOINT_LENGTH`               | const | Caps the characters one caller-supplied upstream endpoint may carry.                                  |
+| `MAX_INVENTORY_PATHS`               | const | Caps the paths one target's working-tree inventory may report.                                        |
+| `MAX_PATH_DEPTH`                    | const | Caps the segments one host path may carry.                                                            |
+| `MAX_PATH_SEGMENT_BYTES`            | const | Caps the UTF-8 bytes one host path segment may encode to.                                             |
+| `MAX_UPSTREAM_CONCURRENCY`          | const | Caps the simultaneous upstream requests.                                                              |
+| `MAX_UPSTREAM_RETRIES`              | const | Caps the retries one upstream request may be given after a transport fault.                           |
+| `MAX_UPSTREAM_TIMEOUT`              | const | Caps the timeout one upstream request may be given, in milliseconds.                                  |
+| `ORKESTREL_SCOPE`                   | const | Names the npm scope and repository owner the fleet's packages and sources are published under.        |
+| `PACKUMENT_MEDIA_TYPE`              | const | Names the media type that selects the registry's abbreviated packument.                               |
+| `RESERVED_SEGMENT_PATTERN`          | const | Matches the Windows device names that stay reserved even when an extension follows.                   |
+| `SCAFFOLD_REPOSITORY`               | const | Names the repository this package's own vendored files are served from.                               |
+| `UNREADABLE_VERSION_NOTE`           | const | Holds the note a release carries when its packument names no readable version under the `latest` tag. |
 
 #### Guards
 
@@ -538,7 +538,7 @@ publishes no interface and is documented directly.
 
 | Method    | Summary                                                                                     |
 | --------- | ------------------------------------------------------------------------------------------- |
-| `lookup`  | Looks up the newest release each declared range admits.                                     |
+| `lookup`  | Looks up the highest release each declared range admits.                                    |
 | `fetch`   | Fetches each named package's guide, beside the local mirror it answers for.                 |
 | `read`    | Reads each named vendored file from the repository, beside the target bytes it answers for. |
 | `catalog` | Catalogs the published fleet from the registry's organization package list.                 |
@@ -1846,7 +1846,7 @@ An edge counts only when it names a package this catalog publishes. An edge leav
 edge to a row that found no version each constrain nothing, so neither holds its dependent back.
 
 The order is load-bearing because these packages are `0.0.x`, where a caret pins one exact release.
-A dependent sees a new dependency version only after the dependent re-pins and republishes, so
+A dependent sees an updated dependency version only after the dependent re-pins and republishes, so
 publishing a dependent before its dependency leaves the dependent pinned to the older release.
 Ranges that disagree install duplicate copies of one package, and the compiler reads those copies as
 distinct types.
@@ -1860,8 +1860,8 @@ lookup verdict records why the registry row could not enter a layer.
 ## Dependency floors
 
 Except for the selected showcase policy, every scaffold-owned runtime or development range is a floor: a caret over a whole
-`major.minor.patch` version. The triple is the newest release the registry served when that floor
-was last raised, so a workspace generated with no network still receives the latest floor scaffold
+`major.minor.patch` version. The triple is the highest release the registry served when that floor
+was last raised, so a workspace generated with no network still receives the declared floor scaffold
 knew rather than a bare `major.0.0`. A `Blueprint.peers` row is written during creation into a
 vacant target. After creation, peer declarations and `peerDependenciesMeta` are caller-owned:
 `audit`, `repair`, `catalog`, and `overwrite` do not invent, rewrite, insert, or remove them. Caller
@@ -1869,7 +1869,7 @@ extras pass through unchanged except for the selected showcase pair. Extras foll
 `ORKESTREL_RANGE_PATTERN`; foreign peers follow `FLOOR_RANGE_PATTERN`.
 
 A browser application with `showcase: true`, including its Vue face, selects exact
-`vite-plugin-singlefile: 2.3.3`, Vite `^8.3.4` from scaffold's manifest, and the npm override
+`vite-plugin-singlefile: 2.3.3`, Vite `^8.3.5` from scaffold's manifest, and the npm override
 `"vite-plugin-singlefile@2.3.3": { "micromatch": "npm:picomatch@2.3.2" }`. This policy applies
 after extras. Online resolution excludes this pair from ordinary foreign-major updates; other
 dependencies retain their usual resolution. Repair preserves each package's runtime or development
@@ -1895,7 +1895,7 @@ The floors live in scaffold's own `package.json`. `BASE_DEV_DEPENDENCIES` and th
 derive each row scaffold installs from that manifest, and the self-pin from its `version` field, so
 the toolchain a generated workspace receives is the toolchain scaffold runs. The rows scaffold does
 not install are seeds — `@vitejs/plugin-vue`, `vue`, `vue-tsc`, `vite-plugin-singlefile`, and the
-application-server fleet packages — and each carries the newest triple its supported major served
+application-server fleet packages — and each carries the highest triple its supported major served
 when it was written.
 [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) names that seeded set, so a
 row entering or leaving the manifest moves a test rather than passing unnoticed. `sass`, the one row
@@ -1936,7 +1936,7 @@ committed before a later catalog refusal and records that refusal in `note`.
 
 A fleet row is compared exactly — `^0.1.0` is stale the moment the registry serves `0.1.2` — and
 that inequality alone raises `audit` to exit `1`. A foreign row is compared inside its declared
-major, and each verdict is a non-blocking question: one for a floor below the newest release that
+major, and each verdict is a non-blocking question: one for a floor below the highest release that
 major serves, and one for a newer major the registry publishes.
 
 ### Raising the floor before a release
@@ -1949,7 +1949,7 @@ while the registry is reachable:
 2. Run `scaffold repair`, or `npm update` followed by the same audit, until no question remains.
 3. Run the gate chain, then bump the version and publish.
 
-That cycle is what keeps every release shipping the then-latest floor, and it is what a consumer
+That cycle is what keeps every release shipping the registry floor read for that release, and it is what a consumer
 generating a workspace with no network receives.
 
 ## Vendored data root
@@ -1963,7 +1963,7 @@ licence, the harness permission file, the scaffold-owned `scripts` directory, th
 shared policy register, the shared policy proof, the shared policy plugin, the shared configuration
 leaf and its proof, and the byte-identical root dotfiles. The session-start hooks inside `scripts`
 split by job. The bench probe reports whether a bench CLI resolves. In a remote session one command
-runs three hooks in order: the npm hook installs the newest npm in the major of the floor the
+runs three hooks in order: the npm hook installs the highest npm in the major of the floor the
 workspace's `devEngines` record declares when the container's npm is older, the dependency hook
 installs the lockfile's closure, and the browser hook installs the Chromium builds the
 `playwright-core` package pins when the container's browser store lacks them.
@@ -2418,10 +2418,10 @@ verdict carrying its cause rather than thrown, so one unreachable package never 
 rest of the answer. The organization package list is the exception, because without it there is no
 fleet to report.
 
-A found verdict carries the newest version the declared range admits, not whatever `dist-tags.latest`
+A found verdict carries the highest version the declared range admits, not whatever `dist-tags.latest`
 names. `lookup` reads the packument's version map, selects across it before any collection bound can
-truncate the map, and falls back to the latest tag only when that tag is itself admitted. A range of
-`*` admits every version, which is how a caller asks for the newest release outright.
+truncate the map, and falls back to the `latest` tag only when that tag is itself admitted. A range of
+`*` admits every version, which is how a caller asks for the highest release outright.
 
 Each bound counts decoded bytes, and a version lookup asks the registry for the abbreviated
 packument — `dist-tags` and a trimmed version map, rather than the full per-version metadata no

@@ -717,7 +717,7 @@ export function resolveContainedPath(root: string, path: string): string | undef
  * directory; false otherwise.
  *
  * @remarks
- * The green-field law. A checkout of an empty repository is where a new
+ * The green-field law. A checkout of an empty repository is where a fresh
  * workspace legitimately starts, so that one directory is admitted and nothing
  * else is; anything more means the caller is repairing a workspace rather than
  * creating one. Only the first two entries are read, so the answer costs the
@@ -1215,7 +1215,7 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
 	}
 	// Each path reads with what the earlier ones left of the total budget, so the fold carries the
 	// bytes spent beside the entries read. The iterator fold consumes one path at a time and reads a
-	// hole the `every` above skipped as an `undefined` path, as a `for…of` over the list would.
+	// hole the preceding `every` skipped as an `undefined` path, as a `for…of` over the list would.
 	const read = Iterator.from(paths).reduce<{
 		readonly entries: ReadonlyArray<readonly [string, string]>
 		readonly spent: readonly number[]

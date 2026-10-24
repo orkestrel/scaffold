@@ -70,7 +70,7 @@ import { MAX_PATH_DEPTH } from './constants.js'
  *   the same name can receive its old inode back and is indistinguishable here
  *   from one that never moved.
  * - **No crash atomicity across destinations.** A process killed between
- *   promotions leaves the target holding some new files and some old ones, and
+ *   promotions leaves the target holding some replacement files and some prior ones, and
  *   leaves the private root behind. Nothing here is a journal, and the private
  *   root's name is the only record a later run could read.
  *
@@ -602,7 +602,7 @@ export class WriteTransaction {
 
 	// Preserve the destination's bytes under a second name, then replace the
 	// directory entry in one rename. The destination names the whole old file
-	// until that rename lands and the whole new file after it.
+	// until that rename lands and the whole replacement file after it.
 	#promote(path: string): void {
 		const expectation = this.#expectation(path)
 		if (!matchesExpectation(expectation)) {
@@ -631,8 +631,8 @@ export class WriteTransaction {
 		renameSync(expectation.path, backup)
 	}
 
-	// Undo everything this transaction did, newest first, and report what it could
-	// not undo instead of throwing over the failure that started the rollback.
+	// Restore the taken files, then the promoted files, each in reverse order,
+	// and report failures without replacing the failure that started the rollback.
 	#recover(promoted: readonly string[], taken: readonly string[]): readonly unknown[] {
 		const restoring = [
 			...[...taken].reverse().flatMap((path): readonly unknown[] => {

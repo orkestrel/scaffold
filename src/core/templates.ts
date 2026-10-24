@@ -3657,7 +3657,7 @@ export async function bundleDistributionEntry(
 }
 
 // The key set the bundled module publishes in a real browser, read off the page
-// once it has loaded over a loopback server. A module that never evaluated
+// after it has loaded over a loopback server. A module that never evaluated
 // publishes nothing, and a page error is raised rather than compared away.
 /**
  * Reads the names a real browser publishes from a served bundle.

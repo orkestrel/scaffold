@@ -182,7 +182,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Looks up the newest release each declared range admits.
+	 * Looks up the highest release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.
@@ -193,9 +193,9 @@ export class Upstream implements UpstreamInterface {
 	 * @remarks
 	 * The reader selects across the packument's stable version map before any
 	 * collection bound can truncate it. It falls back to `dist-tags.latest` only
-	 * when that version satisfies the declared range. `*` requests the newest
+	 * when that version satisfies the declared range. `*` requests the highest
 	 * stable version outright. The verdict's `major` field carries the stable
-	 * major from the latest tag when that tag can be read.
+	 * major from the `latest` tag when that tag can be read.
 	 *
 	 * @example
 	 * ```ts
@@ -689,7 +689,7 @@ export class Upstream implements UpstreamInterface {
 		return [...names].sort()
 	}
 
-	// The latest version the registry states, or nothing. The version is bounded
+	// The version the registry's `latest` tag states, or nothing. The version is bounded
 	// and control-free before it is admitted, so an upstream answer cannot carry
 	// control characters or unbounded text into a verdict a caller prints.
 	#latest(content: string): string | undefined {
@@ -703,7 +703,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// Select before any collection bound can truncate the registry's version map.
-	// A missing or pruned map falls back to the latest tag only when that tag is
+	// A missing or pruned map falls back to the `latest` tag only when that tag is
 	// still admitted by the declaration.
 	#releaseVersion(content: string, range: string): string | undefined {
 		const parsed = parseJSON(content)

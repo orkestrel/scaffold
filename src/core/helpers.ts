@@ -219,7 +219,7 @@ export function computeHash(text: string): string {
  *
  * @remarks
  * The one home of the orchestration membership rule. A vendored path and a
- * foreign path found in a target are both classified through here, so a new
+ * foreign path found in a target are both classified through here, so an added
  * harness directory is admitted once in `ORCHESTRATION_PATH_PREFIXES` and every
  * caller follows.
  *
@@ -935,7 +935,7 @@ export function compareVersions(left: string, right: string): number {
  * Tests whether a declared range already admits a published version.
  *
  * @param range - The declared dependency range.
- * @param latest - The version the registry reported as latest.
+ * @param latest - The version the registry's `latest` tag reports.
  * @returns True if the range admits that version; false otherwise.
  *
  * @remarks

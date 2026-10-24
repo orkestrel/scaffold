@@ -117,7 +117,7 @@ export function isFilesystemPath(value: unknown): value is string {
 		// A trailing separator terminates a directory rather than opening a segment,
 		// and every supported filesystem and every Node path API reads the
 		// spellings as one location. A doubled separator is a genuine empty segment
-		// and stays refused below.
+		// and stays refused by the following checks.
 		const segments = (rooted.endsWith('/') ? rooted.slice(0, -1) : rooted).split('/')
 		if (segments.length > MAX_PATH_DEPTH) return false
 		for (const [index, segment] of segments.entries()) {

@@ -17,6 +17,7 @@ import { CLI } from '../../../../../src/bin/CLI.js'
 import {
 	commitFiles,
 	buildCLIOptions,
+	buildPackument,
 	createFleet,
 	createSink,
 	createUpstreamServer,
@@ -94,7 +95,10 @@ describe('wave.ts', () => {
 
 	it('F2 executes the documented peer-only and tilde audit examples', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-scope-' })
-		const server = await createUpstreamServer(FLEET_RELEASE_REPLIES)
+		const server = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			'/vite': { status: 200, body: buildPackument('8.3.4') },
+		})
 		try {
 			const fleet = createFleet(scratch)
 			const manifest = readInstalledRecord(fleet.target)
