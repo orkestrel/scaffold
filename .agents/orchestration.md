@@ -52,6 +52,19 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 - Route gates to `verifier`. A writer's self-reported gate is not evidence.
 - Work directly on a one-file change or a one-line fix, subject to the preceding routing rules. Route standalone lookups through `scout`. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
 
+## Sessions and consultation
+
+- Before launching a unit, check the roster for an existing session whose responsibility, model, permissions, workspace, and retained context fit the task, and resume it. Keep related tasks for one responsibility in that session.
+- Start a fresh session when no suitable session survives, the work is unrelated, or retained context would compromise the judgment. Use fresh contexts for independent review and the blind design round. An agent that helped design or implement the subject cannot independently review that contribution.
+- Record the session identity separately from its task, turn, process, and message address. Record each session's harness, provider, model, options, workspace, responsibility, owned paths, continuation address, latest task, and evidence paths in the roster, and preserve its prior task results.
+- Treat a live writer as an agent with an active assignment and edit authority. A retained session without an assignment holds no resource merely by existing. Preserve an explicit hold until its owner releases it.
+- Continue a unit through compaction. Before a handoff or context limit, record decisions, changed instructions, source identity, unresolved questions, failed and passing evidence, active process identities, ownership, and the next action. Compaction neither completes a task nor releases its files or processes.
+- On continuation, the Orchestrator sends the next bounded objective and the facts changed after the last turn. The continued agent reads changed or missing authority and the source regions that objective needs, and rechecks mutable facts such as source state and process liveness. Do not repeat unchanged bulk reads merely because a unit resumes.
+- Consult a suitable peer when a consequential approach remains open, evidence conflicts, or repeated attempts stop narrowing a failure. Give the peer the question, relevant evidence, attempted approaches, constraints, and requested answer. Use an existing specialist when its context helps and a fresh peer when the question needs an independent challenge.
+- Keep consultation read-only and bounded. Ask for a recommendation, its evidence, uncertainty, and a concrete next check. The executor retains the work; the Orchestrator rules on scope and acceptance. Advice grants no authority and does not satisfy an independent review gate.
+- Resolve conflicting advice against the contract and observable evidence. Do not add consultation to routine steps or repeat it without a changed question or evidence.
+- When a requested transport fails, record the failure and whether a child was created. Before retrying an uncertain launch, inspect the recorded task or session. Use a permitted fallback with its actual model and options disclosed; retry a refused route only after a relevant condition changes.
+
 ## Size gate
 
 `AGENTS.md` § Work loop sizes a change and fixes the precedence (large, then medium, then small). This file adds who runs what.
@@ -82,23 +95,25 @@ A large change runs these phases once each, in order, and ends when the exit cri
 
 ## Parallelism
 
-- Fan out when the work is many small, fully specified, disjoint units: one cheap agent per unit with minimal context. Give the agents the same model, effort, agent type, tools, schema, and working directory when isolation and routing allow it, so their prompts share one cache prefix.
+- Parallelize independently owned work when useful progress can overlap. Reuse suitable sessions per § Sessions and consultation, bound each objective, and count coordination and verification costs when choosing the lanes. § Cache governs model and tool settings.
 - Judgment stays narrow: a design or review pass is at most the two lanes the size gate names, each in a clean context, blind to the other, and it runs once. Never fan judgment out further, and never run it as a loop.
 - One writer per checkout, except under `orkestrel-parallel`: there, at most three writers share one checkout, each owns disjoint files and disjoint regions of shared files, and one runner lane owns every test, check, and build process. Otherwise give parallel writers disjoint owned files, and give a writer its own worktree under `tmp/worktrees/` only when two units must write the same files at once. Commit a checkpoint before a writing dispatch.
 - Shared files are report-only; a unit returns an exact patch. Under `orkestrel-parallel`, a writer edits its owned regions of a shared file directly.
-- Concurrent units validate read-only and scoped to their owned files; under `orkestrel-parallel`, the runner also runs read-only root checks and reports each finding to the lane that owns its file. Never run tree-wide `format`, lint `--fix`, or `build` beside a live unit.
+- Scope validation by the claim and its input dependencies, not by writer ownership alone. Under `orkestrel-parallel`, the runner owns checks and obtains the required write holds. Preserve valid receipts; rerun a check when its inputs, configuration, environment, or claim changed. Never run tree-wide `format`, lint `--fix`, or `build` beside a live writer.
 - One Grok lane at a time; queue the rest. An empty lane beside a live probe is starvation, not darkness.
 - The Orchestrator's own sweep is a writing dispatch: run it before or after the units, never beside them.
 
 ## Permission floor
 
-- Read-only roles carry no edit or write tool. The Orchestrator supplies the diff and status to every review dispatch.
+- Restrict read-only roles to read tools when the harness supports that restriction. Otherwise state the read-only boundary in the brief and record its enforcement limit. The Orchestrator supplies the diff and status to every review dispatch.
+- Permit a verifier to write its assigned evidence artifacts and the generated outputs its dispatch declares; never permit source repairs. A declaration names the command and each path the command writes or replaces. Declare a path only when the command regenerates it and no lane authors it, such as a build directory or a generated inventory file; an authored path is source, whichever command rewrites it. Declare no path for a command that only deletes. Keep each declared output outside every other lane's owned files and recorded fixtures, and hold it with the command's inputs for the run. Under this floor, the declared command can remove and rewrite its declared outputs, and that replacement is neither a destructive command nor a deletion.
+- Record `git status --porcelain` before and after a declared command. Report each declared output that git tracks and the run changed; never revert it. When the run changed a path outside its declarations, stop and report the path.
 - No role commits, pushes, tags, publishes, installs, or runs a destructive command.
 - No role runs `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Undo an edit by rewriting the text.
 - No role reads, prints, copies, uploads, or packages a secret: `.env*`, `.npmrc`, `auth.json`, keys, tokens, `CURSOR_API_KEY`.
-- A unit writes only under its owned files and its checkout's `tmp/`. The Orchestrator's own briefs, probes, drafts, and records live in the checkout's `tmp/` too, never in a directory outside the repository; the user follows the work through the tree.
+- A unit writes only under its owned files, its checkout's `tmp/`, and the declared outputs the preceding bullets permit. The Orchestrator's own briefs, probes, drafts, and records live in the checkout's `tmp/` too, never in a directory outside the repository; the user follows the work through the tree.
 - When a sandbox rejects a write, the unit stops and reports the rejection. It never tries another write mechanism.
-- A unit deletes only the fixture directory it created, by its recorded path. It never removes a `tmp/<lane>` directory, another unit's files, or anything through `sweep.ts --tmp` or `--unit … --delete`; those are the Orchestrator's, after the last live unit exits.
+- Apart from a declared command replacing its declared outputs, a unit deletes only the fixture directory it created, by its recorded path. It never removes a `tmp/<lane>` directory, another unit's files, or anything through `sweep.ts --tmp` or `--unit … --delete`; those are the Orchestrator's, after the last live unit exits.
 
 ## tmp layout
 
@@ -137,7 +152,7 @@ Every working file lives under the checkout's gitignored `tmp/`, in the director
 - Capture a campaign unit's report to `tmp/units/<unit>-report.md`, or read the bench's last-message file.
 - Launch every multi-minute command as a harness-tracked background command through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` under a cap sized from prior runs, and read a bench answer with that skill's `scripts/result.ts`. Every launcher, probe, and instrument is a TypeScript file run by `node`, never a shell or Python script. Read liveness from the artifact the work produces. Kill only a recorded process id, never a pattern, and confirm the process and its descendants are gone before another writer takes its files.
 - Probe a bench with the dispatch skill's `scripts/bench.ts` before its first lane, and re-read liveness at every dispatch after a failure.
-- Send a mid-campaign decision to every live unit whose brief it invalidates.
+- Send a changed decision to every affected session before it continues, including an idle session selected for reuse. Preserve the original brief and supply a checked successor brief when scope or acceptance changes.
 
 ## Deviation protocol
 
@@ -162,8 +177,8 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 
 ## Cache
 
-- Fix the model at session start. Effort switches and MCP changes invalidate the cache on most models and configurations; check the rule for the active model and tool-loading mode before changing either mid-session.
-- Keep the always-on instruction set small; rules load by path. An edit to a loaded instruction file takes effect after `/clear`, `/compact`, or a restart.
+- Keep the model, options, tools, and instruction prefix unchanged while they fit the task. Check the active provider and harness before claiming that a change preserves or invalidates caching. Treat a continued session as retained context, not as a cache hit; a cache hit depends on the provider, the prefix, and the retention window. Claim a saving only from recorded usage.
+- Keep the always-on instruction set small and load supporting rules by scope. When instructions change, use the harness's documented reload mechanism and tell affected agents what changed. Do not assume a file edit updates an active session.
 - Give reading and driver roles no instruction files (`omitClaudeMd` in Claude Code) when their charter carries the floor they need.
 - Route bulk reads per § Routing and keep only the distillate.
 

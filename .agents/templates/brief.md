@@ -4,7 +4,9 @@ Fill every section. Write `none` in an empty one. Replace each `UPPER_SNAKE_CASE
 
 ## Role and engine
 
-ROLE on ENGINE, reached as TRANSPORT. Executor: NATIVE_SUBAGENT | BENCH_ENGINE | BRIDGE_DRIVER.
+ROLE on ENGINE with MODEL_OPTIONS, reached as TRANSPORT. Executor: NATIVE_SUBAGENT | BENCH_ENGINE | BRIDGE_DRIVER.
+
+**Continuity.** Resume SESSION_ID for RELATED_RESPONSIBILITY, or start fresh because REASON, per `.agents/orchestration.md` § Sessions and consultation. On a resume, name PRIOR_BRIEF_AND_RESULT, CHANGED_FACTS, and SOURCE_IDENTITY.
 
 ## Objective
 
@@ -28,7 +30,7 @@ UNKNOWN and how the unit reports it.
 - **Shared (report-only).** FILES; return an exact patch.
 - **Off-limits.** FILES. Never list `tmp/probes/` here.
 - **Made false by this change.** FILES, derived by running the suite or by a named search bound.
-- **Tools and limits.** ALLOWED_TOOLS; scoped validation only; no tree-wide mutating command.
+- **Tools and limits.** ALLOWED_TOOLS; scoped validation only; no tree-wide source-mutating command. For a verifier, declare each permitted output path per `.agents/orchestration.md` § Permission floor.
 
 ## Execution
 

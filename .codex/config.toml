@@ -14,12 +14,10 @@ Codex loads AGENTS.md itself. Read each .claude/rules/*.md file whose paths fron
 files you touch; Codex does not load them for you. Follow a skill under .agents/skills when its
 trigger fires.
 
-Use the canonical Codex role mapping in .agents/orchestration.md:
-- GPT-6 Astra: this session, analyst, astra, planner, reviewer, opus; execute natively.
-- GPT-6.1 Sol: builder, orkestrel.
-- GPT-6 Luna: grok, checker, verifier, scout, distiller, researcher.
-- The grok driver reaches Cursor Grok 4.7 Extra High read-only through .agents/transports/cursor.md;
-  apply .agents/orchestration.md § Routing for the reading boundary.
+Use the role mapping and continuation rules in .agents/orchestration.md. Before using native or
+T3 collaboration, read .agents/skills/orkestrel-parallel/references/harnesses.md for the channel
+mechanics and retained identifiers, and read the installed tool descriptions before relying on a
+capability that reference names.
 
 Hooks: .codex/hooks.json runs the orkestrel-dispatch sweep script (node
 .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report) on SessionStart and git diff --check

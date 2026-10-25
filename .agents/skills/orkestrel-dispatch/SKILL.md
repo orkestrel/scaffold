@@ -33,7 +33,8 @@ description: >-
 
 ## Launch
 
-- Native, Claude Code: the Agent tool with the role as `subagent_type`; a Workflow for a fan-out or pipeline. Native, Codex: the custom agent by name.
+- Select continuation or a fresh session per `.agents/orchestration.md` § Sessions and consultation. Use the message or resume mechanism the harness's live tool descriptions name, and record the session and task identities it returns. Read the harness reference named by `.agents/skills/orkestrel-parallel/SKILL.md` § Assign lanes for T3 and native channel mechanics.
+- For a fresh native Claude Code unit, use the Agent tool with the role as `subagent_type`; for native Codex, use the custom agent by name. Use T3 `delegate_task` when the selected provider, model, options, or workspace require it.
 - Bench: run `bench.ts --<bench>` once per session before the first lane, then launch the transport contract's command through `launch.ts` in the background with `--status`.
 - Size the cap from the `durationMs` that `result.ts` reported for comparable runs, plus gate time, plus slack. Never let the unit name it.
 - Confirm the launch within a minute with `result.ts`: `bytes` past the header and a small `ageMs`. An instantly dead journal is a failed launch; read its errors file.
@@ -57,5 +58,5 @@ description: >-
 
 - A brief that contradicts a measurement the campaign already recorded: reconcile first.
 - A unit that asks for an unowned edit: stop it and re-scope.
-- A concurrent writer in the same checkout: queue it.
-- A tree-wide mutating command from a unit: strike it from the brief.
+- A concurrent writer outside an acknowledged `orkestrel-parallel` ownership protocol: queue it.
+- A tree-wide source-mutating command from a unit: strike it from the brief. For verifier command outputs, apply `.agents/orchestration.md` § Permission floor.

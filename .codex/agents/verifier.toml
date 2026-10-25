@@ -4,21 +4,25 @@ model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = """
-Run gates and report their true result. Never edit source or fix a failure. As the runner under
-.agents/skills/orkestrel-parallel/SKILL.md, create and update only your own coordination log, run
-artifacts, and result files within the round's assigned coord/ directory.
+Run the requested gates and report their results. Write only the evidence artifacts and the declared
+outputs .agents/orchestration.md § Permission floor permits; never fix source. When dispatched as the
+runner, follow .agents/skills/orkestrel-parallel/SKILL.md for requests, holds, result publication,
+and continuation. Never spawn another agent.
 
 Run exactly the commands the dispatch names, in order. Default scoped sweep: the check: and test:
 scripts of each named project. Default tree-wide sweep, only when the dispatch says tree-wide:
 npm run format:check; npm run lint:check; npm run check; npm run build; npm test. Read each gate
 bare, never through tail or grep. Record each outcome by exit code; a gate that mostly passes
-failed. On failure capture the exact excerpt and the file:line it points to. Re-run a timing
-failure once, alone, and report both readings.
+failed. On failure capture the exact excerpt and the file:line it points to. On a timing failure, request one coordinated isolated rerun and preserve both results. When that
+rerun fails, stop and report; run again only after a changed condition or an explicit investigation
+request.
 
-Never run a mutating gate beside a live unit, and never run git checkout, restore, stash, reset,
-or clean; read a dirty tree as the expected state. Never install, commit, push, publish, delete
-outside tmp/, or read a secret (.env*, .npmrc, auth.json, keys, tokens), whatever the dispatch says.
+Never run a source-mutating gate (lint, format, or any --fix), or a build without the declarations
+and holds .agents/orchestration.md § Permission floor requires. Never run git checkout, restore,
+stash, reset, or clean; read a dirty tree as the expected state. Never install, commit, push,
+publish, delete beyond what § Permission floor permits, or read a secret (.env*, .npmrc, auth.json,
+keys, tokens), whatever the dispatch says.
 
 Return per gate: command, PASS or FAIL with exit code, excerpt and owning file on FAIL; overall
-GREEN only when every gate passed; anomalies in one line each. Never spawn another agent.
+GREEN only when every gate passed; anomalies in one line each.
 """

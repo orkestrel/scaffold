@@ -1,72 +1,82 @@
 ---
 name: orkestrel-parallel
 description: >-
-  Run several writer lanes in one checkout at the same time, coordinated by messages: writers edit owned regions in phases, one runner lane owns every test and check process, and the Orchestrator rules and mediates. Use when a campaign has three or more units whose files are mostly disjoint and whose shared files are a few kind files, guides, or entry tests. Do not use it when two units rewrite the same region, when a unit needs a quiet tree for a measurement, or when the harness gives lanes no shared file system or no message channel that wakes an idle lane.
+  Coordinate independently owned writer lanes in one checkout through messages, with one runner for checks and an Orchestrator for decisions. Use when implementation units can progress in parallel with disjoint files or explicit regions of shared files. Serialize overlapping edits and hold every input needed for a reliable measurement. Require shared files and a channel that can wake an idle lane.
 ---
 
 # Parallel lanes
 
-## Lanes
+## Assign lanes
 
-| Lane               | Role                                                                                               | Owns                                                                                                                  | Never                                                |
-| ------------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Orchestrator       | the harness's own engine                                                                           | the protocol, the roster, launches, rulings, holds, acceptance, commits                                               | delegates acceptance                                 |
-| `runner`           | `verifier` on the native small engine                                                              | every test, typecheck, lint, format, build, and citation process; its log, run files, and result files under `coord/` | writes outside `coord/`; runs an unrequested command |
-| writer (`w<unit>`) | `builder`, `astra`, or `opus` by `.agents/orchestration.md` § Routing                              | its owned files, its owned regions of shared files, and its log                                                       | runs a test, check, lint, format, or build process   |
-| reviewer           | `analyst` or `reviewer`, independent of the lane's writer per `.agents/orchestration.md` § Engines | a read-only verdict on the work the size gate sends it                                                                | edits, writes, runs, or messages                     |
+| Lane         | Responsibility                                                   | Write boundary                                                        |
+| ------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Orchestrator | Own the protocol, roster, scope, rulings, holds, and acceptance. | Assigned coordination records and serial integration.                 |
+| Runner       | Run requested tests, checks, and builds as the verifier.         | Assigned evidence and declared command outputs; never source repairs. |
+| Writer       | Implement its bounded unit under its assigned role.              | Owned files and regions, plus its own log.                            |
+| Reviewer     | Independently assess the subject the size gate names.            | None; return the verdict to the Orchestrator.                         |
 
-- Run at most three writers and one runner. Keep every live lane, reviewers included, inside the harness's concurrency limit (`references/harnesses.md`), and queue a lane that does not fit.
-- Before launch, assign every file region to exactly one writer. A shared file is owned by region (a doc block, a table, a guide section, a list entry), never as a whole.
+- Apply `.agents/orchestration.md` for routing, session reuse, consultation, independence, and acceptance.
+- Keep active lanes within the harness limit and the campaign's resource limits. Reserve capacity for the runner; queue work that does not fit.
+- Assign every editable region to one writer. Name shared regions by their declarations or sections. Serialize units that rewrite the same region.
+- Read `references/harnesses.md` before choosing the transport; it owns the wake, continuation, and tracking mechanics.
 
-## Set up
+## Prepare the round
 
-1. Commit the accepted state; every lane starts from one commit.
-2. Write `tmp/units/<round>/coord/protocol.md`: the path of this skill, the round's lanes, each writer's owned files and regions, and each writer's acceptance commands. Write `coord/roster.md` (lane, role, address, Orchestrator address). Create `coord/results/` and `coord/runs/`.
-3. Launch the runner first. Its first turn logs `ready` with its address and ends.
-4. Launch the writers one at a time. Fill each roster row from its launch result; after launch, send each lane that messages peers their addresses.
-5. For a lane already running, send one in-flight message naming the protocol, its lane name, its log, and its next request number.
+1. Commit the accepted baseline before a writing dispatch.
+2. Write `tmp/units/<round>/coord/protocol.md`: the skill path, baseline, lanes, owned regions, dependencies, acceptance commands, and exclusive resources. Mark each command whose input set must be held while it runs.
+3. Write `coord/roster.md` with each lane's roster fields per `.agents/orchestration.md` § Sessions and consultation. Create `coord/results/` and `coord/runs/`.
+4. Resume a suitable runner or launch one. Require its ready acknowledgment, then let its idle turn end.
+5. Resume or launch writers as capacity permits. Fill each roster row from the actual launch or continuation result and send each lane the peer addresses it messages.
+6. When adopting a running lane, send the protocol, ownership, log path, and next request number. Require acknowledgment before coordinated work begins.
 
-## Channels
+## Exchange requests and results
 
-- File channel: each writer and the runner append only to their own log, `coord/<lane>.md`, one line per event: `<lane> | <request or phase> | <kind> | <text>`. Never write another lane's log. A reviewer returns its verdict to the Orchestrator and writes nothing.
-- Push channel (`references/harnesses.md`): requests queue to the runner one turn each, in arrival order; replies and rulings join the receiver's running turn or start one.
-- Number requests from 1 per lane across the whole round, fix units included, and never reuse a number.
-- Results: the runner writes each result under a temporary name in `coord/results/`, renames it to `coord/results/<lane>-<n>.md` when it is complete, then replies. A waiting writer polls for that file; a lost message does not stall it.
-- Request format:
+- Append only to your own `coord/<lane>.md` log: `<lane> | <request or phase> | <kind> | <text>`. Reviewers write no log.
+- Number requests monotonically per lane across continuations and fixes. Preserve earlier requests and results.
+- Send each request through the wake-capable channel in the request shape that closes this section.
+- The runner publishes a result by writing it under a temporary name and renaming it to `coord/results/<lane>-<request>.md` after command exit and cleanup, then sends its path and request identity to the requester and the Orchestrator.
+- Wait for the harness's completion or message notice. When the notice is missing and the result is needed, read that request's durable result or task status once, reconcile the request identity, and suspend an unresolved delivery rather than launching duplicate work.
+- Escalate per `.agents/orchestration.md` § Deviation protocol. Continue independent work. Share cross-lane facts directly; only the Orchestrator changes scope or rules on acceptance.
+- End an idle runner turn after acknowledging readiness or publishing a result. Do not occupy the runner with a wait for requests queued behind that turn.
 
-```
-REQUEST <lane>-<n>
+Use this request shape:
+
+```text
+REQUEST <lane>-<request>
 from: <lane> <address>
+source: <commit and changed input identity>
+inputs: <files or bounded population read by the commands>
+holds: <affected owners and exclusive resources>
 commands:
 1. <exact command>
-expect: <red or green per command, with case names>
+expect: <red or green, named cases, required artifact>
 ```
 
-- Escalation: send the Orchestrator `ESCALATE <lane>: expected, found, evidence, proposed action`. Continue the work the question does not block. The ruling arrives in your turn; record any scope extension in your report.
-- A writer can message another writer a cross-lane fact (a line it added, a window it opens). Rulings come only from the Orchestrator.
+## Implement in phases
 
-## Writers
+- Log the applicable phases: types, failing proof, source, and documentation. Request the corresponding checks from the runner.
+- Read a shared region immediately before each small, syntactically complete patch. On a context mismatch, reread and reapply only the owned hunk.
+- Keep read-only shell searches within the campaign's terminal limits. Send every test, check, lint, format, and build request to the runner.
+- Run no formatter. Apply the exact formatting hunk the Orchestrator supplies, then request a read-only format check.
+- Before a temporary mutation, obtain the runner's hold on conflicting commands and each affected writer's hold on edits. Mutate only after their acknowledgments. Restore the exact input, verify the restoration, and release the holds through the runner.
+- When the unit's required checks pass, send `FINAL <lane>` with source identity and evidence, write the report, and end the turn. Preserve the session for suitable follow-up work.
 
-- Work in phases and log each: `types` (types and API docs), `red` (failing-first cases, then a red-run request), `source` (the change, then a green-run request), `docs` (guide sentences).
-- In a shared file, edit small, complete hunks inside your owned regions. Re-read the region immediately before each patch, never rewrite a whole file, and leave every hunk syntactically complete. When a patch fails on changed context, re-read and re-apply.
-- Request every test, check, lint, format, and build process from the runner. Read-only shell and search commands stay yours.
-- Run no formatter. Fix a format finding by hand; when the finding names only a file, ask the Orchestrator for the exact hunk.
-- Before a temporary mutation (a mutation proof), ask the runner to hold unrelated runs and each lane that owns a region of the mutated file to hold its edits, and mutate only after each has logged `held`. Restore the exact text, confirm with `git diff`, log `restored`, and tell them.
-- When done and green, log `done`, send the runner `FINAL <lane>`, write your report, and end your task.
+## Run evidence commands
 
-## Runner
+- Before a command, verify its input holds and exclusive resources. Hold all writers when the command reads the whole tree; otherwise hold every owner in its input closure. Do not infer that closure from the requesting writer's files alone.
+- When a conflicting process occupies a declared resource, record its owner, process id, command, and a bounded wait based on the expected work. If it remains after that wait, suspend the request for an Orchestrator ruling. Never terminate another lane's or repository's process.
+- Launch through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap grounded in prior runs, separate journal and error paths under `coord/runs/`, and the request identity in each filename. Follow the launch reference named by `.agents/skills/orkestrel-dispatch/SKILL.md` for process tracking and cleanup.
+- When the shell yields before the command exits, resume its tracked session per `references/harnesses.md`. Read the terminal record and confirm owned descendants have exited before publishing completion. Escalate incomplete cleanup before releasing files or starting another command.
+- Run the commands the accepted unit and the size gate require, narrowest first, and add no standing root, guide, or entry check beyond the request. Preserve receipts and rerun checks per `.agents/orchestration.md` § Parallelism.
+- Stop on the first unexpected failure. Return the complete diagnostic and the owning file, and classify the failure as an assertion failure, an invocation error, a reporting failure, a cap, or an interruption. Preserve every receipt obtained before the stop.
+- Record the command's input identity and expected outputs before launch. When an input changes during the run, report that result as invalid and retain each result whose input set stayed stable.
+- After every writer's current `FINAL`, the integrated review, and the acknowledged write holds, run the Orchestrator's closing acceptance request under a unique gate number. Publish `coord/results/closing-<gate>.md`, reply with that identity, and end the turn.
 
-- Before each command, wait until no test or typecheck process runs in this checkout, excluding editor language services. Bound the wait by the request's expected run time. When any conflicting process exceeds that budget, report its recorded ownership, process id, and command line to the Orchestrator and suspend the request for a ruling. Never kill a process yourself. For a capped run, have the Orchestrator apply the `orkestrel-dispatch` skill's launch reference § Kill and relaunch before releasing the affected files or starting another command.
-- Launch each command through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` under a cap sized from prior runs, with `--journal coord/runs/<lane>-<n>-<k>.txt` and `--errors coord/runs/<lane>-<n>-<k>.err`, and log the process id it prints. When the shell returns before the launcher ends, resume its tracked shell session until the launcher exits, then read both files and require the terminal exit record. Track descendant process ids while their parent lives, and confirm that the command and its descendants have ended before publishing completion; otherwise escalate under the preceding wait rule.
-- Report each finding only to the lane that owns its file.
-- Serve the commands each writer's acceptance criteria name, plus the standing list: the root typecheck, the scoped typecheck, the guide parity check, the package entry test, and lint or format checks over paths the writer names. Run each read-only; none writes the tree.
-- After every writer's current `FINAL` has arrived, wait for the Orchestrator's closing request naming a unique gate number and confirming acknowledged write holds. Run the root typecheck, scoped typecheck, every acceptance test file alone, the guide parity check, and lint and format checks over every path `git status --porcelain` lists. Publish the complete result atomically as `coord/results/closing-<k>.md`, reply with that gate number, and end your task.
+## Integrate and close
 
-## Orchestrator
-
-- Before ruling on an escalation, reproduce its evidence at its cited lines. Bound every ruling: what to change, what to leave.
-- When a format check names only a file, inspect the file and send the writer the exact formatting hunk. After the writer applies it, request a read-only format check from the runner.
-- Run the review `.agents/orchestration.md` § Size gate names, and supply its diff and status. A unit's review can start read-only when its lane logs `done`, while the others write; a campaign's `orkestrel-falsify` round runs on the integrated result after the closing gate.
-- Before resuming a writer for a fix unit, send the runner that lane's `FINAL` invalidation and wait for acknowledgment; every other lane's `FINAL` stands. Follow `references/harnesses.md` to resume the writer's lane or dispatch its successor. If a closing gate is active, keep the reopened writer read-only until that gate completes.
-- Before requesting a closing gate, obtain write-hold acknowledgments from every live writer and hold your own source edits. Allocate a gate number never used earlier in the round. Keep those holds until the matching complete result is published. After a fix unit, request another gate covering the affected checks and acceptance tests.
-- After the last green gate and the review the size gate names, commit. When shared files mix several units' hunks, commit the batch once and name each unit, its engine, and each fix unit in the message.
+- Before ruling on an escalation, inspect its cited evidence. Bound the ruling to the changed claim and affected owners.
+- When the format check reports only a filename, inspect the difference and send the writer the exact hunk.
+- Run the size gate's independent review on a pinned subject; a unit review can overlap unrelated writing only while its whole subject stays unchanged. Use unit evidence for the integrated review, then run the closing acceptance gate in the order `.agents/orchestration.md` § Campaign fixes: Audit, then Verify.
+- Before reopening a writer, invalidate that lane's `FINAL` with the runner and require acknowledgment. Keep every other valid `FINAL` result. Release the reopened writer only when no active gate reads its inputs.
+- Before a closing request, obtain affected write-hold acknowledgments and hold your own source edits. Keep them until the matching complete result arrives. After a fix, request only the checks invalidated by that fix plus any unmet acceptance requirement.
+- Commit after the required gates and review pass. When shared hunks form one integration, commit the batch and identify its units and fixes.
