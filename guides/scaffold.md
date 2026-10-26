@@ -1623,6 +1623,52 @@ fetched bytes rather than prose this workspace wrote, and it reports a top-level
 neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
 carries its evidence.
 
+The Vue override populations enable `policy/no-cross-vue-face` for `cjs`, `cts`, `js`, `jsx`,
+`mjs`, `mts`, `ts`, `tsx`, and Vue single-file components. The import-free `configs/policy.ts`
+leaf uses these local exports:
+
+| Export                                      | Behaviour                                                                                                                                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `computePolicyTarget`                       | Computes a lexical destination from the native importer's absolute filename and cwd, consuming relative parents against its actual directory.                           |
+| `reportVueImport`                           | Checks a literal source against complete permitted face roots, refusing unclassifiable locations and traversal above the workspace.                                     |
+| `VUE_IMPORT_RULE`                           | Visits parser-admitted static imports, source-bearing named and star exports, their type-only forms, and string-literal dynamic imports through Oxlint's native parser. |
+| `VUE_SOURCE_ROOTS`, `VUE_APPLICATION_ROOTS` | Hold the frozen destination roots checked before the retained independent restrictions.                                                                                 |
+
+Native grammar applies before policy visitors. In the canonical fixtures on both Vue faces, `.cjs` static
+value imports, named and star exports at both importer depths, and the source-less export receive
+native parser errors. The coverage keeps all original input identities and extensions in a disjoint
+partition: those seven inputs per face have explicit parser-refusal expectations on both Vue faces;
+the remaining inputs retain strict rule and collection checks. The `.cjs` literal dynamic imports
+and nonliteral import controls stay in that parsed population. No `.cts` or other extension inherits
+a refusal from the `.cjs` observation; each must establish its own native parsing and collection.
+
+Otherwise-permitted relative imports within `src/vue` or `app/vue` work at arbitrary nesting
+depth. A nested `../print/index.js` can stay inside Vue while the same text at the face root
+reaches a forbidden sibling. Application Vue retains relative access to `app/core`, `app/browser`,
+`src/core`, `src/browser`, and `src/vue`; published Vue retains its independent alias requirements
+for core and browser. Query and fragment suffixes are excluded from destination calculation
+without decoding their text. Thus application Vue's `../browser?x` reaches an allowed face, while
+published Vue's matching relative import still requires the browser alias.
+
+The existing alias, Node, server, absolute-path, URL, backslash, dot-segment, traversal-spelling,
+and compiler-API restrictions keep their original specifier matching. Consequently a same-face
+directory named `server` can still be refused, as can a published Vue directory named `core` or
+`browser`. Computed imports remain admitted by this boundary rule. Template-literal targets,
+`TSImportType`, CommonJS resolution, symlinks, URI decoding, and custom resolver remapping are
+outside its destination claim. POSIX, drive-letter, and UNC helper cases assert lexical behaviour;
+they do not establish a binary run on another operating system.
+
+The exact direct folder `app/vue/composables` joins the function-domain register. Its camelCase
+modules require one named exported function matching the filename. Nested folders, published Vue
+composables, look-alike names, and the existing structural filename exclusions gain no registration.
+Every parser-admitted Vue case in `tests/config.test.ts` requires a debugger collection sentinel;
+a valid composable keeps that sentinel inside its exported function. Parser-refused inputs retain
+their original text, but require an exact native message, error severity, normalized filename, and
+source-token label instead of claiming debugger or policy visitation. Both contracts use the same
+native-linter acquisition helper in `tests/setupPolicy.ts`; the rule reader still refuses missing
+rule codes or filenames. Scratch controls suppress only the new report, restore only the removed
+relative regex alternatives, or remove only the Vue composable row.
+
 The skill sweep reads named value and type imports from `@orkestrel/*` in every Markdown fence
 in `SKILL.md` and its named references, including fences inside lists and blockquotes. It resolves
 each entry through that package's exports map — the workspace's own manifest for the package the

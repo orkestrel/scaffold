@@ -820,7 +820,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "7e1b86a53ee89708033f62832df6afb7163ff91f5bbf4baf46d24f8e9058657d"
+			"digest": "c3747115c90e485549d21a8e60872ce3e7590d6d4b510d3f404cca4956f71607"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -874,7 +874,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "9e670eb0f05ef90acd01d28d024771eb99f013aaaff0d6086ddc968a6d1c088e"
+			"digest": "8cb7e317d682231e2b7dad088e90497322a97dea4f5c5b57fc41c037d51dfc52"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1090,7 +1090,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "1bca2f3d385aa7ffcc2bbc870e7789e1e6c7b110ca0b772962b0531e1470b7cd"
+			"digest": "bd8eada54a7cb374d7d4ef37e75a2da636092e3afd03ee7dd736f373054a976f"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1234,7 +1234,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "06ae1a1223cf661ab70ef52f37e2c8b5f63a58fe3d2116287ebcf4329b7e7bea"
+			"digest": "c15f55fccc6ed56da7f5d6fa6f65ca286ad9b72f64b5302eab9e90856b37f70a"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1246,7 +1246,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "4acf8c517630d903f5a8ef72cf990bef6e880a0d9c6c858d1658ecc6e2ed8a31"
+			"digest": "1cf51ba09eb17b7ee804ac2c25f86c478ee9afe1fd8e0783a7d2a567cd67ede0"
 		}
 	],
 	"roots": [
@@ -2178,5 +2178,5 @@
 			]
 		}
 	],
-	"digest": "f456b449d10eb9e430e48e9ad036d9f11ad787fd8903c377e93d16cea6d27a8c"
+	"digest": "0b6f9da9b416b8f6d7e6d30b6a34ebe666324e7ddef923f009e08f0e49b965e3"
 }
