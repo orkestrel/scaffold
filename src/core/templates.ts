@@ -636,7 +636,30 @@ export function appServer(override?: UserConfig): UserConfig {
 			browser: { enabled: false },
 		},
 	}
-	return mergeOverride(project, override)
+	// Fills the missing codeSplitting of each merged output with false and adds no output,
+	// so an override's output list keeps its own members and their order. A member that
+	// already supplies a value is returned as written, found by property lookup, so a value
+	// an inherited getter supplies survives.
+	const merged = mergeOverride(project, override)
+	const rolldown = merged.build?.rolldownOptions
+	const output = rolldown?.output
+	const unsplit = { codeSplitting: false }
+	return {
+		...merged,
+		build: {
+			...merged.build,
+			rolldownOptions: {
+				...rolldown,
+				output: Array.isArray(output)
+					? output.map((member) =>
+							member.codeSplitting === undefined ? { ...member, ...unsplit } : member,
+						)
+					: output?.codeSplitting === undefined
+						? { ...output, ...unsplit }
+						: output,
+			},
+		},
+	}
 }
 `,
 		}),

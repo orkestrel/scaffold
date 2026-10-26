@@ -1301,6 +1301,82 @@ describe('root configuration', () => {
 		).toThrow(/expected/u)
 	})
 
+	// A target with a server application builds it to one `main.cjs`, so a
+	// single-executable embed has one file to take. The real wrapper's configuration
+	// builds a scratch entry that dynamically imports a scratch module, once as the
+	// wrapper declares it and once with splitting forced on. The second build is the
+	// control: it shows the single chunk comes from the wrapper's `codeSplitting` option
+	// and not from the entry's shape. Evaluation order of the inlined module is proved
+	// once, by executing the emitted file, in the template proof that stages a server
+	// root. A workspace without an `app/server` has no wrapper to build, so this case
+	// reports nothing about the server application of a target that has one: the
+	// assertion below only classifies the absence, and each target with a server
+	// application establishes this proof when its own configuration test runs.
+	it('builds the application server wrapper to one entry and splits it under the control', async () => {
+		const wrapper = resolve(POLICY_ROOT, 'configs/app/vite.server.config.ts')
+		const present = existsSync(wrapper)
+		expect(present || !existsSync(resolve(POLICY_ROOT, 'app/server'))).toBe(true)
+		if (!present) return
+		const scratch = createPolicyScratch({
+			parent: resolve(POLICY_ROOT, 'app/server'),
+			prefix: 'config-server-entry-',
+		})
+		try {
+			scratch.write(
+				'index.ts',
+				"process.stdout.write('entry\\n')\nvoid import('./lazy.js')\nprocess.stdout.write('after\\n')\n",
+			)
+			scratch.write('lazy.ts', "process.stdout.write('lazy\\n')\nexport const lazy = true\n")
+			const rosters: Array<readonly string[]> = []
+			for (const splitting of [false, true]) {
+				const loaded = await loadConfigFromFile(
+					{ command: 'build', mode: 'production', isSsrBuild: false, isPreview: false },
+					wrapper,
+					POLICY_ROOT,
+					'silent',
+				)
+				if (loaded === null) throw new Error('The server wrapper did not load')
+				const rolldown = loaded.config.build?.rolldownOptions
+				const output: unknown = rolldown?.output
+				if (typeof output !== 'object' || output === null || Array.isArray(output)) {
+					throw new Error('The server wrapper declares no output options')
+				}
+				expect(Object.getOwnPropertyDescriptor(output, 'codeSplitting')?.value).toBe(false)
+				const built = await build({
+					...loaded.config,
+					root: POLICY_ROOT,
+					configFile: false,
+					logLevel: 'silent',
+					build: {
+						...loaded.config.build,
+						write: false,
+						lib: {
+							entry: resolve(scratch.path, 'index.ts'),
+							formats: ['cjs'],
+							fileName: () => 'main.cjs',
+						},
+						rolldownOptions: splitting
+							? { ...rolldown, output: { codeSplitting: true } }
+							: { ...rolldown },
+					},
+				})
+				// A library build returns one result per format, an array even for one format.
+				const results = Array.isArray(built) ? built : [built]
+				expect(results).toHaveLength(1)
+				for (const result of results) {
+					if (!('output' in result)) throw new Error('The server build returned no output')
+					rosters.push(result.output.map(({ fileName }) => fileName).toSorted())
+				}
+			}
+			const [single, split] = rosters
+			expect(single).toStrictEqual(['main.cjs'])
+			expect(split).toContain('main.cjs')
+			expect(split?.length).toBeGreaterThan(1)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('registers proof scripts in the correct gate', () => {
 		const manifest: unknown = JSON.parse(readFileSync(resolve(POLICY_ROOT, 'package.json'), 'utf8'))
 		if (typeof manifest !== 'object' || manifest === null) {

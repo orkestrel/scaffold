@@ -1,6 +1,6 @@
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
@@ -929,6 +929,377 @@ describe('emitted workspaces under their own gates', () => {
 		// rather than work.
 	}, 30_000)
 
+	// A single-executable embed takes one `main.cjs`, and the dynamic import inside it
+	// has to keep evaluating only when it runs. One file alone does not prove the
+	// second claim, so the emitted file is executed: `lazy` between `entry` and `after`
+	// shows the inlined module waited for its import. The control builds the same
+	// sources with splitting on, so the roster assertion fails where the option is
+	// absent instead of where the entry shape happens to produce one file. The shape
+	// and roster readings are soft so a run against a factory without the option
+	// reports both together, and the test still fails on either.
+	it('builds one server entry that evaluates its dynamic import lazily', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-entry-' })
+		const root = workspace.ensure('server')
+		try {
+			const blueprint = createBlueprint('sample', { app: ['core', 'server'] })
+			stageRootConfig(blueprint, workspace, 'server')
+			const wrapper = requireValue(
+				blueprintToConfigArtifacts(blueprint).find(
+					({ path }) => path === 'configs/app/vite.server.config.ts',
+				),
+			)
+			if (wrapper.origin === 'host') throw new Error('Expected a Vite wrapper')
+			workspace.write(`server/${wrapper.path}`, wrapper.content)
+			workspace.write(
+				'server/app/server/main.ts',
+				"process.stdout.write('entry\\n')\nvoid import('./lazy.js').then(() => process.stdout.write('after\\n'))\n",
+			)
+			workspace.write(
+				'server/app/server/lazy.ts',
+				"process.stdout.write('lazy\\n')\nexport const lazy = true\n",
+			)
+
+			const loaded = requireValue(
+				await loadConfigFromFile(
+					{ command: 'build', mode: 'production' },
+					join(root, 'configs/app/vite.server.config.ts'),
+					root,
+				),
+			)
+			const output = loaded.config.build?.rolldownOptions?.output
+			expect.soft(Array.isArray(output) ? undefined : output?.codeSplitting).toBe(false)
+
+			await build({ ...loaded.config, root, configFile: false, logLevel: 'warn' })
+			const roster = readdirSync(join(root, 'dist/app/server')).toSorted()
+			expect.soft(roster).toStrictEqual(['main.cjs'])
+			expect(
+				execFileSync(process.execPath, [join(root, 'dist/app/server/main.cjs')], {
+					stdio: 'pipe',
+					encoding: 'utf8',
+					windowsHide: true,
+					timeout: 15_000,
+				}),
+			).toBe('entry\nlazy\nafter\n')
+
+			// The control loads the wrapper again so no plugin state is shared with the
+			// first build, and it runs after the first build was read because the factory
+			// empties its output directory.
+			const control = requireValue(
+				await loadConfigFromFile(
+					{ command: 'build', mode: 'production' },
+					join(root, 'configs/app/vite.server.config.ts'),
+					root,
+				),
+			)
+			await build({
+				...control.config,
+				root,
+				configFile: false,
+				logLevel: 'warn',
+				build: {
+					...control.config.build,
+					rolldownOptions: {
+						...control.config.build?.rolldownOptions,
+						output: { codeSplitting: true },
+					},
+				},
+			})
+			const split = readdirSync(join(root, 'dist/app/server')).toSorted()
+			expect(split).toContain('main.cjs')
+			const chunks = split.filter((name) => name !== 'main.cjs' && name.endsWith('.cjs'))
+			expect(chunks.length).toBeGreaterThan(0)
+		} finally {
+			workspace.destroy()
+		}
+		// Two real Rolldown builds and one Node child, predicted under three seconds
+		// together. The budget carries slack over that because the cost under a full
+		// suite run is contention rather than work.
+	}, 30_000)
+
+	// An override's output list merges with the factory's configuration before the
+	// default applies, so the default has to fill the members the caller wrote and add no
+	// output of its own. Each row reaches the factory through its real parameter and is
+	// built for real: the loaded value pins the members, their order, the filled default
+	// and the explicit values, and the build results pin how many outputs run and which
+	// files each emits. A lazy chunk's hash is read as `lazy.cjs` so the roster is exact.
+	it('fills each server output member without adding or reordering one', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-members-' })
+		const root = workspace.ensure('server')
+		try {
+			stageRootConfig(createBlueprint('sample', { app: ['core', 'server'] }), workspace, 'server')
+			workspace.write(
+				'server/app/server/main.ts',
+				"process.stdout.write('entry\\n')\nvoid import('./lazy.js').then(() => process.stdout.write('after\\n'))\n",
+			)
+			workspace.write(
+				'server/app/server/lazy.ts',
+				"process.stdout.write('lazy\\n')\nexport const lazy = true\n",
+			)
+			const rows = [
+				{
+					name: 'explicit',
+					source: "[{ format: 'cjs', codeSplitting: true, entryFileNames: 'custom.cjs' }]",
+					output: [{ format: 'cjs', codeSplitting: true, entryFileNames: 'custom.cjs' }],
+					rosters: [['custom.cjs', 'lazy.cjs']],
+				},
+				{
+					name: 'members',
+					source:
+						"[{ format: 'cjs', entryFileNames: 'first.cjs' }, { format: 'cjs', codeSplitting: true, entryFileNames: 'second.cjs' }]",
+					output: [
+						{ format: 'cjs', entryFileNames: 'first.cjs', codeSplitting: false },
+						{ format: 'cjs', codeSplitting: true, entryFileNames: 'second.cjs' },
+					],
+					rosters: [['first.cjs'], ['lazy.cjs', 'second.cjs']],
+				},
+				{
+					name: 'object',
+					source: '{ codeSplitting: true }',
+					output: { codeSplitting: true },
+					rosters: [['lazy.cjs', 'main.cjs']],
+				},
+				{
+					name: 'omitted',
+					source: "[{ format: 'cjs', codeSplitting: undefined, entryFileNames: 'own.cjs' }]",
+					output: [{ format: 'cjs', entryFileNames: 'own.cjs', codeSplitting: false }],
+					rosters: [['own.cjs']],
+				},
+			]
+			for (const { name, source, output, rosters } of rows) {
+				workspace.write(
+					`server/${name}.config.ts`,
+					`import { appServer } from './vite.config.ts'\nexport default appServer({ build: { rolldownOptions: { output: ${source} } } })\n`,
+				)
+				const loaded = requireValue(
+					await loadConfigFromFile(
+						{ command: 'build', mode: 'production' },
+						join(root, `${name}.config.ts`),
+						root,
+					),
+				)
+				expect(loaded.config.build?.rolldownOptions?.output).toStrictEqual(output)
+				const built = await build({
+					...loaded.config,
+					root,
+					configFile: false,
+					logLevel: 'warn',
+					build: { ...loaded.config.build, write: false },
+				})
+				const results = Array.isArray(built) ? built : [built]
+				const files = results.map((result) => {
+					if (!('output' in result)) throw new Error('Expected build output')
+					return result.output
+						.map(({ fileName }) => fileName.replace(/^lazy-[^.]+\.cjs$/u, 'lazy.cjs'))
+						.toSorted()
+				})
+				expect(files).toStrictEqual(rosters)
+			}
+		} finally {
+			workspace.destroy()
+		}
+		// Four real Rolldown builds, predicted under four seconds together. The budget
+		// carries slack over that because the cost under a full suite run is contention
+		// rather than work.
+	}, 30_000)
+
+	// An output member may supply its splitting value through an inherited getter, which a
+	// spread copy drops. The case stages the real generated factory, typechecks a class
+	// member that holds the getter, and builds it twice: handed to Vite directly, which
+	// skips the factory, as the positive control, then through the factory parameter.
+	// The loaded member has to carry no own `codeSplitting` property, so it is the original
+	// member and not a flattened copy, and both builds have to emit the entry and the lazy
+	// chunk.
+	it('keeps an explicit splitting accessor member through the server factory', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-accessor-' })
+		const root = workspace.ensure('server')
+		try {
+			stageRootConfig(createBlueprint('sample', { app: ['core', 'server'] }), workspace, 'server')
+			workspace.write(
+				'server/app/server/main.ts',
+				"process.stdout.write('entry\\n')\nvoid import('./lazy.js')\n",
+			)
+			workspace.write(
+				'server/app/server/lazy.ts',
+				"process.stdout.write('lazy\\n')\nexport const lazy = true\n",
+			)
+			const prelude = `
+import type { UserConfig } from 'vite'
+import { appServer } from './vite.config.ts'
+
+class SplitOutput {
+	readonly format: 'cjs' = 'cjs'
+	readonly entryFileNames = 'custom.cjs'
+
+	get codeSplitting(): boolean {
+		return true
+	}
+}
+
+const member = new SplitOutput()
+`
+			workspace.write(
+				'server/direct.config.ts',
+				`${prelude}
+const base = appServer()
+const config: UserConfig = {
+	...base,
+	build: {
+		...base.build,
+		rolldownOptions: {
+			...base.build?.rolldownOptions,
+			output: [member],
+		},
+	},
+}
+export default config
+`,
+			)
+			workspace.write(
+				'server/factory.config.ts',
+				`${prelude}
+const override: UserConfig = {
+	build: { rolldownOptions: { output: [member] } },
+}
+export default appServer(override)
+`,
+			)
+			expect(checkTypes(root)).toBe('')
+
+			for (const name of ['direct', 'factory']) {
+				const loaded = requireValue(
+					await loadConfigFromFile(
+						{ command: 'build', mode: 'production' },
+						join(root, `${name}.config.ts`),
+						root,
+					),
+				)
+				const output = loaded.config.build?.rolldownOptions?.output
+				if (!Array.isArray(output)) throw new Error('Expected an output array')
+				expect(output).toHaveLength(1)
+				expect(Object.getOwnPropertyDescriptor(output[0], 'codeSplitting')).toBeUndefined()
+
+				const built = await build({
+					...loaded.config,
+					root,
+					configFile: false,
+					logLevel: 'warn',
+					build: { ...loaded.config.build, write: false },
+				})
+				const results = Array.isArray(built) ? built : [built]
+				expect(results).toHaveLength(1)
+				const files = results.map((result) => {
+					if (!('output' in result)) throw new Error('Expected build output')
+					return result.output
+						.map(({ fileName }) => fileName.replace(/^lazy-[^.]+\.cjs$/u, 'lazy.cjs'))
+						.toSorted()
+				})
+				expect.soft({ name, splitting: output[0]?.codeSplitting }).toStrictEqual({
+					name,
+					splitting: true,
+				})
+				expect(files).toStrictEqual([['custom.cjs', 'lazy.cjs']])
+			}
+		} finally {
+			workspace.destroy()
+		}
+		// One real `tsc` invocation and two real Rolldown builds, measured at about two
+		// seconds together in the reproduction. The budget carries slack over that because the
+		// cost under a full suite run is contention rather than work.
+	}, 30_000)
+
+	// The vendored `tests/config.test.ts` proves the server wrapper in each target that
+	// holds `app/server`, and this checkout holds none, so its own run takes the absence
+	// branch and builds nothing. This case stages a target that holds one, copies the real
+	// vendored files and runs the real case through a nested Vitest. Two further staged
+	// copies carry one mutation each, a factory that no longer defaults `codeSplitting`
+	// and a vendored control that no longer forces splitting, and each has to fail at its
+	// own assertion, so a pass cannot be a run that reached neither.
+	it('runs the vendored server wrapper proof in staged targets and fails under mutation', async () => {
+		const title =
+			'builds the application server wrapper to one entry and splits it under the control'
+		const vendored = readFileSync(resolve('tests/config.test.ts'), 'utf8')
+		expect(vendored).toContain(title)
+		const cases = [
+			{ prefix: 'present', edits: [], code: 0, text: '1 passed' },
+			{
+				prefix: 'undefaulted',
+				edits: [
+					{
+						path: 'vite.config.ts',
+						from: 'const unsplit = { codeSplitting: false }',
+						to: 'const unsplit = {}',
+					},
+				],
+				code: 1,
+				text: 'expected undefined to be false',
+			},
+			{
+				prefix: 'unforced',
+				edits: [
+					{
+						path: 'tests/config.test.ts',
+						from: 'output: { codeSplitting: true }',
+						to: 'output: { codeSplitting: false }',
+					},
+				],
+				code: 1,
+				text: 'to be greater than 1',
+			},
+		]
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-vendored-' })
+		try {
+			for (const { prefix, edits, code, text } of cases) {
+				const blueprint = createBlueprint('sample', { app: ['core', 'server'] })
+				stageRootConfig(blueprint, workspace, prefix)
+				workspace.link(`${prefix}/node_modules/@orkestrel/scaffold`, resolve('.'))
+				for (const artifact of [
+					...blueprintToConfigArtifacts(blueprint),
+					...blueprintToSourceArtifacts(blueprint),
+					...blueprintToTestArtifacts(blueprint),
+				]) {
+					if (artifact.origin !== 'host')
+						workspace.write(`${prefix}/${artifact.path}`, artifact.content)
+				}
+				for (const path of ['tests/config.test.ts', 'tests/setupPolicy.ts', 'configs/policy.ts']) {
+					workspace.write(`${prefix}/${path}`, readFileSync(resolve(path), 'utf8'))
+				}
+				for (const { path, from, to } of edits) {
+					const before = requireValue(workspace.read(`${prefix}/${path}`))
+					expect(before).toContain(from)
+					workspace.write(`${prefix}/${path}`, before.replace(from, to))
+				}
+				const staged = join(workspace.path, prefix)
+				expect(existsSync(join(staged, 'configs/app/vite.server.config.ts'))).toBe(true)
+				expect(existsSync(join(staged, 'app/server'))).toBe(true)
+				const result = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'run',
+							'--config',
+							'vite.config.ts',
+							'--project',
+							'config',
+							'tests/config.test.ts',
+							'-t',
+							title,
+						],
+					},
+					{ workspace: staged, timeout: 90_000, strict: false },
+				)
+				expect(`${result.stdout}${result.stderr}`).toContain(text)
+				expect(result.code).toBe(code)
+			}
+		} finally {
+			workspace.destroy()
+		}
+		// Three nested Vitest runs, each loading the staged configuration, the vendored
+		// policy modules and one real Rolldown build pair. Each run carries a 90 second
+		// cap and the case carries room for all three, because the cost under a full suite
+		// run is contention rather than work.
+	}, 300_000)
+
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)
 
@@ -1153,6 +1524,45 @@ describe('emitted workspaces under their own gates', () => {
 		// budget carries slack over that because the cost is contention, not work:
 		// the previous ten-second budget passed alone and reported a timeout under a
 		// full suite run, which is a red gate carrying no diagnostic.
+	}, 30_000)
+
+	// The server factory is typechecked here against Vite's and Rolldown's published
+	// types, so an option shape they refuse fails the default gate rather than a
+	// target's own `check`. This case reads types only; the emitted file's runtime
+	// behavior is the real-build case above. The control rewrites the option to a
+	// value `codeSplitting` does not declare, so a clean run cannot be a typecheck
+	// that resolved nothing.
+	it('emits a server configuration its own typecheck accepts', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-server-' })
+		const root = workspace.ensure('server')
+		try {
+			const blueprint = createBlueprint('sample', { app: ['core', 'server'] })
+			stageRootConfig(blueprint, workspace, 'server')
+			const emitted = requireValue(workspace.read('server/vite.config.ts'))
+			expect(CONFIG_TEMPLATES.factories.app.server).toContain(
+				'const unsplit = { codeSplitting: false }',
+			)
+			expect(emitted).toContain('const unsplit = { codeSplitting: false }')
+			expect(checkTypes(root)).toBe('')
+
+			const control = emitted.replace('codeSplitting: false', "codeSplitting: 'never'")
+			expect(control).not.toBe(emitted)
+			workspace.write('server/vite.config.ts', control)
+			const diagnostics = checkTypes(root)
+			// TypeScript widens the malformed literal to `string` where it reports the
+			// enclosing `output` object, so the refusal is read at the property.
+			expect(diagnostics).toContain('error TS2322')
+			expect(diagnostics).toContain("Types of property 'codeSplitting' are incompatible.")
+			expect(diagnostics).toContain(
+				"Type 'string' is not assignable to type 'boolean | CodeSplittingOptions'.",
+			)
+			expect(diagnostics).toContain('CodeSplittingOptions')
+		} finally {
+			workspace.destroy()
+		}
+		// A real `tsc` invocation, measured at about nine seconds for the browser
+		// configuration. The budget carries slack over that because the cost is
+		// contention, not work.
 	}, 30_000)
 
 	it('typechecks the Vue factories and their wrappers on each axis', () => {

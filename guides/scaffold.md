@@ -1416,6 +1416,15 @@ executable, installs it, runs its checks, builds, projects, journey modes, showc
 export consumption, and proves that `repair` restores a deleted wrapper byte for byte and that
 `audit` reports a stale one.
 
+The default `appServer` build emits the single `dist/app/server/main.cjs` that a single-executable
+embed takes; its dynamic import evaluates only when it runs. The factory defaults `codeSplitting`
+to `false` on outputs that omit it. An override keeps its output members and explicit splitting
+values, so an overridden build can emit several files. The vendored `tests/config.test.ts` builds a
+scratch entry through the real wrapper in each target that holds `app/server`, requires one chunk,
+and splits it under a control. Scaffold's `tests/src/core/templates.test.ts` runs the emitted file in a staged
+server root, builds explicit output lists through the factory parameter, and runs the vendored case
+in staged server targets under a mutation of the factory and of the control.
+
 ### The migration guard
 
 Vue code belongs to the `vue` extension's faces. `repair` and `overwrite` refuse a target whose
