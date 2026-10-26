@@ -1210,19 +1210,46 @@ export default appServer(override)
 	// The vendored `tests/config.test.ts` proves the server wrapper in each target that
 	// holds `app/server`, and this checkout holds none, so its own run takes the absence
 	// branch and builds nothing. This case stages a target that holds one, copies the real
-	// vendored files and runs the real case through a nested Vitest. Two further staged
-	// copies carry one mutation each, a factory that no longer defaults `codeSplitting`
-	// and a vendored control that no longer forces splitting, and each has to fail at its
-	// own assertion, so a pass cannot be a run that reached neither.
+	// vendored files and runs the real case through a nested Vitest, for an
+	// application-only target and for a mixed source and application target whose
+	// generated manifest declares `sideEffects: false`, the population an optimizer may
+	// prune an unused dynamic import in. Three further staged copies carry one mutation
+	// each: a factory that no longer defaults `codeSplitting`, a vendored control that no
+	// longer forces splitting, and a mixed target whose imported value goes unused. Each
+	// has to fail at its own assertion, so a pass cannot be a run that reached none.
 	it('runs the vendored server wrapper proof in staged targets and fails under mutation', async () => {
 		const title =
 			'builds the application server wrapper to one entry and splits it under the control'
 		const vendored = readFileSync(resolve('tests/config.test.ts'), 'utf8')
 		expect(vendored).toContain(title)
 		const cases = [
-			{ prefix: 'present', edits: [], code: 0, text: '1 passed' },
+			{
+				prefix: 'present',
+				mixed: false,
+				sideEffects: undefined,
+				edits: [],
+				code: 0,
+				text: '1 passed',
+			},
+			{ prefix: 'mixed', mixed: true, sideEffects: false, edits: [], code: 0, text: '1 passed' },
+			{
+				prefix: 'ignored',
+				mixed: true,
+				sideEffects: false,
+				edits: [
+					{
+						path: 'tests/config.test.ts',
+						from: "void import('./lazy.js').then(({ lazy }) => process.stdout.write(lazy()))",
+						to: "void import('./lazy.js')",
+					},
+				],
+				code: 1,
+				text: 'to be greater than 1',
+			},
 			{
 				prefix: 'undefaulted',
+				mixed: false,
+				sideEffects: undefined,
 				edits: [
 					{
 						path: 'vite.config.ts',
@@ -1235,6 +1262,8 @@ export default appServer(override)
 			},
 			{
 				prefix: 'unforced',
+				mixed: false,
+				sideEffects: undefined,
 				edits: [
 					{
 						path: 'tests/config.test.ts',
@@ -1248,8 +1277,10 @@ export default appServer(override)
 		]
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-vendored-' })
 		try {
-			for (const { prefix, edits, code, text } of cases) {
-				const blueprint = createBlueprint('sample', { app: ['core', 'server'] })
+			for (const { prefix, mixed, sideEffects, edits, code, text } of cases) {
+				const blueprint = mixed
+					? createBlueprint('sample', { src: ['core', 'server'], app: ['core', 'server'] })
+					: createBlueprint('sample', { app: ['core', 'server'] })
 				stageRootConfig(blueprint, workspace, prefix)
 				workspace.link(`${prefix}/node_modules/@orkestrel/scaffold`, resolve('.'))
 				for (const artifact of [
@@ -1268,6 +1299,9 @@ export default appServer(override)
 					expect(before).toContain(from)
 					workspace.write(`${prefix}/${path}`, before.replace(from, to))
 				}
+				const body = requireValue(workspace.read(`${prefix}/package.json`))
+				const manifest: unknown = JSON.parse(body)
+				expect(isRecord(manifest) ? manifest.sideEffects : 'absent').toBe(sideEffects)
 				const staged = join(workspace.path, prefix)
 				expect(existsSync(join(staged, 'configs/app/vite.server.config.ts'))).toBe(true)
 				expect(existsSync(join(staged, 'app/server'))).toBe(true)
@@ -1294,11 +1328,11 @@ export default appServer(override)
 		} finally {
 			workspace.destroy()
 		}
-		// Three nested Vitest runs, each loading the staged configuration, the vendored
+		// Five nested Vitest runs, each loading the staged configuration, the vendored
 		// policy modules and one real Rolldown build pair. Each run carries a 90 second
-		// cap and the case carries room for all three, because the cost under a full suite
+		// cap and the case carries room for all five, because the cost under a full suite
 		// run is contention rather than work.
-	}, 300_000)
+	}, 480_000)
 
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)

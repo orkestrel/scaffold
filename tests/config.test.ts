@@ -1324,9 +1324,12 @@ describe('root configuration', () => {
 		try {
 			scratch.write(
 				'index.ts',
-				"process.stdout.write('entry\\n')\nvoid import('./lazy.js')\nprocess.stdout.write('after\\n')\n",
+				"process.stdout.write('entry\\n')\nvoid import('./lazy.js').then(({ lazy }) => process.stdout.write(lazy()))\nprocess.stdout.write('after\\n')\n",
 			)
-			scratch.write('lazy.ts', "process.stdout.write('lazy\\n')\nexport const lazy = true\n")
+			scratch.write(
+				'lazy.ts',
+				"process.stdout.write('lazy\\n')\nexport function lazy(): string {\n\treturn String(process.argv.length)\n}\n",
+			)
 			const rosters: Array<readonly string[]> = []
 			for (const splitting of [false, true]) {
 				const loaded = await loadConfigFromFile(
