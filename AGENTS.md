@@ -43,7 +43,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **NEVER** use mocks, behavioral fakes, module replacement, framework spies, or fake clocks for project-owned behavior. Use real implementations, recorders, temporary resources, protocol-faithful fixture servers, and inert data stubs.
 - **ALWAYS** make interface properties and public return collections readonly.
 - **ALWAYS** define reusable and public types in `*/types.ts` before implementation.
-- **ALWAYS** inspect the declared and installed `@orkestrel/*` capabilities before writing overlapping logic. Reuse a primitive whose semantics match; never wrap one to rename it.
+- **ALWAYS** check whether an `@orkestrel` package already provides a capability before writing logic, a tool, or an instrument that could overlap it. Read the package guides scaffold ships first (`guides/README.md` maps them; a target holds them under `node_modules/@orkestrel/scaffold/dist/host/guides/`); read the package's source in a neighboring checkout when the guide leaves the question open; and read its repository at `https://github.com/orkestrel/<package>`, online or cloned under `tmp/`, when no checkout exists. Reuse a primitive whose semantics match; never wrap one to rename it.
 - **ALWAYS** finish the requested implementation: no stubs, deferred logic, or hidden follow-up.
 - **ALWAYS** write a script as TypeScript run by Node (`node path/to/script.ts`, type stripping, `node:` modules only): a skill script, a probe, a launcher, an instrument, a one-off tool. Never write a bash, PowerShell, or Python script. The Claude Code Cloud hooks under `scripts/` are the one bash exception, and that folder holds nothing else.
 

@@ -99,7 +99,7 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 - When a failure recurs, read the exact input and output of the failing case before adding capability, and fix the cause.
 - Deepen in rounds and report a usable result after each. Stop at the first result that clears the acceptance criteria and name the gaps that remain.
 - Prove a change in one consumer, with its gate green, before spreading it to the rest.
-- Use the simplest method that can clear the criteria. Add machinery only after that method fails a measured check, and build nothing for a hypothetical need.
+- Use the simplest method that can clear the criteria, starting with what an `@orkestrel` package already provides, found as `AGENTS.md` § Non-negotiable rules orders the lookup. Add machinery only after that method fails a measured check, and build nothing for a hypothetical need.
 - Do a one-use step inline. Keep a tool one unit runs more than once as a throwaway under `tmp/`, deleted with the unit and never committed.
 - When a second unit, package, or campaign needs a tool, move it out of `tmp/`: into a skill script under `.agents/skills/` when it only runs a procedure, and into its own package, with its own tests and release, when it carries correctness claims of its own or an identity consumers pin, replay, or audit. Write the promotion path and the removal path when you first build it.
 - When a throwaway grows a mechanism per step instead of answering its question, stop and map it against the owning packages before building more.

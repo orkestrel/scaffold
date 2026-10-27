@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "fd73cb83af3c235a2aa6157a0370f98ac1f8658480ed408f28383ac304593005"
+			"digest": "0d3056c542baa13db0b75be1342882f2c955eeab0507b2b7035376279a14539c"
 		},
 		{
 			"storage": "LICENSE",
@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "5f6fe5e85ca842fb1c7203cabf8018a65f3b4ec0cd61b736062610710e566e04"
+			"digest": "db3979f1dd16946302096f877ea1c8a413cd31a998c1fe488dace1455b7e649f"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -2215,5 +2215,5 @@
 			]
 		}
 	],
-	"digest": "79542210dec850f036e6681e671f63b543745d7cf02c526258d35e8accf70c44"
+	"digest": "c9d9eb8b3bd5df5c23c55734c66f207ea371e360920e90fb04144a46ca0a8404"
 }
