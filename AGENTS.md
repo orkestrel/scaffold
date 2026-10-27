@@ -43,7 +43,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **NEVER** use mocks, behavioral fakes, module replacement, framework spies, or fake clocks for project-owned behavior. Use real implementations, recorders, temporary resources, protocol-faithful fixture servers, and inert data stubs.
 - **ALWAYS** make interface properties and public return collections readonly.
 - **ALWAYS** define reusable and public types in `*/types.ts` before implementation.
-- **ALWAYS** check whether an `@orkestrel` package already provides a capability before writing logic, a tool, or an instrument that could overlap it. Read the package guides scaffold ships first (`guides/README.md` maps them; a target holds them under `node_modules/@orkestrel/scaffold/dist/host/guides/`); read the package's source in a neighboring checkout when the guide leaves the question open; and read its repository at `https://github.com/orkestrel/<package>`, online or cloned under `tmp/`, when no checkout exists. Reuse a primitive whose semantics match; never wrap one to rename it.
+- **ALWAYS** check whether an `@orkestrel` package already provides a capability before writing logic, a tool, or an instrument that could overlap it. Read the package guides first: `guides/README.md` maps them, and a target holds them under `node_modules/@orkestrel/scaffold/dist/host/guides/`. When a guide leaves the question open, read the package's source in a checkout beside the repository. When no checkout exists, read its repository at `https://github.com/orkestrel/<package>`, online or cloned under `tmp/`. Reuse a primitive whose semantics match; never wrap one to rename it.
 - **ALWAYS** finish the requested implementation: no stubs, deferred logic, or hidden follow-up.
 - **ALWAYS** write a script as TypeScript run by Node (`node path/to/script.ts`, type stripping, `node:` modules only): a skill script, a probe, a launcher, an instrument, a one-off tool. Never write a bash, PowerShell, or Python script. The Claude Code Cloud hooks under `scripts/` are the one bash exception, and that folder holds nothing else.
 
@@ -72,7 +72,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 
 Types, tests, and implementation decide every step; comments, TSDoc, and guides follow the final implementation. Report results against the goal, and prefer the smallest change that reaches green over a perfect one.
 
-Open a task with its goal, its acceptance criteria, and the cheapest pass/fail check that proves them. Before writing a fixture, proof, or tool around a command, run that command once on real data. `.agents/orchestration.md` § Depth, breadth, and machinery sizes the effort and rules on what becomes a package.
+Open a task with its goal, its acceptance criteria, and the cheapest pass/fail check that proves them. Before writing a fixture, proof, or tool around a command, run that command on real data. `.agents/orchestration.md` § Depth, breadth, and machinery sizes the effort and rules on what becomes a package.
 
 Size the change before touching a file. Take the largest row whose trigger applies: large, then medium, then small. Run only what the row names.
 
@@ -91,7 +91,7 @@ Within the size, in order:
 3. **Implement.** Conform to the types. Place each declaration in its kind file. Update the barrel.
 4. **Test.** Cover happy paths, edge cases, failures, and boundaries with deterministic tests against real implementations. For a defect, record the failing command and count before the fix and the same command green after.
 5. **Consolidate.** Remove duplication, nested functions, and superfluous wrappers without widening the API.
-6. **Document.** Once the implementation is final, update the matching guide, comments, and TSDoc in one minimal pass. Before then, write, revise, and review no prose.
+6. **Document.** After the implementation is final, update the matching guide, comments, and TSDoc in one minimal pass. Before then, write, revise, and review no prose.
 
 Test ladder, narrowest first; stop at the boundary the change size names:
 

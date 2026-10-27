@@ -79,12 +79,12 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 - Spend process only where it changes a result. Launch, run, and report: no fixed clock windows, readiness-only turns, per-command acknowledgments, hash pins of a brief, or process queries beyond the recorded process ids.
 - When a verifier lane fails in its harness rather than in the gate, run the gate once yourself and read its exit code; write no comparator, snapshot, or retry chain to obtain evidence.
 - Keep valid receipts. Re-run a check only when its inputs, configuration, environment, or claim changed; never repeat a passing check to collect another receipt.
-- When a campaign opens, agree its spend ceiling and its stop line with the user: how much lane time it can take, and the point at which work stops and reports. Inside them, ask the user only for a decision that is theirs: scope, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Decide routine matters yourself, such as time and lane allowances, retries, and order, and report them, with time in whole minutes.
+- Ask the user only for a decision that is theirs: scope, the spend ceiling and stop line § Hold the plan names, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Decide routine matters yourself, such as time and lane allowances, retries, and order, and report them, with time in whole minutes.
 - Never end a turn with work pending and nothing that will wake the session: run the work as a tracked background command or a child whose completion notifies, or schedule a wake. While a lane runs, continue independent work.
 
 ## Hold the plan
 
-- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, agree it with the user along with the spend ceiling and stop line § Pace names.
+- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, agree with the user the estimate, the spend ceiling, and the stop line: how much lane time the work can take, and the point at which work stops and reports.
 - Before each unit, name the plan step it serves. Cut a unit no step needs; set an unplanned idea aside in the plan and return to the step.
 - Add a tracked file only where the request, the plan, or a rule names it.
 - After every unit return, unexpected result, or user message, compare the work with the plan: mark what is done, restate the next step, and set aside what no longer serves the goal.
@@ -94,12 +94,12 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 
 ## Depth, breadth, and machinery
 
-- Size the effort to the task before spending: a lookup takes the single route § Routing names, and only open-ended work with independent, high-value parts fans out, within § Parallelism.
-- Locate the evidence with short broad probes before any deep pass: the shipped command on real data, a census, a search. Go deep only on a defect or gap a run has shown, with one counting probe or one mutation in one lane.
+- Size the effort to the task before spending: a lookup takes one lane, routed per § Routing, and only open-ended work with independent, high-value parts fans out, per § Parallelism.
+- Locate the evidence with short broad probes before any deep pass: a run of the shipped command, a census, a search. Go deep only on a defect or gap a run has shown, in one lane, with the narrowest instrument that answers it: a counting probe or a mutation.
 - When a failure recurs, read the exact input and output of the failing case before adding capability, and fix the cause.
 - Deepen in rounds and report a usable result after each. Stop at the first result that clears the acceptance criteria and name the gaps that remain.
 - Prove a change in one consumer, with its gate green, before spreading it to the rest.
-- Use the simplest method that can clear the criteria, starting with what an `@orkestrel` package already provides, found as `AGENTS.md` § Non-negotiable rules orders the lookup. Add machinery only after that method fails a measured check, and build nothing for a hypothetical need.
+- Use the simplest method that can clear the criteria, starting with what an `@orkestrel` package already provides, looked up per `AGENTS.md` § Non-negotiable rules. Add machinery only after that method fails a measured check, and build nothing for a hypothetical need.
 - Do a one-use step inline. Keep a tool one unit runs more than once as a throwaway under `tmp/`, deleted with the unit and never committed.
 - When a second unit, package, or campaign needs a tool, move it out of `tmp/`: into a skill script under `.agents/skills/` when it only runs a procedure, and into its own package, with its own tests and release, when it carries correctness claims of its own or an identity consumers pin, replay, or audit. Write the promotion path and the removal path when you first build it.
 - When a throwaway grows a mechanism per step instead of answering its question, stop and map it against the owning packages before building more.
