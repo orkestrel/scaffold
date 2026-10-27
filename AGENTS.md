@@ -70,6 +70,8 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 
 ## Work loop
 
+Types, tests, and implementation decide every step; comments, TSDoc, and guides follow the final implementation. Report results against the goal, and prefer the smallest change that reaches green over a perfect one.
+
 Size the change before touching a file. Take the largest row whose trigger applies: large, then medium, then small. Run only what the row names.
 
 | Size   | Trigger                                                                                                                                                                                                 | Do                                                                                                                                                                                                           |
@@ -87,7 +89,7 @@ Within the size, in order:
 3. **Implement.** Conform to the types. Place each declaration in its kind file. Update the barrel.
 4. **Test.** Cover happy paths, edge cases, failures, and boundaries with deterministic tests against real implementations. For a defect, record the failing command and count before the fix and the same command green after.
 5. **Consolidate.** Remove duplication, nested functions, and superfluous wrappers without widening the API.
-6. **Document.** Update the matching guide and parity. Prose comes last and stays short.
+6. **Document.** Once the implementation is final, update the matching guide, comments, and TSDoc in one minimal pass. Before then, write, revise, and review no prose.
 
 Test ladder, narrowest first; stop at the boundary the change size names:
 
@@ -96,6 +98,7 @@ Test ladder, narrowest first; stop at the boundary the change size names:
 3. The touched project: `npm run test:<project>`, plus the `check:` script for that project where `package.json` declares one.
 4. Tree-wide gates, once, by `verifier`: `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run build`, `npm test`.
 
+- Run types and behavior tests before format, lint, and guide checks. A format, lint, or guide failure never stops a behavior run; fix it in the final pass.
 - Run the mutating `npm run lint` then `npm run format` only to converge before the non-mutating gates.
 - A writing unit stops at the project boundary and reports the commands it ran. `verifier` runs the tree-wide gates when dispatched for them and edits no source.
 - Never claim a gate passed without running it and reading its output bare, with no `| tail` or `| grep` behind it.
@@ -122,6 +125,7 @@ Each row is a normative extension of this file. Its `paths` frontmatter controls
 | `.claude/rules/documentation.md` | Guides, parity, roadmap, showcase, examples, skill files               |
 | `.claude/rules/writing.md`       | Prose in guides, replies, commits, and instruction files               |
 | `.claude/rules/quality.md`       | Evidence, probes, instruments, performance, research, completion       |
+| `.claude/rules/campaign.md`      | The `.orkestrel/` campaign folder: layout, content, session start      |
 
 ## Writing
 

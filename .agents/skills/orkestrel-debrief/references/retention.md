@@ -10,7 +10,7 @@ carrier. A campaign that accepts with no debrief arrives at acceptance, per
 either door.
 
 Call the `.orkestrel/` folder the campaign folder, never a ledger. The word `ledger` names the
-routing ledger and the carry ledger only.
+campaign's ledger file and the carry ledger only.
 
 ## The gate order
 
@@ -33,15 +33,15 @@ step.
 
 Rule on every location in this table before deleting anything.
 
-| Location                | What it holds                                                                                                                                       | What the prune does                                                                                                                 |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `.orkestrel/<package>/` | One package's live campaign per `.agents/orchestration.md` § .orkestrel layout: its plan, routing ledger, open-seam verdicts, and exposure records. | Deleted in the prune commit.                                                                                                        |
-| `.orkestrel/*.md`       | The ecosystem's records per the same section: the fleet campaign's `plan.md` and `ledger.md`, and the release wave's `release.md`.                  | Deleted in the prune commit of the wave or fleet campaign each records.                                                             |
-| `tmp/units/`            | A native unit's `<unit>-brief.md` and `<unit>-report.md` pair.                                                                                      | Swept after the unit's measurements and unresolved findings are carried into the acceptance record, the campaign ledger, or a test. |
-| `tmp/<bench>/`          | A bench unit's brief, report, event stream, final answer, and any login log.                                                                        | Swept after the final gate evidence is recorded. Never committed.                                                                   |
-| `tmp/probes/`           | The runtime probes the campaign wrote.                                                                                                              | Swept. A probe that settled a claim becomes a test before the prune, per `.claude/rules/quality.md` § Instruments.                  |
-| `ROADMAP.md`            | The repository's sequenced plan of record, where it keeps one.                                                                                      | Kept. Strike the chunks the campaign closed and add the forward work it revealed.                                                   |
-| `PROPOSAL.md`           | A proposal for work nobody has ruled on yet.                                                                                                        | Deleted after the work lands or the proposal is refused. The ruling goes in the prune commit message.                               |
+| Location                | What it holds                                                                                                                                | What the prune does                                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `.orkestrel/<package>/` | One package's live campaign per `.claude/rules/campaign.md` § Layout: its plan, ledger, open-seam verdicts, and the records that rule names. | Deleted in the prune commit, after each file that outlives the campaign moves to its root home.                                  |
+| `.orkestrel/*.md`       | The ecosystem's records per the same section: the fleet campaign's `plan.md` and `ledger.md`, and the release wave's `release.md`.           | Deleted in the prune commit of the wave or fleet campaign each records.                                                          |
+| `tmp/units/`            | A native unit's `<unit>-brief.md` and `<unit>-report.md` pair.                                                                               | Swept after the unit's measurements and unresolved findings are carried into the acceptance record, a tracked design, or a test. |
+| `tmp/<bench>/`          | A bench unit's brief, report, event stream, final answer, and any login log.                                                                 | Swept after the final gate evidence is recorded. Never committed.                                                                |
+| `tmp/probes/`           | The runtime probes the campaign wrote.                                                                                                       | Swept. A probe that settled a claim becomes a test before the prune, per `.claude/rules/quality.md` § Instruments.               |
+| `ROADMAP.md`            | The repository's sequenced plan of record, where it keeps one.                                                                               | Kept. Strike the chunks the campaign closed and add the forward work it revealed.                                                |
+| `PROPOSAL.md`           | A proposal for work nobody has ruled on yet.                                                                                                 | Deleted after the work lands or the proposal is refused. The ruling goes in the prune commit message.                            |
 
 A plan-of-record file is not campaign residue. `ROADMAP.md` outlives every prune and takes the
 campaign's forward work; `PROPOSAL.md` is spent the moment its proposal is ruled on, and a spent

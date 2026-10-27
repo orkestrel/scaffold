@@ -254,6 +254,7 @@ export const CANON_PATHS: readonly string[] = Object.freeze([
 	'.claude/AGENTS.md',
 	'.mcp.json',
 	'.agents/orchestration.md',
+	'.agents/platforms',
 	'.agents/skills',
 	'.agents/templates',
 	'.agents/transports',

@@ -141,7 +141,8 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 
 ## Prepare a layer
 
-- When the manifest's `engines.node` names a floor below the `DEFAULT_ENGINES` a generated workspace declares, raise it to that floor and move the package's CI floor row with it.
+- When the manifest's `engines.node` names a floor below the `DEFAULT_ENGINES` a generated workspace declares, raise it to that floor.
+- When a package still carries `.github/workflows/ci.yml`, delete it in that visit; the ecosystem runs no hosted CI.
 - Before the release, rule the package's guide and source comments against `.claude/rules/writing.md` § Substitutions and reword each hit its rows name; identifiers stay.
 - Compare release packs between hosts by paths, sizes, and content hashes, and report executable-mode differences separately; a pack made on Windows records `0644` for an entry git tracks as `100755`.
 

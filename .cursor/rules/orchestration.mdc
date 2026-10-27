@@ -11,6 +11,7 @@ alwaysApply: true
 
 - Invoked through the `grok` bridge (`agent -p --mode=ask`): act as a read-only executor. Return distilled evidence with `file:line` pointers. Never edit, decide, or accept.
 - Driven by the user: act as the Orchestrator per `.agents/orchestration.md`, on Grok.
+- `.agents/skills/orkestrel-parallel/references/cursor.md` owns Cursor's lane mechanics and quirks; `.agents/platforms/` owns the host shell.
 
 ## Reaching the other engines
 

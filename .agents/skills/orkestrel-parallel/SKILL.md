@@ -1,10 +1,36 @@
 ---
 name: orkestrel-parallel
 description: >-
-  Coordinate independently owned writer lanes in one checkout through messages, with one runner for checks and an Orchestrator for decisions. Use when implementation units can progress in parallel with disjoint files or explicit regions of shared files. Serialize overlapping edits and hold every input needed for a reliable measurement. Require shared files and a channel that can wake an idle lane.
+  Run parallel work: lanes inside one session (subagents, child tasks, background commands) and peer sessions that share a checkout, a machine, or an execution lane. Use when units can progress in parallel, when another session works on the same machine or checkout, or before the first lane on a harness. Bound the host, keep lanes visible, coordinate writers through messages with one runner for checks, and hand a shared execution lane over in one message. Each harness page records its mechanics and quirks; a harness with no page carries no writer or runner lane until its bring-up questions are answered on one.
 ---
 
 # Parallel lanes
+
+## Choose the scope
+
+| Scope              | Lanes                                                                                          | Coordinate through                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Within one session | subagents, child tasks, and background commands the session launches                           | launch results and completion notices                                                                     |
+| Across sessions    | separate top-level sessions on one machine sharing a checkout, the host, or the execution lane | messages that wake the receiving session; one tracked coordination record when no such channel reaches it |
+
+- Read the page for each harness that hosts a lane before its first launch: `references/claude.md`, `references/codex.md`, `references/cursor.md`, or `references/t3.md`. A harness without a page carries no writer or runner lane until § Bring up a harness is answered on a page of its own.
+- Apply `.agents/orchestration.md` for routing, session reuse, consultation, independence, and acceptance.
+
+## Bound the host
+
+The host budget counts every lane on the machine: this session's, each peer session's, and the Orchestrator's own commands.
+
+- Set the lane bound in the plan before the first dispatch. Run one process-running lane at a time on the host: tests, checks, builds, browsers, captures, and launchers, the Orchestrator's included. Report to the user before a launch that would start a second. Lanes that run no shell command run beside it.
+- Count running lanes and owned test processes at each launch.
+- Limit terminal launches: chain commands that do not gate each other into one launch, write long output to a file and read it once, never poll with repeated short calls, never retry a run in a loop, and check once for owned leftovers before a launch.
+- Find the cause of an interrupted run before relaunching it.
+- While a lane that runs shell commands is live, count orphaned console and window processes. Brief a lane that needs no shell to run no command. Kill only a recorded process id, and clear orphans only when none of your lanes is live. Never kill another session's or lane's process; ask the user.
+- While a timing or live-model measurement runs, start no other test, build, or model work on the host.
+
+## Keep lanes visible
+
+- Launch every lane through the channel where the user can see it and stop it; the harness page's Visibility row names that channel. Run a hidden direct CLI only as a capped command inside a visible lane.
+- Report each lane's role, engine, and objective at launch, and its result or failure when it returns.
 
 ## Assign lanes
 
@@ -15,10 +41,9 @@ description: >-
 | Writer       | Implement its bounded unit under its assigned role.              | Owned files and regions, plus its own log.                            |
 | Reviewer     | Independently assess the subject the size gate names.            | None; return the verdict to the Orchestrator.                         |
 
-- Apply `.agents/orchestration.md` for routing, session reuse, consultation, independence, and acceptance.
-- Keep active lanes within the harness limit and the campaign's resource limits. Reserve capacity for the runner; queue work that does not fit.
+- Keep active lanes within the harness limit and § Bound the host. Reserve capacity for the runner; queue work that does not fit.
 - Assign every editable region to one writer. Name shared regions by their declarations or sections. Serialize units that rewrite the same region.
-- Read `references/harnesses.md` before choosing the transport; it owns the wake, continuation, and tracking mechanics.
+- Choose each lane's channel from its harness page; the page owns start, continuation, wake, and tracking.
 
 ## Prepare the round
 
@@ -26,7 +51,7 @@ description: >-
 2. Write `tmp/units/<round>/coord/protocol.md`: the skill path, baseline, lanes, owned regions, dependencies, acceptance commands, and exclusive resources. Mark each command whose input set must be held while it runs.
 3. Write `coord/roster.md` with each lane's roster fields per `.agents/orchestration.md` § Sessions and consultation. Create `coord/results/` and `coord/runs/`.
 4. Resume a suitable runner or launch one. Require its ready acknowledgment, then let its idle turn end.
-5. Resume or launch writers as capacity permits. Fill each roster row from the actual launch or continuation result and send each lane the peer addresses it messages.
+5. Resume or launch writers as capacity permits. Fill each roster row from the actual launch or continuation result, never from an earlier session's pattern, and send each lane the peer addresses it messages.
 6. When adopting a running lane, send the protocol, ownership, log path, and next request number. Require acknowledgment before coordinated work begins.
 
 ## Exchange requests and results
@@ -35,9 +60,10 @@ description: >-
 - Number requests monotonically per lane across continuations and fixes. Preserve earlier requests and results.
 - Send each request through the wake-capable channel in the request shape that closes this section.
 - The runner publishes a result by writing it under a temporary name and renaming it to `coord/results/<lane>-<request>.md` after command exit and cleanup, then sends its path and request identity to the requester and the Orchestrator.
-- Wait for the harness's completion or message notice. When the notice is missing and the result is needed, read that request's durable result or task status once, reconcile the request identity, and suspend an unresolved delivery rather than launching duplicate work.
+- Wait for the harness's completion or message notice; run no watcher agent and no file-poll loop. When the notice is missing and the result is needed, read that request's durable result or task status once, reconcile the request identity, and suspend an unresolved delivery rather than launching duplicate work.
 - Escalate per `.agents/orchestration.md` § Deviation protocol. Continue independent work. Share cross-lane facts directly; only the Orchestrator changes scope or rules on acceptance.
-- End an idle runner turn after acknowledging readiness or publishing a result. Do not occupy the runner with a wait for requests queued behind that turn.
+- End an idle runner turn after acknowledging readiness or publishing a result, so queued requests reach it. Never hold the runner in a wait for requests.
+- After compaction or a harness restart, reconcile the roster against the live session and process state. When continuation is unsupported or unavailable, dispatch a successor brief that carries the prior evidence and unresolved work.
 
 Use this request shape:
 
@@ -56,7 +82,7 @@ expect: <red or green, named cases, required artifact>
 
 - Log the applicable phases: types, failing proof, source, and documentation. Request the corresponding checks from the runner.
 - Read a shared region immediately before each small, syntactically complete patch. On a context mismatch, reread and reapply only the owned hunk.
-- Keep read-only shell searches within the campaign's terminal limits. Send every test, check, lint, format, and build request to the runner.
+- Keep read-only shell searches within § Bound the host. Send every test, check, lint, format, and build request to the runner.
 - Run no formatter. Apply the exact formatting hunk the Orchestrator supplies, then request a read-only format check.
 - Before a temporary mutation, obtain the runner's hold on conflicting commands and each affected writer's hold on edits. Mutate only after their acknowledgments. Restore the exact input, verify the restoration, and release the holds through the runner.
 - When the unit's required checks pass, send `FINAL <lane>` with source identity and evidence, write the report, and end the turn. Preserve the session for suitable follow-up work.
@@ -65,8 +91,9 @@ expect: <red or green, named cases, required artifact>
 
 - Before a command, verify its input holds and exclusive resources. Hold all writers when the command reads the whole tree; otherwise hold every owner in its input closure. Do not infer that closure from the requesting writer's files alone.
 - When a conflicting process occupies a declared resource, record its owner, process id, command, and a bounded wait based on the expected work. If it remains after that wait, suspend the request for an Orchestrator ruling. Never terminate another lane's or repository's process.
-- Launch through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap grounded in prior runs, separate journal and error paths under `coord/runs/`, and the request identity in each filename. Follow the launch reference named by `.agents/skills/orkestrel-dispatch/SKILL.md` for process tracking and cleanup.
-- When the shell yields before the command exits, resume its tracked session per `references/harnesses.md`. Read the terminal record and confirm owned descendants have exited before publishing completion. Escalate incomplete cleanup before releasing files or starting another command.
+- Launch through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap grounded in prior runs, separate journal and error paths under `coord/runs/`, and the request identity in each filename. Follow the `orkestrel-dispatch` skill's reference Long-running commands for ownership, process tracking, and cleanup.
+- State in each long command's request which line is its terminal record; that line ends the wait.
+- When the shell yields before the command exits, keep its output in the assigned file and resume its tracked session per the harness page until the terminal record arrives. Start nothing else meanwhile, and never replace the command with a second launch. Confirm owned descendants have exited before publishing completion. Escalate incomplete cleanup before releasing files or starting another command.
 - Run the commands the accepted unit and the size gate require, narrowest first, and add no standing root, guide, or entry check beyond the request. Preserve receipts and rerun checks per `.agents/orchestration.md` § Parallelism.
 - Stop on the first unexpected failure. Return the complete diagnostic and the owning file, and classify the failure as an assertion failure, an invocation error, a reporting failure, a cap, or an interruption. Preserve every receipt obtained before the stop.
 - Record the command's input identity and expected outputs before launch. When an input changes during the run, report that result as invalid and retain each result whose input set stayed stable.
@@ -80,3 +107,33 @@ expect: <red or green, named cases, required artifact>
 - Before reopening a writer, invalidate that lane's `FINAL` with the runner and require acknowledgment. Keep every other valid `FINAL` result. Release the reopened writer only when no active gate reads its inputs.
 - Before a closing request, obtain affected write-hold acknowledgments and hold your own source edits. Keep them until the matching complete result arrives. After a fix, request only the checks invalidated by that fix plus any unmet acceptance requirement.
 - Commit after the required gates and review pass. When shared hunks form one integration, commit the batch and identify its units and fixes.
+
+## Share an execution lane between sessions
+
+Apply this section when two sessions on one machine share the tests, checks, builds, and captures the host can run at once.
+
+- One session runs process-running commands at a time. Ask the holder for the lane in one message; the holder hands it over in one message as soon as its running command exits. Silence is no handover.
+- While another session holds the lane, edit your own files, read, and queue your commands.
+- Hand the lane over by naming the last command's exit and that none of your processes still runs. Set no clock windows and send no per-command acknowledgments.
+- Record contention from another session as a host limit, not a test failure. Rerun the interrupted unit alone after the window clears.
+- When the user stops work, send the stop to every affected session. Withdraw queued work by its id and preserve finished evidence.
+- When no message channel reaches a peer session, coordinate through one tracked record holding owned paths and a dated log. Read its latest entry before each unit, log each landing, and delete the record when the shared work closes.
+- A session that finds another session's hand-off record without the user's go-ahead reads it for context only.
+
+## Bring up a harness
+
+Answer each question on the harness's page under `references/`, from measurement on the host, before the harness carries a writer or runner lane:
+
+1. Start: how does a lane start, and which role, model, and options does it accept?
+2. Continue: how does an idle lane resume with its context, and what makes a resume valid?
+3. Wake versus deliver: which send wakes an idle lane, and which only delivers?
+4. Track: which identities must be retained (task, session, thread, process), and which change between launches?
+5. Background: how does a long command run, what is its cap, and what happens at the cap and when the shell yields early?
+6. Isolation: does a lane share the checkout, and how does it get its own?
+7. Tools: which tools does a lane hold (shell, file write, messaging), and which actions does the harness refuse?
+8. Limits: what happens to running lanes at a usage limit and after an idle period?
+9. Host effects: does a lane's shell open windows or leave processes behind, and where does each shell call start?
+10. Capability map: which engine serves each capability of `.agents/orchestration.md` § Roles? Record the map where that section's bullets direct.
+11. Visibility: which launch channel shows the lane to the user, and can the user stop it there?
+
+A page holds the answers in its § Mechanics table, one row per question, and the field lessons under § Quirks, one "When X, do Y" directive per lesson; a measurement keeps its date. `.agents/transports/<harness>.md` owns a harness's CLI as a bench, and `.agents/platforms/<platform>.md` owns the host shell.

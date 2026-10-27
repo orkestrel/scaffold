@@ -86,6 +86,8 @@ Never use in-repository `@src/*` aliases in public guide examples; reserve them 
 - Name a skill directory `orkestrel-<word>`: the prefix and one word naming the process or the subject, such as `orkestrel-harden` or `orkestrel-journey`. Never a second word.
 - For a portable skill that teaches an external framework, takes the host project's own `AGENTS.md` file as its code law, and binds none of this repository's rule files, drop the `orkestrel-` prefix and name the skill for the framework a reader searches for. Add no other exception. The `enterprise-bootstrap` skill meets that test and keeps its name: it carries Bootstrap 5.3 craft, assumes no stack, and names the `.agents/orchestration.md` and `.claude/rules/quality.md` files only where they are present. Do not rename it into the namespace.
 - Keep `SKILL.md` concise and route conditional detail to one-level `references/`.
+- In a `SKILL.md`, name another skill's reference by that skill and the reference's title, never as a `references/<name>.md` path; the policy sweep attributes that token to the citing skill.
+- When you add a canonical skill, register it in `TARGET_SKILL_NAMES` in `src/core/constants.ts`, in the skill lists of `tests/distribution.test.ts`, `tests/src/core/Compiler.test.ts`, and `tests/src/core/compilers.test.ts`, and in the pointer-file count of `tests/src/bin/CLI.test.ts`, then regenerate `host.json` with a build.
 - Name every Markdown file in a skill's `references/` from its `SKILL.md`, and delete a reference nothing names.
 - Frontmatter contains only `name` and a trigger-focused `description`.
 - Set `name` to the skill's own directory name.

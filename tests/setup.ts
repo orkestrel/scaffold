@@ -241,7 +241,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 	},
 	{
 		fields: { src: [], app: ['server'] },
-		vite: 'c7e7becfb724beeccc1e84dfbe3cd0b56691338c86f23c1d3d9b9c5424681434',
+		vite: 'b9a54ba26fa003fddc2ca1ba1204f7396f1dbc9de85f1cae21e62089db15bd41',
 		scripts: '4c07423deacb5eaa8ee362e1dcf7a0d180c2f22113461714bc8211894acec2f1',
 	},
 	{

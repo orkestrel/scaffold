@@ -233,7 +233,7 @@ type Result<T, E = Error> = Success<T> | Failure<E>
 ## Comments and API documentation
 
 - Comments explain why, never restate what self-explanatory code does. The Writing rules in `AGENTS.md` and `.claude/rules/writing.md` govern their prose.
-- Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.
+- Every public export has TSDoc, because the package guide is built from it: a one-sentence summary; `@param`, `@returns`, or a thrown-error line only where the signature leaves the meaning open; and an `@example` of typical use, as short as it can be while still showing the call and its result.
 - The first sentence states what the symbol does in the third person with an `-s` verb — `Creates`,
   `Returns`, `Checks whether` — and never repeats the symbol's name.
 - `policy/no-malformed-summary` reads that first sentence over every doc block a top-level export

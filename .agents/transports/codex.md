@@ -22,7 +22,7 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<un
 - Codex appends piped stdin to the prompt; the launcher closes stdin so an inherited pipe adds nothing.
 - Add `--skip-git-repo-check` outside a trusted repository and `--output-schema <file>` when the Orchestrator supplies one.
 - The first journal event, `thread.started`, carries the session id. Read the answer with `node .agents/skills/orkestrel-dispatch/scripts/result.ts --codex tmp/codex/<unit>.jsonl`, which reads the last-message file, never stdout.
-- Follow up with `codex exec resume <session-id> "<prompt>"`. Resume accepts `--model`, `-c`, and output flags, and inherits the session's directory; pass the sandbox and permissions you intend explicitly rather than inferring them from the session's former role.
+- Follow up with `codex exec resume <session-id> "<prompt>"`. Resume accepts `--model`, `-c`, and output flags, and inherits the session's directory; pass the sandbox and permissions you intend explicitly rather than inferring them from the session's former role. Resume rejects `--sandbox`; pass the mode as `-c 'sandbox_mode="<mode>"'`.
 
 ## Sandbox by host
 

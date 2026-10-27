@@ -9,7 +9,6 @@ paths:
   - 'guides/**/*'
   - 'package.json'
   - '.gitattributes'
-  - '.github/workflows/*'
 ---
 
 # Host portability rules
@@ -99,7 +98,7 @@ and the form of a conditional skip.
 
 ## Claims
 
-- Never describe the suite, the host, or CI as POSIX. Name the host and the date behind a reading.
+- Never describe the suite or the host as POSIX. Name the host and the date behind a reading.
 - Run the gate chain on each host a change claims, and record a reading that could not run as a
   limit naming the host it needs.
 - Keep a POSIX-shaped `file:///` literal in a guide only as an opaque fictional identifier. Build

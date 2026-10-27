@@ -15,9 +15,9 @@ files you touch; Codex does not load them for you. Follow a skill under .agents/
 trigger fires.
 
 Use the role mapping and continuation rules in .agents/orchestration.md. Before using native or
-T3 collaboration, read .agents/skills/orkestrel-parallel/references/harnesses.md for the channel
-mechanics and retained identifiers, and read the installed tool descriptions before relying on a
-capability that reference names.
+T3 collaboration, read .agents/skills/orkestrel-parallel/references/codex.md and t3.md for the
+channel mechanics, retained identifiers, and quirks, and read the installed tool descriptions
+before relying on a capability those pages name. .agents/platforms/ owns the host shell.
 
 Hooks: .codex/hooks.json runs the orkestrel-dispatch sweep script (node
 .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report) on SessionStart and git diff --check

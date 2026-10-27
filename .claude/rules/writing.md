@@ -1,6 +1,9 @@
 # Writing rules
 
-`AGENTS.md` § Writing governs every reply. This file adds what developer prose, comments, and instruction files decide. Write prose after the code works, and keep it short.
+`AGENTS.md` § Writing governs every reply. This file adds what developer prose, comments, and instruction files decide.
+
+- Write comments, TSDoc, and guide prose once, after types, tests, and implementation are final, and keep them minimal. Prose written earlier is wrong by the time the implementation settles.
+- Never revise, review, or gate prose while the implementation can still change.
 
 ## Voice
 
@@ -43,7 +46,7 @@
 
 ## Code comments
 
-- A comment states why, never what the code shows. Delete a comment that restates the line. Do not narrate history, alternatives tried, or a probe's result.
+- Write a comment only where the code cannot show why, in one line. Delete a comment that restates the line. Do not narrate history, alternatives tried, or a probe's result.
 - Write TSDoc only where `.claude/rules/typescript.md` requires it, in its prescribed shape, and no longer than the contract needs.
 
 ## Instruction files

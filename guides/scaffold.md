@@ -2059,7 +2059,7 @@ succeed without making requests; remote hooks run setup. Claude Code Cloud conti
 the `.claude/AGENTS.md` Claude Code bridge, the `.agents/orchestration.md` agent-operation contract,
 the rules under `.claude/rules/` and `.cursor/rules/`, the skills under `.agents/skills/` and
 `.claude/skills/`, the templates under `.agents/templates/`, the transport contracts under
-`.agents/transports/`, the agent roles under `.claude/agents/` and `.codex/agents/`, the
+`.agents/transports/`, the platform pages under `.agents/platforms/`, the agent roles under `.claude/agents/` and `.codex/agents/`, the
 `.codex/config.toml` bench configuration, and the `.mcp.json` and `.cursor/mcp.json` server
 registrations. A release stages every one of them, and a target receives a copy only where the plan
 claims the path. At the `AGENTS.md` destination it receives the pointer: different content at the

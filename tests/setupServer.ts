@@ -2278,6 +2278,7 @@ export function createSink(): TestSinkInterface {
 export const HOST_DIRECTORY_PATHS: readonly string[] = [
 	'scripts',
 	'guides',
+	'.agents/platforms',
 	'.agents/skills',
 	'.agents/templates',
 	'.agents/transports',
