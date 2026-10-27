@@ -77,10 +77,33 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 ## Pace
 
 - Spend process only where it changes a result. Launch, run, and report: no fixed clock windows, readiness-only turns, per-command acknowledgments, hash pins of a brief, or process queries beyond the recorded process ids.
-- Re-run a check only when its inputs changed; never repeat a passing check to collect another receipt.
-- Ask the user only for a decision that is theirs: scope, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Decide routine matters yourself, such as time and lane allowances, retries, and order, and report them.
+- When a verifier lane fails in its harness rather than in the gate, run the gate once yourself and read its exit code; write no comparator, snapshot, or retry chain to obtain evidence.
+- Keep valid receipts. Re-run a check only when its inputs, configuration, environment, or claim changed; never repeat a passing check to collect another receipt.
+- When a campaign opens, agree its spend ceiling and its stop line with the user: how much lane time it can take, and the point at which work stops and reports. Inside them, ask the user only for a decision that is theirs: scope, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Decide routine matters yourself, such as time and lane allowances, retries, and order, and report them, with time in whole minutes.
 - Never end a turn with work pending and nothing that will wake the session: run the work as a tracked background command or a child whose completion notifies, or schedule a wake. While a lane runs, continue independent work.
-- Keep the goal, the current step, and the next action visible in the campaign plan, and report progress against the goal at each milestone.
+
+## Hold the plan
+
+- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, agree it with the user along with the spend ceiling and stop line § Pace names.
+- Before each unit, name the plan step it serves. Cut a unit no step needs; set an unplanned idea aside in the plan and return to the step.
+- Add a tracked file only where the request, the plan, or a rule names it.
+- After every unit return, unexpected result, or user message, compare the work with the plan: mark what is done, restate the next step, and set aside what no longer serves the goal.
+- When the work outgrows its estimate, stop, re-estimate, and bring the user the choice to cut, defer, or extend before continuing.
+- When the user questions the plan, test it against the evidence in hand: reopen it where the evidence disagrees and report what changed; where the evidence holds, answer with that evidence.
+- Answer a status question before dispatching more work, and close every report the same way: the goal, what is done against it, what is measured, what remains, and the next step.
+
+## Depth, breadth, and machinery
+
+- Size the effort to the task before spending: a lookup takes the single route § Routing names, and only open-ended work with independent, high-value parts fans out, within § Parallelism.
+- Locate the evidence with short broad probes before any deep pass: the shipped command on real data, a census, a search. Go deep only on a defect or gap a run has shown, with one counting probe or one mutation in one lane.
+- When a failure recurs, read the exact input and output of the failing case before adding capability, and fix the cause.
+- Deepen in rounds and report a usable result after each. Stop at the first result that clears the acceptance criteria and name the gaps that remain.
+- Prove a change in one consumer, with its gate green, before spreading it to the rest.
+- Use the simplest method that can clear the criteria. Add machinery only after that method fails a measured check, and build nothing for a hypothetical need.
+- Do a one-use step inline. Keep a tool one unit runs more than once as a throwaway under `tmp/`, deleted with the unit and never committed.
+- When a second unit, package, or campaign needs a tool, move it out of `tmp/`: into a skill script under `.agents/skills/` when it only runs a procedure, and into its own package, with its own tests and release, when it carries correctness claims of its own or an identity consumers pin, replay, or audit. Write the promotion path and the removal path when you first build it.
+- When a throwaway grows a mechanism per step instead of answering its question, stop and map it against the owning packages before building more.
+- Ship the proven fix first, and run experiments behind it under a stated cap.
 
 ## Size gate
 
@@ -120,7 +143,7 @@ A large change opens with a concise goal and its exit criterion, short enough to
 - Fold every branch, clone, copy, or worktree an agent creates back into the original checkout's main branch with its changes left uncommitted there, so the user sees the whole difference from that branch. Commit inside the branch, clone, copy, or worktree as its unit needs, then remove it and delete its branch.
 - In a checkout another session shares, read the branch and `git status` before a write, and stop and ask the user when another session's uncommitted work is present.
 - Shared files are report-only; a unit returns an exact patch. Under `orkestrel-parallel`, a writer edits its owned regions of a shared file directly.
-- Scope validation by the claim and its input dependencies, not by writer ownership alone. Under `orkestrel-parallel`, the runner owns checks and obtains the required write holds. Preserve valid receipts; rerun a check when its inputs, configuration, environment, or claim changed. Never run tree-wide `format`, lint `--fix`, or `build` beside a live writer.
+- Scope validation by the claim and its input dependencies, not by writer ownership alone. Under `orkestrel-parallel`, the runner owns checks and obtains the required write holds; § Pace rules on reruns. Never run tree-wide `format`, lint `--fix`, or `build` beside a live writer.
 - One Grok lane at a time; queue the rest. An empty lane beside a live probe is starvation, not darkness.
 - The Orchestrator's own sweep is a writing dispatch: run it before or after the units, never beside them.
 
@@ -199,6 +222,7 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 
 - No writer's and no bench's self-assessment is authoritative. The Orchestrator accepts after the review and the gates the size gate names.
 - Accept when the exit criterion is met and the gates are green. Reopening an accepted criterion is the user's instruction, not a reviewer's finding.
+- Before calling work ready, try the shipped result as the user will, on the build they run, and report what did not run.
 - Substitute an engine only when the same session recorded the bench dark; name the fallback in the brief and the carrying commit.
 - In a repository whose package the registry already serves, commit on the main branch and push it only on the user's go-ahead.
 - Commit by explicit paths. Before a push, read `git log @{upstream}..` and push only commits meant to publish together; hold a push while a commit depends on an unpublished local pin.

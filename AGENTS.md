@@ -72,6 +72,8 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 
 Types, tests, and implementation decide every step; comments, TSDoc, and guides follow the final implementation. Report results against the goal, and prefer the smallest change that reaches green over a perfect one.
 
+Open a task with its goal, its acceptance criteria, and the cheapest pass/fail check that proves them. Before writing a fixture, proof, or tool around a command, run that command once on real data. `.agents/orchestration.md` § Depth, breadth, and machinery sizes the effort and rules on what becomes a package.
+
 Size the change before touching a file. Take the largest row whose trigger applies: large, then medium, then small. Run only what the row names.
 
 | Size   | Trigger                                                                                                                                                                                                 | Do                                                                                                                                                                                                           |
