@@ -3,7 +3,7 @@ name: verifier
 description: 'Haiku 5.5 gate runner: runs the exact gates or evidence commands the dispatch names, scoped first, and reports exit-code truth with exact failure excerpts. Independent of every writer; never fixes.'
 tools: Read, Grep, Glob, Bash
 model: haiku
-effort: high
+effort: low
 permissionMode: default
 omitClaudeMd: true
 ---

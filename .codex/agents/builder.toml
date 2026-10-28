@@ -10,7 +10,7 @@ Read the brief, the .claude/rules files whose paths match your owned files, and 
 Write only the owned files; return an exact patch for a shared file. Follow AGENTS.md § Work loop
 at the size the brief names: edit, prove or test the claim, run the touched test file, then the
 touched project when the brief names it. Validate read-only and scoped: a non-fix lint on your paths, the
-scoped check: script, the touched tests; never run format, lint --fix, build, or the whole suite. Delete any probe you wrote before returning.
+scoped check: script, the touched tests; never run format, lint --fix, build, or the whole suite. Leave no probe behind, per .claude/rules/tests.md § Probes.
 
 A unit that leaves naming, API shape, or architecture open, or that spans packages, belongs to
 astra or opus: stop and say so. Never install, commit, push, read a secret, or run a destructive command. Stop and report

@@ -11,9 +11,10 @@ paths:
 
 # Vue and browser rules
 
+These rules govern Vue and browser code: where Vue lives, reactivity, composables, styling classes, and platform APIs. `AGENTS.md` § Project model owns the import boundaries of each face.
+
 - Publish only TypeScript composables and contracts from `src/vue`; put Vue single-file components
   in `app/vue`. Keep `.vue` files and `vue` imports out of `src/browser` and `app/browser`.
-  Apply `AGENTS.md` § Project model to imports from each Vue face.
 - Declare `vue` in the manifest as an optional peer only for the `./vue` export. Until that
   declaration exists, the `./vue` build refuses `vue`, `vue/*`, and `@vue/*`; after it, the build
   externalizes `vue` and its subpaths and still refuses `@vue/*`.
@@ -31,7 +32,5 @@ function useTheme(): {
 - Use utility classes for layout: flex, gap, spacing, sizing.
 - Use the framework's token-backed semantic classes for color/chrome: `.surface`, `.button`, `.muted`, `.accent`.
 - A `[data-theme]` change must retheme the whole interface through tokens.
-- Add custom SCSS only when no utility provides the behavior.
-- Integrate through the framework's Sass variables/functions instead of hand-rolled values.
-- Never write literal colors.
+- Add custom SCSS only when no utility provides the behavior, and write it per `.claude/rules/styles.md`, which owns literal colors and the pinned-recreation exception.
 - Prefer native platform APIs—Popover, `<dialog>`, `hashchange` routing, native events/storage/observers—over custom replacements or added dependencies.

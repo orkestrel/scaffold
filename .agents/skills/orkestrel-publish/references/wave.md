@@ -25,8 +25,9 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
    registry serves `8.3.4`, apply `vite: ~8.2.0 -> ^8.3.4` even though the tilde excludes `8.3.4`.
 2. Commit the manifest and the lockfile as the preparation commit. `scaffold overwrite` refuses a
    tree carrying uncommitted changes, and the install left both dirty.
-3. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
-   every tracked copy the target still holds at an instruction-canon path. Prove the sweep with a
+3. Run `scaffold overwrite`. One run repairs the `AGENTS.md` pointer and the skill pointer set and
+   deletes every tracked copy the target still holds at an instruction-canon path, a `CLAUDE.md`
+   included; the plan ships no `CLAUDE.md`. Prove the sweep with a
    second `scaffold audit` that exits `0`.
    - Where the target's `.claude/agents/orkestrel.md` carries a body outside the marker-bounded
      table that differs from the floor copy the installed scaffold stages, delete the file and
@@ -144,11 +145,9 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 - When the manifest's `engines.node` names a floor below the `DEFAULT_ENGINES` a generated workspace declares, raise it to that floor.
 - When a package still carries `.github/workflows/ci.yml`, delete it in that visit; the ecosystem runs no hosted CI.
 - Before the release, rule the package's guide and source comments against `.claude/rules/writing.md` § Substitutions and reword each hit its rows name; identifiers stay.
-- Compare release packs between hosts by paths, sizes, and content hashes, and report executable-mode differences separately; a pack made on Windows records `0644` for an entry git tracks as `100755`.
+- Compare release packs between hosts by paths, sizes, and content hashes, and report executable-mode differences separately (`.agents/platforms/windows.md` § Release packs and terminals).
 
-An unpublished package's first version is `0.0.1`. Do not bump it before that first publish. The
-registry has nothing to serve, so there is no version to move away from, and bumping produces a
-package whose history starts at a number nothing explains.
+An unpublished package's first version is `0.0.1`. Do not bump it before that first publish.
 
 Prepare a published package's layer in this order, after the visit has ruled the package's bump:
 
@@ -175,9 +174,8 @@ Prepare the next layer only after this one is on the registry. A dependent's new
 install until the version it names exists, so preparation and publication interleave and cannot be
 batched ahead.
 
-The window is for uploads. Every gate, build, install, and commit happens outside it, which is
-what makes `--ignore-scripts` the right flag at publish time: the artifact was already proved, and
-the flag is what stops the gate chain running a second time inside the five minutes.
+The window is for uploads. Every gate, build, install, and commit happens outside it; publish with
+`--ignore-scripts` so the gate chain does not run a second time on the proved artifact.
 
 ## Sweep the self-pins
 

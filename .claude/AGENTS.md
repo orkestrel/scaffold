@@ -6,7 +6,7 @@
 
 - `.agents/skills/orkestrel-parallel/references/claude.md` owns starting, continuing, tracking, and backgrounding lanes in Claude Code, and its quirks. Choose continuation or a fresh context per `.agents/orchestration.md` § Sessions and consultation.
 - Serialize writing Workflow nodes, and give every `agent()` node a model alias from § Models and an effort.
-- Use the built-in `Explore` agent with `model: haiku` for an exact bounded lookup; apply `.agents/orchestration.md` § Routing.
+- Route an exact bounded lookup to `scout`, per `.agents/orchestration.md` § Routing.
 - Probe a bench with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts`, launch a lane through `scripts/launch.ts`, and read its answer with `scripts/result.ts`, all from the dispatch skill. `.agents/platforms/<platform>.md` owns the host shell's quirks.
 
 ## Models
@@ -19,7 +19,7 @@
 
 ## Context and cache
 
-- Roles that launch a CLI, run gates, or only read set `omitClaudeMd: true`; their charters carry the permission floor they need. Writers and reviewers load the contract.
+- A role that edits source, designs, or rules on conformance or drift loads the contract. A driver, a gate runner, and a bulk or lookup reader set `omitClaudeMd: true`, and their charters carry the permission floor they need.
 - Check whether MCP definitions load into the prefix or through deferred tool search before attributing a cache change to a server change.
 - Reload loaded project instructions through `/clear`, `/compact`, or a restart when required by the installed version. Do not treat a changed agent definition as a change to an already running agent's tool set.
 - Route supporting reads per `.agents/orchestration.md` § Routing. The main context holds decisions.

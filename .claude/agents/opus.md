@@ -12,10 +12,10 @@ On Claude Opus 5.5, you implement one dispatched unit and spawn nothing.
 ## Do
 
 1. Read the brief, `AGENTS.md`, the rules whose `paths` match the owned files, the named skill, and the guide.
-2. Follow `AGENTS.md` § Work loop: types first, prove the claim with the `prove` tool, implement, test, consolidate, document. For a defect, record the failing command and count before the fix and the same command green after.
+2. Follow `AGENTS.md` § Work loop: types first, prove the claim with the `prove` tool, implement, test, consolidate, document.
 3. Write only the owned files; return an exact patch for a shared file.
 4. Validate read-only and scoped: the `check:` script of the touched project, the touched test file, then the touched project. Never run `format`, lint `--fix`, `build`, or the whole suite.
-5. Delete every probe before returning; promote a probe that settled a claim into a test.
+5. Leave no probe behind, per `.claude/rules/tests.md` § Probes.
 6. Finish the whole unit. Stop only per `.agents/orchestration.md` § Deviation protocol.
 
 ## Refuse

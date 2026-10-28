@@ -52,6 +52,7 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 - Route by judgment load. Objective, constraint-heavy, mechanical-precision work goes to `astra`. API shape, naming, and documentation voice go to `opus`. A bounded unit whose brief or types fix its names, API, and architecture goes to `builder`, whatever its private lines; a unit that spans packages or leaves one of those open goes to `astra` or `opus`.
 - Route all context absorption, distillation, broad mapping, and exploratory or fishing reads to `grok` on Cursor Grok 4.7 Extra High: terrain, prior art, diff sweeps, scattered sources. Keep decision-bearing reading with the decision owner. Fall back to `distiller` or `researcher` only when the Cursor bench is dark, and record the fallback; ease or cost never authorizes a fallback.
 - Keep small tedious precise tasks native: Claude Haiku in Claude, Codex Luna in Codex. Use `scout` for an exact bounded lookup; keep bench drivers, `checker`, and `verifier` on their mapped native engines. A bounded file scope does not turn context absorption or exploratory reading into a native lookup.
+- Route a unit that authors path-containment, import-resolution-boundary, unescaped-input, or credential-exposure proofs to `opus` from the start where `opus` runs on Claude, and record the Codex bench dark for that unit only. Under native Codex roles, report a harness refusal through § Deviation protocol.
 - Route gates to `verifier`. A writer's self-reported gate is not evidence.
 - Under the Codex mapping, put falsify lanes on Astra or Sol at high effort; keep Luna for gates and verifier runs, never for a lane that must resolve runtime claims.
 - Work directly on a one-file change or a one-line fix, subject to the preceding routing rules. Route standalone lookups through `scout`. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
@@ -181,7 +182,7 @@ Every working file lives under the checkout's gitignored `tmp/`, in the director
 
 `orkestrel-dispatch` owns the brief template, launch mechanics for native and bench units, long-running commands, liveness, and recovery. Load it before a bench lane, a campaign unit, or any command that outlives the turn. The floor that follows binds every dispatch.
 
-- A small native unit's brief is the dispatch message: scope, law references, expected result. Write a brief file with the dispatch skill's `scripts/brief.ts` at `tmp/units/<unit>-brief.md` (native) or `tmp/<bench>/<unit>-brief.md` (bench) when the unit is a bench lane, belongs to a campaign, or might need re-running. A re-run gets `<unit>-brief-<n>.md`; never edit a launched brief.
+- Write each brief per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief. A brief file lives at `tmp/units/<unit>-brief.md` (native) or `tmp/<bench>/<unit>-brief.md` (bench), and a re-run at `<unit>-brief-<n>.md`.
 - State in every brief: role and engine, one objective, the evidence slice, owned and off-limits files, the acceptance criteria cheap-first, the return shape, the deviation contract, and that the executor performs the work itself and spawns nothing.
 - Capture a campaign unit's report to `tmp/units/<unit>-report.md`, or read the bench's last-message file.
 - Launch every multi-minute command as a harness-tracked background command through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` under a cap sized from prior runs, and read a bench answer with that skill's `scripts/result.ts`. Every launcher, probe, and instrument is a TypeScript file run by `node`, never a shell or Python script. Read liveness from the artifact the work produces. Kill only a recorded process id, never a pattern, and confirm the process and its descendants are gone before another writer takes its files.
@@ -215,7 +216,7 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 
 - Keep the model, options, tools, and instruction prefix unchanged while they fit the task. Check the active provider and harness before claiming that a change preserves or invalidates caching. Treat a continued session as retained context, not as a cache hit; a cache hit depends on the provider, the prefix, and the retention window. Claim a saving only from recorded usage.
 - Keep the always-on instruction set small and load supporting rules by scope. When instructions change, use the harness's documented reload mechanism and tell affected agents what changed. Do not assume a file edit updates an active session.
-- Give reading and driver roles no instruction files (`omitClaudeMd` in Claude Code) when their charter carries the floor they need.
+- Give reading and driver roles no instruction files when their charter carries the floor they need.
 - Route bulk reads per § Routing and keep only the distillate.
 
 ## Acceptance

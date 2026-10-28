@@ -43,13 +43,13 @@ A package directory holds:
 ## Start a session
 
 1. Read the package folder's `README.md` when present, then `plan.md` § State, then the first open chunk of § Sequence.
-2. Run `git status --porcelain -b`, `git log @{upstream}..`, and `node .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report`. Reconcile each difference with § State before you act.
+2. Run `git status --porcelain -b`, `git log @{upstream}..`, and `node .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report`. Reconcile each difference with `plan.md` § State before you act.
 3. Act only on what the folder, the tree, and git hold. Agent memory from another machine or harness is absent.
 
 ## Hand off and close
 
 - Keep `plan.md` § State current at every commit, and make its last line the next action.
 - Before a session ends or its context compacts, write each ruling, decision, and next action into the folder; `.agents/orchestration.md` § Memory owns what memory can hold.
-- When a chunk closes, remove it from § Sequence. Its closing commit carries its evidence, and § State names the commit.
+- When a chunk closes, remove it from `plan.md` § Sequence. Its closing commit carries its evidence, and `plan.md` § State names the commit.
 - Delete a verdict file when its seam closes.
 - At acceptance, move each file that outlives the campaign to its root home, retarget its citations in the same change, and delete the package directory per `.agents/skills/orkestrel-debrief/references/retention.md`. Delete a top-level file when the wave or fleet campaign it records closes.

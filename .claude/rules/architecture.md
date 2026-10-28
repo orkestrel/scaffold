@@ -4,12 +4,11 @@ paths:
   - 'app/**/*.{ts,vue}'
   - 'tests/**/*.ts'
   - 'configs/**/*.ts'
-  - 'vite.config.ts'
-  - 'tsconfig.json'
-  - 'package.json'
 ---
 
 # Architecture and placement rules
+
+These rules govern where each declaration lives and how classes, functions, plugins, stores, and barrels are shaped. `.claude/rules/workspace.md` places the environments themselves.
 
 ## Centralized-file pattern
 
@@ -71,7 +70,7 @@ Use only the centralized files an environment needs.
   so both stay in `helpers.ts`. Placement follows what the function is; the name form follows
   placement.
 - Repair a violation of those forms by deciding what the function **is** first, then moving or
-  renaming to match. Both repairs exist and picking the wrong one does real damage.
+  renaming to match.
   - Wrong file, right name → **move it**. A `scan*` in `parsers.ts` is a pure lexical leaf that
     belongs in `helpers.ts`. The barrel star-exports both, so the move leaves the published surface
     identical.
@@ -79,12 +78,9 @@ Use only the centralized files an environment needs.
     drive its own state, as opposed to a plain value that carries data and no behaviour. A function
     returning a live entity is an entity factory and belongs in `factories.ts` whatever it is
     called, so `restoreThing` there is misnamed, not misplaced. Renaming moves the published
-    surface and earns a version bump; that cost is the correct one to pay, and it is smaller than
-    the alternative.
-  - Never let the name choose. Relocating a correctly-placed function to escape a rename drags its
-    dependencies with it — an entity factory moved into `helpers.ts` makes that file import an
-    implementation class, and a leaf file that imports a class stops being a leaf for every module
-    beneath it.
+    surface and earns a version bump.
+  - Never let the name choose. Never relocate a correctly placed function to escape a rename: an
+    entity factory moved into `helpers.ts` makes that file import an implementation class.
 - Keep the leaf pair class-free. `helpers.ts` and `validators.ts` sit at the bottom of a module's
   graph: they import types, constants, errors, and each other, and they import no implementation
   class. Every file that constructs or drives a class — `cloners.ts`, `compilers.ts`, `factories.ts`,
@@ -100,10 +96,9 @@ Use only the centralized files an environment needs.
 
 ### What the policy instruments prove
 
-The `policy` Oxlint plugin (`configs/policy.ts`) enforces syntactic placement: a declaration of a
-given syntactic kind appears only in a file permitted to hold that kind. The fleet policy sweep
-(`tests/policy.test.ts`, `tests/setupPolicy.ts`) enforces what a path or a text reading decides.
-The plugin reads declaration syntax and file name; the sweep reads paths and workspace text;
+`.claude/rules/workspace.md` § Policy instruments fixes which instrument takes which rule. The
+`policy` Oxlint plugin (`configs/policy.ts`) reads declaration syntax and file name; the fleet
+policy sweep (`tests/policy.test.ts`, `tests/setupPolicy.ts`) reads paths and workspace text;
 neither reads meaning.
 
 - The plugin proves that a module function sits in a function-kind file, that module data sits in a
@@ -120,9 +115,9 @@ neither reads meaning.
   `package.json` script names a `.sh` file.
 - The plugin proves, over the population `POLICY_ENDING_GLOBS` names, that no source trims a
   payload before splitting it on `'\n'`, reads `os.EOL`, or imports `EOL` from `node:os`.
-- The sweep cannot write a filename the host refuses. A Windows host rejects `<`, folds a case
-  collision into one file, and turns `:` into an alternate data stream, so those boundaries are
-  proven from a path population rather than from written files.
+- Prove a filename the host refuses from a path population, never from written files: a Windows
+  host rejects `<`, folds a case collision into one file, and turns `:` into an alternate data
+  stream.
 - The plugin does not prove a collection is frozen. It reads the declaration, never the value a
   call returns, so `Object.freeze([…])` and any other call initializer are one syntax to it. The
   freeze obligation in the earlier kind-purity rules binds regardless; only the bare literal is
@@ -131,8 +126,7 @@ neither reads meaning.
   functions reads the same to it apart from the `parse*`, `create*`, `create*Plugin`, and `create*Plugins` name
   forms: `cloners.ts`, `combinators.ts`, `compilers.ts`, `errors.ts`, `factories.ts`, `handlers.ts`,
   `helpers.ts`, `inferers.ts`, `middlewares.ts`, `parsers.ts`, `plugins.ts`, `relations.ts`,
-  `schemas.ts`, `seeders.ts`, `shapers.ts`, and `validators.ts`. That list is exhaustive, a new function kind joins it, and no
-  later version of the plugin claims more.
+  `schemas.ts`, `seeders.ts`, `shapers.ts`, and `validators.ts`.
 - The name forms read names only: a function, an export specifier, an exported import alias, and a
   star re-export in the kind file. They never read a return type, so a `create{Name}Plugins` that
   returns one plugin passes; review owns arity. A value binding in a kind file is the data rule's
@@ -152,20 +146,17 @@ neither reads meaning.
 - The cleanup pass and independent review prove kind purity across those files. A helper misfiled
   as a parser, a coercer misfiled as a guard, a compiler misfiled as a factory, and a shaper
   misfiled as a cloner are review findings, not instrument diagnostics.
-- The plugin does not decide barrel membership. It parses each file alone and resolves no module,
-  so it cannot tell whether a declaration is reachable from its barrel. That question belongs to
-  each package's `tests/guides.test.ts`, which imports the barrel and gets real resolution. Do not
-  add module resolution here to duplicate it.
+- The plugin does not decide barrel membership: it parses each file alone and resolves no module.
+  Each package's `tests/guides.test.ts` imports the barrel and decides reachability. Add no module
+  resolution to the plugin.
 - The kind table is mandatory whether or not an instrument can see the violation.
 
 ## Wrapper test
 
-A wrapper survives only when it adds a real boundary, invariant, composition, translation, lifecycle, or materially narrower contract.
+`AGENTS.md` § Design laws states the wrapper test. Apply it:
 
 - Delete one-line delegates, pass-through factories, rename-only helpers/getters, compatibility aliases, and wrappers around semantically identical platform or declared-dependency primitives.
 - Rename or import the real symbol and update every consumer atomically. Do not preserve a wrapper to avoid downstream edits.
-- Do not re-export a dependency's symbol from this package.
-- A public class method composes real entity behavior; it never exists only to forward 1:1 to a helper.
 - Audit callers and callees after every extraction so the old path and duplicate implementation do not remain.
 
 ## Functions and orchestration
@@ -276,8 +267,6 @@ Every shape obeys:
 - Never re-export a symbol originating in another package; fix consumer imports to the originating package.
 - Implementation files export their own classes directly.
 - Expose every intentional top-level source export through its correct environment barrel.
-- Never let current consumer count gate later exposure. Developers receive the same supported
-  mechanisms the package uses, so they retain full control and customization.
 - If a declaration must not be public, make it a true local or runtime-private detail, or remove
   the capability for a substantive reason. Never leave an intentional reusable export stranded
   outside the barrel.
@@ -290,7 +279,6 @@ Every shape obeys:
 - Delete a barrel row whose class no consumer can construct, and delete its `@example` with it. A
   row obliges a documented, runnable example, so a class kept public without one is drift that
   parity cannot see.
-- When a symbol moves, update every import; never leave a compatibility re-export.
 
 ```ts
 export * from './types.js'
@@ -304,16 +292,9 @@ export * from './greeters/Greeter.js'
 
 ## System constraints
 
-- Build or substantively expand a capability with its first real consumer; do not speculate. This
-  gate applies only when creating or expanding the capability, not to its later barrel exposure.
-- Keep interfaces to the smallest primitives the capability requires.
-- For multiple backends, implement shared querying/paging/aggregation in one engine over those primitives. A backend may override an operation only with a genuine native fast path and otherwise falls back to the engine.
+`AGENTS.md` § Design laws owns the minimal-API, shim, polling, and product-policy laws. This section adds:
+
+- For multiple backends, implement shared querying/paging/aggregation in one engine over the smallest primitives. A backend may override an operation only with a genuine native fast path and otherwise falls back to the engine.
 - Centralize any pattern repeated twice.
 - Keep everything generic/reusable and free of unrelated-project logic.
-- Do not expand the capability set without concrete need. Once that capability exists intentionally,
-  its reusable top-level exports follow the earlier barrel rule without a second consumer gate.
-- Do not remove structural files because they are empty.
-- Prefer the smallest complete implementation that preserves architecture.
-- No deprecation aliases, compatibility shims, or backward-compatibility branches; update all consumers atomically.
-- No polling/busy loops or recursive microtasks as architecture. Park idle work on an event/abort wakeup and yield long work in cooperative quanta.
-- Framework/server utilities provide mechanism—HMAC, CORS, parsing, sessions, cookies, CSRF, static serving—not product policy such as user models, login flow, or authorization.
+- Mechanism in a framework or server utility means HMAC, CORS, parsing, sessions, cookies, CSRF, and static serving; product policy means user models, login flow, and authorization.

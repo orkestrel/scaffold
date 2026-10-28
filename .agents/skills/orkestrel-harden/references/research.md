@@ -1,5 +1,7 @@
 # Research and capability audit
 
+This reference governs research for one package: the source order, focused reading, the capability matrix, and the conversion of evidence into design.
+
 ## Establish sources
 
 Use this source order:

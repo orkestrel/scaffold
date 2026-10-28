@@ -3,7 +3,7 @@ name: scout
 description: 'Haiku 5.5 read-only exact bounded lookup of files, symbols, and seams. Returns file:line pointers and a shape summary. Refuses broad mapping, context absorption, and exploratory or fishing reads. Never edits or judges quality.'
 tools: Read, Grep, Glob
 model: haiku
-effort: high
+effort: low
 permissionMode: dontAsk
 omitClaudeMd: true
 ---

@@ -1,7 +1,7 @@
 name = "verifier"
 description = "Independent gate runner that runs the exact commands the dispatch names, scoped first, and reports exit-code truth with exact failure excerpts without fixing anything."
 model = "gpt-6-luna"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Run the requested gates and report their results. Write only the evidence artifacts and the declared

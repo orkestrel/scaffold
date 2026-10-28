@@ -7,17 +7,16 @@ paths:
 
 # API pattern rules
 
+These rules govern the shape of options, managers, emitters, and contracts, and the reuse check that precedes a new primitive. `.claude/rules/architecture.md` places the files; `.claude/rules/names.md` names the members.
+
 ## Declared ecosystem capabilities
 
-Before writing a guard, parser, combinator, outcome, safe exception boundary, contract shape/compiler, schema utility, error narrower, emitter helper, or other general primitive:
+`AGENTS.md` § Non-negotiable rules owns the reuse law. Before writing a guard, parser, combinator, outcome, safe exception boundary, contract shape/compiler, schema utility, error narrower, emitter helper, or other general primitive:
 
 1. Inspect `package.json`, the lockfile, vendored dependency guides, and exact installed declarations/exports.
 2. Build a semantic overlap map between the proposed/local behavior and declared `@orkestrel/*` capabilities.
-3. Reuse the originating package directly when semantics match.
-4. Keep local behavior only when it adds a real domain invariant, composition, projection, translation, or intentionally different contract.
-5. Test the difference. Similar names are not proof of equivalent semantics.
-
-Never reimplement or rename-wrap a declared package primitive. Do not add an ecosystem dependency unless the user explicitly authorizes it.
+3. Keep local behavior only when it adds a real domain invariant, composition, projection, translation, or intentionally different contract.
+4. Test the difference. Similar names are not proof of equivalent semantics.
 
 ## Options
 
@@ -120,7 +119,7 @@ Use these orthogonal contract mechanisms:
 
 - Use plain guards/parsers for small contracts.
 - Use the shape DSL only when validation, serialization, and generation parity earns its complexity.
-- When `@orkestrel/contract` is declared, use its exact installed guards, parsers, combinators, outcomes, `attempt` boundary, and shape DSL wherever their semantics match. Do not maintain a local copy of those primitives.
+- When `@orkestrel/contract` is declared, use its exact installed guards, parsers, combinators, outcomes, `attempt` boundary, and shape DSL wherever their semantics match.
 - A guard never throws for any input, including cycles, deep nesting, revoked proxies, throwing accessors, or exotic prototypes; return false.
 - Recursive guards track ancestors and cap depth.
 - Recursion enters only through an explicit lazy gate.

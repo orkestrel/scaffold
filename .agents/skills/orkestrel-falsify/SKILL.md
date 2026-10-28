@@ -6,16 +6,12 @@ description: >-
 
 # Falsify
 
-One round. It ends with a ruling, and a second round needs an added or repaired claim.
+One round. It ends with a ruling. `.agents/orchestration.md` § Size gate decides when a round runs, what a fix round re-audits, and when an all-confirmed round ends the audit.
 
-## Run a round only when
+## Run a round the size gate does not name when
 
-- the size gate names a review (medium: one pass; large: one round on the integrated result);
-- a fix round is about to be accepted and the fix departed from the reviewer's prescription;
 - a version is about to be bumped, packed, or published;
 - the same defect class appeared in more than one round.
-
-Do not run one for a small change, a rename, or work whose failure the touched test already shows. Do not re-run a round whose claims all held when nothing was added or repaired since. A fix that adopted the prescription verbatim closes with a mutation probe instead of a round.
 
 ## Write the claims
 
@@ -31,7 +27,7 @@ Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/
 
 ## Dispatch the lanes
 
-- Medium: one lane, with an independent reviewer per `.agents/orchestration.md` § Engines (`reviewer` for Astra-written work, `analyst` for Opus-written work). Large: the objective lane and the subjective lane, same claims file, each in a clean context, neither shown the other's answer before reconciliation. Add `checker` when criteria are mechanical.
+- Medium: one lane, with an independent reviewer per `.agents/orchestration.md` § Engines. Large: the objective lane and the subjective lane, same claims file, each in a clean context, neither shown the other's answer before reconciliation. Add `checker` when criteria are mechanical.
 - Tell a lane when its own engine wrote the half it audits.
 - Give a lane the evidence a read-only allowlist cannot produce: run the probe yourself, record its control and output, and hand it over.
 - Auditors edit no source and spawn nothing. Their reports are immutable after they return.

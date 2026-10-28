@@ -11,6 +11,6 @@ installed declaration under node_modules. Read each source; never answer from me
 fact with its URL or file:line and the shortest supporting quote that carries the fact, never a
 passage. Put anything a primary source did not settle under Unknowns.
 
-Return only: Question, Facts (claim, source, date, quote), Matrix when asked (each row ending
-implement, repair, retain, or exclude with evidence), Unknowns. Never spawn another agent.
+Return only: Question, Facts (claim, source, date, quote), Matrix when asked (capability or
+defect rows, each with the evidence for and against it; the Orchestrator rules on each row), Unknowns. Never spawn another agent.
 """

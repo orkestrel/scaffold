@@ -13,16 +13,18 @@ rest of the layer either fits inside it or takes another approval.
 
 - Read the session with `node .agents/skills/orkestrel-publish/scripts/window.ts --whoami`; `--login` prints the command the operator runs in a real terminal and polls `whoami` until it answers. No child of a script holds the TTY npm needs, so the login itself is the operator's.
 
-- Run the login and every browser-authorized publish under `script -qfc '<command>' <log>`. npm
-  offers the browser approval only when it sees a TTY; without one it fails `EOTP` with no way to
-  answer. The one-time-code path runs under captured pipes instead, per § Authorize the upload.
+- Run the login and every browser-authorized publish in a real terminal: npm offers the browser
+  approval only when it sees a TTY, and without one it fails `EOTP` with no way to answer. A POSIX
+  Orchestrator gives npm one with `script -qfc '<command>' <log>`; on Windows the operator runs the
+  command (`.agents/platforms/windows.md` § Release packs and terminals). The one-time-code path
+  runs under captured pipes instead, per § Authorize the upload.
 - Pass `--browser=false` to `npm login` and to every `npm publish`. Without it npm prints
   `Press ENTER to open in the browser...` and blocks. Never answer that prompt with a newline: the
   web flow consumes the newline on a later read, drops to a legacy `Username:` prompt, and exits
   **zero** without authenticating. With the flag npm prints the URL and polls, and stdin stays
   untouched.
-- Hold stdin open and write nothing to it. Use a fifo held open by a long `sleep`. EOF drops npm
-  to the same legacy prompt a stray newline does.
+- Write nothing to npm's stdin and never close it: EOF drops npm to the same legacy prompt a
+  stray newline does.
 - Run `npm login` before any publish. The `npm publish` command does not open the browser flow:
   unauthenticated it returns `E404` on `PUT`, which reads as a missing package rather than as a
   missing credential.
@@ -33,14 +35,12 @@ rest of the layer either fits inside it or takes another approval.
 - Read a login log that shows the spinner and then a legacy `Username:` prompt as a dead attempt
   rather than as a prompt to answer: expired, or refused on its first poll per § Read a `403` on the
   poll. Kill it by the process id recorded at its launch, per the `orkestrel-dispatch` skill's launch
-  reference § Kill and relaunch. Every browser-authorized publish here runs under the same `script -qfc` form, so
-  a pattern over the process list reaches a live upload as readily as the dead login.
-- On a Windows host, Git Bash ships no `script` binary, so a browser-authorized upload is
+  reference § Kill and relaunch.
+- Where the Orchestrator has no TTY to give npm, a browser-authorized upload is
   operator-driven: prepare the layer, prove the gates, surface the exact `npm publish` command, and
   the operator runs it in a real terminal. Everything before and after the upload — bumps, re-pins,
   gates, registry reads — stays with the Orchestrator, and the one-time-code path in § Authorize the
-  upload runs through `window.ts` on every host. The fifo stdin law still binds a browser-authorized
-  upload on that host.
+  upload runs through `window.ts` on every host.
 
 ## Reach the approval
 
@@ -53,8 +53,7 @@ rest of the layer either fits inside it or takes another approval.
   prints `https://www.npmjs.com/auth/cli/<id>`.
 - Never shorten, redirect-strip, or otherwise improve a minted URL. The bare
   `https://www.npmjs.com/login/cli/<id>` target the login URL names is not a page: opened in a
-  browser it answers `{"message":"Unauthorized"}`. The user then reads a broken chain where the
-  chain is healthy, and the operator diagnoses the wrong failure.
+  browser it answers `{"message":"Unauthorized"}`.
 - Expect an unclicked session to die about 45 seconds after it is minted. Measured on 2026-08-27
   against `registry.npmjs.org` with `npm` 10.9.7 and `node` 22.22.2: npm polls `GET /-/v1/done`
   every few seconds and takes `202` while the session waits, and the registry answers `403` at
@@ -78,8 +77,7 @@ rest of the layer either fits inside it or takes another approval.
 - Read the URL out of the journal in the foreground and surface it before arming any watcher. A
   watcher-based relay can fail silently, and its silence is indistinguishable from a chain that
   has not reached the URL yet.
-- Relay the URL as plain text. A decorated link did not render for the operator, who then had
-  nothing to click while the window ran down.
+- Relay the URL as plain text; a decorated link did not render for the operator.
 - Re-read the log before treating an approval as failed. The chain is sometimes still alive on a
   later URL, so surface that one rather than starting the chain again.
 - Read a `404` on an approval URL as a publish that already succeeded and consumed it. Read the
@@ -92,9 +90,8 @@ rest of the layer either fits inside it or takes another approval.
 - Take the account's one-time code where the account has one. The
   `npm publish --ignore-scripts --otp=<code>` command uploads with no browser authorization and no
   poll. The code has its own life: measured on 2026-09-04 against `registry.npmjs.org`, one code
-  carried every upload of a layer started within about a minute of its first use, console at
-  20:25:02 through router at 20:25:58, and the upload started at 20:25:58 was refused `EOTP` at
-  20:26:00; a code read before its layer was ready was refused at its first upload.
+  carried every upload of a layer started within about a minute of its first use, and a code read
+  before its layer was ready was refused at its first upload.
 - Prepare the whole layer, then ask for one code at the moment the layer's first upload starts, and
   chase the layer's uploads back-to-back inside that code's life with no gate between them. A code
   read minutes earlier is already spent.
@@ -103,12 +100,11 @@ rest of the layer either fits inside it or takes another approval.
   from that package on a fresh code. Never retry the refused upload on the same code.
 - Ask for the code and nothing else. Never ask for a password, an access token, or an auth file.
   `release.md` § Publishing is the user's owns that law.
-- A one-time-code upload needs no terminal arming: `window.ts --publish` holds the upload under
-  captured pipes, where npm's non-TTY guard rethrows an authentication refusal instead of prompting,
-  so a spent code is refused `EOTP` with no prompt and no browser flow, which is the stop the runner
-  reads. The runner passes `--browser=false` and re-reads `whoami` immediately before the first
-  upload. Never run a one-time-code upload on a TTY: there npm answers a refused code with a prompt
-  the chain cannot see.
+- A one-time-code upload needs no terminal arming: `window.ts --publish` runs it under captured
+  pipes, where a spent code is refused `EOTP` with no prompt and no browser flow, which is the stop
+  the runner reads. The runner passes `--browser=false` and re-reads `whoami` immediately before the
+  first upload. Never run a one-time-code upload on a TTY: there npm answers a refused code with a
+  prompt the chain cannot see.
 - Fall back to the browser authorization where the account answers with no code. That path mints
   the `auth/cli/<id>` URL, needs the click inside the session's life, and opens the five-minute
   window.
@@ -184,5 +180,4 @@ the same status. Rule from the evidence, never from which cause reads likelier.
 - Rule on a pack-time manifest-rewriting warning by fetching the registry's copy of the manifest,
   never by the warning's own text.
 - Re-read the registry before telling the user a package failed. A chain still running, a retry
-  that landed, and CDN lag all produce a failure reading that the registry contradicts, and a
-  false failure report costs a needless approval and a needless republish.
+  that landed, and CDN lag all produce a failure reading that the registry contradicts.

@@ -169,7 +169,7 @@ one environment, so each is its own project:
 | Project             | Files                                                          | Proves                                                                                                                                                                                                                      | Gate                                  |
 | ------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `policy`            | `tests/policy.test.ts`                                         | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                                                | `test`                                |
-| `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs                                                                                                                                                              | `test`                                |
+| `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                                                       | `test`                                |
 | `setup`             | `tests/setup*.test.ts` other than either `setup:browser` proof | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                          | `test`                                |
 | `setup:browser`     | `tests/setupBrowser.test.ts`, `tests/setupStyles.test.ts`      | Prove browser and style setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                        | `test`                                |
 | `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                  | `test` through the journey scripts    |
@@ -326,7 +326,7 @@ Build/check config alignment:
 - Node build targets derive from the package's declared supported runtime. Keep `engines`, bundler targets, scoped configs, tests, and documentation aligned; never hard-code one Node version line-wide.
 - Browser framework: the `vue` extension where selected.
 
-Policy instruments:
+### Policy instruments
 
 - Put every rule of the policy law in exactly one instrument. `configs/policy.ts` — the
   oxlint plugin, namespace `policy` — takes the rules a single file's AST decides. The policy sweep

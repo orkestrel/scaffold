@@ -17,9 +17,7 @@ journey-generated and part spawned.
 Apply this section to a spawned harness only.
 
 - Write the harness as one self-contained script that spawns its own children, waits for readiness,
-  does the capture, and kills them before returning.
-- Never leave a child running across calls or expect one to survive its parent. A process started
-  inside one tool call dies with that call's process group.
+  does the capture, and kills them before returning. Spawn, capture, and tear down in one call.
 - Give every child a pinned working directory. A process that resolves assets, configuration, or
   fixtures relative to the current directory dies silently when launched from elsewhere.
 - Pipe child standard error somewhere readable and print it on failure.
@@ -43,33 +41,21 @@ and `orkestrel-journey` fixes how it enters and what it may reach past.
 
 ## Capture the full portfolio
 
-Produce every artifact in the following table each round, for every scenario in scope. The Source
-column names what produces the artifact in the journey run; a spawned harness produces each one
-itself.
+Produce each of the following every round, for every scenario in scope:
 
-| Artifact               | Source in the journey run            | What the artifact must show                                                           |
-| ---------------------- | ------------------------------------ | ------------------------------------------------------------------------------------- |
-| Viewport captures      | `place` across the declared variants | Every breakpoint the surface declares, never one convenient size                      |
-| Theme captures         | `place` across the declared variants | Every theme the surface ships, at every declared viewport                             |
-| Accessibility snapshot | `describeTree` and `describeFocus`   | The rendered roles, names, and states, and the focus order the walk took              |
-| Interaction log        | The journal's `steps`                | Each interaction, its trigger, and the result observed after it                       |
-| Console and error log  | The journal's `output`               | Everything the page emitted, including an uncaught error                              |
-| Statechart outcome     | The harness after a play-all run     | The terminal status, the passed, failed, and total tallies, and each row's own result |
+- Viewport captures at every breakpoint the surface declares, and theme captures for every theme it ships at every declared viewport. In the journey run, `place` across the declared variants produces them.
+- The rendered artifact per variant, composed as the `orkestrel-journey` skill's Routing a question → The rendered artifact fixes: the accessibility snapshot, the focus order, the interaction log, and the console and error log.
+- The statechart outcome of every surface that declares the statechart family: the terminal status, the passed, failed, and total tallies, and each row's own result. The harness produces it after a play-all run; cite its deep link where a lane must watch the widget move rather than read a still of it.
 
-- Require the statechart outcome of every surface that declares the statechart family, and omit the
-  row only where the surface declares none.
-- Read the journey run's per-variant written artifact for the accessibility snapshot and the logs,
-  and cite the statechart harness by its deep link where a lane must watch the widget move rather
-  than read a still of it. `orkestrel-journey` fixes what each holds and what each is named
-  for.
+A spawned harness produces each artifact itself.
+
 - Shoot the whole surface before selecting or focusing anything inside it. A capture taken after a
   selection reports a duplicate or highlighted artifact that does not exist.
 - Start a keyboard walk from a neutral state, never from an already-focused control, or the log will
   report a broken order no person meets.
 - Name a spawned harness's artifacts so a verdict cites one exactly: scenario, viewport, theme,
   step. The journey run's filename law already does this.
-- Keep the artifacts of each round beside its verdicts. A round judged against the previous round's
-  captures is not a round.
+- Keep the artifacts of each round beside its verdicts.
 
 ## Preflight before spending a round
 
@@ -84,8 +70,7 @@ Confirm each of the following:
   to the total;
 - nothing in the console log indicates the harness, rather than the surface, failed.
 
-Repair a portfolio that fails preflight before dispatching it. Never spend a verdict round
-discovering a harness defect.
+Repair a portfolio that fails preflight before dispatching it.
 
 ## Triage missing evidence to the harness first
 

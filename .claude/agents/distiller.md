@@ -3,7 +3,7 @@ name: distiller
 description: 'Haiku 5.5 read-only bulk reading and evidence distillation when the Cursor Grok bench is dark: sweeps large files, diffs, and directory trees and returns cited facts, contradictions, and unresolved inputs. Never designs, implements, reviews, or accepts.'
 tools: Read, Grep, Glob
 model: haiku
-effort: high
+effort: low
 permissionMode: dontAsk
 omitClaudeMd: true
 ---

@@ -8,6 +8,8 @@ paths:
 
 # Testing rules
 
+These rules govern what a test asserts and where it lives, the cross-cutting and expensive proofs, probes, shared test infrastructure, browser tests, and runner configuration. `.claude/rules/quality.md` § Instruments chooses the instrument for a question.
+
 ## Test contract
 
 - Mirror module/application structure:
@@ -42,30 +44,15 @@ paths:
 - Assert a runtime-chosen result as the property it must have, not as the number one run produced. Compression, timing, and buffer sizing are the runtime's choice, so pin the relationship the test depends on — that the encoded form is larger, that the second call is faster — and let the assertion fail when the input drifts out of the range where that relationship holds.
 - Measure an elapsed interval with `performance.now()`, never `Date.now()`. `Date.now()` returns whole milliseconds, so an interval built from two of its readings truncates at both ends and can under-report by a millisecond — enough to fail a boundary assertion against a timer that behaved correctly. `performance.now()` is monotonic and sub-millisecond, and it does not move when the wall clock does.
 - Give a conditional skip the mechanism that makes it inapplicable, cited, not the platform name alone. A test skipped on a platform is a test nobody re-examines; a test skipped because a named API rejects a named case is one anybody can re-check.
-- A regression test records the exact command and its failing count before the fix, and the same command's passing count after.
 - The revert that proves a repair reddens exactly the test that names the defect. Keep the import and collection graph valid while reverting, and confirm the named test was collected. A revert that reddens anything beyond that test broke the harness, and its count is not evidence.
 - Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every `.skip` or conditional skip has a narrow verifiable applicability reason.
 - Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`.
-- Run the narrowest relevant Vitest project during development; do not run the entire suite casually.
 
 ## Cross-cutting proofs
 
 A proof that covers the workspace instead of one module has a fixed location, so no package invents
-its own:
-
-| Path                         | Proves                                                                                                                                                                                       |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                 |
-| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                        |
-| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
-| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
-| `tests/tree.test.ts`         | The laws this package states about its own real tree, such as the module closure a project may reach, that no vendored proof carries                                                         |
-| `tests/agents/**/*.test.ts`  | Each skill script does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; the scaffold checkout alone carries them                     |
-| `tests/studies/**/*.test.ts` | Evaluations of the workspace's consumer study code under `studies/`, run through bounded subprocesses and protocol fixtures; the `test:studies` script is their gate                         |
-| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
-| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          |
-| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
-| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              |
+its own. `.claude/rules/workspace.md` § Test project matrix lists each location with its project,
+what it proves, and its gate.
 
 - Put `tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts` in the browser-enabled
   `setup:browser` project. Put every other root `tests/setup*.test.ts` proof in the Node `setup`
@@ -75,7 +62,6 @@ its own:
 - Put an assertion about the package's real tree that no vendored proof carries in
   `tests/tree.test.ts`, driving the exported `tests/setup*.ts` helper that reads the tree, and keep
   that helper's own proof over fixtures in its `tests/setup*.test.ts` file.
-- `.claude/rules/workspace.md` names the Vitest project each location belongs to.
 - The `guides` project runs in Node with the browser disabled. Its subject is what the guide
   claims: that every documented name resolves, and that every fence asserting a value returns
   that value. A proof that renders a component and compares it against a definition is a
@@ -186,7 +172,7 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 
 Test helpers are shared infrastructure, not local test-file clutter.
 
-`@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Before declaring a helper in a `tests/setup*.ts` module, read the installed surface — `guides/test.md` § Surface in the scaffold checkout, or the package's own declaration under `node_modules` — and declare only what no export does. A setup-module export whose name or job matches an installed export is a defect, whichever file declared it first. The following shapes are the contract a workspace codes against, not source to copy.
+`@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Before declaring a helper in a `tests/setup*.ts` module, read the installed surface — `guides/test.md` § Surface in the scaffold checkout, or the package's own declaration under `node_modules` — and declare only what no export does. A setup-module export whose name or job matches an installed export is a defect, whichever file declared it first. `guides/test.md` § Surface holds the signatures; the following sections state how to use them.
 
 - For the test modules scaffold owns, keep shared helpers within them instead of importing them
   from `@orkestrel/test`. In the vendored set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
@@ -222,38 +208,17 @@ Place helpers by environment:
   registers one `it` per case row. Put a package-specific distribution helper in
   `tests/setupServer.ts`, because `repair` replaces every edit to the harness.
 
-Never rename or remove an export of `tests/setupDistribution.ts` that an emitted proof imports, an
-interface member that proof reads, or the `./setupDistribution.js` specifier it imports from,
-because no verb rewrites a proof a target holds. Add a name or member beside a frozen one instead.
-The proof scaffold 0.0.104 emits freezes `createDistributionSuite`, `buildDistributionCases`, and
-`checkDistributionBrowser`; the `start`, `read`, and `destroy` members of
-`DistributionSuiteInterface`; the `label` and `observe` members of `DistributionCase`; the `actual`
-and `expected` members of `DistributionObservation`; the `entries` member of `DistributionStage`;
-and the `browsable` and `subpath` members of `DistributionEntry`. When a release changes the
-emitted proof, add its variants under that release's key in the `DISTRIBUTION_PROOF_TEXTS` fixture
-of the scaffold checkout's `tests/setupServer.ts`, drive them against the harness, and never edit a
-released key.
+In the `@orkestrel/scaffold` checkout, never rename or remove an export of
+`tests/setupDistribution.ts` that an emitted proof imports, an interface member that proof reads, or
+the `./setupDistribution.js` specifier it imports from, because no verb rewrites a proof a target holds. Add a name or member beside a frozen one instead.
 
 ### Recorder
 
-Import `createRecorder` from `@orkestrel/test` instead of a framework spy when only calls and arguments matter. It returns:
-
-```ts
-interface RecorderInterface<TArgs extends readonly unknown[]> {
-	readonly calls: readonly TArgs[]
-	readonly count: number
-	readonly handler: (...args: TArgs) => void
-	clear(): void
-}
-```
+Import `createRecorder` from `@orkestrel/test` instead of a framework spy when only calls and arguments matter.
 
 ### Delay
 
-Import `waitForDelay` from `@orkestrel/test`; never repeat an inline timeout promise. It waits for one host timer and defaults to `0`:
-
-```ts
-function waitForDelay(ms?: number): Promise<void>
-```
+Import `waitForDelay` from `@orkestrel/test`; never repeat an inline timeout promise.
 
 Use it to yield, never to wait for something another process produces. A fixed delay chosen to
 outlast a child's startup is a race whose loss looks like a product defect: the test measures
@@ -268,46 +233,11 @@ Import `waitForCondition`, `waitForEvent`, `waitForAbort`, and `retryUntil` from
 event in a test or a setup module is a defect: `waitForCondition` owns the poll, `waitForEvent`
 the deferred on an event, and `waitForAbort` the deferred on a signal. A guide fence transcribed
 byte for byte into `tests/guides.test.ts` is the consumer's code and stays as the guide shows it.
-Each timed wait takes a `description` the timeout error names and `WaitOptions` (`budget`,
-`interval`, `signal`):
-
-```ts
-function waitForCondition(
-	description: string,
-	condition: () => boolean | Promise<boolean>,
-	options?: WaitOptions,
-): Promise<void>
-function waitForEvent<TArgs extends readonly unknown[]>(
-	subscribe: EventSubscriber<TArgs>,
-	description: string,
-	options?: WaitOptions,
-): Promise<TArgs>
-function waitForAbort(signal: AbortSignal): Promise<void>
-function retryUntil<T>(
-	description: string,
-	produce: () => T | Promise<T>,
-	satisfied: (value: T) => boolean,
-	options?: RetryOptions,
-): Promise<T>
-```
+Give each timed wait a `description` the timeout error names.
 
 ### Scratch
 
-Import `createScratch` from `@orkestrel/test/server` when a proof needs real files. It allocates a temporary directory it owns, keeps every path inside that directory, and removes the directory on `destroy`:
-
-```ts
-interface ScratchInterface {
-	readonly path: string
-	write(target: string, text: string): string
-	read(target: string): string | undefined
-	has(target: string): boolean
-	names(target?: string): readonly string[]
-	ensure(target: string): string
-	link(target: string, source: string): string
-	remove(target: string): void
-	destroy(): void
-}
-```
+Import `createScratch` from `@orkestrel/test/server` when a proof needs real files, and call `destroy` on it.
 
 ### Style primitives
 
@@ -330,6 +260,27 @@ Use the real browser as the system under test:
 - Assert DOM state, emitted events, callback records, focus, classes, attributes, and public API state.
 - Do not assert private state, internal timers, or framework scheduler internals.
 - Prefer real short timers and observable wakeups. Never replace the host clock.
+
+### Journey tests
+
+A journey test drives the application as a person does, through only what a person can see and reach:
+
+- Resolve every interactive target by its ARIA role and accessible name as rendered. Never reach into a component instance, a store, a transport, a copied credential, or a test-only hook to make a step succeed. A step the interface cannot perform is a finding about the interface.
+- Assert the rendered text a person reads, which is `innerText`: a label under `text-uppercase` asserts as `TRACE` where the source says `Trace`. An entity state read can corroborate a perception assertion and never replaces it.
+- Assert what the interface withholds. Assert each refusal through the resolver's exact failure voice, and distinguish an absent control from a present but unreachable one.
+- Keep transport and persistence proofs in their own declared block, never in a journey. Assert every live or asynchronous fact by convergence, polling until it contains or equals, never by an identity read of one frame. A poll's predicate must be able to go false-to-true after the action it observes.
+- Commit a value through an act a person performs: `pressKeys('{Enter}')` on the focused control, a Tab away, or a named button. A screen that commits on a timer, on an unpredictable event, or only after work the person cannot observe is a screen finding; never work around it in the test layer.
+- Type only what a person would. Inputs no person would type belong to the transport family and the parser suites. Type keystroke by keystroke where the keystrokes are the subject, and fill in one operation where the text is only a payload the person pastes.
+- Perform every interaction step unconditionally. Never gate a step on whether its control exists or is reachable, and never branch a journey on `readRefusal`: a guarded step passes whether or not the control was there.
+- Import every journey verb, reader, wait, and fixture builder from `@orkestrel/test/browser`, and every host-independent wait and table type from `@orkestrel/test`. Send every key sequence through `pressKeys`, and never reach past it to the provider's keyboard function.
+- Enter through the real entry: mount the shipped root component with a real store and the route a person lands on.
+- Reach each screen's own controls through forward Tab traversal in at least one journey.
+- Assert the state the flow must reach, never the transient path taken to it.
+- Assert the negative beside the positive whenever a value replaces another: name the arriving sentence and carry the replaced one as absent.
+- Assert the state a control announces beside every drive that sets it, and on an unselected sibling.
+- After a confirmed destructive action, assert through trusted input that focus landed on a visible, announced location.
+- Assert the page's perception never matches the vocabulary the product does not speak: engine, schema, and implementation words the interface is supposed to translate.
+- Report a bare accessible name that answers for more than one reachable element on one screen as a screen finding, and target through role or region until the screen is fixed.
 
 ## Runner configuration
 
@@ -360,22 +311,5 @@ Coverage rules:
 
 ## Discovery and adequacy audit
 
-For a change the size gate in `AGENTS.md` § Work loop names medium or large, run
-`node .agents/skills/orkestrel-harden/scripts/discovery.ts` before acceptance for the census of
-projects, gates, collected files, and skip markers, then:
-
-- prove every intended test file is discovered by the correct project;
-- prove every declared project is reachable from a gate. A project registered in the root
-  configuration with no script, or with a script no chain runs, is a proof that never executes — and
-  because it never executes it never fails, so the suite reports green while carrying it. Read the
-  chain, not the exit code: run each project directly once and compare that list against what `test`
-  actually invokes. The gate that would report this gap is the gate that is missing.
-- prove a declared project's include resolves to a real file. An empty project is not a passing
-  project: Vitest exits non-zero on "no test files found", so a project aimed at a path that was
-  never created stays invisible until something finally runs it.
-- inspect actual test counts and environments;
-- audit `.todo`, `.skip`, conditional skips, retries, and inflated timeouts;
-- confirm each assertion would fail for the defect it claims to catch, and that it fails rather than passes when its population is empty;
-- confirm helpers do not reimplement production behavior;
-- confirm cleanup runs after setup or assertion failure;
-- confirm current-scope requirements have real tests rather than placeholders.
+Before accepting a change the size gate in `AGENTS.md` § Work loop names medium or large, run the
+audit in the `orkestrel-harden` skill's hardening reference, § Audit the tests themselves.

@@ -12,7 +12,6 @@ Give every claims brief these rows.
 - **Review evidence.** The actual diff and the actual `git status --porcelain` output, by path. For a rendered or externally driven surface, the capture; source is corroboration.
 - **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. A finding against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
 - **Unknowns.** What the Orchestrator does not know that the round needs, and how the lane reports on it.
-- **The threshold.** State that a finding is worth more than a clean pass: the alternative is a consumer finding it after publication.
 
 ## The lane's brief
 
@@ -36,7 +35,6 @@ A re-run takes a successor brief named per `.agents/orchestration.md` § Dispatc
 - "The instruments bind." Test the instrument's rule: name a change it would not catch.
 - "No instrument is vacuous." Require a control that cannot produce its failing verdict; name a tautology a previous round shipped.
 - "The guide is true." Ask whether a false universal was replaced by an unfalsifiable one.
-- "The package is coherent as a whole. Would you ship this?"
 - "The self-declared sound-and-unchanged verdicts are sound." Require the lane to test the ones it judges most likely wrong.
 - "The rewrite preserves behavior." Judge it by `.agents/skills/orkestrel-harden/references/equivalence.md`, and require a differential row for each class it names that the changed code admits.
 
@@ -44,9 +42,7 @@ A re-run takes a successor brief named per `.agents/orchestration.md` § Dispatc
 
 - "CONFIRMED requires naming the falsification you tried that failed."
 - "A claim you cannot decide is UNRESOLVED, not CONFIRMED; say what would settle it."
-- "Assume this chain has one more." Name the prior rounds and the defect a previous round believed closed.
-- "Do not hedge toward an imagined consensus."
-- Never write "an audit returning only confirmations has not tried"; a lane that manufactures a finding to satisfy the brief costs a fix unit and the credibility of the true findings beside it. Test the adequacy of an all-confirmed round afterwards, against the brief.
+- Write no sentence that presses a lane toward a finding. Test the adequacy of an all-confirmed round afterwards, against the brief.
 
 ## Keep out of a brief
 

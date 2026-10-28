@@ -1,5 +1,7 @@
 # Adopt `@orkestrel/contract`
 
+This reference governs adopting `@orkestrel/contract` in one package: the exact-package inspection, the overlap matrix, the wrapper-free refactor, and the strictness proofs.
+
 ## Inspect the exact installed package
 
 Never work from a remembered contract version or copied API list. Read:

@@ -10,7 +10,7 @@ carrier. A campaign that accepts with no debrief arrives at acceptance, per
 either door.
 
 Call the `.orkestrel/` folder the campaign folder, never a ledger. The word `ledger` names the
-campaign's ledger file and the carry ledger only.
+campaign's `ledger.md` only.
 
 ## The gate order
 
@@ -41,11 +41,9 @@ Rule on every location in this table before deleting anything.
 | `tmp/<bench>/`          | A bench unit's brief, report, event stream, final answer, and any login log.                                                                 | Swept after the final gate evidence is recorded. Never committed.                                                                |
 | `tmp/probes/`           | The runtime probes the campaign wrote.                                                                                                       | Swept. A probe that settled a claim becomes a test before the prune, per `.claude/rules/quality.md` § Instruments.               |
 | `ROADMAP.md`            | The repository's sequenced plan of record, where it keeps one.                                                                               | Kept. Strike the chunks the campaign closed and add the forward work it revealed.                                                |
-| `PROPOSAL.md`           | A proposal for work nobody has ruled on yet.                                                                                                 | Deleted after the work lands or the proposal is refused. The ruling goes in the prune commit message.                            |
 
 A plan-of-record file is not campaign residue. `ROADMAP.md` outlives every prune and takes the
-campaign's forward work; `PROPOSAL.md` is spent the moment its proposal is ruled on, and a spent
-proposal left in the tree reads as live work.
+campaign's forward work.
 
 ## Sweep `tmp/` as a tree
 
@@ -68,8 +66,8 @@ decision, a withdrawn claim, an unmet acceptance condition. Each ends the check 
 commit that closed it, a live brief that owns it, or an explicit drop on the record. An item with
 no carrier blocks the prune.
 
-Read the register files for this — the plan, the readiness grade, the carry ledger, the triage —
-rather than every brief and report in the folder.
+Read `plan.md` § State, `ledger.md`, `gaps.md`, and `ideas.md` for this, rather than every brief and
+report in the folder.
 
 ## The promotion check
 

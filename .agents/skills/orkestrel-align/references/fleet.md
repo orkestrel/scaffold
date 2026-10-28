@@ -1,5 +1,7 @@
 # Fleet alignment
 
+This reference governs fleet alignment across repositories: verifying live state, planning dependency order, and verifying consumers.
+
 ## Verify live state
 
 For every relevant repository, record:
@@ -29,19 +31,11 @@ Keep one authoritative session per package. Re-establish live state before actin
 
 ## Validate local packages
 
-When a dependent must verify a local package:
-
-- build the dependency;
-- consume its built artifact only in an isolated or explicitly authorized consumer;
-- prove every relevant resolution points to the intended artifact;
-- run the dependent's targeted then final local gates;
-- restore temporary overrides, manifest edits, and lockfile state.
-
-Do not treat an undeclared source-checkout import as consumer proof.
+When a dependent must verify a local package, pin it to a built tarball in an isolated or explicitly authorized consumer, run the dependent's targeted then final local gates, and restore the pin, per `.agents/skills/orkestrel-publish/references/release.md` § Fix a dependency before it publishes. Do not treat an undeclared source-checkout import as consumer proof.
 
 ## Align guides and verification
 
-Refresh dependency guides through the current scaffold workflow when the owning repository and scope permit it. Report drift rather than hand-editing a vendored guide whose canonical source lives elsewhere.
+Refresh dependency guides with `scaffold catalog` when the owning repository and scope permit it. Report drift rather than hand-editing a vendored guide whose canonical source lives elsewhere.
 
 Run package-local verification from dependencies to dependents. A passing lower package does not prove its consumer; a passing consumer does not replace lower-package invariants.
 

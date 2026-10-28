@@ -93,7 +93,7 @@ and the form of a conditional skip.
 - Write every `package.json` script as a portable command: a Node invocation or an installed binary.
   Never name a `.sh` file there.
 - Keep `#!/usr/bin/env node` on an npm bin. npm writes the Windows shim from it.
-- Keep `scripts/` for the Claude Code Cloud session hooks alone, in bash, with `.gitattributes` `eol=lf`. Every other script is TypeScript run by Node per `AGENTS.md`; a skill's scripts live in its `scripts/` directory.
+- Give the Claude Code Cloud session hooks in `scripts/`, the one bash exception `AGENTS.md` admits, `.gitattributes` `eol=lf`.
 - Spawn a command from a script with an argument array and no shell, so quoting is the same on every host; resolve a `.cmd` shim to the JavaScript entry it wraps rather than spawning the shim.
 
 ## Claims

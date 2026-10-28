@@ -1,6 +1,6 @@
 # Claude transport contract
 
-For harnesses that route work to the Claude Opus 5.5 bench, follow this file. Routes: `planner`, `reviewer`, `opus`. Read `.agents/orchestration.md` first; its Codex mapping uses native roles without this transport or a Claude probe. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs.
+For harnesses that route work to the Claude Opus 5.5 bench, follow this file. Routes: `planner`, `reviewer`, `opus`. Read `.agents/orchestration.md` first; its Codex mapping uses native roles without this transport or a Claude probe. `.agents/skills/orkestrel-dispatch/SKILL.md` § Launch owns the driver and launch contract.
 
 ## Command
 
@@ -9,9 +9,9 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/claude/<u
 ```
 
 - Pass the permission mode the route pins and `--model opus` for every route. Never substitute another alias, `fable`, or a fixed Claude model id.
-- Write the brief to `tmp/claude/<unit>-brief.md` with `scripts/brief.ts --lane claude`; the prompt is a pointer to it. Briefs never travel as shell arguments.
+- Write the brief to `tmp/claude/<unit>-brief.md` with `scripts/brief.ts --lane claude`; the prompt is a pointer to it.
 - Read the answer and the session id with `node .agents/skills/orkestrel-dispatch/scripts/result.ts --claude tmp/claude/<unit>.jsonl`. A unit with no journal ran on its driver's engine, however normal its answer reads.
-- A driver pinned `workspace-write` writes the brief itself. A driver pinned `read-only` writes nothing: it returns the brief text, its intended path, the resolved command, and the journal paths, and the Orchestrator writes and launches.
+- A driver pinned `workspace-write` writes the brief itself.
 - A driver never launches long work, recommends a cap, detaches, polls, restarts, or kills a run.
 
 ## Availability

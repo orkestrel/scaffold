@@ -115,8 +115,8 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
 - Booleans read as assertions: `aborted`, `exhausted`, `expired`.
 - Accessors use bare nouns, never `get*`/`set*`.
 - Do not alternate `count`/`length`/`size`/`total` or `abort`/`cancel`.
-- Name the axis a discriminant varies: `relationship`, `command`, `category`, `operation`, `via`.
-- A binary switch is a boolean such as `bail`, never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.
+- Name the axis a discriminant varies; `operation` and `via` are axis names beside those `AGENTS.md` lists.
+- A binary switch such as `bail` is never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.
 - An option key, constant, or member that transliterates an external protocol field, format field, or engine pragma keeps the external wording in this project's casing, and its TSDoc names the source it mirrors: the `foreignKeys` key mirrors the `PRAGMA foreign_keys` statement, and the `keepAlive` key mirrors the Ollama `keep_alive` field.
 - Outside a declared wire body, a mirrored name never uses `kind` or `type` as a member name, and never uses a word § Rejected naming lists. A Compound File Binary (CFB) directory entry's object-type byte takes a named discriminant.
 - A declared wire body — a type whose members transliterate an external wire format field for field — keeps the external field names, `type` and `kind` included, and its TSDoc names the format it transliterates. The package's own domain type carries neither word, and the package owns the projection between the wire body and the domain type.
@@ -127,14 +127,14 @@ Give every bare exported name one owning package across the `@orkestrel` fleet. 
 
 Check a public name against the fleet's published guides before adding it. The `surface` policy rule reports a name another package's guide already claims, and `.claude/rules/workspace.md` § Policy instruments fixes the instrument that reports it.
 
-The rule grandfathers a source name the target's own hosted guide claims, because that guide is the target's own claim to it. It grandfathers no root `tests/setup*.ts` export, so clear a colliding setup export before adopting the scaffold release that carries the rule. A vendored `tests/setup*.ts` module a scaffold release stages sits outside the inspected population.
+The rule grandfathers a source name the target's own hosted guide claims, because that guide is the target's own claim to it. It grandfathers no root `tests/setup*.ts` export. A vendored `tests/setup*.ts` module a scaffold release stages sits outside the inspected population.
 
 Resolve a reported collision with these rules, in order.
 
 1. **Reuse before renaming.** Where the colliding declarations carry the same contract, delete this one and import the owner's export. Declare the dependency that import needs, or stop and report that the dependency is not authorized.
 2. **The subject keeps the name.** Where the contracts differ, leave the name with the package whose domain the name describes, and rename the other declaration for the thing it is. Refuse a rename that makes the renamed declaration vaguer; name its own contract instead.
 3. **Qualify rather than extract.** Extract a shared package only where a proof shows the colliding declarations interchangeable and the dependency change is authorized. Otherwise qualify the name in place for the domain it serves, and route the extraction through a design round rather than renaming by fiat.
-4. **Close the collision in the code.** Change a declaration; the rule reads no allowlist a target can add a name to, and it carries no suppression. The committed `host.json` inventory in the `@orkestrel/scaffold` checkout records the collisions that predate this rule, and a release build refuses a staged collision that record does not already hold. Shrink that record by closing a collision, and never widen it to admit one. Never suppress the violation, and never edit a vendored policy instrument to clear it.
+4. **Close the collision in the code.** Change a declaration; the rule reads no allowlist a target can add a name to, and it carries no suppression. Never suppress the violation, and never edit a vendored policy instrument to clear it. In the `@orkestrel/scaffold` checkout, shrink the committed `host.json` collision record by closing a collision, and never widen it to admit one.
 
 ## Acronyms
 

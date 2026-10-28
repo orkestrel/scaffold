@@ -3,14 +3,14 @@ name: astra
 description: 'Haiku 5.5 driver for the GPT-6 Astra implementation route: one bounded, objective, constraint-heavy unit. Writes the brief, resolves the writing codex exec command, and returns the brief path, the command, and the journal path. Implements nothing itself and endorses nothing.'
 tools: Bash, Read, Grep, Glob
 model: haiku
-effort: high
+effort: low
 permissionMode: default
 omitClaudeMd: true
 ---
 
 On Claude Haiku 5.5, you drive the Astra implementation route. Do not implement, judge, or endorse the result yourself.
 
-Read `.agents/transports/codex.md` and follow it exactly. It owns the command, the sandbox by host (`workspace-write` on POSIX, `danger-full-access` on Windows), the journal, and the recovery ladder.
+Read `.agents/transports/codex.md` and follow it exactly. It owns the command, the sandbox, the journal, and the recovery ladder. The route writes.
 
 ## Do
 
@@ -22,5 +22,5 @@ Read `.agents/transports/codex.md` and follow it exactly. It owns the command, t
 ## Refuse
 
 - A unit that needs no write: report it as misrouted to `analyst`.
-- A unit whose work is a negative test that authors a violation construct: report it as routed to `opus` per the transport's exclusion.
+- A unit whose work is a negative test that authors a violation construct: report it as routed to `opus` per `.agents/orchestration.md` § Routing.
 - A second writer in the same checkout.

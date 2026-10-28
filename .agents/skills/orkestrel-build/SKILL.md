@@ -14,18 +14,16 @@ than this summary of it.
 
 ## Select the environments
 
-`--src` selects published src environments and `--app` selects private app environments.
-The selections are independent, at least one is required, and each offers `core`, `browser`,
-and `server`.
+`scaffold new` takes the independent selections `--src` and `--app`; `guides/scaffold.md` § Command line
+and § Select at creation own the options and the combinations they refuse. The table names what each
+app environment owns.
 
-| Selection   | What it owns                                                             |
-| ----------- | ------------------------------------------------------------------------ |
-| app/core    | Host-independent contracts and composition; check and test only          |
-| app/browser | Vue runtime behind an `index.html` entry, `vue-tsc`, real Chromium tests |
-| app/server  | Node runtime, `dist/app/server/main.cjs` with only `node:*` external     |
-
-Core-only, browser-only, and server-only applications are valid. A browser+server pair
-includes app/core so the shared transport contracts have one host-independent owner.
+| Selection   | What it owns                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| app/core    | Host-independent contracts and composition; check and test only                            |
+| app/browser | Framework-independent DOM runtime behind an `index.html` entry, `tsc`, real Chromium tests |
+| app/vue     | Vue runtime with `App.vue` behind an `index.html` entry, `vue-tsc`, real Chromium tests    |
+| app/server  | Node runtime, `dist/app/server/main.cjs` with only `node:*` external                       |
 
 ## Execute the workflow
 
@@ -39,50 +37,26 @@ includes app/core so the shared transport contracts have one host-independent ow
    thin target wrappers and scoped tsconfigs.
 4. **Implement completely** — entries, barrels, centralized declarations, one-class
    implementation files, environment parsing, lifecycle, builds, and scripts — under the
-   placement and manifest laws. Parse the options container and its host and port leaves
-   before mutation, rejecting wrong-shaped containers, empty hosts, and non-integer,
-   negative, or out-of-range ports with a coded error and its guard.
-5. **Own the shutdown contract.**
+   placement and manifest laws in `.claude/rules/application.md`.
+5. **Own the shutdown contract** of the runner `.claude/rules/application.md` requires:
    - Serialize lifecycle transitions in call order.
    - Re-request port zero on an ephemeral restart.
    - Close lingering active connections deterministically on stop.
    - Release the runner's signal listeners idempotently on stop.
-   - Isolate asynchronous failures by runner generation, so an older transition cannot
-     release a newer run's listeners.
-   - Return the runner from convenience startup rather than hiding that cleanup.
-6. **Keep boundary enforcement inside the configured toolchain.** Each layer owns what it
-   can express:
-   - Oxlint `no-restricted-imports` — literal-string declared package, alias, and
-     conventional relative import direction.
-   - Oxfmt — formatting.
-   - `tests/setupPolicy.ts` — the narrow TypeScript compiler-API pass over computed and
-     template-literal specifiers, declaration placement, and the barrel law.
-   - Scoped TypeScript projects — host-global isolation.
-   - Vite's real builds and environment-boundary plugin — Vue, CSS, assets, workers,
-     runtime resolution, and physical workspace containment. Its parsed HTML asset
-     callbacks reject forced inlining before any direct asset read, and non-inlined
-     output assets are audited by physical source path.
-
-   Then hold these limits:
-   - Add no standalone boundary script, and no second parser or source-language analyzer
-     duplicating those layers. Reach for the toolchain's own facilities instead: Vite's
-     Oxc/Rolldown AST for TypeScript and JavaScript asset references, the official Vue SFC
-     compiler for `.vue` blocks, Vite's HTML parser callbacks, its bundled Lightning CSS
-     dependency analyzer, and the TypeScript compiler API for the narrow coding-law pass.
+6. **Keep boundary enforcement inside the configured toolchain**, per
+   `.claude/rules/workspace.md` § Typechecking and environment isolation and § Tooling.
+   - Add no standalone boundary script and no second parser or source-language analyzer.
    - Disable the browser application's public directory, so an unmanaged file copy cannot
      ship outside the module graph.
    - Keep browser-only runtime tooling development-only.
    - Require explicit authorization before adding a Sass compiler.
-
 7. **Prove it on real hosts.**
    - Run app/browser tests on Playwright-backed Vitest Browser Mode against real DOM.
      Probe the installed executable directly with `existsSync(chromium.executablePath())`
      rather than guessing a channel or reading an environment flag.
    - Bind port zero on loopback in app/server tests and use real fetch.
    - Prove executable readiness, collision exit, signal termination, and port release with
-     real child-process tests. Windows reports `ChildProcess.kill('SIGTERM')` as OS
-     termination by signal, while POSIX delivery exercises the graceful listener and exits
-     zero.
+     real child-process tests.
    - Probe the actual capability in a capability-dependent test, and scope any skip
      narrowly.
 8. **Document and prove parity** for every app export and behavioral method: guide,
@@ -91,10 +65,6 @@ includes app/core so the shared transport contracts have one host-independent ow
 9. **Verify.** Run the rules' cleanup sweeps over source and tests. Then run the review
    `.agents/orchestration.md` § Size gate names for the change and the repository gates in
    their required order.
-
-Do not add showcase, authentication, persistence, proxy, styling-system, or product
-policy unless the request requires it. Do not leave placeholders, compatibility shims,
-empty setup files, or deferred app behavior.
 
 ## Accept the result
 
@@ -109,6 +79,4 @@ Completion requires:
 - guide parity green over every app export and behavioral method;
 - the repository gates green in their required order from an independent `verifier`.
 
-A selected environment still unwired, a real-host proof not taken, or an open parity row
-means the run is not finished. Report what each environment owns, the exact proof and gate
-evidence, and any residual risk. Do not call an in-scope omission future work.
+Report what each environment owns, the exact proof and gate evidence, and any residual risk.

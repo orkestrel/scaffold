@@ -18,10 +18,6 @@ description: Prove a browser application the way a person uses it — real keyst
 7. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
    route entry, and store contract.
 
-Treat a retained readiness verdict as evidence to re-verify against the current tip, never as a plan
-to resume. Re-take every ruling it records that this run's acceptance depends on, and name the commit
-each ruling was taken at.
-
 ## Declare the families
 
 Declare in the browser environment's `integration.test.ts` which families that screen carries, and
@@ -88,8 +84,7 @@ start, and let it choose the capture destination, the matrix row, and the statec
   chain, so the chain entry is yours to add. Add that entry before the repair instead where you
   prefer: `test:journey` names a configuration rather than a project, so neither order blocks the
   repair.
-- Name each variant for the theme and the viewport it renders, such as `dark-390`. Never split the
-  theme from the viewport; a split writes a filename naming a combination the run did not render.
+- Name each variant per [captures.md](references/captures.md) → Variants.
 - Keep the provided variants as serializable `JourneyVariant` data: `name`, `width`, and `height`.
   Compose no callback merely to pass that data to a capture.
 - Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Set
@@ -104,13 +99,10 @@ start, and let it choose the capture destination, the matrix row, and the statec
 - Render exactly one variant per run for the capture family
   ([captures.md](references/captures.md) → Variants).
 
-`scaffold audit` reports a manifest and a wrapper that disagree as one of the following questions.
-Settle the one it reports before trusting a green run.
+`scaffold audit` reports a manifest and a wrapper that disagree as one of these findings. Settle the one it reports before trusting a green run.
 
-| The question `scaffold audit` reports                                                                                                                                                                                                                                    | Settle it by                                                                                                      |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `The manifest at <target> names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration, or remove the script that names it and its invocation from the test chain.` | Writing the wrapper and running `scaffold repair`, or removing the `test:journey` script and its chain invocation |
-| `The manifest at <target> does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`                                                                                                                                    | Adding `npm run test:journey` to the `test` script after `npm run test:app`                                       |
+- The manifest names a Vitest configuration for `test:journey` that the plan does not emit and the target does not hold. Write the wrapper and run `scaffold repair`, or remove the `test:journey` script and its chain invocation.
+- The manifest does not invoke `npm run test:journey` from its `test` chain. Add `npm run test:journey` to the `test` script after `npm run test:app`.
 
 `scaffold audit` reports the invocation question only when no chain from `test` reaches
 `npm run test:journey` through literal `npm run` calls, so a chain reaching it through an
@@ -182,41 +174,15 @@ await PORTFOLIO.place('home')
 
 ## Apply the journey laws
 
-1. **Drive only what a person can see and reach.** Resolve every interactive target by its ARIA
-   role and its accessible name as rendered. Never reach into a component instance, a store, a
-   transport, a copied credential, or a test-only hook to make a step succeed. Report a step that
-   cannot be performed through the interface as a finding about the interface.
-2. **Assert what is seen.** Quote the rendered text a person reads, which is `innerText` — a label
-   under `text-uppercase` asserts as `TRACE` where the source says `Trace`. Never let an entity
-   state read replace a perception assertion; it may only corroborate one, and
-   `.claude/rules/tests.md` fixes which entity state a test may read at all.
-3. **Assert what the interface withholds.** Assert every refusal through the resolver's exact
-   failure voice, and distinguish an absent control from a present but humanly unreachable one.
-4. **Keep transport and persistence proofs in their own declared block,** never inside a journey.
-   Assert every live or asynchronous fact by convergence — poll until it contains or equals — never
-   by an identity read of one frame.
-5. **Generate the portfolio from the acceptance journeys.** Place each registered state inside the
-   journey that reaches it, and never register a state no journey reaches.
-6. **Commit a value through an act a person performs:** `pressKeys('{Enter}')` on the focused
-   control, a Tab away, or a named button. Report a screen that commits on a timer, on an
-   unpredictable event, or only after work the person cannot observe as a screen finding, and never
-   work around it in the layer.
-7. **Type only what a person would.** Journeys carry trusted input; inputs no person would type
-   belong to the transport family and the parser suites.
-8. **Perform every interaction step unconditionally.** Never gate a step on whether the control it
-   is about to drive exists or is reachable, and never branch a journey on `readRefusal`. Let the
-   resolver's failure voice name what the interface withheld. A guarded step passes whether or not
-   the control was there, so the run goes green on a screen that removed the control.
+- Write every journey under `.claude/rules/tests.md` § Journey tests.
+- Generate the portfolio from the acceptance journeys. Place each registered state inside the
+  journey that reaches it, and never register a state no journey reaches.
 
 ## Import the journey layer
 
-- Import every journey verb, reader, wait, and fixture builder from `@orkestrel/test/browser`, and
-  every host-independent wait and table type from `@orkestrel/test`. Write one of your own only
-  where those entries publish none for the act ([layer.md](references/layer.md) → Import, never
+- Write a verb, reader, or wait of your own only where the entries `.claude/rules/tests.md`
+  § Journey tests names publish none for the act ([layer.md](references/layer.md) → Import, never
   implement).
-- Send every key sequence through `pressKeys`, which refuses a sequence sent while nothing but the
-  document body holds focus. Never reach past it to the provider's own keyboard function from a
-  journey, a matrix reading, or a statechart phase.
 - Place a helper you must write in the workspace's browser test setup module, name it for the act,
   and export it from there under `.claude/rules/tests.md`. Never declare a resolver inside a test
   file.
@@ -231,30 +197,8 @@ await PORTFOLIO.place('home')
 
 Write one journey per user intent, named for what the person achieves rather than for the
 components it passes through. Place them in the browser environment's `integration.test.ts`, whose
-placement and scope `.claude/rules/tests.md` fixes.
-
-- Enter through the real entry: mount the shipped root component with a real store and the route a
-  person lands on, and let the application load itself.
-- Reach each screen's own controls through forward Tab traversal in at least one journey.
-- Type keystroke by keystroke where the keystrokes are the subject; fill in one operation where the
-  text is only a payload the person pastes.
-- Poll every fact the application produces asynchronously until it converges. Never assert one from
-  a single read after the action. A poll's predicate must be able to go false-to-true after the
-  action it observes; a predicate already true when the poll starts binds nothing.
-- Assert the state the flow must reach, never the transient path taken to it. A criterion that bans
-  a harmless transient over-refuses and breaks on the next honest implementation.
-- Assert the negative beside the positive whenever a value replaces another: name the arriving
-  sentence and carry the replaced one in `absent`, so the reading that resolves carries one and not
-  the other ([layer.md](references/layer.md) → The waits).
-- Assert the state a control announces beside every drive that sets it, and on an unselected
-  sibling. A control announcing state owes this assertion whether or not the screen carries the
-  statechart family.
-- After a confirmed destructive action, assert through trusted input that focus landed on a visible,
-  announced location.
-- Assert the whole page's perception never matches the vocabulary the product does not speak —
-  engine, schema, and implementation words the interface is supposed to translate.
-- Report a bare accessible name that answers for more than one reachable element on one screen as a screen
-  finding, and target through role or region until the screen is fixed.
+placement and scope `.claude/rules/tests.md` fixes. Carry a replaced value in `absent` as
+[layer.md](references/layer.md) → The waits shows.
 
 ### The intents every screen owes
 
@@ -352,34 +296,17 @@ Mutate each assertion class once, read the red, restore, and read the green.
 
 Completion requires all of:
 
-- every in-scope user intent reaching its outcome through the interface, with no step that reaches
-  past it;
-- the intents every screen owes present wherever the screen has the state, each outcome taken from
-  the product guide and every missing one reported as a product finding;
-- keyboard-only reachability proven on every screen the journeys cover;
+- every in-scope user intent, the intents every screen owes included, reaching its outcome through the interface with no step that reaches past it, and keyboard-only reachability proven on every screen the journeys cover;
 - a refusal family per screen, each asserting one exact failure voice;
-- the transport family declared separately, driven through real implementations, and convergent;
-- the declared families each proven, and the declaration itself asserted;
-- the matrix family read once per declared variant, each style reading carrying its published
-  control from [styles.md](references/styles.md) → The published controls in the same run, and the
-  contrast reading's control straddling its declared bar;
-- the authored-class census and the `extractStyles` reading taken on the mounted screen, each
-  reporting the population it walked;
-- the statechart table driven to a terminal status with no failed row, and the harness tally read
-  from the object and from its markup;
-- the registry-times-variants filename proof and the state-placement proof green in an ordinary run;
-- one capture run per variant writing every registered file, and the disk-membership proof green;
-- the written artifact produced for every variant the run rendered, named by that variant;
-- perception assertions quoting rendered text, and the vocabulary sweep green on the whole page;
-- the browser test setup module proven by `tests/setupBrowser.test.ts` in the `setup:browser`
-  project `scaffold repair` registers;
+- the declared families each proven, the declaration asserted, and the transport family driven through real implementations;
+- the matrix family read once per declared variant, each style reading carrying its published control from [styles.md](references/styles.md) → The published controls, and the authored-class census and the `extractStyles` reading each reporting the population it walked;
+- the statechart table driven to a terminal status with no failed row, and the harness tally read from the object and from its markup;
+- the registry-times-variants filename proof and the state-placement proof green in an ordinary run, one capture run per variant writing every registered file, and the written artifact produced for every variant, named by that variant;
+- the browser test setup module proven by `tests/setupBrowser.test.ts` in the `setup:browser` project `scaffold repair` registers;
 - each assertion class mutated, with the red reading and the green reading recorded;
-- the repository gates green, under the independent-verification law in `.agents/orchestration.md`.
+- the repository gates green, per `.agents/orchestration.md` § Acceptance.
 
-State the engine bound with the verdict. The gate renders one engine, so a claim about a second
-engine is unproven until a reading on that engine records it. The emitted `configs/browsers.ts` doc
-block is the home of that limit and of the condition that reopens it. Cite that doc block, and copy
-neither into a verdict.
+State the engine bound with the verdict, per [styles.md](references/styles.md) → The engine bound.
 
 Report each journey by the intent it proves, the refusals it establishes, the states it placed, the
 variants it read, the statechart outcome it reached, and every screen finding the layer's refusals

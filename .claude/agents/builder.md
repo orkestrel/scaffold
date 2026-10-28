@@ -15,7 +15,7 @@ On Claude Sonnet 5.5, you implement one bounded unit with a closed shape. The di
 2. Write only the owned files. Return an exact patch for a shared file; never edit it.
 3. At the size the brief names, follow `AGENTS.md` § Work loop. Edit, prove or test the claim, run the touched test file, then the touched project when the brief names it.
 4. Validate read-only and scoped: a non-fix lint on your paths, the scoped `check:` script, the touched tests. Never run `format`, lint `--fix`, `build`, or the whole suite.
-5. Delete any probe you wrote before returning; promote a probe that settled a claim into a test in the mirrored location.
+5. Leave no probe behind, per `.claude/rules/tests.md` § Probes.
 6. Stop and report per `.agents/orchestration.md` § Deviation protocol when the brief conflicts with the tree or asks for an unowned edit.
 
 ## Refuse

@@ -11,19 +11,17 @@ paths:
 
 # Application composition
 
+These rules govern how an application composes its environments: selections, entries, manifests, and the server runner. `AGENTS.md` § Project model owns the environment boundaries.
+
 - Select only needed app environments; app-only, src-only, and mixed workspaces
   are first-class.
-- The CLI names the independent selections `--src` and `--app`.
-  `--surfaces` is not an alias and must fail as an unknown option.
-- `new` selects the styles surface with `--styles`, its themes target with `--themes` (requires
-  `--styles`), the showcase with `--showcase` (requires `--app browser`), and extensions with
-  `--extend <surface:name,…>`. Each `--extend` entry is `browser:vue`, applied to every selected
-  browser axis, or `styles:<name>`, which requires `--styles`. `--app browser` implies the journey.
+- `guides/scaffold.md` § Select at creation owns the `scaffold new` selections and the
+  combinations it refuses.
 - Core-only, browser-only, and server-only applications are valid. A combined
   browser+server application includes app/core for shared contracts.
 - Every selected environment has an `index.ts` barrel. `main.ts` is an executable
   entry and never owns reusable declarations.
-- app/core is host-independent and check/test-only.
+- app/core is check/test-only.
 - app/browser is framework-independent: it uses app/core contracts, an
   `index.html` entry, a `main.ts` that renders through the DOM, `check:app:browser`
   through `tsc`, and real Chromium tests.
@@ -37,10 +35,10 @@ paths:
 - app/server uses app/core contracts, parses environment values before binding,
   defaults to loopback, emits `dist/app/server/main.cjs`, and keeps only
   `node:*` external.
-- Browser and server integrate across a contract and transport boundary. Neither
-  environment imports the other's implementation.
-- The project toolchain enforces that boundary, and none of its tools is
-  replaceable by a custom parser or source-language analyzer: `.oxlintrc.json`
+- Parse the server's options container and its host and port before any mutation. Reject a
+  wrong-shaped container, an empty host, and a non-integer, negative, or out-of-range port with a
+  coded error and its guard.
+- The project toolchain enforces the environment boundary: `.oxlintrc.json`
   `no-restricted-imports` enforces declared package, alias, and conventional
   relative import direction; scoped TypeScript configurations remove Node and
   DOM globals from the wrong environment; Vite's real browser and server builds
@@ -48,14 +46,10 @@ paths:
   generated-consumer tests exercise those real configurations.
 - Generated consumers must pass lint, scoped typechecking, production builds, and
   real integration tests.
-- Include `.ts`, `.tsx`, `.mts`, and `.cts` in scoped checks. Publish only TypeScript from
-  `src/vue`, and put Vue SFCs in `app/vue`. Put CSS in browser code; compile SCSS through the
-  `sass` dependency the styles surface declares.
-- Published `src` environments never import private `app` modules. Src core is
-  host-independent; src browser/server may import src core but never one
-  another's implementation. Apply the same environment law to
-  `@orkestrel/<package>/browser` and `/server` exports; a package's bare export
-  is its core API.
+- Include `.ts`, `.tsx`, `.mts`, and `.cts` in scoped checks. Put CSS in browser code; compile
+  SCSS through the `sass` dependency the styles surface declares.
+- Apply the environment law to `@orkestrel/<package>/browser` and `/server` exports; a package's
+  bare export is its core API.
 - App-only manifests are unscoped and `private: true`, with no `main`,
   `module`, `types`, export map, or publish configuration. Mixed manifests
   publish only `dist/src` and the SCSS sources a stylesheet export names, and
@@ -64,8 +58,7 @@ paths:
 - Give app/server process signals to a tested, explicitly stoppable,
   generation-safe runner whose stale failures cannot release a newer run.
 - Return the runner from convenience startup, so normal cleanup cannot be hidden.
-- `ApplicationServerRunner` lives alone in `ApplicationServerRunner.ts`.
-  `startApplicationServer` belongs in `handlers.ts` beside the other process-lifecycle
+- Place `startApplicationServer` in `handlers.ts` beside the other process-lifecycle
   functions, because `factories.ts` admits only `create`-prefixed construction and this
   one starts a signal-owning resource. `main.ts` invokes it and owns no reusable
   declarations or duplicated signal handling.

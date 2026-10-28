@@ -1,6 +1,6 @@
 # Codex transport contract
 
-Every driver that carries a brief to the Codex GPT-6 Astra bench follows this file. Routes: `analyst` (audit, objective design argument) and `astra` (implementation). For native roles, use the canonical Codex mapping in `.agents/orchestration.md` without a bench launch or probe. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs.
+Every driver that carries a brief to the Codex GPT-6 Astra bench follows this file. Routes: `analyst` (audit, objective design argument) and `astra` (implementation). For native roles, use the canonical Codex mapping in `.agents/orchestration.md` without a bench launch or probe. `.agents/skills/orkestrel-dispatch/SKILL.md` § Launch owns the driver and launch contract.
 
 ## Models and effort
 
@@ -34,7 +34,6 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<un
 - On the measured Windows host `read-only` and `workspace-write` reject every shell command with `blocked by policy`. Recheck when the host or the Codex version changes. Under `danger-full-access` the brief states read-only where the route is read-only, and the launch script records `git status --porcelain` before and after; any difference is a deviation. This mode detects tracked changes only; it does not enforce read-only access.
 - Recorded POSIX sandbox behavior, to recheck when conditions change: network denied, `.git` mounted read-only, loopback bind fails `EPERM`, a grandchild process is denied. Route installs, live fetches, servers, process-tree proofs, and lockfile generation to the Orchestrator or a native writer.
 - A nested `git` inside the sandbox has reported `not a git repository` while the unit's own `git status` worked; name this in the brief so the unit does not diagnose the checkout.
-- When a sandbox rejects a write, the unit stops and reports it. It never tries another write mechanism.
 - A Windows shell write can re-encode text. Edit a line carrying a code point above `0x7F` with the exec's patch tool, never with `Set-Content`, `Out-File`, or `>`.
 
 ## Availability
@@ -42,12 +41,8 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<un
 - Probe with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts --codex` before the first use in a session: it reads `codex --version` and `codex login status`, then runs one bounded exec and reports `live`. Neither the version nor the login status alone is liveness.
 - Binary absent: report it; the Orchestrator names `npm install -g @openai/codex` to the user and re-probes when the user answers.
 - Not logged in: the Orchestrator runs `node .agents/skills/orkestrel-dispatch/scripts/login.ts --codex` in the background, which journals `codex login --device-auth` to `tmp/codex/login.log`, prints the URL and the one-time code for the user, and polls the status until it answers; then it re-probes with `bench.ts --codex`.
-- Recovery impossible: record the bench dark. `planner` and `reviewer` hold the objective lane too; `builder` takes fully specified mechanics.
+- Recovery impossible: record the bench dark; `.agents/orchestration.md` § Benches owns the substitution.
 - Never authenticate on the user's behalf, read an auth file, or substitute a key or token.
-
-## Routing exclusion
-
-For harnesses that route `opus` to Claude, route a unit that authors path-containment, import-resolution-boundary, unescaped-input, or credential-exposure proofs to `opus` from the start and record the Codex bench dark for that unit only. For native Codex roles, report a harness refusal through the deviation protocol; the `opus` role uses the same harness.
 
 ## Journals
 

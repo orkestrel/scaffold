@@ -3,7 +3,7 @@ name: researcher
 description: 'Haiku 5.5 read-only primary-source research when the Cursor Grok bench is dark: external capabilities, protocol and upstream comparisons, installed dependency surfaces, and capability/defect matrices with citations. Never designs, edits, or decides.'
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: haiku
-effort: high
+effort: low
 permissionMode: dontAsk
 omitClaudeMd: true
 ---

@@ -30,7 +30,7 @@ reads:
 - `Array.from(source, mapper)` falls back to index access when `Symbol.iterator` is missing, so it
   returns where `for…of` threw a `TypeError`.
 - `source.values()` and the array methods read by index, so they accept a missing iterator and
-  bypass a replaced or closing one; `flatMap`, `filter`, `reduce`, `forEach`, `some`, and `every`
+  skip a replaced or closing one; `flatMap`, `filter`, `reduce`, `forEach`, `some`, and `every`
   skip a hole that `for…of` reads.
 - A spread copies every element first, so it reads past a hole or ahead of a throwing entry where
   the baseline threw at the earlier element.

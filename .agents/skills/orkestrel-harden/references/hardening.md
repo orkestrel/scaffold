@@ -1,5 +1,7 @@
 # Production hardening
 
+This reference governs the hardening lane: the risk and seam matrix, real-implementation testing, live-service tests, lifecycle pressure, security paths, the test audit, and generated outputs.
+
 ## Build the risk and seam matrix
 
 List every boundary where assumptions can fail:
@@ -82,12 +84,14 @@ For every fetch, write, delete, extraction, path, protocol, or authentication bo
 
 ## Audit the tests themselves
 
-Run `node .agents/skills/orkestrel-harden/scripts/discovery.ts` for the discovery census: which project collects each file, which gate reaches each project, and where a file carries `.skip`, `.todo`, a conditional skip, a retry, or a timeout. Then verify:
+Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states (step 11 of the hardening lane): which project collects each file, which gate reaches each project, and where a file carries `.skip`, `.todo`, a conditional skip, a retry, or a timeout. Then verify:
 
+- every intended test file is collected by the correct project, and the test counts and environments match the intent;
+- every declared project resolves to a real file and a gate reaches it; a project no chain runs never fails, so read the chain, not the exit code;
 - every flag the census reports is closed or ruled with a reason;
 - every marker it reports is justified;
-- no current-scope requirement is represented only by a todo;
-- assertions can fail for the defect they claim to catch;
+- no current-scope requirement is represented only by a todo or a placeholder;
+- assertions can fail for the defect they claim to catch, and fail rather than pass when their population is empty;
 - tests observe public outcomes rather than private implementation;
 - helpers do not reimplement production logic;
 - real cleanup runs even after assertion or setup failure.

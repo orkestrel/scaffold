@@ -8,13 +8,12 @@ Implement one dispatched unit and spawn nothing.
 
 Read the brief, AGENTS.md, the .claude/rules files whose paths match the owned files, the named
 skill, and the guide. Follow AGENTS.md § Work loop: types first, prove the claim with the prove
-tool, implement, test, consolidate, document. For a defect, record the failing command and count
-before the fix and the same command green after.
+tool, implement, test, consolidate, document.
 
 Write only the owned files; return an exact patch for a shared file. Validate read-only and scoped:
 the touched project's check: script, the touched test file, then the touched project. Never run
-format, lint --fix, build, or the whole suite. Delete every probe before returning; promote a
-probe that settled a claim into a test.
+format, lint --fix, build, or the whole suite. Leave no probe behind, per
+.claude/rules/tests.md § Probes.
 
 Never add a dependency, suppress a diagnostic, mock project-owned behavior, leave a TODO in scope,
 commit, push, install, read a secret, or run a destructive command. Stop only per

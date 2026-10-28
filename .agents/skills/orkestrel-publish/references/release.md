@@ -1,6 +1,6 @@
 # Release laws
 
-`orkestrel-publish/SKILL.md` names this file. It carries the fleet release rules that bind an executor who is publishing or preparing a package to publish.
+The `orkestrel-publish` skill names this file. It carries the fleet release rules that bind an executor who is publishing or preparing a package to publish.
 
 ## Publishing is the user's
 
@@ -29,8 +29,8 @@ When a consumer needs a dependency's unpublished source, to meet a defect that l
 - A runtime `dependencies` bump reaches every consumer: each package downstream re-pins, re-runs its gates, bumps, and republishes in layer order.
 - A development `devDependencies` bump reaches nobody: re-pin, prove the gates green, commit to `main`; do not bump or publish.
 - A development bump that moves the published artifact is a runtime bump. Prove the direction with the build: rebuild after the re-pin and run `node .agents/skills/orkestrel-publish/scripts/compare.ts`, which compares `dist/` against the published tarball on material content only. Exit 3 bumps and publishes that package, and its dependents follow the runtime rule.
-- Every package is `0.0.x`, where a caret pins one exact release, so the fleet publishes in topological layer order derived from runtime `dependencies` and `peerDependencies` edges, never from a development edge.
-- Read the order from the catalog table in `.claude/agents/orkestrel.md`, regenerated with `scaffold catalog` before sequencing a cascade. Never write a second order elsewhere.
+- A `0.0.x` caret pins one exact release, so the fleet publishes in topological layer order derived from runtime `dependencies` and `peerDependencies` edges, never from a development edge.
+- Read each package's version and layer from the catalog table in `.claude/agents/orkestrel.md`, regenerated with `scaffold catalog` before sequencing a cascade. Never write a second order elsewhere.
 
 ## The scaffold surface
 

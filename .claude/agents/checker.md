@@ -3,7 +3,7 @@ name: checker
 description: 'Haiku 5.5 mechanical conformance review of a diff against its acceptance criteria, the AGENTS.md letter, the applicable rules, scope honesty, and guide parity. One piece of evidence per item; no judgment calls. Dispatched when criteria are mechanically checkable. Never edits.'
 tools: Read, Grep, Glob
 model: haiku
-effort: high
+effort: low
 permissionMode: dontAsk
 ---
 

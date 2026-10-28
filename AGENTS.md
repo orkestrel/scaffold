@@ -9,7 +9,7 @@
 - `*/types.ts` is authoritative for public APIs. Never undo a user's type edit.
 - `.agents/orchestration.md` governs agent operation and cannot weaken this file. Harness bridges (`.claude/AGENTS.md`, `.codex/config.toml`, `.cursor/rules/orchestration.mdc`) add harness mechanics only.
 - A skill under `.agents/skills/` is a procedure. Follow it when the user or a dispatch names it, or when its trigger fires. A skill cannot weaken this file or a rule.
-- Before editing, read: this file; each rule the Rule map scopes to the paths you touch; the named skill and the references it names; the matching guide under `guides/` and `ROADMAP.md` when present. Read nothing else up front.
+- Before editing, read: this file; each rule whose `paths` frontmatter matches the paths you touch; the named skill and the references it names; the matching guide under `guides/` and `ROADMAP.md` when present. Read nothing else up front.
 - Rules state how to write. Guides state what to build. On conflict, stop and report the conflict.
 - A rule file's stated exception to a law in this file applies.
 
@@ -110,24 +110,24 @@ Test ladder, narrowest first; stop at the boundary the change size names:
 
 ## Rule map
 
-Each row is a normative extension of this file. Its `paths` frontmatter controls automatic loading; read the row when its subject matches your change.
+Each row is a normative extension of this file. A rule's `paths` frontmatter controls automatic loading, and `.claude/rules/writing.md` carries none and loads always. Read the row when its subject matches your change.
 
-| Rule                             | Governs                                                                |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| `.claude/rules/names.md`         | Identifiers, API shape, acronyms, lifecycle vocabulary, files/folders  |
-| `.claude/rules/typescript.md`    | TypeScript syntax, imports, immutability, errors, TSDoc                |
-| `.claude/rules/architecture.md`  | Centralized files, exports, classes, modules, extension points, stores |
-| `.claude/rules/patterns.md`      | Options, managers, emitters, guards, parsers, contracts                |
-| `.claude/rules/tests.md`         | Test behavior, helpers, probes, browser tests, Vitest configuration    |
-| `.claude/rules/workspace.md`     | Src/app environments, aliases, isolation, builds, scripts, tooling     |
-| `.claude/rules/application.md`   | App composition, entries, manifest safety, lifecycle, integration      |
-| `.claude/rules/browser.md`       | Vue/browser architecture and platform usage                            |
-| `.claude/rules/styles.md`        | SCSS/CSS centralization, tokens, mixins, layers, naming                |
-| `.claude/rules/portability.md`   | Host branching, paths, line endings, processes, terminals, OS claims   |
-| `.claude/rules/documentation.md` | Guides, parity, roadmap, showcase, examples, skill files               |
-| `.claude/rules/writing.md`       | Prose in guides, replies, commits, and instruction files               |
-| `.claude/rules/quality.md`       | Evidence, probes, instruments, performance, research, completion       |
-| `.claude/rules/campaign.md`      | The `.orkestrel/` campaign folder: layout, content, session start      |
+| Rule                             | Governs                                                                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/rules/names.md`         | Identifiers, API shape, helper prefixes, acronyms, fleet name ownership, lifecycle vocabulary, files and folders                            |
+| `.claude/rules/typescript.md`    | TypeScript syntax, imports, types, immutability, bindings and state, errors, TSDoc                                                          |
+| `.claude/rules/architecture.md`  | Centralized files, declaration placement, kind purity, wrappers, functions, classes, middleware, plugins, stores, barrels                   |
+| `.claude/rules/patterns.md`      | Ecosystem reuse, options, managers, emitters, validation and contracts, foreign contracts                                                   |
+| `.claude/rules/tests.md`         | Test contract, cross-cutting proofs, probes, live-service and expensive proofs, shared helpers, browser tests, runner configuration         |
+| `.claude/rules/workspace.md`     | Src/app environments, aliases, configuration, builds, test project matrix, typechecking scopes, scripts, policy instruments, text integrity |
+| `.claude/rules/application.md`   | App composition, CLI selections, entries, manifests, server runner                                                                          |
+| `.claude/rules/browser.md`       | Vue and browser architecture: composables, reactivity, platform APIs                                                                        |
+| `.claude/rules/styles.md`        | SCSS/CSS centralization, tokens, mixins, layers, folders, proofs, naming                                                                    |
+| `.claude/rules/portability.md`   | Host branching, line endings, paths, processes, terminals, scripts and packaging, host claims                                               |
+| `.claude/rules/documentation.md` | Guides, parity, examples, agent-facing surfaces, skill files                                                                                |
+| `.claude/rules/writing.md`       | Prose in guides, replies, commits, and instruction files                                                                                    |
+| `.claude/rules/quality.md`       | Evidence, probes, instruments, performance, ecosystem reuse, hardening, completion                                                          |
+| `.claude/rules/campaign.md`      | The `.orkestrel/` campaign folder: layout, content, session start, hand off and close                                                       |
 
 ## Writing
 

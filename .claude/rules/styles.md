@@ -59,8 +59,8 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
   custom-property value is the one text Sass emits verbatim, so write every custom-property
   declaration in a literal partial as a Sass string interpolation (`--name: #{'VALUE'};`), which the
   formatter reads as a string and Sass emits byte for byte. Keep a pinned expected output in a JSON
-  fixture, never in a CSS file the formatter would canonicalise. The face's byte proofs (link 1, the
-  per-module region cases, the sample cases) hold under `npm run format`.
+  fixture, never in a CSS file the formatter would canonicalise. The face's byte proofs hold under
+  `npm run format`.
 - Never repeat per-color/per-variant blocks; drive shared structure with one `@each` over a shared list.
 - If a pattern appears in at least two partials, move it to `_mixins.scss`.
 - Treat a declaration block two partials share because each records an external value as a

@@ -5,17 +5,18 @@ model consumes.
 
 ## The tier ladder
 
-Test from the top down, and do not stop at the tier that passes:
+Test from the top down, and do not stop at the tier that passes. Map each tier to an engine
+per `.agents/orchestration.md` § Roles and name the map in the dispatch.
 
-1. **Frontier** (the harness's default model) — proves the surface works at all.
-2. **Mid tier** (for example, a codex mechanical model) — proves the surface survives a
-   harness's schema abbreviation and a model that reads less carefully.
-3. **Small harness-native** (for example, Haiku or a codex high-volume model) — the
-   acceptance tier: these must walk the surface unaided, or the surface is not done.
-4. **Local floor** (a quantized 2B-class model through a real tool-calling client) — not
-   an acceptance gate; a stochastic probe that exposes teaching gaps nothing else hits.
-   Its residual failures must be provably consumer-floor (malformed emission, attention
-   loss), never surface darkness — every refusal it received must have named the fix.
+1. **Frontier** (the harness's default engine) — proves the surface works at all.
+2. **Mid tier** — proves the surface survives a harness's schema abbreviation and an engine
+   that reads less carefully.
+3. **Small native** (the mechanical roles' engine) — the acceptance tier: it must walk the
+   surface unaided, or the surface is not done.
+4. **Local floor** (a small quantized model through a real tool-calling client) — not an
+   acceptance gate; a stochastic probe that exposes teaching gaps nothing else hits. Its
+   residual failures must be provably consumer-floor (malformed emission, attention loss),
+   never surface darkness — every refusal it received must have named the fix.
 
 ## The pass discipline
 
@@ -48,23 +49,9 @@ Read every trace against these; each maps to a class of surface fix:
 | Opaque-wall regression  | A correct structure abandoned after an unnamed refusal                 | Every refusal names the subject, path, expectation, and candidates                                         |
 | Repetition fixpoint     | The identical failing call repeated verbatim                           | The refusal must change the caller's information state; if it already does, the residual is consumer-floor |
 
-## The teaching-surface doctrine
+## Judge the fix
 
-What the field passes repeatedly prove:
-
-- **Descriptions are the surviving surface.** Harnesses abbreviate nested schemas;
-  the tool description reaches every model intact. The critical path — a worked example,
-  the key nesting, the reply shape — lives there, importance-first, so a model that
-  stops reading early still gets it.
-- **Every refusal orients, names, or corrects.** Subject, exact key path, expected
-  shape, valid candidates, missing versus unexpected — a refusal that names nothing ends
-  runs; a refusal that names everything converges even a 2B model.
-- **Strictness with teaching beats tolerance.** Never coerce, never silently drop;
-  refuse with the correction in the message. Encode untrusted identifiers (JSON-encoded,
-  length-capped) so malformed input cannot fake or balloon a diagnostic.
-- **Acknowledge or state, never both.** Mutations return acknowledgements; reads return
-  state; the split is stated in both tools' descriptions so neither is polled for the
-  other's job.
+Rule each fix against `.claude/rules/documentation.md` § Agent-facing surfaces.
 
 ## The scoreboard
 

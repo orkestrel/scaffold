@@ -88,7 +88,7 @@ Findings land as one of:
   reference; the root stays the single owner.
 - **Charter refinements.** Wording that caused a deviation is a defect; fix the charter,
   not the executor.
-- **Skill refinements / creation.** A workflow the campaign repeated twice is a skill; a
+- **Skill refinements / creation.** A workflow a second campaign needs is a skill; a
   skill step the campaign always skipped or always overrode is wrong.
 - **Orchestration-contract refinements.** Laws the orchestrator learned (cap sizing,
   probe-first, journal-first, verdict shapes, launch ownership) land in the operating
@@ -97,8 +97,8 @@ Findings land as one of:
 ## The questions every round asks
 
 - **Which findings came from falsification rather than diff reading**, and is the brief
-  shape that produced them doctrine yet? Route to the Falsification law in
-  `.claude/rules/quality.md`.
+  shape that produced them doctrine yet? Route to `.claude/rules/quality.md` § Instruments or
+  the `orkestrel-falsify` skill.
 - **Which shipped gaps were accepted as untestable**, and was each one genuinely
   irreducible or a missing seam? Route to the missing-seam law in
   `.claude/rules/tests.md`.
@@ -108,6 +108,5 @@ Findings land as one of:
 
 ## Mirror discipline
 
-Every roster or contract change lands on all harness surfaces in the same round: the
-Claude charters, the Codex mirrors, and both operating-contract role tables. An
-unmirrored refinement is a new drift seeded on purpose.
+Land every roster or contract change on all harness surfaces in the same round;
+`.agents/orchestration.md` § Roles names them.

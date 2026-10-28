@@ -42,6 +42,6 @@ Place each proof at the highest useful layer:
 
 Use the actual packages and transports. Use temporary resources or protocol-faithful fixture servers for deterministic network boundaries. Use the real external service when its behavior is the claim. Never simulate an owned package with a mock or fake.
 
-When the claim is that a foreign client can consume the stack — an editor, an agent CLI, a third-party protocol client — one representative real client of that class drives the surface end to end before the claim ships. Record the exact commands, the authentication and approval model that client needed, and every part of the surface it could not reach. Protocol-level tests prove the protocol; only the client proves the integration.
+Prove a claim that a foreign client can consume the stack per `.agents/skills/orkestrel-harden/references/hardening.md` § Use real implementations.
 
 Test both successful composition and contract disagreement: invalid options, unavailable capability, partial failure, abort/cleanup, version mismatch, and lifecycle ordering where applicable.

@@ -4,19 +4,19 @@ Cursor lanes, through the Cursor CLI or a hosting harness. `.cursor/rules/orches
 
 ## Mechanics
 
-| Question            | Cursor                                                                                                                                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Start               | The CLI bench per `.agents/transports/cursor.md`, or the hosting harness's child-task channel (`references/t3.md`).                                                                                                 |
-| Continue            | The CLI's `--resume` option with the session id from the `init` event continues the session with its read context intact (2026-10-01); probe it before its first use.                                               |
-| Wake versus deliver | No peer-message wake channel is demonstrated.                                                                                                                                                                       |
-| Track               | The session id from the `init` event and the journal path.                                                                                                                                                          |
-| Background          | The CLI runs under `.agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap. A lane outlived its stated 600-second timeout by running 764 seconds (2026-09-30).                                             |
-| Isolation           | Lanes share the checkout.                                                                                                                                                                                           |
-| Tools               | The bench runs in ask mode, read-only. It reads images: it read a capture's heading, captions, and fills exactly in 36 seconds (2026-10-16).                                                                        |
-| Limits              | At the account's usage limit, the bench reads dark; record it and use the native reader per `.agents/orchestration.md` § Benches.                                                                                   |
-| Host effects        | A Grok lane that ran shell commands leaked about one orphaned `conhost.exe` a second on a Windows host (838 in 12 minutes, 8.8 GB, 2026-10-19). Briefs that forbade every command ran ten lanes clean (2026-10-21). |
-| Visibility          | The CLI bench is hidden; run it only as a capped command inside a visible lane.                                                                                                                                     |
-| Capability map      | Reader only: the `grok` role.                                                                                                                                                                                       |
+| Question            | Cursor                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Start               | The CLI bench per `.agents/transports/cursor.md`, or the hosting harness's child-task channel (`references/t3.md`).                                                                                          |
+| Continue            | The CLI's `--resume` option with the session id from the `init` event continues the session with its read context intact (2026-10-01); probe it before its first use.                                        |
+| Wake versus deliver | No peer-message wake channel is demonstrated.                                                                                                                                                                |
+| Track               | The session id from the `init` event and the journal path.                                                                                                                                                   |
+| Background          | The CLI runs under `.agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap. A lane outlived its stated 600-second timeout by running 764 seconds (2026-09-30).                                      |
+| Isolation           | Lanes share the checkout.                                                                                                                                                                                    |
+| Tools               | The bench runs in ask mode, read-only. It reads images: it read a capture's heading, captions, and fills exactly (2026-10-16).                                                                               |
+| Limits              | At the account's usage limit, the bench reads dark; record it and use the native reader per `.agents/orchestration.md` § Benches.                                                                            |
+| Host effects        | A Grok lane that ran shell commands leaked `conhost.exe` processes on a Windows host (2026-10-19; see `.agents/platforms/windows.md` § Processes). Briefs that forbade every command ran clean (2026-10-21). |
+| Visibility          | The CLI bench is hidden; run it only as a capped command inside a visible lane.                                                                                                                              |
+| Capability map      | Reader only: the `grok` role.                                                                                                                                                                                |
 
 ## Quirks
 

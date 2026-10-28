@@ -1,6 +1,6 @@
 ---
 name: orkestrel-publish
-description: Run an Orkestrel release from layer order to registry confirmation. Use when the user asks to publish a package, to run a fleet-wide release wave, or to recover a release that stalled at the npm approval, and follow it for the per-repository visit, the bump ruling, the layer preparation, the login approval, and the five-minute upload window.
+description: Run an Orkestrel release from layer order to registry confirmation, or adopt a published scaffold release in one consumer. Use when the user asks to publish a package, to run a fleet-wide release wave, to recover a release that stalled at the npm approval, or to adopt a published scaffold release in one repository, and follow it for the per-repository visit, the bump ruling, the layer preparation, the login approval, the upload approval, and the adoption.
 ---
 
 # Publish an Orkestrel release
@@ -14,9 +14,10 @@ description: Run an Orkestrel release from layer order to registry confirmation.
    here.
 2. The reference the moment needs: [wave.md](references/wave.md) before visiting a repository,
    ruling on a bump, or preparing a layer; [window.md](references/window.md) before running
-   `npm login` or any upload.
+   `npm login` or any upload; [adopt.md](references/adopt.md) before one consumer adopts a
+   published scaffold release outside a wave.
 3. The live evidence: the registry's packument for every package in the round, each target's
-   manifest, and the catalog table the contract names as the layer order.
+   manifest, and the catalog table `references/release.md` names as the layer order.
 
 ## Scripts
 
@@ -28,33 +29,18 @@ description: Run an Orkestrel release from layer order to registry confirmation.
 | `scripts/wave.ts`    | `--visit [--target DIR] [--offline] [--regenerate] [--from STEP] [--to STEP] [--prior VERSION] [--dry-run] [--json] [--out FILE]` runs one repository's visit in the order [wave.md](references/wave.md) § Visit a repository fixes (pin, commit, overwrite, verify, install, pins, format, record, gates, compare), stops at the first failing step, journals each executed step's full output under the target's `tmp/units/wave/` when the work tree ignores `tmp/` and names the journal in its row, and prints each step's exit (a failed step names the `code: message` refusal or the `note` a JSON verb writes on stdout, else the last stderr lines), the bump ruling (the rebuilt dist against the published tarball, and the final runtime dependency set against the published manifest), and a row for `.orkestrel/release.md`; `--prior` names the version a pre-ruled bump replaced so the self-pin sweep finds it; `--plan` prints the packages by layer from the catalog table. An install that fails `ERESOLVE` names the rerun command, and `--regenerate` replaces the lockfile and `node_modules` from the manifest under the refusals and proof [wave.md](references/wave.md) § Regenerate a lock the install cannot move states; `record` commits the overwrite's writes as `Overwrite with scaffold VERSION`. Exit 0 when every step passed, 1 when one failed, 2 when a reading failed, 64 on usage, including `--regenerate` with `--plan`.                                                                                                                                                                                                                                                        |
 | `scripts/window.ts`  | `--whoami [--wait SECONDS]` reads or polls `npm whoami`; `--login` prints the operator's login command and polls `whoami` until it answers; `--publish DIR... --otp CODE` refuses a batch whose nearest `.git` entry is a file, including ancestor entries, with exit 3 before contacting npm; it names a linked worktree's primary clone or identifies a submodule, then uploads back to back with `npm publish --ignore-scripts --otp`, journals each upload under `tmp/units/`, stops at the first refusal naming where to resume, and confirms each accepted version against the registry; `--confirm NAME@VERSION...` re-reads the registry until it serves the version. Exit 0 on success, 3 when not.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
-The user's current instruction wins. `references/release.md` owns the credential
-and authorization law; nothing here weakens it.
-
-## The boundary with the contract
-
-`references/release.md` binds every release, and this skill does not
-repeat it. Read that section for the credential and approval law, the long-running-command
-binding, the serialization of uploads, the tarball swap that serves a consumer whose dependency
-has not published, what a bump obliges downstream, and where the layer order comes from.
-
-This skill carries what an operator needs while a release is running: the per-repository visit,
-the bump ruling, the preparation order, the login and approval mechanics, and the window.
-
-Where the skill and the contract disagree, the contract wins. Report the drift instead of
-following the skill.
+The user's current instruction wins. `references/release.md` binds every release: the credential and authorization law, the upload serialization, the tarball swap, what a bump obliges downstream, and the layer order. Nothing here weakens it. Where this skill disagrees with it, report the drift instead of following the skill.
 
 ## Run the release
 
 1. **Name the round.** List the packages the release covers, and group them into layers with
-   `node .agents/skills/orkestrel-publish/scripts/wave.ts --plan`, which reads the contract's
-   layer order from the catalog table.
+   `node .agents/skills/orkestrel-publish/scripts/wave.ts --plan`, which reads the layer order
+   from the catalog table.
 2. **Take the registry evidence.** Read what the registry serves for every package in the round.
    Derive each pin from that reading, never from a local manifest.
 3. **Visit each repository.** Run `node .agents/skills/orkestrel-publish/scripts/wave.ts --visit --target <repository>`,
    which runs the visit in [wave.md](references/wave.md) in its stated order and stops at the first
-   failing step; repair that step by hand and re-run from it with `--from`; for an `ERESOLVE`, follow [wave.md](references/wave.md) § Regenerate a lock the install cannot move. Run visits in parallel
-   slices of disjoint repositories, each slice serial inside itself.
+   failing step; repair that step by hand and re-run from it with `--from`; for an `ERESOLVE`, follow [wave.md](references/wave.md) § Regenerate a lock the install cannot move.
 4. **Rule on each package's bump.** Take the visit's comparison and range reading; repeat `compare.ts` only after the artifact changes or an unanswered result. Apply the triggers in [wave.md](references/wave.md) § Rule on
    the bump; `references/release.md` § What a bump obliges owns the blast radius.
 5. **Prepare the whole layer before authenticating**, in the order [wave.md](references/wave.md)
@@ -69,8 +55,8 @@ following the skill.
 8. **Close the layer from the registry, then prepare the next**, per [wave.md](references/wave.md)
    § Prepare a layer.
 
-Run that sequence for every layer, from the registry reading to the registry close. Refresh the
-registry evidence between layers rather than carrying the previous round's reading forward.
+Run that sequence for every layer, from the registry reading to the registry close;
+[wave.md](references/wave.md) § Refresh the registry between layers owns the refresh.
 
 ## Accept the release
 
@@ -81,7 +67,7 @@ Completion requires:
 - every obligation `references/release.md` § What a bump obliges places on a published package's dependents has closed as
   that section requires;
 - every tarball swap is restored per `references/release.md` § Fix a dependency before it publishes, and no target
-  repository is left holding an uncommitted bump or an unpushed commit;
+  repository is left holding an uncommitted bump or an unpushed commit the user has not held;
 - every gate that proved a package ran outside the window and against the artifact that shipped;
 - every gate red at a package's baseline for a cause `ROADMAP.md` already carries is recorded as a
   standing reading beside the package's row with its carrier, and the release report names it. A

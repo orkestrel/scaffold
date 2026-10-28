@@ -71,9 +71,9 @@ these.
   application's to set, and the presence of that file is the journey axis.
 - Prepare the theme under [SKILL.md](../SKILL.md#prepare-the-capture-theme) before driving the
   captured state, and use the variant list that preparation requires.
-- Name each variant for the theme and the viewport it renders, such as `dark-390`. The name is the
-  second half of every filename the run writes, so a variant named for one alone produces a
-  portfolio nobody can tell apart.
+- Name each variant for the theme and the viewport it renders, such as `dark-390`. Never split the
+  theme from the viewport. The name is the second half of every filename the run writes, so a
+  variant named for one alone writes a filename naming a combination the run did not render.
 - Pass the whole declared list as `variants` and `inject('variant')` as `variant`.
   `createPortfolio` refuses a `variant` no declared variant carries, and `files` expands the
   registry across the whole list rather than across the one being rendered.

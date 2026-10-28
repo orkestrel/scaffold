@@ -153,35 +153,27 @@ act itself scrolls into view.
 ### The failure voices
 
 Assert the one voice the case means. Never write an assertion that accepts more than one. This table
-carries this layer's own voices. Read the statechart voices in [statechart.md](statechart.md) and
-the capture voices in [captures.md](captures.md).
+carries the voices a journey asserts. Read the statechart voices in [statechart.md](statechart.md),
+the capture voices in [captures.md](captures.md), and every other voice in `guides/test.md` § Voices.
 
-| Condition                                              | The voice thrown                                                                         | Thrown by               |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------- |
-| No element carries the name                            | `No interactive element has the accessible name "<name>"`                                | `resolveRendered`       |
-| Every match fails a reachability condition             | `Interactive target "<name>" is not visible and focus-reachable`                         | `resolveRendered`       |
-| Several matches are reachable                          | `Interactive target "<name>" is ambiguous across <n> elements`                           | `resolveRendered`       |
-| Still off-viewport after being scrolled to             | `Interactive target "<name>" is unreachable after scrolling`                             | `resolveAccessible`     |
-| The region holds no reachable match                    | `Interactive target "<name>" is not reachable inside "<region>"`                         | `clickAccessibleWithin` |
-| The region holds several reachable matches             | `Interactive target "<name>" is ambiguous across <n> elements inside "<region>"`         | `clickAccessibleWithin` |
-| No native disclosure is reachable under the name       | `Native disclosure "<name>" is not visible and focus-reachable`                          | `clickDisclosure`       |
-| Several native disclosures carry the name              | `Native disclosure "<name>" is ambiguous across <n> elements`                            | `clickDisclosure`       |
-| Forward Tab never lands on the target                  | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>`    | `traverseAccessible`    |
-| The named region is hidden                             | `Named region "<name>" is not visible`                                                   | `readPerception`        |
-| Several named regions carry the name                   | `Named region "<name>" is ambiguous across <n> elements`                                 | `readPerception`        |
-| The resolved control renders no value                  | `Interactive target "<name>" does not carry a value`                                     | `readValue`             |
-| A key sequence reached nothing                         | `Key sequence "<keys>" was sent with nothing focused`                                    | `pressKeys`             |
-| The state never arrived or never left                  | `Condition "<subject>" did not hold within <n>ms (waited <n>ms) (last states: <states>)` | `waitForState`          |
-| The animation subject is in no document                | `Animation subject is not connected`                                                     | `waitForAnimations`     |
-| The paint never stopped moving                         | `Animation "<subject>" did not settle within <n>ms (waited <n>ms): <animations>`         | `waitForAnimations`     |
-| The sentence never arrived                             | `Condition "<description>" did not hold within <n>ms (waited <n>ms)`                     | `waitForText`           |
-| A host withholds `getItem`, `setItem`, or `removeItem` | `Access is denied for <operation> "<key>"`                                               | `createStorage`         |
-| A host withholds `length`, `clear`, or `key`           | `Access is denied for <operation>`                                                       | `createStorage`         |
-| A write ran past the declared quota                    | `No room is left for <key>`                                                              | `createStorage`         |
-| A style reading has no computed color                  | `Computed foreground color is unavailable`                                               | `readContrast`          |
-| A class census walked nothing                          | `Class census walked no element`                                                         | `readCensus`            |
-| A contrast control cannot straddle its bar             | `Contrast control cannot straddle the bar <bar>`                                         | `buildContrast`         |
-| A database deletion was blocked                        | `IndexedDB database "<name>" is blocked by an open connection`                           | `removeDatabase`        |
+| Condition                                              | The voice thrown                                                                      | Thrown by               |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------- | ----------------------- |
+| No element carries the name                            | `No interactive element has the accessible name "<name>"`                             | `resolveRendered`       |
+| Every match fails a reachability condition             | `Interactive target "<name>" is not visible and focus-reachable`                      | `resolveRendered`       |
+| Several matches are reachable                          | `Interactive target "<name>" is ambiguous across <n> elements`                        | `resolveRendered`       |
+| Still off-viewport after being scrolled to             | `Interactive target "<name>" is unreachable after scrolling`                          | `resolveAccessible`     |
+| The region holds no reachable match                    | `Interactive target "<name>" is not reachable inside "<region>"`                      | `clickAccessibleWithin` |
+| The region holds several reachable matches             | `Interactive target "<name>" is ambiguous across <n> elements inside "<region>"`      | `clickAccessibleWithin` |
+| No native disclosure is reachable under the name       | `Native disclosure "<name>" is not visible and focus-reachable`                       | `clickDisclosure`       |
+| Several native disclosures carry the name              | `Native disclosure "<name>" is ambiguous across <n> elements`                         | `clickDisclosure`       |
+| Forward Tab never lands on the target                  | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>` | `traverseAccessible`    |
+| The named region is hidden                             | `Named region "<name>" is not visible`                                                | `readPerception`        |
+| Several named regions carry the name                   | `Named region "<name>" is ambiguous across <n> elements`                              | `readPerception`        |
+| The resolved control renders no value                  | `Interactive target "<name>" does not carry a value`                                  | `readValue`             |
+| A key sequence reached nothing                         | `Key sequence "<keys>" was sent with nothing focused`                                 | `pressKeys`             |
+| A host withholds `getItem`, `setItem`, or `removeItem` | `Access is denied for <operation> "<key>"`                                            | `createStorage`         |
+| A host withholds `length`, `clear`, or `key`           | `Access is denied for <operation>`                                                    | `createStorage`         |
+| A write ran past the declared quota                    | `No room is left for <key>`                                                           | `createStorage`         |
 
 - Report an absent control and a present-but-unreachable one as different findings: absence names
   a missing control, and unreachability names the interface gating one that exists.
@@ -195,8 +187,6 @@ the capture voices in [captures.md](captures.md).
 - Read a refused bound as a test defect rather than a finding. The wait family validates its budget
   and its interval and names the argument the caller passed, under the subject `Wait` or
   `Animation`.
-- Read the package's own voice table before asserting a message this file does not list. A workspace
-  that transcribes a voice by memory asserts a sentence the package does not throw.
 
 ## Input and traversal
 

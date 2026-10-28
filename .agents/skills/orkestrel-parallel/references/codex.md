@@ -24,5 +24,6 @@ Native Codex agents, and Codex lanes another harness hosts. `.codex/config.toml`
 - When the shell yields before the command exits, start nothing else, and confirm no owned leftover remains before the next lane; a lane that started the next test file broke the one-runner bound (2026-10-22).
 - When a brief launches a long command, name its terminal record, such as the launcher's `exit=` line; a lane read a finished step as running and polled it for six minutes (2026-10-22).
 - When a review brief describes risks in offensive-security wording, the provider's filter can end the lane without a verdict (2026-10-20). Brief the review as quality assurance of the user's own code in neutral words, require an early verdict file, retry once, then use a recorded fallback.
+- When a `codex exec` run is killed, treat it as dead only when its `codex-code-mode-host` child is gone too.
 - When a Codex child runs through a hosting harness, it can reach that harness's messaging tools; probe them before a writer or runner depends on them (`references/t3.md`).
 - When a launch fails on a tool server's handshake timeout, relaunch that lane alone; a lane beside it started with the same server (2026-10-19). Stagger launches that start the same server.

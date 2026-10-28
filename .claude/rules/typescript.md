@@ -12,20 +12,17 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - Tabs for indentation.
 - No semicolons unless ASI requires one.
 - Single quotes.
-- Named exports only, except framework-required defaults.
 - ESM imports use explicit `.js` extensions for local TypeScript modules.
 - Place `import type` declarations before value imports.
 - Do not place blank lines between consecutive imports of the same kind.
 - Narrow an accepted `unknown` with a total guard rather than a conditional access.
 - A parameter property is a constructor parameter carrying any accessibility or `readonly` modifier.
-  The ban reaches every form, `readonly` alone included; declare the `#` field and assign it in the
-  constructor body.
+  Declare the `#` field and assign it in the constructor body.
 
 ## Types
 
 - Put every reusable or public interface/type alias in the nearest authoritative `*/types.ts`.
 - Public collection properties and return types use `readonly T[]`, `ReadonlyMap<K, V>`, or `ReadonlySet<T>`.
-- Optional state is `T | undefined`; an optional lookup failure returns `undefined`.
 - `as const` annotates a literal with its own type and never overrides the checker, so the assertion
   ban does not reach it. Use it to derive a literal union from a value and to fix a tuple's arity and
   element types. Do not write it on a value whose contract is already declared; annotate the
@@ -39,7 +36,6 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - Never mutate caller-owned inputs.
 - Use copy-on-write for internal state.
 - Return copies or readonly views; never leak a mutable internal reference.
-- Compute derived facts instead of persisting duplicate state.
 
 ## Bindings
 
@@ -180,6 +176,8 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 | Optional missing lookup              | Return `undefined`                          |
 | Invalid input inside a guard         | Return `false`; never throw                 |
 
+Write a refusal message or a tool description an agent reads per `.claude/rules/documentation.md` § Agent-facing surfaces.
+
 Use the existing outcome contract from a declared dependency or the owning environment; do not redeclare it at each call site. When no such contract exists and adding a dependency is not authorized, define this once in the owning `types.ts`:
 
 ```ts
@@ -196,8 +194,7 @@ interface Failure<E> {
 type Result<T, E = Error> = Success<T> | Failure<E>
 ```
 
-- When `@orkestrel/contract` is declared, inspect and use its exact installed `Result`, construction/narrowing helpers, and `attempt` behavior instead of duplicating them.
-- Otherwise construct and narrow through the owning environment's centralized helpers.
+- Construct and narrow a locally defined `Result` through the owning environment's centralized helpers.
 - Error classes expose a machine-readable `code` and optional `context`.
 - Every public error class ships with a guard such as `isAppError` for safe `catch` narrowing.
   Make the guard return true for a value that passes the brand and member checks the following
@@ -232,7 +229,6 @@ type Result<T, E = Error> = Success<T> | Failure<E>
 
 ## Comments and API documentation
 
-- Comments explain why, never restate what self-explanatory code does. The Writing rules in `AGENTS.md` and `.claude/rules/writing.md` govern their prose.
 - Every public export has TSDoc, because the package guide is built from it: a one-sentence summary; `@param`, `@returns`, or a thrown-error line only where the signature leaves the meaning open; and an `@example` of typical use, as short as it can be while still showing the call and its result.
 - The first sentence states what the symbol does in the third person with an `-s` verb — `Creates`,
   `Returns`, `Checks whether` — and never repeats the symbol's name.

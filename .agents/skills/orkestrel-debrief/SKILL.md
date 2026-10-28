@@ -13,8 +13,8 @@ auditing the agent, rule, skill, and process layer; [field-testing.md](reference
 before running or judging a live field pass of an agent-facing surface;
 [retention.md](references/retention.md) before retiring the campaign folder.
 
-The debrief judges the artifact and the process that produced it; neither is exempt. Record a
-practice that worked as a refinement, so it repeats.
+The debrief judges the artifact and the process that produced it. Record a practice that worked
+as a refinement.
 
 ## The debrief laws
 
@@ -43,9 +43,10 @@ practice that worked as a refinement, so it repeats.
 
 ## Run the round
 
-1. **Scope and gather.** Name the campaign(s) under debrief. Assemble the record: unit
-   ledger, deviations and recoveries, audit verdicts and their reconciliations, gate
-   history, and any live transcripts. State what evidence exists and what must be
+1. **Scope and gather.** Name the campaign(s) under debrief. Assemble the record from the
+   campaign folder (`.claude/rules/campaign.md` § Layout): `plan.md`, `ledger.md`, `gaps.md`,
+   `ideas.md`, and the verdict files, plus deviations and recoveries, gate history, and any
+   live transcripts. State what evidence exists and what must be
    produced fresh.
 2. **Field evidence.** Drive what was built with real consumers where a consumable
    surface exists. Record every pass verbatim.
@@ -78,8 +79,9 @@ practice that worked as a refinement, so it repeats.
    orchestration contract) with the owner's direction where the root contract is
    touched; re-prove per the re-proving law in § "The debrief laws".
 8. **Propagate.** Portable changes are made in the scaffold repository's host inventory,
-   staged, gated, and pushed — editing one project's checkout propagates nothing. Verify
-   the generated-workspace proofs stay green so new projects inherit the refined canon.
+   staged, gated, and committed; editing one project's checkout propagates nothing. Push on
+   the user's go-ahead (`.agents/orchestration.md` § Acceptance). Verify the
+   generated-workspace proofs stay green so new projects inherit the refined canon.
 9. **Dispose.** Present the disposition map — finding table with carriers, the canon
    delta, what remains open — and retire the campaign folder through
    [retention.md](references/retention.md), which owns the checks, the go-ahead, the
@@ -90,5 +92,5 @@ practice that worked as a refinement, so it repeats.
 Each round ends with one fixed report: the finding table (id, evidence pointer, bucket,
 carrier), the canon delta (files created or changed, per layer: agents, rules, skills,
 process, guide, roadmap), the re-proof evidence, and exactly one terminal line —
-`DEBRIEF: FOLDED` when every finding has a carrier and the propagation is pushed, or
+`DEBRIEF: FOLDED` when every finding has a carrier and the propagation is committed in scaffold, or
 `DEBRIEF: OPEN` with the blocking items.

@@ -8,6 +8,8 @@ paths:
 
 # Evidence, probes, and completion rules
 
+These rules govern how a claim is established: the evidence read before a change, the probes and instruments that settle a question, performance measurement, and the completion check.
+
 ## Evidence before change
 
 - Read the authoritative `types.ts` and the decision-bearing implementation first-hand. Delegate bulk reading, never the owning decision.
@@ -34,7 +36,7 @@ paths:
 - When the question supplies no project, no case, or no control, write a probe per `.claude/rules/tests.md` § Probes and report the probe's control and coverage.
 - When no `probe` server is registered, register one outside the repository in the harness's user or local MCP scope, pointing at `node_modules/@orkestrel/probe/dist/bin/main.js`, and start it in the repository whose projects the question names. A scaffold target holds no `.mcp.json`.
 - When a question concerns what a rendered page shows or does, drive the page through the tools the `browse` MCP server registers and read what they return before arguing from source. Accept a surface through journey tests, never through a `browse` session; `.agents/skills/orkestrel-journey/references/recorded.md` rules how a recorded journey counts.
-- When no `browse` server is registered and the workspace declares `@orkestrel/browser`, register one outside the repository in the harness's user or local MCP scope, running `node` with the argument `node_modules/@orkestrel/browser/dist/bin/main.js`, and start it in the repository root. Leave `BROWSE_ROOT` unset so the server writes under `tmp/browsers/`. Set `BROWSE_HEADLESS=false` only while a person watches the window, `BROWSE_READONLY=true` to refuse `record`, `save`, `edit`, and `forget`, and `BROWSE_EXECUTABLE` to a Chromium executable when the server finds none.
+- When no `browse` server is registered and the workspace declares `@orkestrel/browser`, register one outside the repository in the harness's user or local MCP scope, running `node` with the argument `node_modules/@orkestrel/browser/dist/bin/main.js`, and start it in the repository root. Leave `BROWSE_ROOT` unset so the server writes under `tmp/browsers/`, and set `BROWSE_HEADLESS=false` only while a person watches the window. `guides/browser.md` § Register the browse binary with Claude Code lists every `BROWSE_*` variable.
 - When the workspace builds the surface into a `showcase/<application>.html` page, serve that page before navigating: run the `build:showcase` script, or the `build:showcase:<framework>` script for a framework mode, then serve the `showcase/` directory with `npx vite preview --config configs/app/vite.showcase.config.ts` and navigate to the page by its file name. Never navigate to a `file:` URL; `browse` refuses every scheme but `http:` and `https:`.
 - When the workspace builds no showcase page for the surface, or the question needs what one HTML file does not carry (a second route, a separately requested asset, or a source edit shown without a rebuild), start the `dev` script, or the `dev:<framework>` script for a framework face, and navigate to the address the script prints.
 - When the surface calls an API, start every server it calls before navigating, each on a port apart from the page's server: a third-party backend by its own start command, and the project's `src/server` or `app/server` surface by the script that starts it, which is the `serve:build` script for `app/server`.
@@ -57,9 +59,8 @@ paths:
 
 ## Ecosystem reuse
 
-- Prove a semantic difference before keeping a local variant of an installed primitive.
+- Prove a semantic difference before keeping a local variant of an installed primitive, per `.claude/rules/patterns.md` § Declared ecosystem capabilities.
 - Fix a reusable defect in the lowest package that owns the mechanism; keep product policy downstream.
-- Never re-export a dependency's symbol.
 
 ## Production hardening
 
@@ -68,9 +69,7 @@ paths:
 - Test observable invariants at each seam with real implementations; use a dedicated real-service project for external behavior.
 - Treat "works with an external client" as unproven until one representative real client has driven it end to end.
 - Audit test discovery, counts, skipped and todo tests, cleanup, and assertion adequacy before acceptance. Coverage is not adequacy.
-- Add an independent review for security, destructive paths, concurrency, protocols, or untrusted input, per the size gate in `.agents/orchestration.md`.
 
 ## Completion
 
 - Sweep centralization, wrappers, test helpers, and text integrity after implementation and before gates.
-- Stop when the enumerated scope is closed and the gates the size gate names are green. The next scope is the deliverable; a further pass needs a further instruction from the user.

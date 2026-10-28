@@ -1,12 +1,12 @@
 ---
 name: orkestrel-dispatch
 description: >-
-  Dispatch one unit of work to a native subagent or an external bench and bring its result back: write the brief, probe the bench, launch under a cap, watch liveness, read the report, check its citations, accept, and delete the launch copies. Use when `.agents/orchestration.md` routes work to a role, when a bench lane (Grok, Astra, or Opus through the Claude CLI) is needed, or when a command will outlive the turn that starts it.
+  Dispatch one unit of work to a native subagent or an external bench and bring its result back: write the brief, probe the bench, launch under a cap, watch liveness, read the report, check its citations, accept, and delete the launch copies. Use when `.agents/orchestration.md` routes work to a role, when a bench lane is needed, or when a command will outlive the turn that starts it.
 ---
 
 # Dispatch
 
-`.agents/orchestration.md` decides who runs what and binds the permission floor; this skill runs the dispatch. Read `references/launch.md` before any command that outlives the turn, and `references/bench.md` before any bench lane. Run every step a script performs as that script, from the checkout root, with `node`.
+`.agents/orchestration.md` decides who runs what and binds the permission floor; this skill runs the dispatch. Read `references/launch.md` before any command that outlives the turn. Run every step a script performs as that script, from the checkout root, with `node`.
 
 ## Scripts
 
@@ -36,28 +36,38 @@ description: >-
 
 - Select continuation or a fresh session per `.agents/orchestration.md` § Sessions and consultation. Use the message or resume mechanism the harness's live tool descriptions name, and record the session and task identities it returns.
 - Start a native unit by the Start row of the session's harness page under `.agents/skills/orkestrel-parallel/references/`; that row also names when a hosting harness's child-task channel replaces the native one.
-- Bench: run `bench.ts --<bench>` once per session before the first lane, then launch the transport contract's command through `launch.ts` in the background with `--status`.
-- Size the cap from the `durationMs` that `result.ts` reported for comparable runs, plus gate time, plus slack. Never let the unit name it.
-- Confirm the launch within a minute with `result.ts`: `bytes` past the header and a small `ageMs`. An instantly dead journal is a failed launch; read its errors file.
+- Size the cap per `references/launch.md` § Cap. Never let the unit name it.
+- Confirm the launch with `result.ts` before the next dispatch: `bytes` past the header and a small `ageMs`. An instantly dead journal is a failed launch; read its errors file.
+
+### Bench lanes
+
+An external engine widens capacity and inherits no authority; treat its output as a proposal until the Orchestrator verifies it against the tree. `.agents/transports/<harness>.md` owns each bench's command, sandbox, and recovery.
+
+- Probe once per session before the first lane with `bench.ts --<bench>`, and again at any dispatch after a failure. `live: false` records the bench dark. Then launch the transport's command through `launch.ts` in the background with `--status`.
+- A driver writes the brief with `brief.ts --lane <bench>`, resolves the command, runs the lane itself only where its transport allows, and otherwise returns the brief path, the command, and the journal path for the Orchestrator to launch. A driver pinned read-only writes nothing: it returns the brief text, its intended path, the resolved command, and the journal paths, and the Orchestrator writes the brief. Briefs never travel as shell arguments.
+- Name in the brief the host restrictions the transport records that the unit will meet. The Orchestrator takes a proof that needs a restricted capability on the host, and the unit records it as an observation naming the exact command.
+- A bench unit writes only its owned files and its checkout's `tmp/`. Name its report path there, or take the report from the last-message file.
+- Record the lane in the roster (`.agents/orchestration.md` § Sessions and consultation) with subject, journal path, and session id. The Orchestrator owns the cap and the watch; nothing polls the bench from inside the driver.
+- Read the answer with `result.ts`, never from stdout, and refuse a result with no journal path and session id.
 
 ## Watch
 
 - Read liveness from the artifact the work produces: owned-file mtimes, `result.ts` on the journal, the counts a suite reports. A wrapper's silence proves nothing.
-- Prove a run dead before relaunching, by the process id in the spawn line `launch.ts` prints at start and in the `<journal>.pid` file it writes, per `references/launch.md` § Kill and relaunch. Never `pgrep -f` or `pkill -f` a pattern from a shell whose own command line contains it.
+- Prove a run dead before relaunching, per `references/launch.md` § Kill and relaunch.
 - A stalled or cap-killed run: resume with the session id from `result.ts`, or relaunch with a successor brief. Triage per `.agents/orchestration.md` § Deviation protocol.
 
 ## Accept
 
-1. Capture a native report to `tmp/units/<unit>-report.md`, or read a bench answer with `result.ts --<bench> <journal> --out <path>`. Refuse a bench report with no journal path and session id.
+1. Capture a native report to `tmp/units/<unit>-report.md`, or read a bench answer with `result.ts --<bench> <journal> --out <path>`.
 2. Run `cite.ts <report>` and discard every claim whose citation does not resolve before reading the rest.
 3. Verify with direct evidence: `git status --porcelain`, the diff, and the scoped validation the brief named. A writer's self-report is not evidence.
 4. Run the review the size gate names, then integrate: apply shared-file patches serially; route an added type, mechanism, or criterion to a successor unit.
 5. Write the acceptance commit message with what changed and what the unit measured; record `durationMs` when it informs a cap or a performance claim.
-6. Run `sweep.ts --unit <unit> --delete` to remove the unit's brief, report, claims, journal, errors, status, pid, and last-message files. Delete any probe the unit left in the tree. In a campaign, update `.orkestrel/<package>/plan.md` and the ledger, and delete a closed seam's verdict. Run `sweep.ts --report` at acceptance and `sweep.ts --tmp [--older-than MINUTES]` after the last live unit exits.
+6. Run `sweep.ts --unit <unit> --delete` to remove the unit's brief, report, claims, journal, errors, status, pid, and last-message files. Delete any probe the unit left in the tree. In a campaign, update `.orkestrel/<package>/plan.md` and the ledger, and delete a closed seam's verdict. `.agents/orchestration.md` § Cleanup owns the `--report` and `--tmp` runs.
 
 ## Refuse
 
 - A brief that contradicts a measurement the campaign already recorded: reconcile first.
 - A unit that asks for an unowned edit: stop it and re-scope.
-- A concurrent writer outside an acknowledged `orkestrel-parallel` ownership protocol: queue it.
+- A concurrent writer outside an `orkestrel-parallel` ownership assignment: queue it.
 - A tree-wide source-mutating command from a unit: strike it from the brief. For verifier command outputs, apply `.agents/orchestration.md` § Permission floor.

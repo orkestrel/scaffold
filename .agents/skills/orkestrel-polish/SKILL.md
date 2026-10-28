@@ -24,8 +24,8 @@ supposed to produce it. Source-reading review passes a component that renders no
   accessibility snapshot, and an interaction log.
 - Source is corroboration for a mechanism, never the proof that the surface shows it.
 - A claim the portfolio cannot show is unproven, not passed. Say so.
-- The same law governs an externally driven surface: a compatibility claim is proven by
-  driving it with a representative real client, not by its own tests.
+- Prove an externally driven surface's compatibility claim per the `orkestrel-harden` skill's
+  Production hardening → Use real implementations.
 
 ## Select the scope
 
@@ -36,29 +36,25 @@ Choose the smallest scope that satisfies the request:
   re-verdict on the repaired items → independent gates.
 
 A narrow verdict request does not authorize fixes. A polish request authorizes fixing every
-confirmed finding in scope and rebuilding the harness gaps the verdicts expose. A second round
-over the same surface needs an instruction from the user.
+confirmed finding in scope and rebuilding the harness gaps the verdicts expose.
 
 ## Execute the round
 
 1. **Build the portfolio.** Produce the full evidence set with the harness reference, then
-   eyeball every artifact yourself before spending a verdict round on it. An unexamined
-   portfolio buys harness bugs at verdict prices.
+   eyeball every artifact yourself before spending a verdict round on it.
 2. **Seed candidates.** Turn your own mid-integration observations into numbered
-   confirm-or-refute candidates inside the verdict brief. Observations that stay in your
-   head are neither evidence nor findings.
+   confirm-or-refute candidates inside the verdict brief.
 3. **Take independent verdicts** on the SAME portfolio, in the shape
-   § "Return the fixed verdict shape" fixes. The
-   lanes are subjective design fit; objective state truth; and mechanical inventory of
-   copy, classes, icons, and accessibility attributes. This is the surface variant of the
-   review in `.agents/orchestration.md` § Size gate, so its rules bind: each lane is a fresh
-   subagent with a clean context, blind to the others until reconciliation, run once, and no
-   lane is dropped because an engine is dark. A narrow verdict request runs the selected lane once
-   and stops.
+   § "Return the fixed verdict shape" fixes. Judgment runs as the two lanes
+   `.agents/orchestration.md` § Parallelism names: subjective design fit and objective state
+   truth. The mechanical inventory of copy, classes, icons, and accessibility attributes runs as a
+   `checker` lane. This is the surface variant of the review in `.agents/orchestration.md`
+   § Size gate, so its rules bind: each judgment lane is a fresh subagent with a clean context,
+   blind to the other until reconciliation, run once, and no lane is dropped because an engine is
+   dark. A narrow verdict request runs the selected lane once and stops.
 4. **Reconcile.** Confirmed findings get carriers; refuted findings close on the record with
    the evidence that refuted them; conflicts get a dated ruling. Then walk the reconciled
-   list once and name the fix-brief item carrying each finding — a finding with no carrier
-   is a dropped finding, and it will cost the next round.
+   list once and name the fix-brief item carrying each finding.
 5. **Dispatch serialized fix units,** objective lane first because it changes the ground
    truth the subjective lane reads. Each unit records the failing proof before the
    repair — the exact command and its red count — and the same command's green count
@@ -87,7 +83,7 @@ over the same surface needs an instruction from the user.
 
 ## Return the fixed verdict shape
 
-Free-form verdicts cost one reconciliation pass each. Every verdict returns:
+Every verdict returns:
 
 - one line per item, in the brief's numbering:
   - `RENDERED-PROVEN(<capture>)` — the artifact shows it;
@@ -101,8 +97,8 @@ Triage it against the capture reference before it becomes a finding.
 
 ## Accept the result
 
-Do not accept a source-only verdict, a self-audited fix unit, a round without a terminal
-line, or a green claim from the engine that wrote the code. Completion requires:
+Accept per `.agents/orchestration.md` § Acceptance. Refuse a source-only verdict, a self-audited
+fix unit, and a round without a terminal line. Completion requires:
 
 - every confirmed finding fixed or explicitly ruled out of scope on the record;
 - a final portfolio whose captures show the accepted state;

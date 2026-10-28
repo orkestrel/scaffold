@@ -1,9 +1,6 @@
 # Writing rules
 
-`AGENTS.md` § Writing governs every reply. This file adds what developer prose, comments, and instruction files decide.
-
-- Write comments, TSDoc, and guide prose once, after types, tests, and implementation are final, and keep them minimal. Prose written earlier is wrong by the time the implementation settles.
-- Never revise, review, or gate prose while the implementation can still change.
+`AGENTS.md` § Writing governs every reply, and `AGENTS.md` § Work loop orders prose after the final implementation. This file adds what developer prose, comments, and instruction files decide.
 
 ## Voice
 
@@ -100,4 +97,4 @@ Replace each term with its replacement. A code identifier, an API name, and a st
 - `policy/no-banned-term` reads comments and the prose sweep in `tests/setupPolicy.ts` reads authored Markdown; each matches the rows banned unconditionally. Rule a hit in `now`, `new`, `latest`, `once`, `since`, `above`, `below`, `master`, `hostile`, `adversarial`, `attack`, `break`, `forge`, `bypass`, `poison`, `escape`, `exploit`, or `payload` yourself by the banned sense.
 - Sweep case-insensitively and across inflections. Name the pattern and the paths behind every sweep result.
 - Write singular `they` for a person of unstated gender.
-- `.claude/rules/names.md` § Fixed lifecycle vocabulary owns `execute`, `abort`, `kill`, `terminate`, and `run`.
+- `.claude/rules/names.md` § Fixed lifecycle vocabulary owns `abort` and `execute`.

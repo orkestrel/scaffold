@@ -14,8 +14,7 @@ paths:
 
 # Documentation and parity rules
 
-Documentation is an enforced contract, not explanatory decoration. The Writing rules in
-`AGENTS.md` govern its prose and are not restated here.
+Documentation is an enforced contract. These rules govern guides, parity, examples, agent-facing surfaces, and skill files; `AGENTS.md` § Writing and `.claude/rules/writing.md` govern their prose.
 
 ## Authority and workflow
 
@@ -44,18 +43,15 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
   rewriting, and remaining-drift reporting. Run `npm run test:guides` for read-only parity
   assertions. Use
   `npm run test:guides -- --to guide` or `npm run test:guides -- --to source` only when choosing
-  an explicit rewrite direction. Before adopting the generated command, implement its direct
-  entry and rewrite directions in the package-owned `tests/guides.test.ts`. Scaffold must not
-  synthesize or overwrite that authored proof. Update each fleet package's authored file before
-  its release. Never weaken the gate.
+  an explicit rewrite direction. The package authors `tests/guides.test.ts`.
 - The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
   paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
   phrases, and each is the blockquote under its file's H1.
 - A vendored dependency guide is a mirror. Its relative links address the upstream tree and resolve to nothing here, so they are outside local-link parity. Refresh a mirror rather than rewriting it: a rewritten copy is a translation, and no comparison against the fetched bytes can check it.
 - Place a fence whose code is tab-indented outside a list item: inside one, `oxfmt` writes the item's continuation spaces before each tab, which `git diff --check` refuses.
-- Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns. A `// false` beside a call that returns `true` is a defect of the same kind as a wrong return value, and it reaches every consumer who installs the package. That proof has a home: `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`. An ordered behaviour with no gate is not a gate.
-  Asserting that the sentence appears is not asserting that it is true. `expect(text).toContain('a spawn fault reports null')` passes unchanged when the code starts returning something else, so it guards the documentation's presence and nothing about the behaviour. Where a prose claim about behaviour sits under no fence, add the executed assertion that would break if the claim went false, and keep the substring check only as a presence guard beside it. A row whose close condition names a behaviour does not close on a substring.
-- Re-read the prose last, against what actually shipped. Where a change chose to document a limit rather than close it, the sentence was often drafted for the option that lost, or written more confidently than the code earns. Code rulings survive review because a test can falsify them; prose rulings survive because nothing tries.
+- Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns. A `// false` beside a call that returns `true` is a defect. `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`.
+- Assert a prose claim about behaviour with an executed assertion that breaks if the claim goes false: `expect(text).toContain('a spawn fault reports null')` passes unchanged when the code starts returning something else. Keep a substring check only as a presence guard beside the executed assertion, and never close a row whose close condition names a behaviour on a substring.
+- Re-read the prose last, against what shipped. Where a change documents a limit rather than closing it, check that the sentence states the limit and neither describes the option that lost nor claims more than the code earns.
 
 For behavioral interfaces/classes:
 
@@ -80,6 +76,15 @@ Code fences import through the package's published specifier:
 
 Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.
 
+## Agent-facing surfaces
+
+A skill, a tool description, and a refusal message each teach an agent mid-task. When you write one:
+
+- Put the critical path in the tool description, most important first: a worked example, the key nesting, and the reply shape. A harness abbreviates a nested schema and delivers the description intact; never leave the teaching to the schema.
+- Make every refusal orient, name, or correct: state the subject, the exact key path, the expected shape, the valid candidates, and every missing and every unexpected item, in one refusal.
+- Refuse with the correction in the message. Never coerce a malformed input and never silently drop it. Encode an untrusted identifier in a diagnostic, JSON-encoded and length-capped, so malformed input cannot fake or balloon the message.
+- Acknowledge or state, never both: a mutation returns an acknowledgement and a read returns state. Say the split in both tools' descriptions so neither is polled for the other's job.
+
 ## Workflow skills
 
 - Skills prescribe reusable process; they do not copy naming, placement, syntax, lifecycle, or test laws from `AGENTS.md` and rules.
@@ -87,7 +92,7 @@ Never use in-repository `@src/*` aliases in public guide examples; reserve them 
 - For a portable skill that teaches an external framework, takes the host project's own `AGENTS.md` file as its code law, and binds none of this repository's rule files, drop the `orkestrel-` prefix and name the skill for the framework a reader searches for. Add no other exception. The `enterprise-bootstrap` skill meets that test and keeps its name: it carries Bootstrap 5.3 craft, assumes no stack, and names the `.agents/orchestration.md` and `.claude/rules/quality.md` files only where they are present. Do not rename it into the namespace.
 - Keep `SKILL.md` concise and route conditional detail to one-level `references/`.
 - In a `SKILL.md`, name another skill's reference by that skill and the reference's title, never as a `references/<name>.md` path; the policy sweep attributes that token to the citing skill.
-- When you add a canonical skill, register it in `TARGET_SKILL_NAMES` in `src/core/constants.ts`, in the skill lists of `tests/distribution.test.ts`, `tests/src/core/Compiler.test.ts`, and `tests/src/core/compilers.test.ts`, and in the pointer-file count of `tests/src/bin/CLI.test.ts`, then regenerate `host.json` with a build.
+- In the `@orkestrel/scaffold` checkout, when you add a canonical skill, register it in `TARGET_SKILL_NAMES` in `src/core/constants.ts`, in the skill lists of `tests/distribution.test.ts`, `tests/src/core/Compiler.test.ts`, and `tests/src/core/compilers.test.ts`, and in the pointer-file count of `tests/src/bin/CLI.test.ts`, then regenerate `host.json` with a build.
 - Name every Markdown file in a skill's `references/` from its `SKILL.md`, and delete a reference nothing names.
 - Frontmatter contains only `name` and a trigger-focused `description`.
 - Set `name` to the skill's own directory name.

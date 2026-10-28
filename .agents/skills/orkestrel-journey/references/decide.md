@@ -26,26 +26,7 @@ follow it there rather than restating it here.
 
 ## The limit that decides the split
 
-`prove` cannot serve a browser project, and the limit belongs to the installed `@orkestrel/probe`
-rather than to a version this file names. Confirm it against the copy this workspace holds before
-routing a rendered question, and record the version you read beside the ruling.
-
-Read the pool pin, the project lookup, and the guide's own statement. Any of them holding is the
-limit holding:
-
-- **The pool pin.** Read the runtime stage in the installed server entry. Where it pins the
-  `threads` pool, a browser project's specification runs in a Node worker,
-  `@orkestrel/test/browser` imports `vitest/browser` at module scope, and the browser setup file
-  throws before the case runs.
-- **The project lookup.** The runtime stage looks a project up by the name it infers from the test
-  path, and a browser project is instantiated under its browser-expanded name, so the lookup finds
-  nothing and the claim is refused as missing.
-- **The guide's statement.** Read what `@orkestrel/probe`'s own guide says the stages serve. Where
-  it names no browser project, no stage claims one.
-
-Never route a rendered question to `prove` while any of them holds. The pinned-pool refusal arrives
-as a case failure, which reads exactly like a broken claim. Record the version, the pool pin you
-read, and what the guide says, so the next round re-reads rather than re-deriving.
+`prove` cannot serve a browser project. The runtime stage of `@orkestrel/probe` creates each specification with the `threads` pool (the `createSpecification` call in `node_modules/@orkestrel/probe/dist/src/server/index.js`), so a browser project's specification runs in a Node worker, where `@orkestrel/test/browser` imports `vitest/browser` and the browser setup file throws before the case runs. The refusal arrives as a case failure and reads like a broken claim. Never route a rendered question to `prove`; re-read that call in the installed copy when the package changes.
 
 ## The rendered artifact
 

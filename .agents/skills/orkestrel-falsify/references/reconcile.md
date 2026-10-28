@@ -53,5 +53,5 @@ Record which engine was right and on what.
 - Every retained finding names the fix-brief item that carries it; walk the list once.
 - Drop, on the record, anything no lane can substantiate against the evidence.
 - Promote anything that must outlive the round into a durable artifact before the working files are swept.
-- Assign the fix round's lane to an independent reviewer per `.agents/orchestration.md` § Engines. The next round's brief is this round's successor.
+- Assign the fix round per `.agents/orchestration.md` § Size gate. The next round's brief is this round's successor.
 - Accept when the claims are satisfied on evidence (`VERDICT: PASS` against a claim set covering what the subject owns), never on green gates alone. Bound the claim set at the brief, rule on what it returned, and close; never re-run because a counterexample can still be imagined.

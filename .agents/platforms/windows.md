@@ -26,10 +26,10 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 - `Get-FileHash` prints uppercase hexadecimal, and Node's `createHash` prints lowercase. Compare digests case-insensitively.
 - Redirecting a native command's standard error with `2>&1` wraps each line in an error record and sets `$?` to false on success. Let the harness capture standard error.
 
-## Harness approval on this host
+## Release packs and terminals
 
-- Keep every program-carrying command in a TypeScript file run by `node`. A heredoc, `node -e`, an `&&` chain, or a `${...}` argument trips the harness's approval classifier; a one-shot read-only check can run inline.
-- Run a `Remove-Item` as its own short command with a relative path. The classifier blocks a command that pairs it with a path-like literal elsewhere, such as a `'\'` string. Verify with `git status`.
+- Git Bash ships no `script` binary, so an agent cannot give npm a TTY there; the operator runs a browser-authorized `npm login` or `npm publish` in a real terminal.
+- A pack made on Windows records `0644` for an entry git tracks as `100755`. Compare release packs between hosts by paths, sizes, and content hashes, and report executable-mode differences separately.
 
 ## Deleting untracked files
 
