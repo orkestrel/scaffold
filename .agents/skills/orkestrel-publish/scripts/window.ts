@@ -15,22 +15,49 @@
 // acceptance line, stops at the first refusal and names the package to resume from, then confirms
 // each accepted version against the registry. --confirm re-reads the registry for each name@version every 5
 // seconds until it serves the version or the wait (default 120 seconds) ends. Exit 0 when the mode
-// succeeded, 3 when it did not, 64 on usage.
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+// succeeded, 3 when it did not, 64 on usage, including a flag the script does not read and the
+// `--flag=value` form.
+import type { SpawnSyncReturns } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import {
-	parseJsonRecord,
-	readList,
-	readMissingFlags,
-	readOption,
-	readString,
-	runNpm,
-} from '../../orkestrel-dispatch/scripts/helpers.ts'
 
-const POLL_MS = 5_000
-const ACCEPTED = /^\+ (\S+)@(\S+)\s*$/mu
+/** Holds the milliseconds between two polls of the registry. */
+export const POLL_MS = 5_000
 
-interface Upload {
+/** Matches the acceptance line `npm publish` prints and captures the name and the version. */
+export const ACCEPTED = /^\+ (\S+)@(\S+)\s*$/mu
+
+/** Lists every flag the script reads, value flags and switches alike. */
+export const FLAGS: readonly string[] = [
+	'--whoami',
+	'--login',
+	'--publish',
+	'--confirm',
+	'--wait',
+	'--otp',
+	'--json',
+]
+
+/** Holds the usage line the script prints when no mode or two modes were given. */
+export const USAGE =
+	'usage: window.ts --whoami [--wait SECONDS] | --login [--wait SECONDS] | --publish DIR... --otp CODE [--json] | --confirm NAME@VERSION... [--wait SECONDS]'
+
+/** Describes how to spawn npm on this host without a shell where the CLI entry is present. */
+export interface NpmCommand {
+	readonly file: string
+	readonly prefix: readonly string[]
+	readonly shell: boolean
+}
+
+/** Describes the name and version a package manifest declares. */
+export interface ManifestName {
+	readonly name: string | undefined
+	readonly version: string | undefined
+}
+
+/** Describes one package upload and what the registry did with it. */
+export interface Upload {
 	readonly directory: string
 	readonly name: string | undefined
 	readonly version: string | undefined
@@ -41,36 +68,206 @@ interface Upload {
 	readonly journal: string
 }
 
-interface Published {
+/** Describes the uploads a batch made and whether a refusal stopped it. */
+export interface Published {
 	readonly uploads: readonly Upload[]
 	readonly stopped: boolean
 }
 
-function waitFor(ms: number): Promise<void> {
+/**
+ * Reads the value that follows a flag.
+ *
+ * @remarks
+ * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
+ * with `--` is a missing value, and the `--flag=value` form is not read.
+ *
+ * @param argv - The arguments after the script path.
+ * @param name - The flag, such as `--otp`.
+ * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
+ * another flag.
+ */
+export function readOption(argv: readonly string[], name: string): string | undefined {
+	const index = argv.indexOf(name)
+	const value = index === -1 ? undefined : argv[index + 1]
+	return value === undefined || value.startsWith('--') ? undefined : value
+}
+
+/**
+ * Names the value flags a caller gave with no value.
+ *
+ * @param argv - The arguments after the script path.
+ * @param names - The flags that take a value.
+ * @returns Each named flag that appears last or is followed by another flag, in argument order.
+ */
+export function readMissingFlags(
+	argv: readonly string[],
+	names: readonly string[],
+): readonly string[] {
+	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
+}
+
+/**
+ * Names the flags a caller gave that the script does not read.
+ *
+ * @remarks
+ * Reads the arguments before a bare `--`, which opens a command a script passes on. A `--flag=value`
+ * argument is unknown, because the script reads no such form.
+ *
+ * @param argv - The arguments after the script path.
+ * @param flags - Every flag the script reads, value flags and switches alike.
+ * @returns Each argument that opens with `--` and is not a read flag, in argument order.
+ */
+export function readUnknownFlags(
+	argv: readonly string[],
+	flags: readonly string[],
+): readonly string[] {
+	const end = argv.indexOf('--')
+	return (end === -1 ? argv : argv.slice(0, end)).filter(
+		(argument) => argument.startsWith('--') && !flags.includes(argument),
+	)
+}
+
+/**
+ * Reads the values that follow a flag up to the next flag.
+ *
+ * @param argv - The arguments after the script path.
+ * @param name - The flag, such as `--publish`.
+ * @returns The values between the flag and the next `--` argument, empty when the flag is absent.
+ */
+export function readList(argv: readonly string[], name: string): readonly string[] {
+	const index = argv.indexOf(name)
+	if (index === -1) return []
+	const rest = argv.slice(index + 1)
+	const end = rest.findIndex((argument) => argument.startsWith('--'))
+	return end === -1 ? rest : rest.slice(0, end)
+}
+
+/**
+ * Parses a whole text as one JSON object.
+ *
+ * @param text - A JSON document, formatted or not, such as a manifest.
+ * @returns The parsed object, or undefined when the text is not a JSON object.
+ */
+export function parseJsonRecord(text: string): Record<string, unknown> | undefined {
+	try {
+		const parsed: unknown = JSON.parse(text)
+		if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+			return Object.fromEntries(Object.entries(parsed))
+		}
+	} catch {}
+	return undefined
+}
+
+/**
+ * Reads a string member of a record.
+ *
+ * @param record - The record, or undefined.
+ * @param key - The member name.
+ * @returns The string, or undefined when the member is absent or not a string.
+ */
+export function readString(
+	record: Record<string, unknown> | undefined,
+	key: string,
+): string | undefined {
+	const value = record?.[key]
+	return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Resolves the npm command for this host.
+ *
+ * @remarks
+ * The `npm-cli.js` entry beside the running Node binary spawns without a shell on every host; the
+ * `npm` shim on Windows is a `.cmd` file that needs one, so that path is the fallback alone.
+ *
+ * @returns The file to spawn, the arguments that precede npm's own, and whether a shell is needed.
+ */
+export function resolveNpm(): NpmCommand {
+	const cli = join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js')
+	if (existsSync(cli)) return { file: process.execPath, prefix: [cli], shell: false }
+	return { file: 'npm', prefix: [], shell: process.platform === 'win32' }
+}
+
+/**
+ * Runs npm with the given arguments and returns the finished child.
+ *
+ * @param args - The npm arguments, such as `['whoami']`.
+ * @param cwd - The working directory. Default: the current directory.
+ * @returns The spawn result with `utf8` stdout and stderr.
+ */
+export function runNpm(args: readonly string[], cwd?: string): SpawnSyncReturns<string> {
+	const npm = resolveNpm()
+	return spawnSync(npm.file, [...npm.prefix, ...args], {
+		encoding: 'utf8',
+		windowsHide: true,
+		shell: npm.shell,
+		maxBuffer: 64 * 1024 * 1024,
+		...(cwd === undefined ? {} : { cwd }),
+	})
+}
+
+/**
+ * Waits for a number of milliseconds.
+ *
+ * @param ms - The delay.
+ * @returns A promise that settles after the delay.
+ */
+export function waitFor(ms: number): Promise<void> {
 	return new Promise((settle) => {
 		setTimeout(settle, ms)
 	})
 }
 
-function readWhoami(): string | undefined {
+/**
+ * Reads the account `npm whoami` names once.
+ *
+ * @returns The user name, or undefined when npm exited nonzero or printed nothing.
+ */
+export function readWhoami(): string | undefined {
 	const result = runNpm(['whoami'])
 	const user = result.stdout.trim()
 	return result.status === 0 && user !== '' ? user : undefined
 }
 
-async function pollWhoami(waitSeconds: number, started = Date.now()): Promise<string | undefined> {
+/**
+ * Polls `npm whoami` until it answers or the wait ends.
+ *
+ * @param waitSeconds - How long to keep polling; 0 reads once.
+ * @param started - The millisecond the polling began. Default: now.
+ * @returns The user name, or undefined when none answered within the wait.
+ */
+export async function pollWhoami(
+	waitSeconds: number,
+	started = Date.now(),
+): Promise<string | undefined> {
 	const user = readWhoami()
 	if (user !== undefined || Date.now() - started >= waitSeconds * 1000) return user
 	await waitFor(POLL_MS)
 	return pollWhoami(waitSeconds, started)
 }
 
-function readServed(name: string, version: string): boolean {
+/**
+ * Checks whether the registry serves one version of a package.
+ *
+ * @param name - The package name.
+ * @param version - The version.
+ * @returns True if `npm view` reads exactly that version; false otherwise.
+ */
+export function readServed(name: string, version: string): boolean {
 	const result = runNpm(['view', `${name}@${version}`, 'version', '--json'])
 	return result.status === 0 && result.stdout.replace(/["\s]/gu, '') === version
 }
 
-async function confirmServed(
+/**
+ * Polls the registry until it serves one version or the wait ends.
+ *
+ * @param name - The package name.
+ * @param version - The version.
+ * @param waitSeconds - How long to keep polling; 0 reads once.
+ * @param started - The millisecond the polling began. Default: now.
+ * @returns True if the registry served the version within the wait; false otherwise.
+ */
+export async function confirmServed(
 	name: string,
 	version: string,
 	waitSeconds: number,
@@ -82,20 +279,35 @@ async function confirmServed(
 	return confirmServed(name, version, waitSeconds, started)
 }
 
-function findGitRoot(directory: string): string {
+/**
+ * Finds the nearest directory at or above one that holds a `.git` entry.
+ *
+ * @param directory - The directory to start from.
+ * @returns The nearest directory with a `.git` entry, or the filesystem root when none has one.
+ */
+export function findGitRoot(directory: string): string {
 	return existsSync(join(directory, '.git')) || dirname(directory) === directory
 		? directory
 		: findGitRoot(dirname(directory))
 }
 
-function readErrorCode(text: string): string | undefined {
+/**
+ * Reads the error code npm printed.
+ *
+ * @param text - npm's standard error.
+ * @returns The first `E` code in the text, such as `EOTP` or `E401`, or undefined when none appears.
+ */
+export function readErrorCode(text: string): string | undefined {
 	return text.match(/\b(E[A-Z0-9]{3,}|EOTP|E401|E403|E404)\b/u)?.[1]
 }
 
-function readManifestName(directory: string): {
-	readonly name: string | undefined
-	readonly version: string | undefined
-} {
+/**
+ * Reads the name and version a directory's package manifest declares.
+ *
+ * @param directory - The directory that holds `package.json`.
+ * @returns The name and version, each undefined when the manifest is absent, unreadable, or lacks it.
+ */
+export function readManifestName(directory: string): ManifestName {
 	const path = join(directory, 'package.json')
 	if (!existsSync(path)) return { name: undefined, version: undefined }
 	try {
@@ -106,7 +318,15 @@ function readManifestName(directory: string): {
 	}
 }
 
-function publishPackage(directory: string, otp: string): Upload {
+/**
+ * Publishes one package directory and journals the upload.
+ *
+ * @param directory - The package directory.
+ * @param otp - The account's one-time code.
+ * @returns The upload: accepted when npm exited 0 and printed the acceptance line, else refused with
+ * the error code npm named.
+ */
+export function publishPackage(directory: string, otp: string): Upload {
 	const manifest = readManifestName(directory)
 	const journal = `tmp/units/publish-${(manifest.name ?? directory).replace(/[^A-Za-z0-9.-]+/gu, '-')}.log`
 	// The refusal code must survive an inherited silent npm log level.
@@ -139,7 +359,16 @@ function publishPackage(directory: string, otp: string): Upload {
 	return upload
 }
 
-async function publishAll(
+/**
+ * Publishes a batch back to back and confirms each accepted version.
+ *
+ * @param directories - The package directories, in publish order.
+ * @param otp - The account's one-time code.
+ * @param waitSeconds - How long to wait for the registry to serve each accepted version.
+ * @returns One upload per directory published, ending at the first refusal; a directory after it is
+ * not published.
+ */
+export async function publishAll(
 	directories: readonly string[],
 	otp: string,
 	waitSeconds: number,
@@ -168,7 +397,20 @@ async function publishAll(
 	return confirmed
 }
 
-async function main(argv: readonly string[]): Promise<number> {
+/**
+ * Runs the mode the arguments name.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The exit code: 0 when the mode succeeded, 3 when it did not, 64 on usage.
+ */
+export async function main(argv: readonly string[]): Promise<number> {
+	const unknown = readUnknownFlags(argv, FLAGS)
+	if (unknown.length > 0) {
+		console.error(
+			`window: unknown flag ${unknown.join(', ')}; give each flag and its value as separate arguments\n${USAGE}`,
+		)
+		return 64
+	}
 	const missing = readMissingFlags(argv, ['--wait', '--otp'])
 	if (missing.length > 0) {
 		console.error(`window: ${missing.join(', ')} given with no value`)
@@ -276,12 +518,12 @@ async function main(argv: readonly string[]): Promise<number> {
 		console.log(JSON.stringify({ mode: 'confirm', readings }))
 		return readings.every((reading) => reading.served) ? 0 : 3
 	}
-	console.error(
-		'usage: window.ts --whoami [--wait SECONDS] | --login [--wait SECONDS] | --publish DIR... --otp CODE [--json] | --confirm NAME@VERSION... [--wait SECONDS]',
-	)
+	console.error(USAGE)
 	return 64
 }
 
-main(process.argv.slice(2)).then((code) => {
-	process.exitCode = code
-})
+if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {
+	main(process.argv.slice(2)).then((code) => {
+		process.exitCode = code
+	})
+}

@@ -1,6 +1,14 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, statSync } from 'node:fs'
+import {
+	chmodSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	renameSync,
+	statSync,
+} from 'node:fs'
 import { createServer } from 'node:http'
 import { basename, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -10,6 +18,7 @@ import { createTeardown, requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import {
 	CONFIG_TEMPLATES,
+	contentToHex,
 	DISTRIBUTION_TEST_PATH,
 	extractVersion,
 	MINIMUM_NPM_VERSION,
@@ -17,7 +26,6 @@ import {
 	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
-import type { ManifestEntry } from '@src/server'
 import { computeDigest, pathToStorage, readHostFloor } from '@src/server'
 import packageManifest from '../package.json' with { type: 'json' }
 import {
@@ -44,15 +52,20 @@ import {
 	buildCheckoutManifest,
 	buildCLIOptions,
 	buildCompiledPlan,
+	buildDeclaredEntry,
 	buildDistributionProof,
 	buildEntryWorkspace,
 	buildEnvironment,
 	buildFleetManifest,
+	buildFloorEntry,
+	buildFoundFile,
 	buildHostManifest,
+	buildLiveFiles,
 	buildInstalledHostReplies,
 	buildInventory,
 	buildManifestEntry,
 	buildMaterializerOptions,
+	buildMissingFile,
 	buildOptionArgv,
 	buildOrganization,
 	buildPackument,
@@ -179,8 +192,10 @@ import {
 	runEntry,
 	runSkillScript,
 	SCRATCH_PREFIX,
+	selectManifestEntry,
 	selectSeededNames,
 	SENSITIVE_PATH_CASES,
+	serveFloorEntries,
 	SKILL_CANON_FILES,
 	spawnNpm,
 	spawnSkillScript,
@@ -324,6 +339,45 @@ describe('the manifest builders', () => {
 		expect(buildManifestEntry({ executable: true }).executable).toBe(true)
 	})
 
+	it('builds the host rows and the floor entries a lazy reader is run over', () => {
+		const manifest = buildStagedManifest()
+
+		expect(buildFoundFile()).toStrictEqual({
+			path: 'scripts/codex.sh',
+			lookup: 'found',
+			hex: contentToHex('live script\n'),
+		})
+		expect(buildFoundFile('AGENTS.md', 'text\n')).toStrictEqual({
+			path: 'AGENTS.md',
+			lookup: 'found',
+			hex: contentToHex('text\n'),
+		})
+		expect(buildLiveFiles('one\n', 'two\n')).toStrictEqual([
+			buildFoundFile('scripts/codex.sh', 'one\n'),
+			buildFoundFile('scripts/codex.sh', 'two\n'),
+		])
+		expect(buildLiveFiles()).toStrictEqual([])
+		expect(buildMissingFile()).toStrictEqual({
+			path: 'scripts/codex.sh',
+			lookup: 'missing',
+			note: 'none',
+		})
+		expect(buildDeclaredEntry()).toStrictEqual(
+			buildManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' }),
+		)
+		expect(buildDeclaredEntry('guides/guide.md').storage).toBe('guides/guide.md')
+		expect(selectManifestEntry(manifest, '.claude/rules/names.md').storage).toBe(
+			'claude/rules/names.md',
+		)
+		expect(() => selectManifestEntry(manifest, 'absent.md')).toThrow('Value is required')
+		expect(buildFloorEntry()).toStrictEqual(manifest.entries[0])
+		expect(buildFloorEntry()).not.toBe(buildFloorEntry())
+		// A floor that carries no bytes leaves the inventory as the only path the repository answers.
+		expect(Object.keys(serveFloorEntries([buildFloorEntry()]))).toStrictEqual([
+			UPSTREAM_PATHS.vendored.inventory,
+		])
+	})
+
 	it('digests the membership of the guard and staged fixtures', () => {
 		expect(buildHostManifest({ entries: [], roots: [] }).digest).not.toBe(
 			buildHostManifest().digest,
@@ -401,6 +455,16 @@ describe('the manifest builders', () => {
 				'',
 			])
 		}
+	})
+
+	// The directory also holds skills this checkout keeps for itself, which the registered list
+	// does not name, so the listing is read for the registered names alone.
+	it('finds a skill directory in the checkout for every registered skill name', () => {
+		const listed = readdirSync(join(WORKSPACE_ROOT, '.agents', 'skills'))
+
+		expect(listed.filter((name) => TARGET_SKILL_NAMES.includes(name)).toSorted()).toStrictEqual(
+			TARGET_SKILL_NAMES.toSorted(),
+		)
 	})
 })
 
@@ -1059,13 +1123,15 @@ describe('the upstream fixtures', () => {
 	// The manifest is serialized first, which reads each entry once, and the loop then reads each entry
 	// once more, so a hole or a refusal fails the loop after the serialization has read the list.
 	it('reads the floor entries as the serialization and the loop did, and refuses what they refuse', () => {
-		const entry = (): ManifestEntry => requireValue(buildStagedManifest().entries[0])
-		const serve = (entries: ManifestEntry[]) =>
-			buildInstalledHostReplies({ manifest: { ...buildStagedManifest(), entries }, bytes: {} })
 		const lazy = buildLazyCase('the entries a floor serves', (shape) =>
-			readLazily(shape, entry, serve, refuseObject(entry)),
+			readLazily(shape, buildFloorEntry, serveFloorEntries, refuseObject(buildFloorEntry)),
 		)
-		const missing = buildMissingCase('the entries a floor serves', entry, serve, [0, 1])
+		const missing = buildMissingCase(
+			'the entries a floor serves',
+			buildFloorEntry,
+			serveFloorEntries,
+			[0, 1],
+		)
 
 		expect(lazy.read('hole-before-entry')).toStrictEqual({ outcome: 'TypeError', reads: [1] })
 		expect(lazy.read('hole-before-refusal')).toStrictEqual({ outcome: 'RangeError', reads: [1] })

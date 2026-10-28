@@ -5,7 +5,7 @@ The `orkestrel-publish` skill names this file. It carries the fleet release rule
 ## Publishing is the user's
 
 - Publishing is the user's decision and the user's credential. Prepare, surface the approval, and run the publishes the user asked for. Never substitute an API key, an access token, a copied auth file, or another login flow, and never ask the user to paste a token into the conversation.
-- A publish chain is a long-running command: write it as a TypeScript file and launch it through the `orkestrel-dispatch` skill's `scripts/launch.ts`; confirm the previous chain is dead by process id before starting another. Publish serially; concurrent publishes collide on the authentication handshake.
+- A publish chain is a long-running command: write it as a plan for the `orkestrel-dispatch` skill's `scripts/chain.ts` and launch the chain through that skill's `scripts/launch.ts`; confirm the previous chain is dead by process id before starting another. Publish serially; concurrent publishes collide on the authentication handshake.
 - A wave over unpublished tips derives its order per run from the dependency graph and records only the round each package landed in.
 
 ## Fix a dependency before it publishes

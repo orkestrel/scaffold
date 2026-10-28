@@ -90,11 +90,16 @@ import {
 	createClosableList,
 	createServedList,
 	readLazily,
+	refuseClose,
 	refuseObject,
 	refuseText,
 } from '../../setup.js'
 import {
 	buildCheckoutManifest,
+	buildDeclaredEntry,
+	buildFoundFile,
+	buildLiveFiles,
+	buildMissingFile,
 	buildVendoredPlan,
 	buildManifestEntry,
 	buildStagedManifest,
@@ -118,6 +123,7 @@ import {
 	resolveOllamaShell,
 	resolveTool,
 	SCRATCH_PREFIX,
+	selectManifestEntry,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
 	STAGING_SURFACE_FILES,
@@ -3450,14 +3456,6 @@ describe('server helpers over a caller-supplied list read one entry at a time', 
 			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
 		),
 	}
-	const row = (): HostFile => ({
-		path: 'scripts/codex.sh',
-		lookup: 'found',
-		hex: contentToHex('live script\n'),
-	})
-
-	const declared = () =>
-		buildManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' })
 
 	afterAll(() => {
 		workspace.destroy()
@@ -3473,17 +3471,25 @@ describe('server helpers over a caller-supplied list read one entry at a time', 
 			),
 		),
 		buildLazyCase('the rows a host is assembled from', (shape) =>
-			readLazily(shape, row, (files) => filesToHost(files, floor), refuseObject(row)),
+			readLazily(
+				shape,
+				buildFoundFile,
+				(files) => filesToHost(files, floor),
+				refuseObject(buildFoundFile),
+			),
 		),
 		buildLazyCase(
 			'the entries a floor host declares',
 			(shape) =>
 				readLazily(
 					shape,
-					declared,
+					buildDeclaredEntry,
 					(entries) =>
-						filesToHost([row()], { manifest: { ...manifest, entries }, bytes: floor.bytes }),
-					refuseObject(declared),
+						filesToHost([buildFoundFile()], {
+							manifest: { ...manifest, entries },
+							bytes: floor.bytes,
+						}),
+					refuseObject(buildDeclaredEntry),
 				),
 			{
 				hole: { outcome: 'TypeError', reads: [1] },
@@ -3528,13 +3534,6 @@ describe('server helpers over a list without an iterator refuse it as the loop d
 			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
 		),
 	}
-	const row = (): HostFile => ({
-		path: 'scripts/codex.sh',
-		lookup: 'found',
-		hex: contentToHex('live script\n'),
-	})
-	const declared = () =>
-		buildManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' })
 
 	afterAll(() => {
 		workspace.destroy()
@@ -3546,14 +3545,18 @@ describe('server helpers over a list without an iterator refuse it as the loop d
 			() => 'notes/entry.md',
 			(removed) => pruneEmptiedDirectories(workspace.path, removed),
 		),
-		buildMissingCase('the rows a host is assembled from', row, (files) =>
+		buildMissingCase('the rows a host is assembled from', buildFoundFile, (files) =>
 			filesToHost(files, floor),
 		),
 		// The declared entries are mapped to their destinations before the iterator is taken.
 		buildMissingCase(
 			'the entries a floor host declares',
-			declared,
-			(entries) => filesToHost([row()], { manifest: { ...manifest, entries }, bytes: floor.bytes }),
+			buildDeclaredEntry,
+			(entries) =>
+				filesToHost([buildFoundFile()], {
+					manifest: { ...manifest, entries },
+					bytes: floor.bytes,
+				}),
 			[0, 1],
 		),
 		// The paths are checked as plannable before the iterator is taken.
@@ -3585,32 +3588,20 @@ describe('filesToHost closes the iterators of the lists it stops reading as the 
 			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
 		),
 	}
-	const found = (path: string): HostFile => ({
-		path,
-		lookup: 'found',
-		hex: contentToHex('live script\n'),
-	})
-	const missing = (): HostFile => ({ path: 'scripts/codex.sh', lookup: 'missing', note: 'none' })
-	const smuggled = (): HostFile => found('smuggled.md')
-	const declared = (destination: string) => () =>
-		buildManifestEntry({ storage: destination, destination })
-	const raise = (): never => {
-		throw new EvalError('close')
-	}
 	const rows = new Map<number, () => HostFile>([
-		[0, () => found('scripts/codex.sh')],
-		[1, () => found('guides/guide.md')],
+		[0, () => buildFoundFile('scripts/codex.sh')],
+		[1, () => buildFoundFile('guides/guide.md')],
 	])
 
 	it.each([
-		['a row that is not found', missing],
-		['a row that names an undeclared path', smuggled],
+		['a row that is not found', buildMissingFile],
+		['a row that names an undeclared path', () => buildFoundFile('smuggled.md')],
 	])('closes the files once at %s and answers undefined', (_label, refusing) => {
 		const closable = createClosableList(
 			2,
 			new Map([
 				[0, refusing],
-				[1, () => found('guides/guide.md')],
+				[1, () => buildFoundFile('guides/guide.md')],
 			]),
 		)
 
@@ -3619,7 +3610,7 @@ describe('filesToHost closes the iterators of the lists it stops reading as the 
 	})
 
 	it('closes the files once when a row throws, as the loop closed them for a body that threw', () => {
-		const closable = createClosableList(2, new Map([[1, () => found('scripts/codex.sh')]]))
+		const closable = createClosableList(2, new Map([[1, () => buildFoundFile('scripts/codex.sh')]]))
 
 		expect(() => filesToHost(closable.list, floor)).toThrow(TypeError)
 		expect(closable.calls).toStrictEqual(['iter', 'next', 'return'])
@@ -3633,9 +3624,9 @@ describe('filesToHost closes the iterators of the lists it stops reading as the 
 	})
 
 	it('surfaces the close of the files when the loop returned and drops it when a row threw', () => {
-		const stopped = createClosableList(1, new Map([[0, missing]]), { close: raise })
-		const thrown = createClosableList(1, new Map<number, () => HostFile>(), { close: raise })
-		const answered = createClosableList(1, new Map([[0, missing]]), { close: () => 5 })
+		const stopped = createClosableList(1, new Map([[0, buildMissingFile]]), { close: refuseClose })
+		const thrown = createClosableList(1, new Map<number, () => HostFile>(), { close: refuseClose })
+		const answered = createClosableList(1, new Map([[0, buildMissingFile]]), { close: () => 5 })
 
 		expect(() => filesToHost(stopped.list, floor)).toThrow(EvalError)
 		expect(() => filesToHost(thrown.list, floor)).toThrow(TypeError)
@@ -3648,8 +3639,8 @@ describe('filesToHost closes the iterators of the lists it stops reading as the 
 		const closable = createClosableList(
 			2,
 			new Map([
-				[0, declared('scripts/codex.sh')],
-				[1, declared('scripts/npm.sh')],
+				[0, () => buildDeclaredEntry('scripts/codex.sh')],
+				[1, () => buildDeclaredEntry('scripts/npm.sh')],
 			]),
 		)
 
@@ -3661,11 +3652,11 @@ describe('filesToHost closes the iterators of the lists it stops reading as the 
 	})
 
 	it('closes the floor entries once when an entry throws and surfaces a close only on a return', () => {
-		const thrown = createClosableList(2, new Map([[1, declared('scripts/codex.sh')]]), {
-			close: raise,
+		const thrown = createClosableList(2, new Map([[1, buildDeclaredEntry]]), {
+			close: refuseClose,
 		})
-		const stopped = createClosableList(1, new Map([[0, declared('scripts/codex.sh')]]), {
-			close: raise,
+		const stopped = createClosableList(1, new Map([[0, buildDeclaredEntry]]), {
+			close: refuseClose,
 		})
 
 		expect(() =>
@@ -3690,17 +3681,9 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
 		),
 	}
-	const live = (text: string): HostFile => ({
-		path: 'scripts/codex.sh',
-		lookup: 'found',
-		hex: contentToHex(text),
-	})
-	const missing = (): HostFile => ({ path: 'scripts/codex.sh', lookup: 'missing', note: 'none' })
-	const declaration = (destination: string) =>
-		requireValue(manifest.entries.find((one) => one.destination === destination))
 
 	it('holds the later row of an iterator that yields more rows than the list is long', () => {
-		const rows = createServedList<HostFile>([], [live('first\n'), live('second\n')])
+		const rows = createServedList<HostFile>([], buildLiveFiles('first\n', 'second\n'))
 		const assembled = filesToHost(rows.list, floor)
 
 		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('second\n'))
@@ -3711,7 +3694,10 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	})
 
 	it('reaches the refusal of an iterator that yields it beyond the list length and closes once', () => {
-		const rows = createServedList<HostFile>([], [live('first\n'), live('second\n'), missing()])
+		const rows = createServedList<HostFile>(
+			[],
+			[...buildLiveFiles('first\n', 'second\n'), buildMissingFile()],
+		)
 
 		expect(filesToHost(rows.list, floor)).toBeUndefined()
 		expect(rows.calls).toStrictEqual(['iter', 'next', 'next', 'next', 'return'])
@@ -3719,8 +3705,8 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 
 	it('holds the row of an iterator that yields fewer rows than the list is long', () => {
 		const rows = createServedList<HostFile>(
-			[live('one\n'), live('two\n'), live('three\n')],
-			[live('only\n')],
+			buildLiveFiles('one\n', 'two\n', 'three\n'),
+			buildLiveFiles('only\n'),
 		)
 		const assembled = filesToHost(rows.list, floor)
 
@@ -3730,8 +3716,8 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 
 	it('holds the row an iterator yields last when it yields the rows in another order', () => {
 		const rows = createServedList<HostFile>(
-			[live('first\n'), live('second\n')],
-			[live('second\n'), live('first\n')],
+			buildLiveFiles('first\n', 'second\n'),
+			buildLiveFiles('second\n', 'first\n'),
 		)
 		const assembled = filesToHost(rows.list, floor)
 
@@ -3741,11 +3727,11 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 
 	it('digests every floor entry an iterator yields beyond the list length', () => {
 		const served = [
-			declaration('AGENTS.md'),
-			declaration('.claude/agents/orkestrel.md'),
-			declaration('.claude/rules/names.md'),
+			selectManifestEntry(manifest, 'AGENTS.md'),
+			selectManifestEntry(manifest, '.claude/agents/orkestrel.md'),
+			selectManifestEntry(manifest, '.claude/rules/names.md'),
 		]
-		const entries = createServedList([declaration('AGENTS.md')], served)
+		const entries = createServedList([selectManifestEntry(manifest, 'AGENTS.md')], served)
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },
 			bytes: floor.bytes,
@@ -3761,7 +3747,10 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	it('reaches the entry with no bytes an iterator yields beyond the list length and closes once', () => {
 		const entries = createServedList(
 			[],
-			[declaration('AGENTS.md'), declaration('scripts/codex.sh')],
+			[
+				selectManifestEntry(manifest, 'AGENTS.md'),
+				selectManifestEntry(manifest, 'scripts/codex.sh'),
+			],
 		)
 
 		expect(
@@ -3771,7 +3760,9 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 	})
 
 	it('digests the entry an iterator yields when it yields fewer entries than the list is long', () => {
-		const entries = createServedList(manifest.entries, [declaration('guides/guide.md')])
+		const entries = createServedList(manifest.entries, [
+			selectManifestEntry(manifest, 'guides/guide.md'),
+		])
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },
 			bytes: floor.bytes,

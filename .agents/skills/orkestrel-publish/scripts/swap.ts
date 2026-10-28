@@ -17,7 +17,8 @@
 // the tarball's absolute file: spec, because a relative spec breaks after the consumer is itself
 // packed and installed elsewhere. --override NAME sets overrides[NAME] to $NAME when the consumer
 // declares NAME, else to the tarball spec of the source named NAME, and a created block lands where
-// oxfmt sorts it. The install runs with --ignore-scripts and deletes node_modules/.vite, then the
+// oxfmt sorts it (OVERRIDE_PRECEDERS, proved key by key against the installed formatter). The install
+// runs with --ignore-scripts and deletes node_modules/.vite, then the
 // proof requires each pinned package, an override-only one included, to be a directory whose file
 // set is its pack list and whose bytes are its source's, no other copy of it to be installed, and
 // every other top-level @orkestrel package to be byte-unchanged; a proved pin records the digest of
@@ -33,7 +34,9 @@
 // ledger archive's full location.
 // --pin and --restore write a receipt create-only to tmp/units/swap-<consumer>-<time>.json under the
 // working directory. Every mode prints text lines, or one JSON line with --json.
-// Exit 0 on success, 1 when a command or a proof failed, 3 when --status reports drift, 64 on usage.
+// Exit 0 on success, 1 when a command or a proof failed, 3 when --status reports drift, 64 on usage,
+// including a flag the mode does not read and the `--flag=value` form.
+import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
@@ -45,30 +48,22 @@ import {
 	readFileSync,
 	realpathSync,
 	renameSync,
+	rmSync,
 	writeFileSync,
 } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
-import {
-	isRecord,
-	normalizeSlashes,
-	parseJsonRecord,
-	readMissingFlags,
-	readOption,
-	readOptions,
-	readString,
-	removeTree,
-	runNpm,
-	scanLocalSpecs,
-} from '../../orkestrel-dispatch/scripts/helpers.ts'
 
-type Manifest = Readonly<Record<string, unknown>>
+/** Describes a package manifest as a read-only record. */
+export type Manifest = Readonly<Record<string, unknown>>
 
-// The manifest fields a pin rewrites; `peerDependencies` stays a registry range.
-type ManifestField = 'dependencies' | 'devDependencies'
+/** Names the manifest fields a pin rewrites; `peerDependencies` stays a registry range. */
+export type ManifestField = 'dependencies' | 'devDependencies'
 
-type SwapMode = 'pin' | 'restore' | 'status'
+/** Names the three modes of the script. */
+export type SwapMode = 'pin' | 'restore' | 'status'
 
-interface Command {
+/** Describes a parsed command line. */
+export interface Command {
 	readonly mode: SwapMode
 	readonly consumer: string
 	readonly sources: readonly string[]
@@ -79,23 +74,26 @@ interface Command {
 	readonly json: boolean
 }
 
-type CommandResult =
+/** Describes a command line that parsed or the reason it did not. */
+export type CommandResult =
 	| { readonly ok: true; readonly command: Command }
 	| { readonly ok: false; readonly message: string }
 
-interface Source {
+/** Describes a source package a pin packs. */
+export interface Source {
 	readonly directory: string
 	readonly name: string
 	readonly version: string
 }
 
-interface Declaration {
+/** Describes the field and range a manifest declares a package with. */
+export interface Declaration {
 	readonly field: ManifestField
 	readonly spec: string
 }
 
-// One source after its pack, or planned with a `pending` hash under --dry-run.
-interface Tarball {
+/** Describes one source after its pack, or planned with a `pending` hash under --dry-run. */
+export interface Tarball {
 	readonly source: Source
 	readonly file: string
 	readonly spec: string
@@ -105,7 +103,8 @@ interface Tarball {
 	readonly dirty: boolean | undefined
 }
 
-interface LedgerEntry {
+/** Describes one package row of the ledger. */
+export interface LedgerEntry {
 	readonly field?: ManifestField
 	readonly replaced?: string
 	readonly tarball: string
@@ -117,32 +116,37 @@ interface LedgerEntry {
 	readonly at: string
 }
 
-interface OverrideEntry {
+/** Describes one override row of the ledger. */
+export interface OverrideEntry {
 	readonly value: string
 	readonly replaced?: string
 	readonly at: string
 }
 
-interface Ledger {
+/** Describes the ledger that records every pin. */
+export interface Ledger {
 	readonly packages: Readonly<Record<string, LedgerEntry>>
 	readonly overrides: Readonly<Record<string, OverrideEntry>>
 	readonly blockExisted?: boolean
 }
 
-interface Change {
+/** Describes one manifest entry a plan changes. */
+export interface Change {
 	readonly block: string
 	readonly name: string
 	readonly from: string | undefined
 	readonly to: string | undefined
 }
 
-interface PinPlan {
+/** Describes the manifest and ledger a pin writes. */
+export interface PinPlan {
 	readonly manifest: Manifest
 	readonly ledger: Ledger
 	readonly changes: readonly Change[]
 }
 
-interface RestorePlan {
+/** Describes the manifest and ledger a restore writes and the rows it restores. */
+export interface RestorePlan {
 	readonly manifest: Manifest
 	readonly ledger: Ledger
 	readonly changes: readonly Change[]
@@ -150,51 +154,85 @@ interface RestorePlan {
 	readonly dropped: readonly string[]
 }
 
-interface Copy {
+/** Describes one installed copy of a named package. */
+export interface Copy {
 	readonly name: string
 	readonly path: string
 	readonly version: string | undefined
 	readonly link: boolean
 }
 
-interface Version {
+/** Describes a parsed semantic version. */
+export interface Version {
 	readonly major: number
 	readonly minor: number
 	readonly patch: number
 	readonly pre: string | undefined
 }
 
-interface Comparator {
+/** Describes one comparison a range makes against a version. */
+export interface Comparator {
 	readonly operator: '>=' | '>' | '<=' | '<' | '='
 	readonly version: Version
 }
 
-const FIELDS: readonly ManifestField[] = ['dependencies', 'devDependencies']
-const MODES: readonly SwapMode[] = ['pin', 'restore', 'status']
-const TARBALL_DIRECTORY = 'tmp/tarballs'
-const LEDGER_FILE = 'pins.json'
-const RECEIPT_DIRECTORY = 'tmp/units'
-const EXIT_FAILURE = 1
-const EXIT_DRIFT = 3
-const EXIT_USAGE = 64
-const FORMAT_PROBLEM =
+/** Describes how to spawn npm on this host without a shell where the CLI entry is present. */
+export interface NpmCommand {
+	readonly file: string
+	readonly prefix: readonly string[]
+	readonly shell: boolean
+}
+
+/** Lists the manifest fields a pin rewrites. */
+export const FIELDS: readonly ManifestField[] = ['dependencies', 'devDependencies']
+
+/** Lists the modes in the order the script checks them. */
+export const MODES: readonly SwapMode[] = ['pin', 'restore', 'status']
+
+/** Names the consumer directory that holds the tarballs and the ledger. */
+export const TARBALL_DIRECTORY = 'tmp/tarballs'
+
+/** Names the ledger file inside the tarball directory. */
+export const LEDGER_FILE = 'pins.json'
+
+/** Names the working-directory folder that receives the receipts. */
+export const RECEIPT_DIRECTORY = 'tmp/units'
+
+/** Holds the exit code for a command or a proof that failed. */
+export const EXIT_FAILURE = 1
+
+/** Holds the exit code for a status that reports drift. */
+export const EXIT_DRIFT = 3
+
+/** Holds the exit code for a usage refusal. */
+export const EXIT_USAGE = 64
+
+/** Holds the refusal for a manifest the script would reformat. */
+export const FORMAT_PROBLEM =
 	'package.json is not tab-indented JSON with a trailing newline; the script would reformat it'
 
-const VALUE_FLAGS: Readonly<Record<SwapMode, readonly string[]>> = {
+/** Lists the value flags each mode reads. */
+export const VALUE_FLAGS: Readonly<Record<SwapMode, readonly string[]>> = {
 	pin: ['--consumer', '--source', '--override'],
 	restore: ['--consumer', '--package'],
 	status: ['--consumer'],
 }
 
-const SWITCH_FLAGS: Readonly<Record<SwapMode, readonly string[]>> = {
+/** Lists the switch flags each mode reads. */
+export const SWITCH_FLAGS: Readonly<Record<SwapMode, readonly string[]>> = {
 	pin: ['--pin', '--no-build', '--dry-run', '--json'],
 	restore: ['--restore', '--json'],
 	status: ['--status', '--json'],
 }
 
-// oxfmt 0.72.0 sorts these `package.json` keys ahead of `overrides`; every other key it knows, and
-// every key it does not know, follows it.
-const OVERRIDE_PRECEDERS: readonly string[] = [
+/**
+ * Lists the `package.json` keys oxfmt sorts ahead of `overrides`.
+ *
+ * @remarks
+ * Derived for the installed oxfmt, 0.74.0; every other key it knows, and every key it does not know,
+ * follows `overrides`. `swap.test.ts` proves each key against the installed formatter.
+ */
+export const OVERRIDE_PRECEDERS: readonly string[] = [
 	'$schema',
 	'name',
 	'displayName',
@@ -258,29 +296,260 @@ const OVERRIDE_PRECEDERS: readonly string[] = [
 	'resolutions',
 ]
 
-// An optional `@scope/` and a name of the characters a registry URL carries untouched; a path
-// separator beyond the scope's one `/`, an absolute form, and a drive form fall outside it.
-const PACKAGE_NAME_PATTERN = /^(?:@[A-Za-z0-9~-][A-Za-z0-9._~-]*\/)?[A-Za-z0-9~-][A-Za-z0-9._~-]*$/u
+/**
+ * Matches a package name.
+ *
+ * @remarks
+ * An optional `@scope/` and a name of the characters a registry URL carries untouched; a path
+ * separator beyond the scope's one `/`, an absolute form, and a drive form fall outside it.
+ */
+export const PACKAGE_NAME_PATTERN =
+	/^(?:@[A-Za-z0-9~-][A-Za-z0-9._~-]*\/)?[A-Za-z0-9~-][A-Za-z0-9._~-]*$/u
 
-const PACKAGE_NAME_LIMIT = 214
+/** Holds the longest package name a registry accepts. */
+export const PACKAGE_NAME_LIMIT = 214
 
-const USAGE = [
+/** Holds the usage text printed on a usage refusal. */
+export const USAGE = [
 	'usage: swap.ts --pin --consumer DIR --source DIR [--source DIR ...] [--override NAME ...] [--no-build] [--dry-run] [--json]',
 	'       swap.ts --restore --consumer DIR [--package NAME ...] [--json]',
 	'       swap.ts --status --consumer DIR [--json]',
 ].join('\n')
 
-function isPackageName(name: string): boolean {
+/** Names the manifest fields that hold specs, including nested overrides. */
+export const SPEC_FIELDS: readonly string[] = Object.freeze([
+	'dependencies',
+	'devDependencies',
+	'peerDependencies',
+	'optionalDependencies',
+	'overrides',
+])
+
+/** Matches npm local prefixes and path starts, including drive-relative paths. */
+export const LOCAL_SPEC_PATTERN = /^(?:file:|link:|\.|~[\\/]|[\\/]|[A-Za-z]:)/iu
+
+/** Matches archive specs with no protocol and a tgz, tar.gz, or tar extension. */
+export const ARCHIVE_SPEC_PATTERN = /^[^:]+\.(?:tgz|tar\.gz|tar)$/iu
+
+/** Matches hosted user/repository shorthand even when its name ends in an archive extension. */
+export const SHORTHAND_SPEC_PATTERN = /^[^:@%/\s.-][^:@%/\s]*\/[^:@\s/%]+$/u
+
+/**
+ * Checks whether a value is a non-null, non-array object.
+ *
+ * @param value - The value to inspect.
+ * @returns True if the value is an object other than null or an array; false otherwise.
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Checks whether npm resolves a spec from the local host.
+ *
+ * @param spec - The package spec, with leading whitespace ignored.
+ * @returns True if the spec names a local path or archive; false otherwise.
+ */
+export function matchesLocalSpec(spec: string): boolean {
+	const text = spec.trimStart()
+	return (
+		LOCAL_SPEC_PATTERN.test(text) ||
+		(ARCHIVE_SPEC_PATTERN.test(text) && !SHORTHAND_SPEC_PATTERN.test(text))
+	)
+}
+
+/**
+ * Collects string specs with the dotted path of each nested record member.
+ *
+ * @param path - The field path that prefixes each finding.
+ * @param value - A string or finite, acyclic manifest record; other values contribute no specs.
+ * @returns The path and spec pairs in record order.
+ */
+export function collectSpecs(
+	path: string,
+	value: unknown,
+): ReadonlyArray<readonly [string, string]> {
+	if (typeof value === 'string') return [[path, value]]
+	if (!isRecord(value)) return []
+	return Object.entries(value).flatMap(([key, child]) => collectSpecs(`${path}.${key}`, child))
+}
+
+/**
+ * Finds local specs in the manifest's spec fields, including nested overrides.
+ *
+ * @param manifest - A finite, acyclic package manifest record.
+ * @returns Each local spec's dotted field path and spec, in field and record order.
+ */
+export function scanLocalSpecs(
+	manifest: Readonly<Record<string, unknown>>,
+): ReadonlyArray<readonly [string, string]> {
+	return SPEC_FIELDS.flatMap((field) =>
+		collectSpecs(field, manifest[field]).filter(([, spec]) => matchesLocalSpec(spec)),
+	)
+}
+
+/**
+ * Removes a tree with bounded retries for transient host removal errors.
+ *
+ * @param path - The directory to remove; a missing path succeeds.
+ * @returns Nothing after the removal succeeds.
+ * @throws Thrown when removal fails after the bounded retries or the host refuses the path.
+ */
+export function removeTree(path: string): void {
+	rmSync(path, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 })
+}
+
+/**
+ * Normalizes a host path to forward slashes.
+ *
+ * @param path - A host path.
+ * @returns The same path with every backslash replaced by a slash.
+ */
+export function normalizeSlashes(path: string): string {
+	return path.split('\\').join('/')
+}
+
+/**
+ * Reads the value that follows a flag.
+ *
+ * @remarks
+ * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
+ * with `--` is a missing value, and the `--flag=value` form is not read.
+ *
+ * @param argv - The arguments after the script path.
+ * @param name - The flag, such as `--consumer`.
+ * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
+ * another flag.
+ */
+export function readOption(argv: readonly string[], name: string): string | undefined {
+	const index = argv.indexOf(name)
+	const value = index === -1 ? undefined : argv[index + 1]
+	return value === undefined || value.startsWith('--') ? undefined : value
+}
+
+/**
+ * Names the value flags a caller gave with no value.
+ *
+ * @param argv - The arguments after the script path.
+ * @param names - The flags that take a value.
+ * @returns Each named flag that appears last or is followed by another flag, in argument order.
+ */
+export function readMissingFlags(
+	argv: readonly string[],
+	names: readonly string[],
+): readonly string[] {
+	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
+}
+
+/**
+ * Reads every value that follows a repeatable flag.
+ *
+ * @param argv - The arguments after the script path.
+ * @param name - The flag, such as `--source`.
+ * @returns The values in order, empty when the flag never appears.
+ */
+export function readOptions(argv: readonly string[], name: string): readonly string[] {
+	return argv.flatMap((argument, index) => {
+		const value = argv[index + 1]
+		return argument === name && value !== undefined && !value.startsWith('--') ? [value] : []
+	})
+}
+
+/**
+ * Parses a whole text as one JSON object.
+ *
+ * @param text - A JSON document, formatted or not, such as a manifest.
+ * @returns The parsed object, or undefined when the text is not a JSON object.
+ */
+export function parseJsonRecord(text: string): Record<string, unknown> | undefined {
+	try {
+		const parsed: unknown = JSON.parse(text)
+		if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+			return Object.fromEntries(Object.entries(parsed))
+		}
+	} catch {}
+	return undefined
+}
+
+/**
+ * Reads a string member of a record.
+ *
+ * @param record - The record, or undefined.
+ * @param key - The member name.
+ * @returns The string, or undefined when the member is absent or not a string.
+ */
+export function readString(
+	record: Record<string, unknown> | undefined,
+	key: string,
+): string | undefined {
+	const value = record?.[key]
+	return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Resolves the npm command for this host.
+ *
+ * @remarks
+ * The `npm-cli.js` entry beside the running Node binary spawns without a shell on every host; the
+ * `npm` shim on Windows is a `.cmd` file that needs one, so that path is the fallback alone.
+ *
+ * @returns The file to spawn, the arguments that precede npm's own, and whether a shell is needed.
+ */
+export function resolveNpm(): NpmCommand {
+	const cli = join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js')
+	if (existsSync(cli)) return { file: process.execPath, prefix: [cli], shell: false }
+	return { file: 'npm', prefix: [], shell: process.platform === 'win32' }
+}
+
+/**
+ * Runs npm with the given arguments and returns the finished child.
+ *
+ * @param args - The npm arguments, such as `['install']`.
+ * @param cwd - The working directory. Default: the current directory.
+ * @returns The spawn result with `utf8` stdout and stderr.
+ */
+export function runNpm(args: readonly string[], cwd?: string): SpawnSyncReturns<string> {
+	const npm = resolveNpm()
+	return spawnSync(npm.file, [...npm.prefix, ...args], {
+		encoding: 'utf8',
+		windowsHide: true,
+		shell: npm.shell,
+		maxBuffer: 64 * 1024 * 1024,
+		...(cwd === undefined ? {} : { cwd }),
+	})
+}
+
+/**
+ * Checks whether a ledger key is a package name that stays inside `node_modules`.
+ *
+ * @param name - The ledger key.
+ * @returns True if the key is an optional scope and a name of registry-safe characters within the
+ * registry's length limit and holding no `..`; false otherwise.
+ */
+export function isPackageName(name: string): boolean {
 	return (
 		name.length <= PACKAGE_NAME_LIMIT && !name.includes('..') && PACKAGE_NAME_PATTERN.test(name)
 	)
 }
 
-function isManifestField(value: unknown): value is ManifestField {
+/**
+ * Checks whether a value names a manifest field a pin rewrites.
+ *
+ * @param value - The value to inspect.
+ * @returns True if the value is `dependencies` or `devDependencies`; false otherwise.
+ */
+export function isManifestField(value: unknown): value is ManifestField {
 	return value === 'dependencies' || value === 'devDependencies'
 }
 
-function isLedgerEntry(value: unknown): value is LedgerEntry {
+/**
+ * Checks whether a value is a package row of the ledger.
+ *
+ * @param value - The value to inspect.
+ * @returns True if the value carries the tarball, hash, source, and time strings and each optional
+ * member in its declared type; false otherwise.
+ */
+export function isLedgerEntry(value: unknown): value is LedgerEntry {
 	return (
 		isRecord(value) &&
 		typeof value.tarball === 'string' &&
@@ -295,7 +564,14 @@ function isLedgerEntry(value: unknown): value is LedgerEntry {
 	)
 }
 
-function isOverrideEntry(value: unknown): value is OverrideEntry {
+/**
+ * Checks whether a value is an override row of the ledger.
+ *
+ * @param value - The value to inspect.
+ * @returns True if the value carries the value and time strings and an optional replaced string;
+ * false otherwise.
+ */
+export function isOverrideEntry(value: unknown): value is OverrideEntry {
 	return (
 		isRecord(value) &&
 		typeof value.value === 'string' &&
@@ -304,8 +580,16 @@ function isOverrideEntry(value: unknown): value is OverrideEntry {
 	)
 }
 
-// A ledger with one malformed row is refused whole, so a restore never drops a range it cannot read.
-function parseLedger(value: unknown): Ledger | undefined {
+/**
+ * Parses a ledger record.
+ *
+ * @remarks
+ * A ledger with one malformed row is refused whole, so a restore never drops a range it cannot read.
+ *
+ * @param value - The parsed ledger file.
+ * @returns The ledger, or undefined when a block is missing or any row is malformed.
+ */
+export function parseLedger(value: unknown): Ledger | undefined {
 	if (!isRecord(value) || !isRecord(value.packages) || !isRecord(value.overrides)) return undefined
 	const rows = Object.entries(value.packages)
 	const packages = rows.flatMap(([name, entry]): Array<[string, LedgerEntry]> =>
@@ -324,28 +608,66 @@ function parseLedger(value: unknown): Ledger | undefined {
 	}
 }
 
-function serializeJSON(value: unknown): string {
+/**
+ * Serializes a value as every Orkestrel manifest is written.
+ *
+ * @param value - The value to serialize.
+ * @returns Tab-indented JSON with a trailing newline.
+ */
+export function serializeJSON(value: unknown): string {
 	return `${JSON.stringify(value, null, '\t')}\n`
 }
 
-function readBlock(manifest: Manifest, field: string): Readonly<Record<string, unknown>> {
+/**
+ * Reads one dependency-style block of a manifest.
+ *
+ * @param manifest - The manifest.
+ * @param field - The block's field name.
+ * @returns The block, or an empty record when the field is absent or not a record.
+ */
+export function readBlock(manifest: Manifest, field: string): Readonly<Record<string, unknown>> {
 	const block = manifest[field]
 	return isRecord(block) ? block : {}
 }
 
-function findDeclaration(manifest: Manifest, name: string): Declaration | undefined {
+/**
+ * Finds the field that declares a package.
+ *
+ * @param manifest - The manifest.
+ * @param name - The package name.
+ * @returns The field and spec of the first of `dependencies` and `devDependencies` that holds a
+ * string spec for the name, or undefined when neither does.
+ */
+export function findDeclaration(manifest: Manifest, name: string): Declaration | undefined {
 	const field = FIELDS.find((candidate) => typeof readBlock(manifest, candidate)[name] === 'string')
 	const spec = field === undefined ? undefined : readBlock(manifest, field)[name]
 	return field === undefined || typeof spec !== 'string' ? undefined : { field, spec }
 }
 
-function compareKeys(left: string, right: string): number {
+/**
+ * Orders two keys by their code units.
+ *
+ * @param left - One key.
+ * @param right - The other key.
+ * @returns A negative number, 0, or a positive number as the left key sorts before, equal to, or
+ * after the right.
+ */
+export function compareKeys(left: string, right: string): number {
 	return left < right ? -1 : left > right ? 1 : 0
 }
 
-// A block whose keys are sorted stays sorted, because oxfmt sorts a dependency or override block;
-// any other block takes the added keys last.
-function mergeEntries(
+/**
+ * Merges added entries into a block's kept entries.
+ *
+ * @remarks
+ * A block whose keys are sorted stays sorted, because oxfmt sorts a dependency or override block;
+ * any other block takes the added keys last.
+ *
+ * @param kept - The entries the block keeps, in order.
+ * @param added - The entries the block gains.
+ * @returns The merged entries.
+ */
+export function mergeEntries(
 	kept: ReadonlyArray<readonly [string, unknown]>,
 	added: ReadonlyArray<readonly [string, unknown]>,
 ): ReadonlyArray<readonly [string, unknown]> {
@@ -356,9 +678,23 @@ function mergeEntries(
 	return sorted ? merged.toSorted(([left], [right]) => compareKeys(left, right)) : merged
 }
 
-// A created block lands before the first key oxfmt sorts after `overrides`, or last when every key
-// sorts ahead of it.
-function placeBlock(manifest: Manifest, field: string, block: Record<string, unknown>): Manifest {
+/**
+ * Inserts a created block where oxfmt sorts it.
+ *
+ * @remarks
+ * A created block lands before the first key oxfmt sorts after `overrides`, or last when every key
+ * sorts ahead of it.
+ *
+ * @param manifest - The manifest.
+ * @param field - The new block's field name.
+ * @param block - The new block.
+ * @returns The manifest with the block inserted.
+ */
+export function placeBlock(
+	manifest: Manifest,
+	field: string,
+	block: Record<string, unknown>,
+): Manifest {
 	const entries = Object.entries(manifest)
 	const follower = entries.findIndex(([key]) => !OVERRIDE_PRECEDERS.includes(key))
 	const position = follower === -1 ? entries.length : follower
@@ -369,10 +705,21 @@ function placeBlock(manifest: Manifest, field: string, block: Record<string, unk
 	])
 }
 
-// A changed key keeps its position, a key mapped to undefined is removed, and an `overrides` block
-// left empty is removed unless `keepEmpty` is set. A block that is absent and gains nothing is not
-// created.
-function rewriteBlock(
+/**
+ * Rewrites one block of a manifest.
+ *
+ * @remarks
+ * A changed key keeps its position, a key mapped to undefined is removed, and an `overrides` block
+ * left empty is removed unless `keepEmpty` is set. A block that is absent and gains nothing is not
+ * created.
+ *
+ * @param manifest - The manifest.
+ * @param field - The block's field name.
+ * @param changes - The new spec for each changed key, or undefined to remove the key.
+ * @param keepEmpty - If `true`, an `overrides` block left empty stays; if `false`, it is removed.
+ * @returns The rewritten manifest.
+ */
+export function rewriteBlock(
 	manifest: Manifest,
 	field: string,
 	changes: ReadonlyMap<string, string | undefined>,
@@ -401,12 +748,26 @@ function rewriteBlock(
 	)
 }
 
-function renderValue(value: unknown): string | undefined {
+/**
+ * Renders a manifest spec for a change line.
+ *
+ * @param value - The spec, or undefined for an absent entry.
+ * @returns The string itself, the JSON of any other value, or undefined for undefined.
+ */
+export function renderValue(value: unknown): string | undefined {
 	if (value === undefined) return undefined
 	return typeof value === 'string' ? value : JSON.stringify(value)
 }
 
-function diffManifests(before: Manifest, after: Manifest): readonly Change[] {
+/**
+ * Lists the entries that differ between two manifests.
+ *
+ * @param before - The manifest before.
+ * @param after - The manifest after.
+ * @returns One change per entry of `dependencies`, `devDependencies`, and `overrides` whose rendered
+ * spec differs.
+ */
+export function diffManifests(before: Manifest, after: Manifest): readonly Change[] {
 	return ['dependencies', 'devDependencies', 'overrides'].flatMap((block) => {
 		const from = readBlock(before, block)
 		const to = readBlock(after, block)
@@ -419,19 +780,46 @@ function diffManifests(before: Manifest, after: Manifest): readonly Change[] {
 	})
 }
 
-function buildTarballName(name: string, version: string, sha256: string): string {
+/**
+ * Builds a tarball's file name.
+ *
+ * @param name - The package name.
+ * @param version - The package version.
+ * @param sha256 - The archive's SHA-256 digest.
+ * @returns The scope and name joined by a dash, the version, and the first twelve hex digits of the
+ * digest.
+ */
+export function buildTarballName(name: string, version: string, sha256: string): string {
 	return `${name.replace(/^@/u, '').replace('/', '-')}-${version}-${sha256.slice(0, 12)}.tgz`
 }
 
-// npm resolves a dependency's relative file: spec against that dependency's own directory, so only an
-// absolute spec resolves inside a packed consumer installed elsewhere.
-function buildTarballSpec(consumer: string, file: string): string {
+/**
+ * Builds the spec a manifest holds for a tarball.
+ *
+ * @remarks
+ * npm resolves a dependency's relative file: spec against that dependency's own directory, so only
+ * an absolute spec resolves inside a packed consumer installed elsewhere.
+ *
+ * @param consumer - The consumer directory.
+ * @param file - The tarball's file name.
+ * @returns The absolute `file:` spec with forward slashes.
+ */
+export function buildTarballSpec(consumer: string, file: string): string {
 	return `file:${normalizeSlashes(resolve(consumer, ...TARBALL_DIRECTORY.split('/'), file))}`
 }
 
-// The relative `file:tmp/tarballs/<file>` form is what earlier pins wrote, so a re-pin over it keeps
-// the range the first pin replaced.
-function isTarballSpec(spec: string): boolean {
+/**
+ * Checks whether a spec names a tarball in a tarball directory.
+ *
+ * @remarks
+ * The relative `file:tmp/tarballs/<file>` form is what earlier pins wrote, so a re-pin over it keeps
+ * the range the first pin replaced.
+ *
+ * @param spec - The manifest spec.
+ * @returns True if the spec is a `file:` spec into the relative or an absolute tarball directory;
+ * false otherwise.
+ */
+export function isTarballSpec(spec: string): boolean {
 	if (!spec.startsWith('file:')) return false
 	const path = normalizeSlashes(spec.slice('file:'.length))
 	return (
@@ -440,7 +828,16 @@ function isTarballSpec(spec: string): boolean {
 	)
 }
 
-function buildLedgerEntry(
+/**
+ * Builds the ledger row for one packed source.
+ *
+ * @param manifest - The consumer manifest before the pin.
+ * @param ledger - The ledger before the pin.
+ * @param tarball - The packed source.
+ * @param at - The time of the pin.
+ * @returns The row; a re-pin over a tarball spec keeps the range the first pin replaced.
+ */
+export function buildLedgerEntry(
 	manifest: Manifest,
 	ledger: Ledger,
 	tarball: Tarball,
@@ -463,11 +860,23 @@ function buildLedgerEntry(
 	}
 }
 
-// The replaced range is kept from the first pin while the manifest still holds a tarball spec, and a
-// package no field declares is recorded without a field and takes effect through its override alone.
-// The first pin records whether the manifest held an overrides block, so a restore keeps one that
-// existed and removes one the pin created.
-function planPin(
+/**
+ * Plans a pin.
+ *
+ * @remarks
+ * The replaced range is kept from the first pin while the manifest still holds a tarball spec, and a
+ * package no field declares is recorded without a field and takes effect through its override alone.
+ * The first pin records whether the manifest held an overrides block, so a restore keeps one that
+ * existed and removes one the pin created.
+ *
+ * @param manifest - The consumer manifest.
+ * @param ledger - The ledger before the pin.
+ * @param tarballs - The packed or planned sources.
+ * @param overrides - The names to override.
+ * @param at - The time of the pin.
+ * @returns The manifest and ledger to write and the changes between the manifests.
+ */
+export function planPin(
 	manifest: Manifest,
 	ledger: Ledger,
 	tarballs: readonly Tarball[],
@@ -531,8 +940,22 @@ function planPin(
 	}
 }
 
-// An empty name list restores every recorded package and override.
-function planRestore(manifest: Manifest, ledger: Ledger, names: readonly string[]): RestorePlan {
+/**
+ * Plans a restore.
+ *
+ * @remarks
+ * An empty name list restores every recorded package and override.
+ *
+ * @param manifest - The consumer manifest.
+ * @param ledger - The ledger before the restore.
+ * @param names - The packages to restore, or none for every one.
+ * @returns The manifest and ledger to write, the restored rows, and the overrides dropped.
+ */
+export function planRestore(
+	manifest: Manifest,
+	ledger: Ledger,
+	names: readonly string[],
+): RestorePlan {
 	const targets = names.length === 0 ? Object.keys(ledger.packages) : names
 	const selected = new Set(targets)
 	const rows = targets.flatMap((name): Array<{ name: string; entry: LedgerEntry }> => {
@@ -590,7 +1013,17 @@ function planRestore(manifest: Manifest, ledger: Ledger, names: readonly string[
 	}
 }
 
-function scanPinRequest(
+/**
+ * Lists the problems that refuse a pin request.
+ *
+ * @param text - The manifest file's text.
+ * @param manifest - The parsed manifest.
+ * @param ledger - The ledger before the pin.
+ * @param sources - The sources to pin.
+ * @param overrides - The names to override.
+ * @returns One message per problem, empty when the request is usable.
+ */
+export function scanPinRequest(
 	text: string,
 	manifest: Manifest,
 	ledger: Ledger,
@@ -632,7 +1065,14 @@ function scanPinRequest(
 	]
 }
 
-function parseVersion(text: string): Version | undefined {
+/**
+ * Parses a full semantic version.
+ *
+ * @param text - A version such as `1.2.3`, `v1.2.3-rc.1`, or `1.2.3+build`, with surrounding
+ * whitespace ignored.
+ * @returns The version, or undefined when the text is not a full version. Build metadata is dropped.
+ */
+export function parseVersion(text: string): Version | undefined {
 	const match = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/u.exec(
 		text.trim(),
 	)
@@ -645,7 +1085,16 @@ function parseVersion(text: string): Version | undefined {
 	}
 }
 
-function comparePrerelease(left: string, right: string): number {
+/**
+ * Orders two prerelease identifier lists.
+ *
+ * @param left - One prerelease text, such as `rc.1`.
+ * @param right - The other.
+ * @returns A negative number, 0, or a positive number as the left sorts before, equal to, or after
+ * the right: numeric identifiers compare as numbers and sort before alphanumeric ones, and a longer
+ * list sorts after its prefix.
+ */
+export function comparePrerelease(left: string, right: string): number {
 	const leftParts = left.split('.')
 	const rightParts = right.split('.')
 	const first = leftParts
@@ -661,7 +1110,15 @@ function comparePrerelease(left: string, right: string): number {
 	return first ?? leftParts.length - rightParts.length
 }
 
-function compareVersions(left: Version, right: Version): number {
+/**
+ * Orders two versions.
+ *
+ * @param left - One version.
+ * @param right - The other.
+ * @returns A negative number, 0, or a positive number as the left sorts before, equal to, or after
+ * the right; a release sorts after its prerelease.
+ */
+export function compareVersions(left: Version, right: Version): number {
 	const core = [left.major - right.major, left.minor - right.minor, left.patch - right.patch].find(
 		(order) => order !== 0,
 	)
@@ -672,9 +1129,17 @@ function compareVersions(left: Version, right: Version): number {
 	return comparePrerelease(left.pre, right.pre)
 }
 
-// Reads `*`, `x`, an exact version, `^`, `~`, and the `>=`, `>`, `<=`, `<`, and `=` operators on full
-// versions; an empty list matches every version.
-function parseComparators(token: string): readonly Comparator[] | undefined {
+/**
+ * Parses one token of a range into comparators.
+ *
+ * @remarks
+ * Reads `*`, `x`, an exact version, `^`, `~`, and the `>=`, `>`, `<=`, `<`, and `=` operators on full
+ * versions; an empty list matches every version.
+ *
+ * @param token - One whitespace-free token of a range.
+ * @returns The comparators the token means, or undefined when the token is not in the subset.
+ */
+export function parseComparators(token: string): readonly Comparator[] | undefined {
 	if (token === '*' || token === 'x' || token === 'X' || token === '') return []
 	const operator = /^(\^|~|>=|<=|>|<|=)?(.+)$/u.exec(token)
 	const version = operator === null ? undefined : parseVersion(operator[2] ?? '')
@@ -707,7 +1172,14 @@ function parseComparators(token: string): readonly Comparator[] | undefined {
 	return [{ operator: '=', version }]
 }
 
-function matchesComparator(version: Version, comparator: Comparator): boolean {
+/**
+ * Checks whether a version satisfies one comparator.
+ *
+ * @param version - The version.
+ * @param comparator - The comparator.
+ * @returns True if the version stands in the comparator's relation to its bound; false otherwise.
+ */
+export function matchesComparator(version: Version, comparator: Comparator): boolean {
 	const order = compareVersions(version, comparator.version)
 	if (comparator.operator === '>=') return order >= 0
 	if (comparator.operator === '>') return order > 0
@@ -716,7 +1188,14 @@ function matchesComparator(version: Version, comparator: Comparator): boolean {
 	return order === 0
 }
 
-function supportsRange(range: string): boolean {
+/**
+ * Checks whether the script reads every token of a range.
+ *
+ * @param range - A registry range.
+ * @returns True if every token of every `||` set is in the subset {@link parseComparators} reads;
+ * false otherwise.
+ */
+export function supportsRange(range: string): boolean {
 	return range.split('||').every((set) =>
 		set
 			.trim()
@@ -725,9 +1204,19 @@ function supportsRange(range: string): boolean {
 	)
 }
 
-// A prerelease satisfies a set only when one of its comparators names a prerelease of the same
-// `major.minor.patch`, and an unreadable range is satisfied by nothing.
-function matchesRange(text: string, range: string): boolean {
+/**
+ * Checks whether a version satisfies a range.
+ *
+ * @remarks
+ * A prerelease satisfies a set only when one of its comparators names a prerelease of the same
+ * `major.minor.patch`, and an unreadable range is satisfied by nothing.
+ *
+ * @param text - The version.
+ * @param range - A registry range.
+ * @returns True if the version parses and satisfies every comparator of at least one `||` set;
+ * false otherwise.
+ */
+export function matchesRange(text: string, range: string): boolean {
 	const version = parseVersion(text)
 	if (version === undefined) return false
 	return range.split('||').some((set) => {
@@ -750,7 +1239,24 @@ function matchesRange(text: string, range: string): boolean {
 	})
 }
 
-function parseCommand(argv: readonly string[]): CommandResult {
+/**
+ * Parses the command line.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The command, or the reason the line is refused: no mode or two modes, a flag the mode does
+ * not read (the `--flag=value` form included), a flag with no value, no consumer, or a pin with no
+ * source.
+ */
+export function parseCommand(argv: readonly string[]): CommandResult {
+	const known = MODES.flatMap((candidate) => [
+		`--${candidate}`,
+		...VALUE_FLAGS[candidate],
+		...SWITCH_FLAGS[candidate],
+	])
+	const foreign = argv.filter((token) => token.startsWith('--') && !known.includes(token))
+	if (foreign.length > 0) {
+		return { ok: false, message: `${foreign.join(', ')} is not a flag this script reads` }
+	}
 	const given = MODES.filter((candidate) => argv.includes(`--${candidate}`))
 	const mode = MODES.find((candidate) => argv.includes(`--${candidate}`))
 	if (mode === undefined)
@@ -796,23 +1302,53 @@ function parseCommand(argv: readonly string[]): CommandResult {
 	}
 }
 
-function computeHash(value: Uint8Array): string {
+/**
+ * Computes the SHA-256 digest of bytes.
+ *
+ * @param value - The bytes.
+ * @returns The digest as lowercase hexadecimal.
+ */
+export function computeHash(value: Uint8Array): string {
 	return createHash('sha256').update(value).digest('hex')
 }
 
-function loadJSONRecord(path: string): Record<string, unknown> | undefined {
+/**
+ * Loads a JSON file as a record.
+ *
+ * @param path - The file.
+ * @returns The record, or undefined when the file is absent or not a JSON object.
+ */
+export function loadJSONRecord(path: string): Record<string, unknown> | undefined {
 	return existsSync(path) ? parseJsonRecord(readFileSync(path, 'utf8')) : undefined
 }
 
-function loadSource(directory: string): Source | undefined {
+/**
+ * Loads a source package's name and version.
+ *
+ * @param directory - The source directory.
+ * @returns The source, or undefined when its manifest lacks a name or a version.
+ */
+export function loadSource(directory: string): Source | undefined {
 	const manifest = loadJSONRecord(join(directory, 'package.json'))
 	const name = readString(manifest, 'name')
 	const version = readString(manifest, 'version')
 	return name === undefined || version === undefined ? undefined : { directory, name, version }
 }
 
-// npm 11 prints an array and npm 12 an object keyed by package name.
-function readPack(text: string): { readonly filename: string; readonly files: readonly string[] } {
+/**
+ * Reads the archive name and file list out of `npm pack --json` output.
+ *
+ * @remarks
+ * npm 11 prints an array and npm 12 an object keyed by package name.
+ *
+ * @param text - npm's standard output.
+ * @returns The archive's file name and its sorted, forward-slash file paths.
+ * @throws Thrown when the output is not JSON or lacks a file name or a file list.
+ */
+export function readPack(text: string): {
+	readonly filename: string
+	readonly files: readonly string[]
+} {
 	const parsed: unknown = JSON.parse(text)
 	const entry: unknown = Array.isArray(parsed)
 		? parsed[0]
@@ -831,7 +1367,15 @@ function readPack(text: string): { readonly filename: string; readonly files: re
 	return { filename: entry.filename, files: files.toSorted() }
 }
 
-function invokeNpm(args: readonly string[], cwd: string): string {
+/**
+ * Runs npm and returns its standard output.
+ *
+ * @param args - The npm arguments.
+ * @param cwd - The working directory.
+ * @returns npm's standard output.
+ * @throws Thrown when npm cannot start or exits nonzero, naming the command and the stderr tail.
+ */
+export function invokeNpm(args: readonly string[], cwd: string): string {
 	const result = runNpm(args, cwd)
 	if (result.error !== undefined) {
 		throw new Error(`npm ${args.join(' ')} could not start in ${cwd}: ${result.error.message}`)
@@ -844,7 +1388,13 @@ function invokeNpm(args: readonly string[], cwd: string): string {
 	return result.stdout
 }
 
-function inspectCheckout(directory: string): {
+/**
+ * Reads a checkout's commit and whether it is dirty.
+ *
+ * @param directory - The checkout.
+ * @returns The HEAD commit and the dirty flag, each undefined when git cannot answer.
+ */
+export function inspectCheckout(directory: string): {
 	readonly commit: string | undefined
 	readonly dirty: boolean | undefined
 } {
@@ -864,20 +1414,46 @@ function inspectCheckout(directory: string): {
 	}
 }
 
-function replaceFile(path: string, text: string): void {
+/**
+ * Replaces a file by renaming a temporary file onto it.
+ *
+ * @param path - The file.
+ * @param text - Its new text.
+ * @returns Nothing after the rename.
+ * @throws Thrown when the write or the rename fails.
+ */
+export function replaceFile(path: string, text: string): void {
 	const temporary = `${path}.${String(process.pid)}.tmp`
 	writeFileSync(temporary, text)
 	renameSync(temporary, path)
 }
 
-// Vite keys its pre-bundle on the installed version, so a same-version tarball would serve stale bytes.
-function installConsumer(consumer: string): void {
+/**
+ * Installs a consumer's dependencies and clears the Vite pre-bundle.
+ *
+ * @remarks
+ * Vite keys its pre-bundle on the installed version, so a same-version tarball would serve stale bytes.
+ *
+ * @param consumer - The consumer directory.
+ * @returns Nothing after the install.
+ * @throws Thrown when the install fails.
+ */
+export function installConsumer(consumer: string): void {
 	invokeNpm(['install', '--ignore-scripts', '--no-audit', '--no-fund'], consumer)
 	removeTree(join(consumer, 'node_modules', '.vite'))
 }
 
-// The package's own `node_modules` is skipped, and a link is listed as `path (link)`.
-function collectFiles(directory: string, prefix = ''): readonly string[] {
+/**
+ * Lists the files of an installed package.
+ *
+ * @remarks
+ * The package's own `node_modules` is skipped, and a link is listed as `path (link)`.
+ *
+ * @param directory - The package directory.
+ * @param prefix - The path of `directory` inside the package. Default: none.
+ * @returns The sorted forward-slash paths.
+ */
+export function collectFiles(directory: string, prefix = ''): readonly string[] {
 	return readdirSync(directory, { withFileTypes: true })
 		.flatMap((entry): readonly string[] => {
 			const path = prefix === '' ? entry.name : `${prefix}/${entry.name}`
@@ -892,7 +1468,13 @@ function collectFiles(directory: string, prefix = ''): readonly string[] {
 		.toSorted()
 }
 
-function computeInventory(directory: string): string {
+/**
+ * Computes the digest of an installed package's bytes.
+ *
+ * @param directory - The package directory.
+ * @returns The SHA-256 of the sorted path and file-digest lines.
+ */
+export function computeInventory(directory: string): string {
 	const lines = collectFiles(directory).map((path) => {
 		const file = join(directory, ...path.split('/'))
 		return `${path}\t${existsSync(file) ? computeHash(readFileSync(file)) : 'unreadable'}`
@@ -900,7 +1482,14 @@ function computeInventory(directory: string): string {
 	return computeHash(Buffer.from(lines.join('\n')))
 }
 
-function computeScope(
+/**
+ * Computes the digest of every top-level `@orkestrel` package the pin does not name.
+ *
+ * @param consumer - The consumer directory.
+ * @param excluded - The package names to leave out.
+ * @returns The digest of each package by name, `link` for a link, empty when the scope is absent.
+ */
+export function computeScope(
 	consumer: string,
 	excluded: ReadonlySet<string>,
 ): Readonly<Record<string, string>> {
@@ -916,7 +1505,14 @@ function computeScope(
 	)
 }
 
-function describeMoved(
+/**
+ * Names the packages an install added, removed, or changed.
+ *
+ * @param before - The scope digests before the install.
+ * @param after - The scope digests after.
+ * @returns One message per package whose digest differs.
+ */
+export function describeMoved(
 	before: Readonly<Record<string, string>>,
 	after: Readonly<Record<string, string>>,
 ): readonly string[] {
@@ -929,8 +1525,17 @@ function describeMoved(
 	})
 }
 
-// A link is reported and not entered.
-function scanModules(directory: string, names: ReadonlySet<string>): readonly Copy[] {
+/**
+ * Finds every installed copy of the named packages.
+ *
+ * @remarks
+ * A link is reported and not entered.
+ *
+ * @param directory - A `node_modules` directory.
+ * @param names - The package names to find.
+ * @returns Each copy at any depth of nested `node_modules`.
+ */
+export function scanModules(directory: string, names: ReadonlySet<string>): readonly Copy[] {
 	if (!existsSync(directory)) return []
 	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
 		if (entry.name.startsWith('.')) return []
@@ -959,14 +1564,32 @@ function scanModules(directory: string, names: ReadonlySet<string>): readonly Co
 	})
 }
 
-function locateInstalled(consumer: string, name: string): string {
+/**
+ * Locates a package's top-level install path.
+ *
+ * @param consumer - The consumer directory.
+ * @param name - The package name.
+ * @returns The path under the consumer's `node_modules`.
+ */
+export function locateInstalled(consumer: string, name: string): string {
 	return join(consumer, 'node_modules', ...name.split('/'))
 }
 
-// A source that is itself pinned was packed with its registry ranges, so its installed manifest is
-// compared to those bytes rather than to the source's own manifest. Every pinned source must be
-// installed at the top level, so an override that selects no installed dependency fails the proof.
-function proveInstalled(
+/**
+ * Lists the problems with one pinned package's install.
+ *
+ * @remarks
+ * A source that is itself pinned was packed with its registry ranges, so its installed manifest is
+ * compared to those bytes rather than to the source's own manifest. Every pinned source must be
+ * installed at the top level, so an override that selects no installed dependency fails the proof.
+ *
+ * @param consumer - The consumer directory.
+ * @param tarball - The packed source.
+ * @param declared - If `true`, the consumer declares the package; if `false`, only an override names it.
+ * @param copies - Every installed copy of the pinned packages.
+ * @returns One message per problem, empty when the install proves the pin.
+ */
+export function proveInstalled(
 	consumer: string,
 	tarball: Tarball,
 	declared: boolean,
@@ -1008,16 +1631,33 @@ function proveInstalled(
 	]
 }
 
-function loadResolved(consumer: string, name: string): string | undefined {
+/**
+ * Reads the `resolved` address the lockfile records for a package.
+ *
+ * @param consumer - The consumer directory.
+ * @param name - The package name.
+ * @returns The address, or undefined when the lockfile is absent or records none.
+ */
+export function loadResolved(consumer: string, name: string): string | undefined {
 	const packages = loadJSONRecord(join(consumer, 'package-lock.json'))?.packages
 	const entry = isRecord(packages) ? packages[`node_modules/${name}`] : undefined
 	return readString(isRecord(entry) ? entry : undefined, 'resolved')
 }
 
-// A registry range needs a real directory whose version the range accepts and a lockfile `resolved`
-// that is a registry URL; a `file:` directory range needs a link to that directory or a directory of
-// its version; any other spec is reported as unproven.
-function proveRestored(consumer: string, name: string, range: string): readonly string[] {
+/**
+ * Lists the problems with one restored package's install.
+ *
+ * @remarks
+ * A registry range needs a real directory whose version the range accepts and a lockfile `resolved`
+ * that is a registry URL; a `file:` directory range needs a link to that directory or a directory of
+ * its version; any other spec is reported as unproven.
+ *
+ * @param consumer - The consumer directory.
+ * @param name - The package name.
+ * @param range - The restored range.
+ * @returns One message per problem, empty when the install proves the restore.
+ */
+export function proveRestored(consumer: string, name: string, range: string): readonly string[] {
 	const installed = locateInstalled(consumer, name)
 	if (!existsSync(installed)) return [`${name} is not installed`]
 	const link = lstatSync(installed).isSymbolicLink()
@@ -1044,29 +1684,65 @@ function proveRestored(consumer: string, name: string, range: string): readonly 
 	]
 }
 
-function locateLedger(consumer: string): string {
+/**
+ * Locates a consumer's ledger file.
+ *
+ * @param consumer - The consumer directory.
+ * @returns The ledger's path.
+ */
+export function locateLedger(consumer: string): string {
 	return join(consumer, ...TARBALL_DIRECTORY.split('/'), LEDGER_FILE)
 }
 
-// An absent ledger is an empty one; a malformed ledger is undefined.
-function loadLedger(consumer: string): Ledger | undefined {
+/**
+ * Loads a consumer's ledger.
+ *
+ * @remarks
+ * An absent ledger is an empty one; a malformed ledger is undefined.
+ *
+ * @param consumer - The consumer directory.
+ * @returns The ledger, or undefined when the file is malformed.
+ */
+export function loadLedger(consumer: string): Ledger | undefined {
 	const path = locateLedger(consumer)
 	if (!existsSync(path)) return { packages: {}, overrides: {} }
 	return parseLedger(loadJSONRecord(path))
 }
 
-function readLedger(consumer: string): Ledger {
+/**
+ * Reads a consumer's ledger.
+ *
+ * @param consumer - The consumer directory.
+ * @returns The ledger; an absent file reads as an empty one.
+ * @throws Thrown when the ledger file is malformed.
+ */
+export function readLedger(consumer: string): Ledger {
 	const ledger = loadLedger(consumer)
 	if (ledger === undefined)
 		throw new Error(`${normalizeSlashes(locateLedger(consumer))} is malformed`)
 	return ledger
 }
 
-function renderStamp(at: string): string {
+/**
+ * Renders a time as a file-name stamp.
+ *
+ * @param at - An ISO time.
+ * @returns The time with each colon and dot replaced by a dash.
+ */
+export function renderStamp(at: string): string {
 	return at.replace(/[:.]/gu, '-')
 }
 
-function writeReceipt(
+/**
+ * Writes a receipt create-only under the working directory.
+ *
+ * @param consumer - The consumer directory, whose name the file carries.
+ * @param at - The time of the run.
+ * @param receipt - The receipt record.
+ * @returns The receipt's forward-slash path.
+ * @throws Thrown when the file already exists or cannot be written.
+ */
+export function writeReceipt(
 	consumer: string,
 	at: string,
 	receipt: Readonly<Record<string, unknown>>,
@@ -1077,7 +1753,15 @@ function writeReceipt(
 	return normalizeSlashes(path)
 }
 
-function printReport(
+/**
+ * Prints a report.
+ *
+ * @param json - If `true`, prints the report as one JSON line; if `false`, prints the text lines.
+ * @param lines - The text lines.
+ * @param report - The JSON report.
+ * @returns Nothing after the write.
+ */
+export function printReport(
 	json: boolean,
 	lines: readonly string[],
 	report: Readonly<Record<string, unknown>>,
@@ -1085,43 +1769,86 @@ function printReport(
 	process.stdout.write(json ? `${JSON.stringify(report)}\n` : `${lines.join('\n')}\n`)
 }
 
-function reportUsage(message: string): number {
+/**
+ * Prints a usage refusal.
+ *
+ * @param message - What was refused.
+ * @returns The usage exit code.
+ */
+export function reportUsage(message: string): number {
 	process.stderr.write(`swap: ${message}\n${USAGE}\n`)
 	return EXIT_USAGE
 }
 
-function hasPins(ledger: Ledger): boolean {
+/**
+ * Checks whether a ledger records any pin.
+ *
+ * @param ledger - The ledger.
+ * @returns True if it holds a package or an override row; false otherwise.
+ */
+export function hasPins(ledger: Ledger): boolean {
 	return Object.keys(ledger.packages).length > 0 || Object.keys(ledger.overrides).length > 0
 }
 
-// The manifest a source is packed with: its own, with the ranges and overrides its ledger replaced
-// put back when it carries pins.
-function loadPackedManifest(directory: string): Manifest {
+/**
+ * Loads the manifest a source is packed with.
+ *
+ * @remarks
+ * It is the source's own, with the ranges and overrides its ledger replaced put back when it carries
+ * pins.
+ *
+ * @param directory - The source directory.
+ * @returns The manifest to pack.
+ * @throws Thrown when the manifest is unreadable or the ledger is malformed.
+ */
+export function loadPackedManifest(directory: string): Manifest {
 	const manifest = loadJSONRecord(join(directory, 'package.json'))
 	if (manifest === undefined) throw new Error(`${directory}/package.json is unreadable`)
 	const ledger = readLedger(directory)
 	return hasPins(ledger) ? planRestore(manifest, ledger, []).manifest : manifest
 }
 
-// The text a pinned source's manifest is rewritten to for the pack; undefined when the source carries
-// no pins and packs its own manifest.
-function readPackedManifest(directory: string): string | undefined {
+/**
+ * Reads the text a pinned source's manifest is rewritten to for the pack.
+ *
+ * @param directory - The source directory.
+ * @returns The text, or undefined when the source carries no pins and packs its own manifest.
+ */
+export function readPackedManifest(directory: string): string | undefined {
 	return hasPins(readLedger(directory)) ? serializeJSON(loadPackedManifest(directory)) : undefined
 }
 
-// A source that packs a local dependency spec ships a tarball that resolves only on this host, whether
-// or not a ledger recorded the spec.
-function scanPackedSpecs(source: Source): readonly string[] {
+/**
+ * Lists the local dependency specs a source would pack.
+ *
+ * @remarks
+ * A source that packs a local dependency spec ships a tarball that resolves only on this host,
+ * whether or not a ledger recorded the spec.
+ *
+ * @param source - The source.
+ * @returns One message per local spec in the manifest the source packs.
+ */
+export function scanPackedSpecs(source: Source): readonly string[] {
 	const manifest = loadPackedManifest(source.directory)
 	return scanLocalSpecs(manifest).map(
 		([path, spec]) => `${source.name} would pack a local dependency spec: ${path} is ${spec}`,
 	)
 }
 
-// A source that carries a ledger of its own has its manifest rewritten to the recorded ranges for the
-// pack and restored byte for byte whether the pack succeeds or throws, so a consumer never receives a
-// tarball spec that resolves only inside the source.
-function packSource(directory: string, scratch: string): string {
+/**
+ * Packs a source.
+ *
+ * @remarks
+ * A source that carries a ledger of its own has its manifest rewritten to the recorded ranges for
+ * the pack and restored byte for byte whether the pack succeeds or throws, so a consumer never
+ * receives a tarball spec that resolves only inside the source.
+ *
+ * @param directory - The source directory.
+ * @param scratch - The directory that receives the archive.
+ * @returns npm's `pack --json` output.
+ * @throws Thrown when the pack fails.
+ */
+export function packSource(directory: string, scratch: string): string {
 	const args = ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch]
 	const packed = readPackedManifest(directory)
 	if (packed === undefined) return invokeNpm(args, directory)
@@ -1135,7 +1862,16 @@ function packSource(directory: string, scratch: string): string {
 	}
 }
 
-function packSources(
+/**
+ * Builds and packs each source into the consumer's tarball directory.
+ *
+ * @param sources - The sources.
+ * @param build - If `true`, runs `npm run build` in each source first; if `false`, packs it as is.
+ * @param consumer - The consumer directory.
+ * @returns One packed tarball per source.
+ * @throws Thrown when a build or a pack fails.
+ */
+export function packSources(
 	sources: readonly Source[],
 	build: boolean,
 	consumer: string,
@@ -1165,7 +1901,14 @@ function packSources(
 	}
 }
 
-function planTarballs(sources: readonly Source[], consumer: string): readonly Tarball[] {
+/**
+ * Plans the tarballs of a dry run without building or packing.
+ *
+ * @param sources - The sources.
+ * @param consumer - The consumer directory.
+ * @returns One planned tarball per source, with a pending hash and no files.
+ */
+export function planTarballs(sources: readonly Source[], consumer: string): readonly Tarball[] {
 	return sources.map((source) => {
 		const file = buildTarballName(source.name, source.version, '<sha256:12>')
 		return {
@@ -1179,12 +1922,32 @@ function planTarballs(sources: readonly Source[], consumer: string): readonly Ta
 	})
 }
 
-function renderChange(change: Change): string {
+/**
+ * Renders a manifest change as a text line.
+ *
+ * @param change - The change.
+ * @returns The line, naming the block, the package, and both specs.
+ */
+export function renderChange(change: Change): string {
 	return `swap: ${change.block}.${change.name} ${change.from ?? '(absent)'} -> ${change.to ?? '(absent)'}`
 }
 
-// A proved pin records the digest of its installed bytes, which `--status` compares the install to.
-function recordInventory(consumer: string, ledger: Ledger, tarballs: readonly Tarball[]): Ledger {
+/**
+ * Records the digest of each proved install in the ledger.
+ *
+ * @remarks
+ * A proved pin records the digest of its installed bytes, which `--status` compares the install to.
+ *
+ * @param consumer - The consumer directory.
+ * @param ledger - The ledger.
+ * @param tarballs - The pinned tarballs.
+ * @returns The ledger with an inventory on each package that is installed as a real directory.
+ */
+export function recordInventory(
+	consumer: string,
+	ledger: Ledger,
+	tarballs: readonly Tarball[],
+): Ledger {
 	const proved = new Map(
 		tarballs.flatMap((tarball): Array<[string, string]> => {
 			const top = locateInstalled(consumer, tarball.source.name)
@@ -1204,7 +1967,14 @@ function recordInventory(consumer: string, ledger: Ledger, tarballs: readonly Ta
 	}
 }
 
-function executePin(command: Command): number {
+/**
+ * Runs the pin mode.
+ *
+ * @param command - The parsed command.
+ * @returns 0 when the pin installed and proved, 1 when a proof failed, 64 on a usage refusal.
+ * @throws Thrown when a build, a pack, or the install fails.
+ */
+export function executePin(command: Command): number {
 	const manifestPath = join(command.consumer, 'package.json')
 	if (!existsSync(manifestPath)) return reportUsage(`${command.consumer} has no package.json`)
 	const text = readFileSync(manifestPath, 'utf8')
@@ -1308,9 +2078,18 @@ function executePin(command: Command): number {
 	return failures.length === 0 ? 0 : EXIT_FAILURE
 }
 
-// The re-pin arguments name every source the restored rows recorded and every override they
-// dropped, so the pins can come back after a verb that needed the registry ranges.
-function buildRepin(consumer: string, plan: RestorePlan): readonly string[] {
+/**
+ * Builds the arguments that pin again what a restore undid.
+ *
+ * @remarks
+ * The re-pin arguments name every source the restored rows recorded and every override they
+ * dropped, so the pins can come back after a verb that needed the registry ranges.
+ *
+ * @param consumer - The consumer directory.
+ * @param plan - The restore plan.
+ * @returns The `--pin` argument list.
+ */
+export function buildRepin(consumer: string, plan: RestorePlan): readonly string[] {
 	return [
 		'--pin',
 		'--consumer',
@@ -1320,10 +2099,19 @@ function buildRepin(consumer: string, plan: RestorePlan): readonly string[] {
 	]
 }
 
-// npm keeps a lock entry whose version satisfies the restored range, so the tarball `resolved` of a
-// pinned package outlives the restore; removing the entry and the installed copy makes the install
-// resolve the package again from the registry.
-function removePinnedInstalls(consumer: string, names: readonly string[]): void {
+/**
+ * Removes the lock entries and installed copies of the named packages.
+ *
+ * @remarks
+ * npm keeps a lock entry whose version satisfies the restored range, so the tarball `resolved` of a
+ * pinned package outlives the restore; removing the entry and the installed copy makes the install
+ * resolve the package again from the registry.
+ *
+ * @param consumer - The consumer directory.
+ * @param names - The package names.
+ * @returns Nothing after the removal.
+ */
+export function removePinnedInstalls(consumer: string, names: readonly string[]): void {
 	const path = join(consumer, 'package-lock.json')
 	const text = existsSync(path) ? readFileSync(path, 'utf8') : undefined
 	const lock = text === undefined ? undefined : parseJsonRecord(text)
@@ -1340,9 +2128,13 @@ function removePinnedInstalls(consumer: string, names: readonly string[]): void 
 	for (const name of names) removeTree(locateInstalled(consumer, name))
 }
 
-// The packages whose lock entry and installed copy the restore removes: each restored row that
-// returns to a registry range, and each dropped override.
-function listRemovals(plan: RestorePlan): readonly string[] {
+/**
+ * Lists the packages whose lock entry and installed copy a restore removes.
+ *
+ * @param plan - The restore plan.
+ * @returns Each restored row that returns to a registry range, and each dropped override.
+ */
+export function listRemovals(plan: RestorePlan): readonly string[] {
 	return [
 		...new Set([
 			...plan.rows.flatMap((row) =>
@@ -1357,24 +2149,49 @@ function listRemovals(plan: RestorePlan): readonly string[] {
 	]
 }
 
-// Every ledger key becomes a manifest key, a lock key, and an install path, so each must be a package
-// name before the restore writes anything.
-function scanLedgerNames(ledger: Ledger): readonly string[] {
+/**
+ * Lists the ledger keys that are not package names.
+ *
+ * @remarks
+ * Every ledger key becomes a manifest key, a lock key, and an install path, so each must be a package
+ * name before the restore writes anything.
+ *
+ * @param ledger - The ledger.
+ * @returns One message per package or override key that is not a package name.
+ */
+export function scanLedgerNames(ledger: Ledger): readonly string[] {
 	return [
 		...scanNames('packages', Object.keys(ledger.packages)),
 		...scanNames('overrides', Object.keys(ledger.overrides)),
 	]
 }
 
-function scanNames(block: string, names: readonly string[]): readonly string[] {
+/**
+ * Lists the keys of one ledger block that are not package names.
+ *
+ * @param block - The block's name.
+ * @param names - The block's keys.
+ * @returns One message per key that is not a package name, with the key JSON-encoded.
+ */
+export function scanNames(block: string, names: readonly string[]): readonly string[] {
 	return names
 		.filter((name) => !isPackageName(name))
 		.map((name) => `The ledger ${block} key ${JSON.stringify(name)} is not a package name`)
 }
 
-// A name that passes the package-name rules still resolves outside `node_modules` when a scope
-// directory on its way is a link, so the target's real parent is compared to the real `node_modules`.
-function isContained(root: string, target: string): boolean {
+/**
+ * Checks whether a target stays inside a root.
+ *
+ * @remarks
+ * A name that passes the package-name rules still resolves outside `node_modules` when a scope
+ * directory on its way is a link, so the target's real parent is compared to the real `node_modules`.
+ *
+ * @param root - The `node_modules` directory.
+ * @param target - The path to remove.
+ * @returns True if the target's real location is strictly inside the root's real location; false
+ * otherwise.
+ */
+export function isContained(root: string, target: string): boolean {
 	const parent = dirname(target)
 	const inside = relative(
 		existsSync(root) ? realpathSync(root) : resolve(root),
@@ -1383,14 +2200,28 @@ function isContained(root: string, target: string): boolean {
 	return inside !== '' && !isAbsolute(inside) && inside.split(/[\\/]/u)[0] !== '..'
 }
 
-function scanRemovals(consumer: string, names: readonly string[]): readonly string[] {
+/**
+ * Lists the removals that would leave `node_modules`.
+ *
+ * @param consumer - The consumer directory.
+ * @param names - The packages to remove.
+ * @returns One message per package whose install path resolves outside `node_modules`.
+ */
+export function scanRemovals(consumer: string, names: readonly string[]): readonly string[] {
 	const root = join(consumer, 'node_modules')
 	return names
 		.filter((name) => !isContained(root, locateInstalled(consumer, name)))
 		.map((name) => `The install of ${name} resolves outside node_modules`)
 }
 
-function executeRestore(command: Command): number {
+/**
+ * Runs the restore mode.
+ *
+ * @param command - The parsed command.
+ * @returns 0 when the restore installed and proved, 1 when a proof failed, 64 on a usage refusal.
+ * @throws Thrown when the ledger is malformed or the install fails.
+ */
+export function executeRestore(command: Command): number {
 	const manifestPath = join(command.consumer, 'package.json')
 	if (!existsSync(manifestPath)) return reportUsage(`${command.consumer} has no package.json`)
 	const text = readFileSync(manifestPath, 'utf8')
@@ -1461,13 +2292,32 @@ function executeRestore(command: Command): number {
 	return failures.length === 0 ? 0 : EXIT_FAILURE
 }
 
-// The manifest spec of a tarball resolved to the location it names, relative specs against the
-// consumer, so a spec holds its tarball only when it names the ledger archive itself.
-function locateSpecTarget(consumer: string, spec: string): string {
+/**
+ * Resolves a manifest tarball spec to the location it names.
+ *
+ * @remarks
+ * Relative specs resolve against the consumer, so a spec holds its tarball only when it names the
+ * ledger archive itself.
+ *
+ * @param consumer - The consumer directory.
+ * @param spec - A `file:` spec.
+ * @returns The location with forward slashes.
+ */
+export function locateSpecTarget(consumer: string, spec: string): string {
 	return normalizeSlashes(resolve(consumer, spec.slice('file:'.length)))
 }
 
-function describeStatus(
+/**
+ * Lists the drifts one pinned package reports.
+ *
+ * @param name - The package name.
+ * @param entry - Its ledger row.
+ * @param archive - The ledger archive's forward-slash location.
+ * @param report - What the status read: whether the manifest holds the archive, whether the archive
+ * matches its recorded digest, how the package is installed, and whether its source commit moved.
+ * @returns One message per drift, empty when the pin holds.
+ */
+export function describeStatus(
 	name: string,
 	entry: LedgerEntry,
 	archive: string,
@@ -1497,7 +2347,14 @@ function describeStatus(
 	]
 }
 
-function executeStatus(command: Command): number {
+/**
+ * Runs the status mode.
+ *
+ * @param command - The parsed command.
+ * @returns 0 when nothing drifted, 3 when something did, 64 on a usage refusal.
+ * @throws Thrown when the ledger is malformed.
+ */
+export function executeStatus(command: Command): number {
 	const manifest = loadJSONRecord(join(command.consumer, 'package.json'))
 	if (manifest === undefined) return reportUsage(`${command.consumer} has no readable package.json`)
 	const ledger = readLedger(command.consumer)
@@ -1595,7 +2452,14 @@ function executeStatus(command: Command): number {
 	return problems.length === 0 ? 0 : EXIT_DRIFT
 }
 
-function main(argv: readonly string[]): number {
+/**
+ * Runs the mode the arguments name.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The exit code: 0 on success, 1 when a command or a proof failed, 3 when the status reports
+ * drift, 64 on usage.
+ */
+export function main(argv: readonly string[]): number {
 	const parsed = parseCommand(argv)
 	if (!parsed.ok) return reportUsage(parsed.message)
 	try {
@@ -1608,4 +2472,6 @@ function main(argv: readonly string[]): number {
 	}
 }
 
-process.exitCode = main(process.argv.slice(2))
+if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {
+	process.exitCode = main(process.argv.slice(2))
+}

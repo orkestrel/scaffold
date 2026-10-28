@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { POLICY_BANNED_TERMS, POLICY_JUDGED_TERMS } from '../configs/policy.js'
@@ -15,6 +15,9 @@ import {
 	inspectPolicyMirrorPaths,
 	inspectPolicyMirrors,
 	inspectPolicyPortability,
+	inspectPolicyShellPaths,
+	inspectPolicyShells,
+	inspectPolicyText,
 	inspectPolicyWiring,
 	inspectPolicyWorkspace,
 	inspectSkillFamily,
@@ -56,6 +59,7 @@ import {
 	SKILL_POLICY_PARAGRAPHS,
 	SKILL_POLICY_TEXT,
 	stemToPolicyCandidates,
+	TEXT_POLICY_CONTROLS,
 	testToPolicyStem,
 } from './setupPolicy.js'
 
@@ -711,6 +715,105 @@ describe('portability policy', () => {
 				'src/worker/helpers.ts',
 			]),
 		).toEqual([])
+	})
+
+	it('rejects a shell-family file outside scripts whatever its case, and a non-shell file inside it', () => {
+		expect(
+			inspectPolicyShellPaths([
+				'src/run.sh',
+				'tools/BUILD.PY',
+				'scripts/probe.ts',
+				'scripts/a/b.cmd',
+			]),
+		).toEqual([
+			{
+				rule: 'portability',
+				path: 'src/run.sh',
+				message: 'shell, PowerShell, Python, and batch files sit only in scripts',
+			},
+			{
+				rule: 'portability',
+				path: 'tools/BUILD.PY',
+				message: 'shell, PowerShell, Python, and batch files sit only in scripts',
+			},
+			{
+				rule: 'portability',
+				path: 'scripts/probe.ts',
+				message: 'scripts holds .sh files and nothing else',
+			},
+			{
+				rule: 'portability',
+				path: 'scripts/a/b.cmd',
+				message: 'scripts holds .sh files and nothing else',
+			},
+		])
+	})
+
+	it('accepts a shell file at any depth inside scripts and every other file elsewhere', () => {
+		expect(
+			inspectPolicyShellPaths([
+				'scripts/deps.sh',
+				'scripts/DEPS.SH',
+				'scripts/nested/hook.sh',
+				'src/worker/helpers.ts',
+				'package.json',
+				'.gitattributes',
+				'build.shared.ts',
+			]),
+		).toEqual([])
+	})
+
+	it('reads files only: a directory named like a shell file or inside scripts is no violation', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-policy-shells-' })
+		try {
+			scratch.write('src/tools.py/index.ts', 'export {}\n')
+			scratch.write('scripts/nested/deps.sh', '#!/usr/bin/env bash\n')
+			scratch.write('src/run.sh', '#!/usr/bin/env bash\n')
+			// The refused file arrives beside the directories, so an empty result elsewhere is a read
+			// that reached the population rather than one that found nothing.
+			expect(inspectPolicyShells(scratch.path)).toEqual([
+				{
+					rule: 'portability',
+					path: 'src/run.sh',
+					message: 'shell, PowerShell, Python, and batch files sit only in scripts',
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('text integrity policy', () => {
+	for (const control of TEXT_POLICY_CONTROLS) {
+		it(`${control.label} [membership: ${control.membership}]`, () => {
+			expect(
+				inspectPolicyControl(control).filter((violation) => violation.rule === 'text'),
+			).toEqual(control.violations)
+		})
+	}
+
+	// A text fixture is a JavaScript string and cannot hold a byte sequence UTF-8 never carries, so
+	// the bytes are written directly. The valid file beside the broken one proves the sweep ran
+	// over the workspace and refused one file rather than every file.
+	it('rejects a file whose bytes are not UTF-8 and accepts the same file once they are', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-policy-text-' })
+		try {
+			mkdirSync(join(scratch.path, 'src'), { recursive: true })
+			writeFileSync(join(scratch.path, 'src', 'valid.ts'), Uint8Array.of(0x61, 0xc3, 0xa8, 0x0a))
+			writeFileSync(join(scratch.path, 'src', 'broken.ts'), Uint8Array.of(0x61, 0xc3, 0x28, 0x0a))
+			expect(inspectPolicyText(scratch.path)).toEqual([
+				{ rule: 'text', path: 'src/broken.ts', message: 'text decodes as UTF-8' },
+			])
+			writeFileSync(join(scratch.path, 'src', 'broken.ts'), Uint8Array.of(0x61, 0xc3, 0xa8, 0x0a))
+			expect(inspectPolicyText(scratch.path)).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('holds the authored and source text of this workspace to clean UTF-8', () => {
+		expect(inspectPolicyText(process.cwd())).toEqual([])
 	})
 })
 

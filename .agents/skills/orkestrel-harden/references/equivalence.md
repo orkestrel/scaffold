@@ -44,5 +44,8 @@ yields more entries than `length` is truncated.
 
 Before a claim that a rewrite lost no test, run
 `node .agents/skills/orkestrel-harden/scripts/titles.ts --base REV`, where `REV` is the baseline
-revision. Restore each missing title, or rule its removal with the behavior it proved, and confirm
-each moved title by reading the registration that uses it.
+revision. Restore each missing title, or rule its removal with the behavior it proved. A moved row
+exits 3 like a missing one, because a literal that only spells the title (an assertion value, a data
+table) holds it too: read each moved title's holder, treat one that is no registration as missing,
+and add no exemption. The comparison cannot follow a dynamic row or see a removed `.each` table row;
+rule those by reading.

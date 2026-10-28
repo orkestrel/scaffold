@@ -66,6 +66,7 @@ import {
 	buildContentArtifact,
 	buildDependency,
 	buildLazyCase,
+	buildManifestScript,
 	buildMissingCase,
 	buildOverride,
 	buildPlan,
@@ -76,6 +77,7 @@ import {
 	COMMANDS_ROUTE_TEXT,
 	createClosableList,
 	createObservedList,
+	createProducer,
 	ENTRY_AUTHORED_TEST,
 	ENTRY_AUTHORED_VITE,
 	ENTRY_FAILING_TEST,
@@ -2551,6 +2553,10 @@ describe('blueprintToScripts config projects', () => {
 			'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode))',
 		)
 		expect(blueprintToRootVite(enabled)).toContain('export function appJourney(')
+		expect(blueprintToRootVite(enabled)).toContain(
+			'\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {',
+		)
+		expect(blueprintToRootVite(enabled)).toContain('return mergeOverride(project, override)')
 		expect(blueprintToRootVite(enabled)).toContain(
 			"exclude: ['tests/app/browser/integration.test.ts']",
 		)
@@ -5189,8 +5195,7 @@ describe('compilers over a caller-supplied list with a hole', () => {
 // entries it read, as the loop the compiler replaced gave them.
 describe('compilers over a caller-supplied list read one entry at a time', () => {
 	const extension = { surface: 'browser', name: 'vue', axes: ['src'] } as const
-	const dependency = () => buildDependency({ name: 'vue', range: '^3.5.0' })
-	const script = () => ({ name: 'test', command: 'vitest run', accepted: ['vitest'] })
+	const dependency = createProducer(buildDependency, { name: 'vue', range: '^3.5.0' })
 	const manifest = '{\n\t"name": "x",\n\t"scripts": {\n\t\t"test": "vitest"\n\t}\n}\n'
 
 	it.each([
@@ -5277,9 +5282,9 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 			(shape) =>
 				readLazily(
 					shape,
-					script,
+					buildManifestScript,
 					(scripts) => replaceManifestScripts(manifest, scripts),
-					refuseObject(script),
+					refuseObject(buildManifestScript),
 				),
 			{ dense: { outcome: 'return', reads: [0, 1, 0, 0, 1] } },
 		),
@@ -5467,8 +5472,7 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 // the iterator was taken, as the loop the compiler replaced gave them.
 describe('compilers over a list without an iterator refuse it as the loop did', () => {
 	const extension = { surface: 'browser', name: 'vue', axes: ['src'] } as const
-	const dependency = () => buildDependency({ name: 'vue', range: '^3.5.0' })
-	const script = () => ({ name: 'test', command: 'vitest run', accepted: ['vitest'] })
+	const dependency = createProducer(buildDependency, { name: 'vue', range: '^3.5.0' })
 	const manifest = '{\n\t"name": "x",\n\t"scripts": {\n\t\t"test": "vitest"\n\t}\n}\n'
 
 	it.each([
@@ -5534,8 +5538,10 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 		buildMissingCase('the extras a blueprint declares', dependency, (extras) =>
 			blueprintToQuestions(buildBlueprint({ extras })),
 		),
-		buildMissingCase('the scripts a manifest region is replaced with', script, (scripts) =>
-			replaceManifestScripts(manifest, scripts),
+		buildMissingCase(
+			'the scripts a manifest region is replaced with',
+			buildManifestScript,
+			(scripts) => replaceManifestScripts(manifest, scripts),
 		),
 		buildMissingCase(
 			'the src a script plan is read over',
@@ -5600,8 +5606,6 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 // pass, so every index read the reader made before that pass is in the log, and a read hoisted ahead
 // of an earlier pass shows there. The logs are the ones the loops the compiler replaced gave.
 describe('compilers over a list that serves one iterator read it where the loops did', () => {
-	const served = (): Environment => 'core'
-
 	it.each([
 		[
 			'src',
@@ -5618,9 +5622,9 @@ describe('compilers over a list that serves one iterator read it where the loops
 		(_label, plan, calls) => {
 			const closable = createClosableList(
 				2,
-				new Map([
-					[0, served],
-					[1, served],
+				new Map<number, () => Environment>([
+					[0, () => 'core'],
+					[1, () => 'core'],
 				]),
 				{ serves: 1 },
 			)

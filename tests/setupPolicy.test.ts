@@ -44,6 +44,8 @@ import {
 	denyPolicyRead,
 	failPolicyRead,
 	inspectBridge,
+	collectPolicyTextPaths,
+	inspectPolicyBytes,
 	inspectPolicyConfiguration,
 	inspectPolicyFilenamePaths,
 	inspectPolicyMirrorPaths,
@@ -51,16 +53,19 @@ import {
 	inspectSkill,
 	inspectSkillBridges,
 	inspectSkillImports,
+	inspectSkillProof,
 	inspectPolicyWorkspace,
 	extractPolicySection,
 	inspectPolicySetup,
 	inspectSkillTemplateTODOs,
 	isPolicyDirectory,
+	matchesPolicyCharacter,
 	matchesSkillToken,
 	matchesScaffoldSetup,
 	normalizePolicyFilename,
 	normalizePolicyPath,
 	parsePolicyJSON,
+	parsePolicyText,
 	parseSkillFrontmatter,
 	POLICY_DENY_PRINCIPAL,
 	POLICY_EXTRACTOR,
@@ -80,6 +85,7 @@ import {
 	readSkillExports,
 	readSkillDeclarations,
 	readSkillManifest,
+	renderPolicyCharacter,
 	resolvePolicyPackage,
 	resolveSkillDeclaration,
 	runPolicyCommand,
@@ -89,6 +95,7 @@ import {
 	SKILL_REFUSAL_CASES,
 	SETUP_POLICY_CONTROLS,
 	SHEET_POLICY_SELECTIONS,
+	TEXT_POLICY_MESSAGE,
 } from './setupPolicy.js'
 
 describe('configuration infrastructure', () => {
@@ -1415,6 +1422,84 @@ describe('inspectSkill', () => {
 	})
 })
 
+describe('inspectSkillProof', () => {
+	const script = '.agents/skills/sample/scripts/tool.ts'
+	const proof = 'tests/agents/skills/sample/scripts/tool.test.ts'
+	const root = '../../../../../.agents/skills'
+
+	it.each([
+		['admits its own script', `import { read } from '${root}/sample/scripts/tool.ts'`, []],
+		[
+			'admits its own script under a built extension',
+			`import { read } from '${root}/sample/scripts/tool.js'`,
+			[],
+		],
+		['admits a test setup module', "import { read } from '../../../../setupServer.js'", []],
+		[
+			'admits a package and a Node module',
+			"import { it } from 'vitest'\nimport { join } from 'node:path'",
+			[],
+		],
+		[
+			'refuses another script of its own skill',
+			`import { read } from '${root}/sample/scripts/other.ts'`,
+			['.agents/skills/sample/scripts/other.ts'],
+		],
+		[
+			'refuses a script of another skill',
+			`import { read } from '${root}/other/scripts/helpers.ts'`,
+			['.agents/skills/other/scripts/helpers.ts'],
+		],
+		[
+			'refuses a type import of another skill file',
+			`import type { Read } from '${root}/other/scripts/helpers.ts'`,
+			['.agents/skills/other/scripts/helpers.ts'],
+		],
+		[
+			'refuses a star re-export of another skill file',
+			`export * from '${root}/other/scripts/helpers.ts'`,
+			['.agents/skills/other/scripts/helpers.ts'],
+		],
+		[
+			'refuses a named re-export of another skill file',
+			`export { read } from '${root}/other/scripts/helpers.ts'`,
+			['.agents/skills/other/scripts/helpers.ts'],
+		],
+		[
+			'reports each refused import in source order beside an admitted one',
+			[
+				`import { read } from '${root}/sample/scripts/tool.ts'`,
+				`import { a } from '${root}/other/scripts/a.ts'`,
+				`import { b } from '${root}/other/scripts/b.ts'`,
+			].join('\n'),
+			['.agents/skills/other/scripts/a.ts', '.agents/skills/other/scripts/b.ts'],
+		],
+	])('%s', (_name, source, refused) => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-proof-' })
+		try {
+			scratch.write(proof, source + '\n')
+			expect(inspectSkillProof(scratch.path, proof, script)).toEqual(
+				refused.map((path) => ({
+					rule: 'skill',
+					path: proof,
+					message: `skill proof imports no skill file but its own script: ${path}`,
+				})),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads nothing where the proof is absent', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-proof-' })
+		try {
+			expect(inspectSkillProof(scratch.path, proof, script)).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
 describe('the policy readers', () => {
 	it('parses JSON text and answers undefined for text that is not JSON', () => {
 		expect(parsePolicyJSON('{"scripts":{"test":"vitest"}}')).toStrictEqual({
@@ -1508,6 +1593,110 @@ describe('the policy readers', () => {
 			),
 		).toStrictEqual([2, 3, 7, 13, 14, 14])
 		expect(inspectSkillTemplateTODOs('bridge', 'path', 'clean\n`TODO`\n')).toStrictEqual([])
+	})
+})
+
+describe('the text sweep readers', () => {
+	// Each range edge has a refused code point beside an admitted one, so an edge that drifts by one
+	// fails on whichever side it moved toward.
+	it.each([
+		[0x00, true],
+		[0x08, true],
+		[0x09, false],
+		[0x0a, false],
+		[0x0b, true],
+		[0x0c, true],
+		[0x0d, false],
+		[0x0e, true],
+		[0x1f, true],
+		[0x20, false],
+		[0x7e, false],
+		[0x7f, true],
+		[0x9f, true],
+		[0xa0, false],
+		[0xfefe, false],
+		[0xfeff, true],
+		[0xfffd, true],
+		[0xfffe, false],
+	])('judges the code point %i as refused: %s', (code, refused) => {
+		expect(matchesPolicyCharacter(code)).toBe(refused)
+	})
+
+	it('renders a code point as a four-digit upper-case escape', () => {
+		expect(renderPolicyCharacter(0x07)).toBe('\\u0007')
+		expect(renderPolicyCharacter(0x9f)).toBe('\\u009F')
+		expect(renderPolicyCharacter(0xfeff)).toBe('\\uFEFF')
+	})
+
+	it('decodes valid UTF-8, keeps a leading byte-order mark, and refuses every other sequence', () => {
+		expect(parsePolicyText(new Uint8Array())).toBe('')
+		expect(parsePolicyText(Uint8Array.of(0x61, 0xc3, 0xa8))).toBe('aè')
+		expect(parsePolicyText(Uint8Array.of(0xef, 0xbb, 0xbf, 0x61))).toBe('\uFEFFa')
+		// The controls: a bad continuation byte, a byte UTF-8 never uses, a truncated sequence, and an
+		// encoded surrogate each decode to nothing rather than to a replacement character.
+		expect(parsePolicyText(Uint8Array.of(0x61, 0xc3, 0x28))).toBe(undefined)
+		expect(parsePolicyText(Uint8Array.of(0xff))).toBe(undefined)
+		expect(parsePolicyText(Uint8Array.of(0x61, 0xe2, 0x82))).toBe(undefined)
+		expect(parsePolicyText(Uint8Array.of(0xed, 0xa0, 0x80))).toBe(undefined)
+	})
+
+	it('reports a refused character at the line it sits on, whichever break precedes it', () => {
+		const bytes = new TextEncoder().encode('\uFEFFfirst\r\nsecond\u0007\nthird\u0007\n')
+		expect(inspectPolicyBytes('sample.ts', bytes)).toEqual([
+			{ rule: 'text', path: 'sample.ts', line: 1, message: `${TEXT_POLICY_MESSAGE}: \\uFEFF` },
+			{ rule: 'text', path: 'sample.ts', line: 2, message: `${TEXT_POLICY_MESSAGE}: \\u0007` },
+			{ rule: 'text', path: 'sample.ts', line: 3, message: `${TEXT_POLICY_MESSAGE}: \\u0007` },
+		])
+		// The control: the same lines without the planted characters report nothing.
+		expect(
+			inspectPolicyBytes('sample.ts', new TextEncoder().encode('first\r\nsecond\nthird\n')),
+		).toEqual([])
+	})
+
+	it('collects the authored Markdown, source, skill script, and instruction text population and no other file', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-policy-text-paths-' })
+		try {
+			scratch.write('README.md', '# Front page\n')
+			scratch.write('guides/README.md', '# Index\n')
+			scratch.write('src/core/helpers.ts', 'export {}\n')
+			scratch.write('src/styles/index.scss', '.sample {}\n')
+			scratch.write('probe.ts', 'export {}\n')
+			scratch.write('data.json', '{}\n')
+			scratch.write('.mcp.json', '{}\n')
+			scratch.write('.gitattributes', '* text=auto eol=lf\n')
+			scratch.write('.prettierignore', 'dist/\n')
+			scratch.write('.agents/skills/sample/scripts/tool.ts', 'export {}\n')
+			scratch.write('.agents/skills/sample/agents/openai.yaml', 'interface:\n')
+			scratch.write('.claude/settings.json', '{}\n')
+			scratch.write('.codex/agents/sample.toml', 'name = "sample"\n')
+			scratch.write('.codex/config.toml', 'model = "sample"\n')
+			scratch.write('.cursor/rules/sample.mdc', '---\nalwaysApply: true\n---\n')
+			scratch.write('.github/workflows/check.yml', 'name: check\n')
+			scratch.write('src/data.json', '{}\n')
+			scratch.write('tmp/probe.json', '{}\n')
+			scratch.write('node_modules/sample/README.md', '# Installed\n')
+			scratch.write('node_modules/sample/package.json', '{}\n')
+			scratch.write('tmp/notes.md', '# Notes\n')
+			expect(collectPolicyTextPaths(scratch.path)).toEqual([
+				'.agents/skills/sample/agents/openai.yaml',
+				'.agents/skills/sample/scripts/tool.ts',
+				'.claude/settings.json',
+				'.codex/agents/sample.toml',
+				'.codex/config.toml',
+				'.cursor/rules/sample.mdc',
+				'.gitattributes',
+				'.mcp.json',
+				'.prettierignore',
+				'README.md',
+				'data.json',
+				'guides/README.md',
+				'probe.ts',
+				'src/core/helpers.ts',
+				'src/styles/index.scss',
+			])
+		} finally {
+			scratch.destroy()
+		}
 	})
 })
 

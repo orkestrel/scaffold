@@ -1,11 +1,40 @@
+import type { Option } from '../../../../../.agents/skills/orkestrel-harden/scripts/discovery.ts'
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import { join } from 'node:path'
-import { DISCOVERY_SCRIPT, runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
+import {
+	DISCOVERY_COMMAND_SHAPES,
+	DISCOVERY_MARKER_CASES,
+	DISCOVERY_MARKER_FIXTURE,
+	DISCOVERY_NPM_SHAPES,
+	DISCOVERY_REFUSED_ARGUMENTS,
+	DISCOVERY_SCRIPT,
+	runSkillScript,
+	WORKSPACE_ROOT,
+} from '../../../../setupServer.js'
+import {
+	CodeScanner,
+	listFiles,
+	listInvocations,
+	matchesProjectFilter,
+	matchesWildcard,
+	narrowGates,
+	normalizeSlashes,
+	readCommands,
+	readFileCredits,
+	readGate,
+	readGates,
+	readMarkers,
+	readMissingFlags,
+	readMissingOptions,
+	readOption,
+	readUnknownFlags,
+	replaceProjects,
+} from '../../../../../.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
-	it('evaluates setup modules of non-selected projects during the census', () => {
+	it('leaves the setup modules of non-selected projects unevaluated', () => {
 		const scratch = createScratch({ prefix: 'discovery-nonselected-setup-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -31,6 +60,9 @@ describe('discovery.ts', () => {
 			})
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([{ name: 'first', gate: 'test', files: 1, tests: 1 }])
+			expect(scratch.has('second-loaded')).toBe(false)
+			const census = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(census.status).toBe(0)
 			expect(scratch.read('second-loaded')).toBe('loaded')
 		} finally {
 			scratch.remove('node_modules')
@@ -1282,6 +1314,7 @@ export default ({ mode }) => {
 			expect(scoped.json?.projects).toEqual([
 				{ name: 'core', gate: 'test > test:core', files: 1, tests: 1 },
 			])
+			expect(scratch.read('listings')).toBe('listed\nlisted\nlisted\n')
 		} finally {
 			scratch.destroy()
 		}
@@ -1340,14 +1373,52 @@ export default ({ mode }) => {
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
-			const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'absent', '--json'], {
-				cwd: scratch.path,
-			})
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.empty).toEqual(['absent'])
-			expect(run.json?.projects).toEqual([
-				{ name: 'absent', gate: 'test > test:absent', files: 0, tests: 0 },
-			])
+			expect(run.json?.projects).toContainEqual({
+				name: 'absent',
+				gate: 'test > test:absent',
+				files: 0,
+				tests: 0,
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a --projects name no project matches and names the declared projects', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-unmatched-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project core"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['core', 'other'].map((name) => ({ test: { name, include: ['tests/' + name + '.test.ts'] } })) } }\n",
+			)
+			for (const name of ['core', 'other'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			for (const named of ['nosuch', 'core,nosuch', 'no*such']) {
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', named, '--json'], {
+					cwd: scratch.path,
+				})
+				expect.soft(run.status, named + run.stdout + run.stderr).toBe(64)
+				expect.soft(run.stderr).toContain(named.includes('*') ? '"no*such"' : '"nosuch"')
+				expect.soft(run.stderr).toContain('"core"')
+				expect.soft(run.stderr).toContain('"other"')
+				expect.soft(run.stdout).toBe('')
+			}
+			const matched = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'cor*', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(matched.status).toBe(0)
+			expect(matched.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 		} finally {
 			scratch.destroy()
 		}
@@ -1427,7 +1498,7 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('scopes reporting with Vitest after collecting the unfiltered universe', () => {
+	it('lists only the named projects: the universe, the gates, and the rescan', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-scope-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -1452,7 +1523,7 @@ export default ({ mode }) => {
 			const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'core,server', '--json'], {
 				cwd: scratch.path,
 			})
-			expect(scratch.has('collected')).toBe(true)
+			expect(scratch.has('collected')).toBe(false)
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([
 				{ name: 'core', gate: 'test', files: 1, tests: 1 },
@@ -1527,17 +1598,502 @@ export default ({ mode }) => {
 		const helpers = census.find(
 			(entry) => isRecord(entry) && entry.file === 'tests/src/server/helpers.test.ts',
 		)
-		expect(
-			isRecord(helpers) &&
-				isRecord(helpers.markers) &&
-				typeof helpers.markers['.skipIf('] === 'number',
-		).toBe(true)
+		const skipIf = isRecord(helpers) && isRecord(helpers.markers) ? helpers.markers['.skipIf'] : 0
+		expect(skipIf).toBeGreaterThan(0)
 		const text = runSkillScript(DISCOVERY_SCRIPT, [], { cwd: WORKSPACE_ROOT })
 		expect(text.status).toBe(0)
 		expect(text.stdout).toContain(
 			'discovery: probe is an empty workbench; no chain containing " > " names it',
 		)
 	}, 180_000)
+
+	it.each(DISCOVERY_MARKER_CASES)(
+		'counts markers as call forms outside comments and strings: %j',
+		(text, markers) => {
+			expect(readMarkers(new CodeScanner(text).scan())).toEqual(markers)
+		},
+	)
+
+	it('counts the marker forms of a collected file and leaves skip and only to lint', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-markers-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
+			)
+			scratch.write('tests/forms.test.ts', DISCOVERY_MARKER_FIXTURE)
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.census).toEqual([
+				{
+					file: 'tests/forms.test.ts',
+					projects: ['core'],
+					markers: { '.todo': 2, '.skipIf': 1, '.runIf': 1, '.fails': 1, retry: 2, timeout: 3 },
+				},
+			])
+			const text = runSkillScript(DISCOVERY_SCRIPT, [], { cwd: scratch.path })
+			expect(text.status).toBe(0)
+			expect(text.stdout).toContain(
+				'discovery: tests/forms.test.ts .todo×2 .skipIf×1 .runIf×1 .fails×1 retry×2 timeout×3\n',
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(DISCOVERY_REFUSED_ARGUMENTS)(
+		'refuses the equals form and an unread flag with exit 64: %j',
+		(...args) => {
+			const scratch = createScratch({ prefix: 'orkestrel-discovery-unknown-flag-' })
+			try {
+				scratch.write('package.json', '{"scripts":{}}')
+				scratch.write('vite.config.ts', 'export default {}\n')
+				const run = runSkillScript(DISCOVERY_SCRIPT, args, { cwd: scratch.path })
+				expect(run.status).toBe(64)
+				expect(run.stderr).toContain('is not a flag this script reads')
+				expect(run.stdout).toBe('')
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
+
+	it('exits 2 naming the Vitest version when its option table lacks a required option', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-help-' })
+		try {
+			scratch.write('package.json', '{"type":"module","scripts":{"test":"vitest run"}}')
+			scratch.write('vite.config.ts', 'export default {}\n')
+			scratch.write('node_modules/vitest/vitest.mjs', "console.log('Usage: vitest')\n")
+			scratch.write('node_modules/vitest/package.json', '{"name":"vitest","version":"9.9.9"}')
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('Vitest 9.9.9')
+			expect(run.stderr).toContain('--reporter, --project, --config, --filesOnly')
+			const option: Option = { name: 'reporter', argument: '<name>' }
+			expect(readMissingOptions(new Map())).toEqual([
+				'--reporter',
+				'--project',
+				'--config',
+				'--filesOnly',
+			])
+			expect(
+				readMissingOptions(
+					new Map([
+						['--reporter', option],
+						['--project', option],
+					]),
+				),
+			).toEqual(['--config', '--filesOnly'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('credits a test file to a gate only when node runs it as an argument', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-credit-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			for (const name of ['core', 'orphan'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			for (const check of ['oxlint tests/orphan.test.ts', 'git add tests/orphan.test.ts']) {
+				scratch.write(
+					'package.json',
+					JSON.stringify({ type: 'module', scripts: { test: 'vitest run', check } }),
+				)
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect.soft(run.status, check + run.stderr).toBe(3)
+				expect.soft(run.json?.undiscovered, check).toEqual(['tests/orphan.test.ts'])
+			}
+			for (const check of ['node tests/orphan.test.ts', 'node --test tests/orphan.test.ts']) {
+				scratch.write(
+					'package.json',
+					JSON.stringify({ type: 'module', scripts: { test: 'vitest run', check } }),
+				)
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect.soft(run.status, check + run.stderr).toBe(0)
+				expect.soft(run.json?.undiscovered, check).toEqual([])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the test files a node command runs and no other command credits', () => {
+		expect(readFileCredits(['node', 'tests/a.test.ts'])).toEqual(['tests/a.test.ts'])
+		expect(readFileCredits(['node', '--test', 'tests/a.test.ts', 'tests/b.test.ts'])).toEqual([
+			'tests/a.test.ts',
+			'tests/b.test.ts',
+		])
+		expect(readFileCredits(['node', '--experimental-strip-types', 'tests/a.test.ts'])).toEqual([
+			'tests/a.test.ts',
+		])
+		expect(readFileCredits(['node', 'scripts/check.js', 'tests/a.test.ts'])).toEqual([])
+		expect(readFileCredits(['node', '-e', 'run()', 'tests/a.test.ts'])).toEqual([])
+		expect(readFileCredits(['oxlint', 'tests/a.test.ts'])).toEqual([])
+		expect(readFileCredits(['prettier', '--check', 'tests/a.test.ts'])).toEqual([])
+		expect(readFileCredits(['git', 'add', 'tests/a.test.ts'])).toEqual([])
+	})
+
+	it('refuses watch, dev, and an unqualified --watch as gates', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-watch-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['core', 'other'].map((name) => ({ test: { name, include: ['tests/' + name + '.test.ts'] } })) } }\n",
+			)
+			for (const name of ['core', 'other'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			for (const watch of [
+				'vitest watch --project other',
+				'vitest dev --project other',
+				'vitest --watch --project other',
+			]) {
+				scratch.write(
+					'package.json',
+					JSON.stringify({
+						type: 'module',
+						scripts: { test: 'vitest run --project core', 'test:watch': watch },
+					}),
+				)
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect.soft(run.status, watch + run.stderr).toBe(3)
+				expect.soft(run.json?.ungated, watch).toEqual(['other'])
+			}
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'vitest run --project core',
+						'test:other': 'vitest --watch=false --project other',
+					},
+				}),
+			)
+			const gated = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(gated.status).toBe(0)
+			expect(gated.json?.ungated).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('classifies run, watch, maintenance, and related commands', () => {
+		const options = new Map<string, Option>()
+		for (const text of [
+			'vitest watch',
+			'vitest dev',
+			'vitest --watch',
+			'vitest -w --project a',
+			'vitest --watch=true',
+			'vitest list',
+			'vitest bench',
+			'vitest --mergeReports',
+			'vitest --listTags',
+			'vitest --clearCache',
+		]) {
+			expect
+				.soft(readGate(readCommands(text)[0] ?? [], 'test', 'vite.config.ts', options), text)
+				.toBeUndefined()
+		}
+		for (const text of [
+			'vitest run',
+			'vitest',
+			'vitest --watch=false',
+			'vitest --watch false',
+			'vitest run --watch=false',
+		]) {
+			expect
+				.soft(readGate(readCommands(text)[0] ?? [], 'test', 'vite.config.ts', options), text)
+				.toBeDefined()
+		}
+		expect(() =>
+			readGate(['vitest', 'related', 'src/a.ts'], 'test', 'vite.config.ts', options),
+		).toThrow('test: Vitest list exposes no related command')
+	})
+
+	it.each(DISCOVERY_COMMAND_SHAPES)(
+		'reads the gate behind an environment prefix or a redirection: %s',
+		(shape) => {
+			const scratch = createScratch({ prefix: 'orkestrel-discovery-shape-' })
+			try {
+				scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test: shape } }))
+				scratch.write(
+					'vite.config.ts',
+					"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+				)
+				scratch.write(
+					'tests/core.test.ts',
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run.status === 0 ? 0 : run.stderr).toBe(0)
+				expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
+
+	it.each(DISCOVERY_NPM_SHAPES)('follows the script an npm call shape names: %s', (shape) => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-npm-shape-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: { test: shape, 'test:unit': 'vitest run --project core' },
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			scratch.write('tests/core.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status === 0 ? 0 : run.stderr).toBe(0)
+			expect(run.json?.projects).toEqual([
+				{ name: 'core', gate: 'test > test:unit', files: 1, tests: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('splits commands past environment prefixes and redirections', () => {
+		expect(readCommands('CI=1 NODE_ENV=test vitest run')).toEqual([['vitest', 'run']])
+		expect(readCommands('cross-env CI=1 vitest run --project "a b"')).toEqual([
+			['vitest', 'run', '--project', 'a b'],
+		])
+		expect(readCommands('vitest run > out.txt 2>&1')).toEqual([['vitest', 'run']])
+		expect(readCommands('vitest run 2>&1 | tee log.txt')).toEqual([
+			['vitest', 'run'],
+			['tee', 'log.txt'],
+		])
+		expect(readCommands('vitest run >> out.txt && echo done')).toEqual([
+			['vitest', 'run'],
+			['echo', 'done'],
+		])
+		expect(readCommands('vitest run < in.txt 2> err.txt')).toEqual([['vitest', 'run']])
+		expect(readCommands('vitest run &> all.txt')).toEqual([['vitest', 'run']])
+		expect(readCommands('CI=1')).toEqual([[]])
+	})
+
+	it('lists the script calls of npm run, run-script, test, and t', () => {
+		const invocations = listInvocations(
+			readCommands(
+				'npm run -s a && npm run --silent b -- --x && npm run-script c && npm test -- y && npm t && npm ls',
+			),
+		)
+		expect(invocations.map(({ name, args, shorthand }) => [name, args, shorthand])).toEqual([
+			['a', [], false],
+			['b', ['--x'], false],
+			['c', [], false],
+			['test', ['y'], true],
+			['test', [], true],
+		])
+	})
+
+	it('derives gates and file credits in visit order, the earliest chain winning', () => {
+		const options = new Map<string, Option>()
+		const gates = readGates(
+			{
+				test: 'npm run a && npm run b',
+				a: 'vitest run --project one',
+				b: 'vitest run --project two && node tests/x.test.ts',
+				first: 'node tests/x.test.ts && node --test tests/y.test.ts tests/z.test.ts',
+			},
+			'vite.config.ts',
+			options,
+		)
+		expect(gates.units.map(({ chain, projects }) => [chain, projects])).toEqual([
+			['test > b', ['two']],
+			['test > a', ['one']],
+		])
+		expect(Object.fromEntries(gates.files)).toEqual({
+			'tests/x.test.ts': 'test > b',
+			'tests/y.test.ts': 'first',
+			'tests/z.test.ts': 'first',
+		})
+		const shorthand = readGates(
+			{ ci: 'npm test', test: 'vitest run --project one' },
+			'vite.config.ts',
+			options,
+		)
+		expect(shorthand.units.map(({ chain }) => chain)).toEqual(['ci > test', 'test'])
+	})
+
+	it('reports every test and spec file under tests that no project collects', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-spec-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			for (const file of [
+				'tests/core.test.ts',
+				'tests/extra.spec.ts',
+				'tests/view.test.tsx',
+				'tests/tmp/hidden.test.ts',
+				'tests/node_modules/skipped.test.ts',
+			])
+				scratch.write(file, "import { it } from 'vitest'\nit('collects', () => {})\n")
+			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.undiscovered).toEqual([
+				'tests/extra.spec.ts',
+				'tests/tmp/hidden.test.ts',
+				'tests/view.test.tsx',
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('narrows the gates to the named projects and drops a gate that reaches none', () => {
+		const options = new Map<string, Option>()
+		const gates = readGates(
+			{
+				all: 'vitest run',
+				core: 'vitest run --project core',
+				both: 'vitest run --project core --project=other -- --project outside',
+				negated: 'vitest run --project !core',
+				wild: 'vitest run --project "co*"',
+				other: 'vitest run --project other',
+			},
+			'vite.config.ts',
+			options,
+		).units
+		expect(narrowGates(gates, [])).toBe(gates)
+		expect(narrowGates(gates, ['core']).map(({ chain, args }) => [chain, args])).toEqual([
+			['all', ['--config', 'vite.config.ts', '--project', 'core']],
+			['core', ['--config', 'vite.config.ts', '--project', 'core']],
+			['both', ['--config', 'vite.config.ts', '--project', 'core', '--', '--project', 'outside']],
+			['wild', ['--config', 'vite.config.ts', '--project', 'core']],
+		])
+		const patterned = narrowGates(gates, ['cor*'])
+		expect(patterned.map(({ chain }) => chain)).toEqual([
+			'all',
+			'core',
+			'both',
+			'negated',
+			'wild',
+			'other',
+		])
+		expect(patterned.find(({ chain }) => chain === 'all')?.args).toEqual([
+			'--config',
+			'vite.config.ts',
+			'--project',
+			'cor*',
+		])
+		expect(patterned.find(({ chain }) => chain === 'other')?.args).toEqual(
+			gates.find(({ chain }) => chain === 'other')?.args,
+		)
+	})
+
+	it('matches project filters the way Vitest does and swaps project flags', () => {
+		expect(matchesProjectFilter(['web'], 'web (chromium)')).toBe(true)
+		expect(matchesProjectFilter(['!web'], 'web (chromium)')).toBe(false)
+		expect(matchesProjectFilter(['CORE'], 'core')).toBe(true)
+		expect(matchesProjectFilter(['src:*'], 'src:core')).toBe(true)
+		expect(matchesProjectFilter(['src:*'], 'app:core')).toBe(false)
+		expect(matchesProjectFilter(['!a', 'b'], 'b')).toBe(true)
+		expect(matchesProjectFilter(['!a'], 'b')).toBe(true)
+		expect(matchesProjectFilter([], 'x')).toBe(true)
+		expect(matchesWildcard('a.b', 'axb')).toBe(false)
+		expect(matchesWildcard('a*c', 'abbc')).toBe(true)
+		expect(matchesWildcard('a*c', 'abbd')).toBe(false)
+		expect(
+			replaceProjects(
+				['--config', 'x', '--project', 'a', '--project=b', '--mode', 'm', '--', '--project', 'z'],
+				['c', 'd'],
+			),
+		).toEqual([
+			'--config',
+			'x',
+			'--mode',
+			'm',
+			'--project',
+			'c',
+			'--project',
+			'd',
+			'--',
+			'--project',
+			'z',
+		])
+	})
+
+	it('reads flag values, missing values, and unread flags', () => {
+		const argv = ['--config', 'vite.config.ts', '--projects', 'a,b', '--json']
+		expect(readOption(argv, '--config')).toBe('vite.config.ts')
+		expect(readOption(argv, '--absent')).toBeUndefined()
+		expect(readOption(['--json'], '--json')).toBeUndefined()
+		expect(readOption(['--config', '--json', 'x'], '--config')).toBeUndefined()
+		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
+		expect(
+			readMissingFlags(
+				['--config', '--json', '--out', 'a', '--projects'],
+				['--config', '--out', '--projects'],
+			),
+		).toEqual(['--config', '--projects'])
+		expect(readMissingFlags(['--out', 'a'], ['--config'])).toEqual([])
+		expect(
+			readUnknownFlags(
+				['--config=vite.config.ts', '--json', '--project', 'a', '--projects', 'a'],
+				['--config', '--json', '--projects'],
+			),
+		).toEqual(['--config=vite.config.ts', '--project'])
+		expect(readUnknownFlags(['--config', 'x', '--', 'node', '--watch'], ['--config'])).toEqual([])
+		expect(readUnknownFlags(['--config', 'x', 'path', '-x'], ['--config'])).toEqual([])
+		expect(readUnknownFlags([], [])).toEqual([])
+	})
+
+	it('normalizes slashes', () => {
+		expect(normalizeSlashes('a\\b\\c.ts')).toBe('a/b/c.ts')
+		expect(normalizeSlashes('a/b')).toBe('a/b')
+	})
+
+	it('lists files with forward slashes, skipping the excluded names exactly and at any depth', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-walk-' })
+		try {
+			scratch.write('src/a.ts', '')
+			scratch.write('src/deep/b.ts', '')
+			scratch.write('src/dist/c.ts', '')
+			scratch.write('node_modules/pkg/index.js', '')
+			scratch.write('tmp/probe.ts', '')
+			const root = normalizeSlashes(scratch.path)
+			const paths = listFiles(scratch.path).map((file) => file.path.slice(root.length + 1))
+			expect(paths.every((path) => !path.includes('\\'))).toBe(true)
+			expect(paths.sort()).toEqual(['src/a.ts', 'src/deep/b.ts'])
+			expect(listFiles(scratch.path, new Set()).length).toBe(5)
+			expect(listFiles(scratch.path).every((file) => typeof file.modified === 'number')).toBe(true)
+			expect(() => listFiles(`${scratch.path}/absent`)).toThrow(/ENOENT/u)
+		} finally {
+			scratch.destroy()
+		}
+	})
 
 	it('refuses a missing configuration, a flag with no value, and a checkout with no local Vitest', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-' })

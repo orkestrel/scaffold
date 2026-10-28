@@ -45,7 +45,7 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
 - Measure an elapsed interval with `performance.now()`, never `Date.now()`. `Date.now()` returns whole milliseconds, so an interval built from two of its readings truncates at both ends and can under-report by a millisecond — enough to fail a boundary assertion against a timer that behaved correctly. `performance.now()` is monotonic and sub-millisecond, and it does not move when the wall clock does.
 - Give a conditional skip the mechanism that makes it inapplicable, cited, not the platform name alone. A test skipped on a platform is a test nobody re-examines; a test skipped because a named API rejects a named case is one anybody can re-check.
 - The revert that proves a repair reddens exactly the test that names the defect. Keep the import and collection graph valid while reverting, and confirm the named test was collected. A revert that reddens anything beyond that test broke the harness, and its count is not evidence.
-- Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every `.skip` or conditional skip has a narrow verifiable applicability reason.
+- Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every conditional skip has a narrow verifiable applicability reason. Never commit `.only` or `.skip`; `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse both.
 - Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`.
 
 ## Cross-cutting proofs
@@ -184,7 +184,7 @@ Test helpers are shared infrastructure, not local test-file clutter.
 - Extract a fixture, recorder, event factory, async wait, renderer, scenario/data builder, protocol fixture, or DOM builder as soon as it could serve another test.
 - Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.
 - Export every reusable helper, fixture type, factory, constant, and guard from setup files.
-- A setup file owns everything an assertion needs and nothing an assertion is: `describe`, `it`, and `expect` never appear in a `setup*.ts`.
+- A setup file owns everything an assertion needs and nothing an assertion is: `describe`, `it`, `test`, and `expect` never appear in a `setup*.ts`; lint refuses their import from `vitest` there.
 - Data tables and case matrices belong in a setup file at any size; test registration does not.
 - Test files import shared infrastructure rather than declaring local fixture factories.
 - Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.
@@ -193,9 +193,9 @@ Test helpers are shared infrastructure, not local test-file clutter.
 
 Place helpers by environment:
 
-- `tests/setup.ts`: host-independent; no `node:*`, DOM, `window`, or Vue.
+- `tests/setup.ts`: host-independent; no `node:*`, DOM, `window`, or Vue. Lint refuses a `node:` or Vue import there.
 - `tests/setupServer.ts`: Node-only helpers and `node:fs` loaders anchored to `WORKSPACE_ROOT`.
-- `tests/setupBrowser.ts`: DOM/Vue/browser helpers and setup CSS.
+- `tests/setupBrowser.ts`: DOM/Vue/browser helpers and setup CSS. Lint refuses a `node:` import here and in `tests/setupStyles.ts`.
 - `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; a
   sheet-face project loads it after `tests/setupBrowser.ts` when the target has the file.
 - `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,

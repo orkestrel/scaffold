@@ -72,13 +72,17 @@ import {
 	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
 import {
+	buildDependency,
 	buildLazyCase,
 	buildMissingCase,
+	buildRelease,
 	buildSparse,
 	createClosableList,
+	createProducer,
 	createServedList,
 	DOCUMENTED_OPTIONS,
 	readLazily,
+	refuseClose,
 	refuseObject,
 	UNDOCUMENTED_OPTIONS,
 } from '../../setup.js'
@@ -880,8 +884,8 @@ describe('sanitizeLine', () => {
 	})
 
 	it('removes ANSI escapes and control characters, keeping ordinary prose', () => {
-		expect(sanitizeLine('[31mred[0m')).toBe('red')
-		expect(sanitizeLine('bell')).toBe('bell')
+		expect(sanitizeLine('\u001b[31mred\u001b[0m')).toBe('red')
+		expect(sanitizeLine('be\u0007ll')).toBe('bell')
 		expect(sanitizeLine('plain prose')).toBe('plain prose')
 	})
 })
@@ -1537,13 +1541,7 @@ describe('findGitRefusal', () => {
 // list reads every entry first. Each case runs the helper over a list of two recorded entries and
 // pins the constructor it raised and the entries it read, as the loop the helper replaced gave them.
 describe('release helpers over a caller-supplied list read one entry at a time', () => {
-	const release = (): Release => ({
-		name: 'vite',
-		range: '^8.2.2',
-		lookup: 'found',
-		latest: '8.2.2',
-	})
-	const declaration = () => ({ name: 'vite', range: '~8.2.0' })
+	const declaration = createProducer(buildDependency, { name: 'vite', range: '~8.2.0' })
 
 	it.each([
 		buildLazyCase('the declarations a floor is read over', (shape) =>
@@ -1559,9 +1557,9 @@ describe('release helpers over a caller-supplied list read one entry at a time',
 			(shape) =>
 				readLazily(
 					shape,
-					release,
+					buildRelease,
 					(releases) => releasesToQuestions(releases),
-					refuseObject(release),
+					refuseObject(buildRelease),
 				),
 			{ dense: { outcome: 'return', reads: [0, 0, 1, 0] } },
 		),
@@ -1570,9 +1568,9 @@ describe('release helpers over a caller-supplied list read one entry at a time',
 			(shape) =>
 				readLazily(
 					shape,
-					release,
-					(served) => releasesToQuestions([release()], served),
-					refuseObject(release),
+					buildRelease,
+					(served) => releasesToQuestions([buildRelease()], served),
+					refuseObject(buildRelease),
 				),
 			{ dense: { outcome: 'return', reads: [0] } },
 		),
@@ -1590,11 +1588,8 @@ describe('release helpers over a caller-supplied list read one entry at a time',
 // case hands the helper a list whose iterator records its steps and closes, and pins the log and the
 // constructor the loop the helper replaced gave.
 describe('dependenciesToFloors closes the iterator of the list it stops reading as the loop did', () => {
-	const floored = () => ({ name: 'vite', range: '~8.2.0' })
-	const floorless = () => ({ name: 'vite', range: '^8' })
-	const raise = (): never => {
-		throw new EvalError('close')
-	}
+	const floored = createProducer(buildDependency, { name: 'vite', range: '~8.2.0' })
+	const floorless = createProducer(buildDependency, { name: 'vite', range: '^8' })
 
 	it('stops at the first declaration naming no version, reads no further and closes once', () => {
 		const closable = createClosableList(
@@ -1630,8 +1625,8 @@ describe('dependenciesToFloors closes the iterator of the list it stops reading 
 	})
 
 	it('surfaces the close when the loop returned and drops it when a declaration threw', () => {
-		const stopped = createClosableList(1, new Map([[0, floorless]]), { close: raise })
-		const thrown = createClosableList(1, new Map<number, () => never>(), { close: raise })
+		const stopped = createClosableList(1, new Map([[0, floorless]]), { close: refuseClose })
+		const thrown = createClosableList(1, new Map<number, () => never>(), { close: refuseClose })
 		const answered = createClosableList(1, new Map([[0, floorless]]), { close: () => 5 })
 
 		expect(() => dependenciesToFloors(stopped.list)).toThrow(EvalError)
@@ -1691,19 +1686,13 @@ describe('dependenciesToFloors reads the entries the iterator of its list yields
 // `Array.from` falls back to the indexes and answers. Each case runs the helper over a list whose
 // `Symbol.iterator` is `undefined` and pins the constructor and the entries read before it was taken.
 describe('release helpers over a list without an iterator refuse it as the loop did', () => {
-	const release = (): Release => ({
-		name: 'vite',
-		range: '^8.2.2',
-		lookup: 'found',
-		latest: '8.2.2',
-	})
-	const declaration = () => ({ name: 'vite', range: '~8.2.0' })
+	const declaration = createProducer(buildDependency, { name: 'vite', range: '~8.2.0' })
 
 	it.each([
 		buildMissingCase('the declarations a floor is read over', declaration, (dependencies) =>
 			dependenciesToFloors(dependencies),
 		),
-		buildMissingCase('the releases a foreign floor is measured over', release, (releases) =>
+		buildMissingCase('the releases a foreign floor is measured over', buildRelease, (releases) =>
 			releasesToQuestions(releases),
 		),
 	])('refuses $label after the reads it names', ({ read, reads }) => {

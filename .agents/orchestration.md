@@ -118,7 +118,7 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 
 - Never run a review on a small change. Never run a second design round on the same brief.
 - A review judges types, tests, and implementation. It reports comment, TSDoc, or guide wording only where the text contradicts the final behavior, and no fix round opens for prose alone.
-- A fix round re-audits the repaired claim only. A fix that adopted the reviewer's prescription verbatim closes with a mutation probe (disable the load-bearing line, watch the test fail, restore it). A fix that departs from it gets one pass by an independent reviewer per § Engines.
+- A fix round re-audits the repaired claim only. A fix that adopted the reviewer's prescription verbatim closes with a mutation probe (disable the load-bearing line, watch the test fail, restore it); `node .agents/skills/orkestrel-falsify/scripts/mutate.ts --edits EDITS.md -- COMMAND` runs the probe and proves the restore. A fix that departs from it gets one pass by an independent reviewer per § Engines.
 - When review rounds at one seam keep surfacing defects without converging on their source, follow `.agents/skills/orkestrel-falsify/SKILL.md` § End the depth search.
 - An all-confirmed round ends the audit. A round needs an added or repaired claim to test; reviewer appetite is not a subject.
 
@@ -129,7 +129,7 @@ A large change opens with a concise goal and its exit criterion, short enough to
 1. **Absorb.** Map the terrain with the `orkestrel-scout` skill's `map.ts`, then `grok` distills it and the prior art. In an Orkestrel repository, `verifier` or another tool-capable role collects manifests, lockfiles, installed declarations, and registry readings, and `orkestrel` reconciles them.
 2. **Design.** One independent round: `planner` (subjective) and `analyst` (objective) on one brief, clean contexts, blind to each other. Reconcile into one plan: units, owned files, dependencies, parallel and serial order, acceptance criteria, exit criterion, ledger.
 3. **Implement.** Dispatch units per § Routing and § Parallelism.
-4. **Integrate.** Apply returned patches to shared files serially. A type, mechanism, or criterion found here is a successor unit, never an integration edit.
+4. **Integrate.** Apply returned patches to shared files serially with `node .agents/skills/orkestrel-dispatch/scripts/patch.ts EDITS.md --plan`, then `--apply`. A type, mechanism, or criterion found here is a successor unit, never an integration edit.
 5. **Audit.** One `orkestrel-falsify` round on the integrated result, an independent reviewer per § Engines in each lane; add `checker` when the criteria are mechanical.
 6. **Verify.** `verifier` runs the tree-wide gates once.
 7. **Re-baseline.** Strike satisfied units, restate transformed ones, add units the exit criterion already required. A re-baseline never moves the exit criterion; that needs the user.
@@ -143,7 +143,7 @@ A large change opens with a concise goal and its exit criterion, short enough to
 - One writer per checkout, except under `orkestrel-parallel`: there, at most three writers share one checkout, each owns disjoint files and disjoint regions of shared files, and one runner lane owns every test, check, and build process. Otherwise give parallel writers disjoint owned files, and give a writer its own worktree under `tmp/worktrees/` only when two units must write the same files at once. Commit a checkpoint before a writing dispatch.
 - Fold every branch, clone, copy, or worktree an agent creates back into the original checkout's main branch with its changes left uncommitted there, so the user sees the whole difference from that branch. Commit inside the branch, clone, copy, or worktree as its unit needs, then remove it and delete its branch.
 - In a checkout another session shares, read the branch and `git status` before a write, and stop and ask the user when another session's uncommitted work is present.
-- Shared files are report-only; a unit returns an exact patch. Under `orkestrel-parallel`, a writer edits its owned regions of a shared file directly.
+- Shared files are report-only; a unit returns an exact patch as an edit file that `.agents/skills/orkestrel-dispatch/scripts/patch.ts` applies. Under `orkestrel-parallel`, a writer edits its owned regions of a shared file directly.
 - Scope validation by the claim and its input dependencies, not by writer ownership alone. Under `orkestrel-parallel`, the runner owns checks and obtains the required write holds; § Pace rules on reruns. Never run tree-wide `format`, lint `--fix`, or `build` beside a live writer.
 - One Grok lane at a time; queue the rest. An empty lane beside a live probe is starvation, not darkness.
 - The Orchestrator's own sweep is a writing dispatch: run it before or after the units, never beside them.
@@ -164,15 +164,15 @@ A large change opens with a concise goal and its exit criterion, short enough to
 
 Every working file lives under the checkout's gitignored `tmp/`, in the directory its kind names.
 
-| Directory                                  | Holds                                                                                              |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `tmp/claude/`, `tmp/codex/`, `tmp/cursor/` | bench briefs, launch scripts, journals, `.err` files, last-message files, login logs, per harness  |
-| `tmp/units/`                               | native unit briefs, reports, claims files, and unit records                                        |
-| `tmp/probes/`                              | runtime probes the `probe` Vitest project collects and the `probe` MCP server arms                 |
-| `tmp/type/`                                | the type stage's workspace mirror, owned by `@orkestrel/probe`                                     |
-| `tmp/captures/`                            | screenshots, resolved-style snapshots, and other capture portfolios                                |
-| `tmp/browsers/`                            | the journeys a `browse` server saves, their runs and captures, and its profiles under `.profiles/` |
-| `tmp/worktrees/`                           | worktrees the Orchestrator creates for a parallel writer                                           |
+| Directory                                  | Holds                                                                                                                                                                       |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tmp/claude/`, `tmp/codex/`, `tmp/cursor/` | bench briefs, launch scripts, journals, `.err` files, last-message files, login logs, per harness                                                                           |
+| `tmp/units/`                               | native unit briefs, reports, claims files, and unit records                                                                                                                 |
+| `tmp/probes/`                              | runtime probes the `probe` Vitest project collects and the `probe` MCP server arms, and a skill script's scratch under its own subdirectory (`census/`, `lint/`, `mutate/`) |
+| `tmp/type/`                                | the type stage's workspace mirror, owned by `@orkestrel/probe`                                                                                                              |
+| `tmp/captures/`                            | screenshots, resolved-style snapshots, and other capture portfolios                                                                                                         |
+| `tmp/browsers/`                            | the journeys a `browse` server saves, their runs and captures, and its profiles under `.profiles/`                                                                          |
+| `tmp/worktrees/`                           | worktrees the Orchestrator creates for a parallel writer                                                                                                                    |
 
 ## .orkestrel layout
 

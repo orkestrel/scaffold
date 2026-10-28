@@ -22,12 +22,15 @@ Find candidates with the item's signatures, and rule each candidate by the item'
 
 Run an item's controls before trusting its clean result:
 
-1. Write each fixture of the item to a scratch file under `tmp/probes/census/`, named as the
-   fixture's label gives.
-2. Run the item's signatures over the scratch files, and record the hit lines of each file.
-3. Require every hit fixture to yield a candidate the reading keeps, and every clear fixture to yield
-   no candidate or only candidates the reading drops.
-4. Delete `tmp/probes/census/`.
+1. Run the `test:skills` script: `tests/agents/skills/orkestrel-harden/bindings.test.ts` reads this
+   document, compiles each signature as a JavaScript pattern, and matches each hit fixture against
+   its item's signatures, a `-U` signature over the whole fixture and the others line by line.
+   Repair a signature the test refuses before any later step.
+2. Read each hit fixture by the item's reading, and require it to keep a candidate. Write each clear
+   fixture of the item to a scratch file under `tmp/probes/census/`, named as the fixture's label
+   gives, and run the item's signatures over it. Require every clear fixture to yield no candidate or
+   only candidates the reading drops.
+3. Delete `tmp/probes/census/`.
 
 When a hit fixture yields no kept candidate, or a clear fixture yields a kept one, repair the
 signatures or the reading before you run the item over the checkout.

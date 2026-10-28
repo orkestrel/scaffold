@@ -5,9 +5,74 @@ import { describe, expect, it } from 'vitest'
 import { isRecord } from '@orkestrel/contract'
 import { createScratch, supportsDirectoryLinks } from '@orkestrel/test/server'
 import {
+	buildLedgerEntry,
+	buildRepin,
+	buildTarballName,
+	buildTarballSpec,
+	collectSpecs,
+	compareKeys,
+	comparePrerelease,
+	compareVersions,
+	computeHash,
+	describeMoved,
+	describeStatus,
+	diffManifests,
+	findDeclaration,
+	hasPins,
+	isContained,
+	isLedgerEntry,
+	isManifestField,
+	isOverrideEntry,
+	isPackageName,
+	isRecord as isScriptRecord,
+	isTarballSpec,
+	listRemovals,
+	locateInstalled,
+	locateSpecTarget,
+	matchesComparator,
+	matchesLocalSpec,
+	matchesRange,
+	mergeEntries,
+	normalizeSlashes,
+	OVERRIDE_PRECEDERS,
+	parseCommand,
+	parseComparators,
+	parseJsonRecord,
+	parseLedger,
+	parseVersion,
+	placeBlock,
+	planPin,
+	planRestore,
+	readBlock,
+	readMissingFlags,
+	readOption,
+	readOptions,
+	readPack,
+	readString,
+	removeTree,
+	renderChange,
+	renderStamp,
+	renderValue,
+	resolveNpm,
+	rewriteBlock,
+	runNpm,
+	scanLedgerNames,
+	scanLocalSpecs,
+	scanNames,
+	scanPinRequest,
+	serializeJSON,
+	supportsRange,
+} from '../../../../../.agents/skills/orkestrel-publish/scripts/swap.ts'
+import type {
+	Ledger,
+	LedgerEntry,
+	Tarball,
+} from '../../../../../.agents/skills/orkestrel-publish/scripts/swap.ts'
+import {
 	appendSwapLedgerRow,
 	buildSwapEnvironment,
 	buildSwapInvalidNames,
+	buildSwapKeyValue,
 	buildSwapLocalSpecs,
 	buildSwapRefusals,
 	buildSwapRemoteSpecs,
@@ -19,14 +84,20 @@ import {
 	installSwapFixture,
 	lockManifest,
 	probeManifestLock,
+	readFormattedKeys,
 	readInstalledRecord,
 	readSwapEntry,
 	renderPackageManifest,
 	runSkillScript,
 	spawnNpm,
 	spawnSkillScript,
+	SWAP_FOLLOWER_KEYS,
 	SWAP_RANGE,
+	SWAP_RANGE_CASES,
+	SWAP_READ_RANGES,
 	SWAP_SCRIPT,
+	SWAP_UNREAD_RANGES,
+	SWAP_VERSION_ORDER,
 	trackFiles,
 	unlockManifest,
 	writeSwapFixture,
@@ -1013,5 +1084,842 @@ describe('swap.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+
+	it('refuses a flag the mode does not read, the equals form and a stray argument included, before it writes anything', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-unknown-' })
+		try {
+			const fixture = writeSwapFixture(scratch.path)
+			const options = { cwd: scratch.path, env: buildSwapEnvironment(scratch.path) }
+			const consumer = ['--consumer', fixture.consumer]
+			const cases: ReadonlyArray<readonly [readonly string[], string]> = [
+				[['--status', `--consumer=${fixture.consumer}`], 'is not a flag this script reads'],
+				[['--status', ...consumer, '--bogus'], '--bogus is not a flag this script reads'],
+				[['--status', ...consumer, 'stray'], '--status does not read stray'],
+				[['--restore', ...consumer, '--json=1'], '--json=1 is not a flag this script reads'],
+				[['--restore', ...consumer, '--source', fixture.alpha], '--restore does not read --source'],
+				[
+					['--pin', ...consumer, '--source', fixture.alpha, '--bogus'],
+					'--bogus is not a flag this script reads',
+				],
+				[['--pin', ...consumer, `--source=${fixture.alpha}`], 'is not a flag this script reads'],
+			]
+			for (const [args, message] of cases) {
+				const run = runSkillScript(SWAP_SCRIPT, args, options)
+				expect([args, run.status]).toStrictEqual([args, 64])
+				expect(run.stderr).toContain(message)
+				expect(run.stderr).toContain('usage: swap.ts --pin --consumer DIR')
+				expect(run.stdout).toBe('')
+			}
+			expect(existsSync(join(fixture.consumer, 'tmp'))).toBe(false)
+			expect(existsSync(join(scratch.path, 'tmp'))).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the manifest key order', () => {
+	it('places a created overrides block where the installed formatter sorts it, for every key the table names', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-keys-' })
+		try {
+			const preceding = Object.fromEntries(
+				OVERRIDE_PRECEDERS.map((key) => [key, buildSwapKeyValue(key)]),
+			)
+			const following = Object.fromEntries(
+				SWAP_FOLLOWER_KEYS.map((key) => [key, buildSwapKeyValue(key)]),
+			)
+			const placed = placeBlock({ ...preceding, ...following }, 'overrides', { a: 'b' })
+			const keys = Object.keys(placed)
+			const block = keys.indexOf('overrides')
+			expect(keys.slice(0, block)).toStrictEqual(OVERRIDE_PRECEDERS)
+			expect(keys.slice(block + 1)).toStrictEqual(SWAP_FOLLOWER_KEYS)
+			const formatted = readFormattedKeys(
+				scratch.write('placed/package.json', renderPackageManifest(placed)),
+			)
+			const overrides = formatted.indexOf('overrides')
+			expect(overrides).toBeGreaterThan(-1)
+			for (const key of OVERRIDE_PRECEDERS) {
+				expect([key, formatted.includes(key) && formatted.indexOf(key) < overrides]).toStrictEqual([
+					key,
+					true,
+				])
+			}
+			for (const key of SWAP_FOLLOWER_KEYS) {
+				expect([key, formatted.indexOf(key) > overrides]).toStrictEqual([key, true])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('moves an overrides block written first behind every key the table names, so the formatter proof is not vacuous', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-control-' })
+		try {
+			const scrambled = {
+				overrides: { a: 'b' },
+				...Object.fromEntries(
+					[...SWAP_FOLLOWER_KEYS, ...OVERRIDE_PRECEDERS.toReversed()].map((key) => [
+						key,
+						buildSwapKeyValue(key),
+					]),
+				),
+			}
+			const formatted = readFormattedKeys(
+				scratch.write('scrambled/package.json', renderPackageManifest(scrambled)),
+			)
+			expect(formatted).not.toStrictEqual(Object.keys(scrambled))
+			const overrides = formatted.indexOf('overrides')
+			expect(overrides).toBeGreaterThan(0)
+			for (const key of OVERRIDE_PRECEDERS) {
+				expect([key, formatted.indexOf(key) < overrides]).toStrictEqual([key, true])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lands a created block last when every key sorts ahead of it and before the first follower otherwise', () => {
+		expect(Object.keys(placeBlock({ name: 'x', version: '1.0.0' }, 'overrides', {}))).toStrictEqual(
+			['name', 'version', 'overrides'],
+		)
+		expect(
+			Object.keys(placeBlock({ name: 'x', engines: {}, zzz: 1 }, 'overrides', {})),
+		).toStrictEqual(['name', 'overrides', 'engines', 'zzz'])
+		expect(Object.keys(placeBlock({}, 'overrides', {}))).toStrictEqual(['overrides'])
+	})
+})
+
+describe('the semver subset', () => {
+	it('answers each range with a version just inside and just outside each bound', () => {
+		for (const [range, version, answer] of SWAP_RANGE_CASES) {
+			expect([range, version, matchesRange(version, range)]).toStrictEqual([range, version, answer])
+		}
+		expect(matchesRange('not-a-version', '*')).toBe(false)
+		expect(matchesRange('1.2', '*')).toBe(false)
+	})
+
+	it('reads the ranges in its subset and refuses every other, so no unread range is satisfied', () => {
+		for (const range of SWAP_READ_RANGES) {
+			expect([range, supportsRange(range)]).toStrictEqual([range, true])
+		}
+		for (const range of SWAP_UNREAD_RANGES) {
+			expect([range, supportsRange(range)]).toStrictEqual([range, false])
+		}
+		// A union of read ranges can still match, so only the unread ranges without `||` are held to it.
+		for (const range of SWAP_UNREAD_RANGES.filter((candidate) => !candidate.includes('||'))) {
+			expect([range, matchesRange('1.5.0', range)]).toStrictEqual([range, false])
+		}
+	})
+
+	it('parses a full version and refuses a partial one', () => {
+		expect(parseVersion('1.2.3')).toEqual({ major: 1, minor: 2, patch: 3, pre: undefined })
+		expect(parseVersion(' v1.2.3-rc.1 ')).toEqual({ major: 1, minor: 2, patch: 3, pre: 'rc.1' })
+		expect(parseVersion('1.2.3+build.5')).toEqual({ major: 1, minor: 2, patch: 3, pre: undefined })
+		expect(parseVersion('1.2.3-rc.1+build')).toEqual({ major: 1, minor: 2, patch: 3, pre: 'rc.1' })
+		for (const text of ['1.2', '1.2.3.4', '1.2.x', '', 'latest', '^1.2.3']) {
+			expect([text, parseVersion(text)]).toStrictEqual([text, undefined])
+		}
+	})
+
+	it('orders every version of the prerelease ladder below the next, and ignores build metadata', () => {
+		const versions = SWAP_VERSION_ORDER.flatMap((text) => {
+			const version = parseVersion(text)
+			return version === undefined ? [] : [version]
+		})
+		expect(versions).toHaveLength(SWAP_VERSION_ORDER.length)
+		for (const [index, left] of versions.entries()) {
+			for (const [other, right] of versions.entries()) {
+				const order = compareVersions(left, right)
+				expect([
+					SWAP_VERSION_ORDER[index],
+					SWAP_VERSION_ORDER[other],
+					order < 0,
+					order > 0,
+				]).toStrictEqual([
+					SWAP_VERSION_ORDER[index],
+					SWAP_VERSION_ORDER[other],
+					index < other,
+					index > other,
+				])
+			}
+		}
+		const first = parseVersion('1.2.3+a')
+		const second = parseVersion('1.2.3+b')
+		if (first === undefined || second === undefined) throw new Error('A version did not parse')
+		expect(compareVersions(first, second)).toBe(0)
+	})
+
+	it('orders prerelease identifiers numerically, numbers before words, and a prefix before its extension', () => {
+		expect(comparePrerelease('alpha.1', 'alpha.beta')).toBeLessThan(0)
+		expect(comparePrerelease('alpha', 'alpha.1')).toBeLessThan(0)
+		expect(comparePrerelease('alpha.1', 'alpha')).toBeGreaterThan(0)
+		expect(comparePrerelease('beta.2', 'beta.11')).toBeLessThan(0)
+		expect(comparePrerelease('beta.11', 'beta.2')).toBeGreaterThan(0)
+		expect(comparePrerelease('rc.1', 'rc.1')).toBe(0)
+		expect(comparePrerelease('beta', 'rc')).toBeLessThan(0)
+		expect(compareKeys('a', 'b')).toBe(-1)
+		expect(compareKeys('b', 'a')).toBe(1)
+		expect(compareKeys('a', 'a')).toBe(0)
+	})
+
+	it('parses a token into its comparators and refuses a token outside the subset', () => {
+		for (const token of ['*', 'x', 'X', '']) expect(parseComparators(token)).toEqual([])
+		expect(parseComparators('^0.0.3')).toEqual([
+			{ operator: '>=', version: { major: 0, minor: 0, patch: 3, pre: undefined } },
+			{ operator: '<', version: { major: 0, minor: 0, patch: 4, pre: undefined } },
+		])
+		expect(parseComparators('^1.2.3')?.[1]?.version).toEqual({
+			major: 2,
+			minor: 0,
+			patch: 0,
+			pre: undefined,
+		})
+		expect(parseComparators('^0.2.3')?.[1]?.version).toEqual({
+			major: 0,
+			minor: 3,
+			patch: 0,
+			pre: undefined,
+		})
+		expect(parseComparators('~1.2.3')?.[1]?.version).toEqual({
+			major: 1,
+			minor: 3,
+			patch: 0,
+			pre: undefined,
+		})
+		expect(parseComparators('>=1.2.3')).toEqual([
+			{ operator: '>=', version: { major: 1, minor: 2, patch: 3, pre: undefined } },
+		])
+		expect(parseComparators('1.2.3')).toEqual([
+			{ operator: '=', version: { major: 1, minor: 2, patch: 3, pre: undefined } },
+		])
+		for (const token of ['>=', '1.x', '^1.2', 'latest', '-']) {
+			expect([token, parseComparators(token)]).toStrictEqual([token, undefined])
+		}
+	})
+
+	it('answers a comparator by the relation of a version to its bound', () => {
+		const bound = parseVersion('1.2.3')
+		const below = parseVersion('1.2.2')
+		const above = parseVersion('1.2.4')
+		if (bound === undefined || below === undefined || above === undefined) {
+			throw new Error('A version did not parse')
+		}
+		for (const [operator, expected] of [
+			['>=', [false, true, true]],
+			['>', [false, false, true]],
+			['<=', [true, true, false]],
+			['<', [true, false, false]],
+			['=', [false, true, false]],
+		] as const) {
+			expect([
+				operator,
+				[below, bound, above].map((version) =>
+					matchesComparator(version, { operator, version: bound }),
+				),
+			]).toStrictEqual([operator, expected])
+		}
+	})
+})
+
+describe('the manifest rewriting', () => {
+	it('keeps a changed key in place, removes a key mapped to undefined, and keeps a sorted block sorted', () => {
+		const manifest = {
+			name: 'x',
+			dependencies: { a: '^1.0.0', b: '^1.0.0' },
+			engines: { node: '>=24' },
+		}
+		const changed = rewriteBlock(manifest, 'dependencies', new Map([['a', 'file:a.tgz']]), true)
+		expect(changed).toEqual({
+			name: 'x',
+			dependencies: { a: 'file:a.tgz', b: '^1.0.0' },
+			engines: { node: '>=24' },
+		})
+		expect(Object.keys(readBlock(changed, 'dependencies'))).toStrictEqual(['a', 'b'])
+		expect(
+			readBlock(
+				rewriteBlock(manifest, 'dependencies', new Map([['a', undefined]]), true),
+				'dependencies',
+			),
+		).toEqual({ b: '^1.0.0' })
+		expect(
+			Object.keys(
+				readBlock(
+					rewriteBlock(manifest, 'dependencies', new Map([['aa', '1.0.0']]), true),
+					'dependencies',
+				),
+			),
+		).toStrictEqual(['a', 'aa', 'b'])
+		expect(
+			Object.keys(
+				readBlock(
+					rewriteBlock(
+						{ dependencies: { b: '1', a: '1' } },
+						'dependencies',
+						new Map([['c', '1']]),
+						true,
+					),
+					'dependencies',
+				),
+			),
+		).toStrictEqual(['b', 'a', 'c'])
+		expect(
+			mergeEntries(
+				[
+					['b', 1],
+					['a', 1],
+				],
+				[['c', 1]],
+			).map(([name]) => name),
+		).toStrictEqual(['b', 'a', 'c'])
+		expect(
+			mergeEntries(
+				[
+					['a', 1],
+					['c', 1],
+				],
+				[['b', 1]],
+			).map(([name]) => name),
+		).toStrictEqual(['a', 'b', 'c'])
+	})
+
+	it('creates an absent block where the formatter sorts it, leaves an absent block that gains nothing, and drops an emptied overrides block unless told to keep it', () => {
+		const created = rewriteBlock(
+			{ name: 'x', engines: {} },
+			'overrides',
+			new Map([['a', '$a']]),
+			true,
+		)
+		expect(Object.keys(created)).toStrictEqual(['name', 'overrides', 'engines'])
+		const bare = { name: 'x' }
+		expect(rewriteBlock(bare, 'overrides', new Map(), true)).toBe(bare)
+		expect(rewriteBlock(bare, 'overrides', new Map([['a', undefined]]), true)).toBe(bare)
+		const held = { name: 'x', overrides: { a: '1' } }
+		const emptied = new Map<string, string | undefined>([['a', undefined]])
+		expect(rewriteBlock(held, 'overrides', emptied, false)).toEqual({ name: 'x' })
+		expect(rewriteBlock(held, 'overrides', emptied, true)).toEqual({ name: 'x', overrides: {} })
+		expect(rewriteBlock({ dependencies: { a: '1' } }, 'dependencies', emptied, false)).toEqual({
+			dependencies: {},
+		})
+	})
+
+	it('reads a block, finds the field that declares a package, and lists each entry a rewrite changed', () => {
+		const manifest = {
+			dependencies: { a: '^1.0.0', n: 1 },
+			devDependencies: { a: '^2.0.0', b: '^1.0.0' },
+		}
+		expect(readBlock(manifest, 'dependencies')).toEqual({ a: '^1.0.0', n: 1 })
+		expect(readBlock(manifest, 'overrides')).toEqual({})
+		expect(readBlock({ dependencies: [] }, 'dependencies')).toEqual({})
+		expect(findDeclaration(manifest, 'a')).toEqual({ field: 'dependencies', spec: '^1.0.0' })
+		expect(findDeclaration(manifest, 'b')).toEqual({ field: 'devDependencies', spec: '^1.0.0' })
+		expect(findDeclaration(manifest, 'n')).toBeUndefined()
+		expect(findDeclaration(manifest, 'absent')).toBeUndefined()
+		expect(
+			diffManifests(
+				{ dependencies: { a: '1' }, overrides: {} },
+				{ dependencies: { a: '2' }, overrides: { x: 'y' } },
+			),
+		).toEqual([
+			{ block: 'dependencies', name: 'a', from: '1', to: '2' },
+			{ block: 'overrides', name: 'x', from: undefined, to: 'y' },
+		])
+		expect(diffManifests({ dependencies: { a: '1' } }, { dependencies: { a: '1' } })).toEqual([])
+		expect(renderValue(undefined)).toBeUndefined()
+		expect(renderValue('a')).toBe('a')
+		expect(renderValue({ a: 1 })).toBe('{"a":1}')
+		expect(renderChange({ block: 'overrides', name: 'x', from: undefined, to: 'y' })).toBe(
+			'swap: overrides.x (absent) -> y',
+		)
+		expect(serializeJSON({ a: 1 })).toBe('{\n\t"a": 1\n}\n')
+	})
+})
+
+describe('the pin and restore plans', () => {
+	const tarball: Tarball = {
+		source: { directory: '/s/alpha', name: '@o/alpha', version: '1.0.0' },
+		file: 'o-alpha-1.0.0-abc.tgz',
+		spec: 'file:/c/tmp/tarballs/o-alpha-1.0.0-abc.tgz',
+		sha256: 'abc',
+		files: ['package.json'],
+		commit: undefined,
+		dirty: undefined,
+	}
+	const empty: Ledger = { packages: {}, overrides: {} }
+
+	it('pins a declared package to its tarball spec and an override to its dollar form, and restores the manifest it started from', () => {
+		const manifest = {
+			name: 'consumer',
+			dependencies: { '@o/alpha': '^1.0.0' },
+			devDependencies: { '@o/gamma': '^1.0.0' },
+			overrides: {},
+			engines: { node: '>=24' },
+		}
+		const plan = planPin(manifest, empty, [tarball], ['@o/alpha'], 'at')
+		expect(plan.manifest).toEqual({
+			...manifest,
+			dependencies: { '@o/alpha': tarball.spec },
+			overrides: { '@o/alpha': '$@o/alpha' },
+		})
+		expect(plan.ledger.packages['@o/alpha']).toMatchObject({
+			field: 'dependencies',
+			replaced: '^1.0.0',
+			tarball: tarball.file,
+			sha256: 'abc',
+			source: '/s/alpha',
+			at: 'at',
+		})
+		expect(plan.ledger.overrides['@o/alpha']).toEqual({ value: '$@o/alpha', at: 'at' })
+		expect(plan.ledger.blockExisted).toBe(true)
+		expect(plan.changes).toEqual([
+			{ block: 'dependencies', name: '@o/alpha', from: '^1.0.0', to: tarball.spec },
+			{ block: 'overrides', name: '@o/alpha', from: undefined, to: '$@o/alpha' },
+		])
+		expect(hasPins(empty)).toBe(false)
+		expect(hasPins(plan.ledger)).toBe(true)
+		const restored = planRestore(plan.manifest, plan.ledger, [])
+		expect(restored.manifest).toEqual(manifest)
+		expect(restored.ledger).toEqual(empty)
+		expect(restored.dropped).toEqual(['@o/alpha'])
+		expect(restored.rows.map((row) => row.name)).toEqual(['@o/alpha'])
+		expect(listRemovals(restored)).toEqual(['@o/alpha'])
+		expect(buildRepin('/c', restored)).toEqual([
+			'--pin',
+			'--consumer',
+			'/c',
+			'--source',
+			'/s/alpha',
+			'--override',
+			'@o/alpha',
+		])
+	})
+
+	it('removes an overrides block the pin created, keeps the replaced range across a re-pin, and records an override-only package without a field', () => {
+		const manifest = { name: 'consumer', dependencies: { '@o/alpha': '^1.0.0' } }
+		const plan = planPin(manifest, empty, [tarball], ['@o/alpha'], 'at')
+		expect(plan.ledger.blockExisted).toBe(false)
+		expect(planRestore(plan.manifest, plan.ledger, []).manifest).toEqual(manifest)
+		const second = {
+			...tarball,
+			file: 'o-alpha-1.0.0-def.tgz',
+			spec: 'file:/c/tmp/tarballs/o-alpha-1.0.0-def.tgz',
+		}
+		const again = planPin(plan.manifest, plan.ledger, [second], [], 'at2')
+		expect(again.ledger.packages['@o/alpha']).toMatchObject({
+			replaced: '^1.0.0',
+			tarball: second.file,
+		})
+		const only = planPin({ name: 'consumer' }, empty, [tarball], ['@o/alpha'], 'at')
+		expect(only.ledger.packages['@o/alpha']?.field).toBeUndefined()
+		expect(only.ledger.packages['@o/alpha']?.replaced).toBeUndefined()
+		expect(only.manifest).toEqual({ name: 'consumer', overrides: { '@o/alpha': tarball.spec } })
+		const entry = buildLedgerEntry(manifest, empty, tarball, 'at')
+		expect(entry).toMatchObject({ field: 'dependencies', replaced: '^1.0.0', source: '/s/alpha' })
+		expect('commit' in entry).toBe(false)
+	})
+
+	it('names each problem that refuses a pin request', () => {
+		const manifest = { name: 'consumer', dependencies: { '@o/alpha': '^1.0.0' } }
+		const text = serializeJSON(manifest)
+		const alpha = tarball.source
+		const beta = { directory: '/s/beta', name: '@o/beta', version: '1.0.0' }
+		expect(scanPinRequest(text, manifest, empty, [alpha], [])).toEqual([])
+		expect(scanPinRequest(`${text}\n`, manifest, empty, [alpha], [])).toEqual([
+			expect.stringContaining('tab-indented JSON'),
+		])
+		expect(scanPinRequest(text, manifest, empty, [alpha, alpha], [])).toEqual([
+			'@o/alpha is named by more than one --source',
+		])
+		expect(scanPinRequest(text, manifest, empty, [beta], [])).toEqual([
+			'@o/beta is declared by no dependencies field and named by no --override',
+		])
+		expect(scanPinRequest(text, manifest, empty, [beta], ['@o/beta'])).toEqual([])
+		expect(scanPinRequest(text, manifest, empty, [alpha], ['@o/zeta'])).toEqual([
+			'override @o/zeta is declared by the consumer and built by no --source',
+		])
+		const held = { name: 'consumer', dependencies: { '@o/alpha': 'file:tmp/tarballs/x.tgz' } }
+		expect(scanPinRequest(serializeJSON(held), held, empty, [alpha], [])).toEqual([
+			'@o/alpha holds a tarball spec the ledger has no record of; restore its range by hand first',
+		])
+		const nested = { ...manifest, overrides: { '@o/alpha': { nested: 'x' } } }
+		expect(scanPinRequest(serializeJSON(nested), nested, empty, [alpha], ['@o/alpha'])).toEqual([
+			'overrides.@o/alpha is not a string and the script would overwrite it',
+		])
+	})
+})
+
+describe('the ledger', () => {
+	const row = { tarball: 'a.tgz', sha256: 'x', source: 's', at: 't' }
+
+	it('parses a ledger whole and refuses it when a block is missing or any row is malformed', () => {
+		const ledger = {
+			packages: { a: row },
+			overrides: { b: { value: 'v', at: 't' } },
+			blockExisted: true,
+		}
+		expect(parseLedger(ledger)).toEqual(ledger)
+		expect(parseLedger({ packages: {}, overrides: {} })).toEqual({ packages: {}, overrides: {} })
+		for (const bad of [
+			undefined,
+			'text',
+			[],
+			{ packages: {} },
+			{ overrides: {} },
+			{ packages: { a: { ...row, tarball: 1 } }, overrides: {} },
+			{ packages: { a: { ...row, field: 'peerDependencies' } }, overrides: {} },
+			{ packages: { a: { ...row, dirty: 'yes' } }, overrides: {} },
+			{ packages: { good: row, a: { ...row, at: 1 } }, overrides: {} },
+			{ packages: {}, overrides: { b: { value: 1, at: 't' } } },
+			{ packages: {}, overrides: { b: { value: 'v', at: 't', replaced: 1 } } },
+			{ packages: {}, overrides: {}, blockExisted: 'yes' },
+		]) {
+			expect([bad, parseLedger(bad)]).toStrictEqual([bad, undefined])
+		}
+	})
+
+	it('checks a ledger row, an override row, and a manifest field', () => {
+		expect(isLedgerEntry(row)).toBe(true)
+		expect(
+			isLedgerEntry({ ...row, field: 'devDependencies', replaced: '^1.0.0', dirty: false }),
+		).toBe(true)
+		expect(isLedgerEntry({ ...row, source: undefined })).toBe(false)
+		expect(isLedgerEntry(null)).toBe(false)
+		expect(isOverrideEntry({ value: 'v', at: 't' })).toBe(true)
+		expect(isOverrideEntry({ value: 'v', at: 't', replaced: '*' })).toBe(true)
+		expect(isOverrideEntry({ value: 'v' })).toBe(false)
+		expect(isManifestField('dependencies')).toBe(true)
+		expect(isManifestField('devDependencies')).toBe(true)
+		expect(isManifestField('peerDependencies')).toBe(false)
+	})
+
+	it('names each ledger key that is not a package name, JSON-encoded', () => {
+		expect(scanNames('packages', ['@o/a', '../x'])).toEqual([
+			'The ledger packages key "../x" is not a package name',
+		])
+		expect(
+			scanLedgerNames({
+				packages: { '../a': row },
+				overrides: { 'b c': { value: 'v', at: 't' } },
+			}),
+		).toEqual([
+			'The ledger packages key "../a" is not a package name',
+			'The ledger overrides key "b c" is not a package name',
+		])
+		expect(scanLedgerNames({ packages: { '@o/a': row }, overrides: {} })).toEqual([])
+	})
+
+	it('accepts the valid package names and refuses every name that climbs out of node_modules', () => {
+		for (const name of buildSwapValidNames())
+			expect([name, isPackageName(name)]).toStrictEqual([name, true])
+		for (const name of buildSwapInvalidNames('C:/scratch')) {
+			expect([name, isPackageName(name)]).toStrictEqual([name, false])
+		}
+		expect(isPackageName('a'.repeat(214))).toBe(true)
+		expect(isPackageName('a'.repeat(215))).toBe(false)
+	})
+
+	it('names each drift one pin reports', () => {
+		const entry: LedgerEntry = { ...row, source: '/s/alpha', commit: 'abc' }
+		const clean = {
+			pinned: true,
+			tarball: true,
+			installed: { link: false, intact: true },
+			moved: false,
+		}
+		expect(describeStatus('@o/a', entry, '/c/a.tgz', clean)).toEqual([])
+		expect(
+			describeStatus('@o/a', entry, '/c/a.tgz', {
+				pinned: false,
+				tarball: false,
+				installed: undefined,
+				moved: true,
+			}),
+		).toEqual([
+			'@o/a: the manifest does not hold /c/a.tgz',
+			'@o/a: a.tgz is missing or does not match its recorded SHA-256',
+			'@o/a: not installed',
+			'@o/a: /s/alpha moved from abc; re-pin',
+		])
+		expect(
+			describeStatus('@o/a', entry, '/c/a.tgz', {
+				...clean,
+				installed: { link: true, intact: undefined },
+			}),
+		).toEqual(['@o/a: installed as a link'])
+		expect(
+			describeStatus('@o/a', entry, '/c/a.tgz', {
+				...clean,
+				installed: { link: false, intact: undefined },
+			}),
+		).toEqual(['@o/a: the ledger records no proved install; re-pin'])
+		expect(
+			describeStatus('@o/a', entry, '/c/a.tgz', {
+				...clean,
+				installed: { link: false, intact: false },
+			}),
+		).toEqual(['@o/a: the installed bytes differ from the pinned build'])
+	})
+
+	it('names the packages an install added, removed, or changed', () => {
+		expect(describeMoved({ a: '1', b: '2' }, { a: '1', b: '3', c: '4' })).toEqual([
+			'b was changed by the install',
+			'c was added by the install',
+		])
+		expect(describeMoved({ a: '1' }, {})).toEqual(['a was removed by the install'])
+		expect(describeMoved({}, {})).toEqual([])
+	})
+})
+
+describe('the tarball names and specs', () => {
+	it('names a tarball by scope, name, version, and the first twelve digits of its digest', () => {
+		expect(buildTarballName('@orkestrel/alpha', '1.0.0', '0123456789abcdef')).toBe(
+			'orkestrel-alpha-1.0.0-0123456789ab.tgz',
+		)
+		expect(buildTarballName('left-pad', '1.0.0', '0123456789abcdef')).toBe(
+			'left-pad-1.0.0-0123456789ab.tgz',
+		)
+		expect(computeHash(Buffer.from('abc'))).toBe(
+			'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+		)
+	})
+
+	it('builds an absolute file spec with forward slashes and reads a tarball spec in either location form', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-spec-' })
+		try {
+			const spec = buildTarballSpec(scratch.path, 'a.tgz')
+			expect(spec).toBe(`file:${normalizeSlashes(join(scratch.path, 'tmp', 'tarballs', 'a.tgz'))}`)
+			expect(spec.includes('\\')).toBe(false)
+			expect(isTarballSpec(spec)).toBe(true)
+			expect(isTarballSpec('file:tmp/tarballs/a.tgz')).toBe(true)
+			expect(isTarballSpec('file:/x/tmp/tarballs/a.tgz')).toBe(true)
+			for (const text of [
+				'file:../other',
+				'file:tmp/other/a.tgz',
+				'file:/x/tmp/tarballsx/a.tgz',
+				'^1.0.0',
+				'tmp/tarballs/a.tgz',
+			]) {
+				expect([text, isTarballSpec(text)]).toStrictEqual([text, false])
+			}
+			const target = normalizeSlashes(join(scratch.path, 'tmp', 'tarballs', 'a.tgz'))
+			expect(locateSpecTarget(scratch.path, 'file:tmp/tarballs/a.tgz')).toBe(target)
+			expect(locateSpecTarget(scratch.path, `file:${target}`)).toBe(target)
+			expect(normalizeSlashes(locateInstalled('/c', '@o/alpha'))).toBe('/c/node_modules/@o/alpha')
+			expect(normalizeSlashes(locateInstalled('/c', 'left-pad'))).toBe('/c/node_modules/left-pad')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps an install path inside node_modules and refuses the root itself and any path that leaves it', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-contain-direct-' })
+		try {
+			const root = scratch.ensure('node_modules')
+			scratch.ensure('node_modules/@o')
+			expect(isContained(root, join(root, 'left-pad'))).toBe(true)
+			expect(isContained(root, join(root, '@o', 'alpha'))).toBe(true)
+			expect(isContained(root, root)).toBe(false)
+			expect(isContained(root, join(root, '..', 'outside'))).toBe(false)
+			expect(isContained(root, join(scratch.path, 'sibling'))).toBe(false)
+			expect(isContained(join(scratch.path, 'absent'), join(scratch.path, 'absent', 'x'))).toBe(
+				true,
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the archive name and file list out of the pack output of either npm major', () => {
+		const files = [{ path: 'dist\\b.js' }, { path: 'package.json' }]
+		const expected = { filename: 'a-1.0.0.tgz', files: ['dist/b.js', 'package.json'] }
+		expect(readPack(JSON.stringify([{ filename: 'a-1.0.0.tgz', files }]))).toEqual(expected)
+		expect(readPack(JSON.stringify({ '@o/a': { filename: 'a-1.0.0.tgz', files } }))).toEqual(
+			expected,
+		)
+		expect(() => readPack('[]')).toThrow('Unreadable npm pack output')
+		expect(() => readPack('{}')).toThrow('Unreadable npm pack output')
+		expect(() => readPack(JSON.stringify([{ filename: 1, files }]))).toThrow(
+			'Unreadable npm pack output',
+		)
+		expect(() => readPack(JSON.stringify([{ filename: 'a.tgz', files: [{}] }]))).toThrow(
+			'Unreadable npm pack file entry',
+		)
+		expect(() => readPack('not json')).toThrow(SyntaxError)
+	})
+
+	it('renders a time as a file-name stamp', () => {
+		expect(renderStamp('2026-10-19T00:00:00.000Z')).toBe('2026-10-19T00-00-00-000Z')
+	})
+})
+
+describe('the command line', () => {
+	it('parses each mode into a command and names the refusal for a line it cannot parse', () => {
+		const pin = parseCommand([
+			'--pin',
+			'--consumer',
+			'c',
+			'--source',
+			's',
+			'--source',
+			't',
+			'--override',
+			'n',
+			'--no-build',
+			'--dry-run',
+			'--json',
+		])
+		if (!pin.ok) throw new Error(pin.message)
+		expect(pin.command).toMatchObject({
+			mode: 'pin',
+			build: false,
+			dry: true,
+			json: true,
+			overrides: ['n'],
+			packages: [],
+		})
+		expect(pin.command.sources).toHaveLength(2)
+		expect(pin.command.consumer.endsWith('c')).toBe(true)
+		const restore = parseCommand([
+			'--restore',
+			'--consumer',
+			'c',
+			'--package',
+			'a',
+			'--package',
+			'b',
+		])
+		if (!restore.ok) throw new Error(restore.message)
+		expect(restore.command).toMatchObject({
+			mode: 'restore',
+			packages: ['a', 'b'],
+			build: true,
+			dry: false,
+		})
+		const refusals: ReadonlyArray<readonly [readonly string[], string]> = [
+			[[], 'Give one of --pin, --restore, and --status'],
+			[['--pin', '--restore'], 'Give one mode, not --pin and --restore'],
+			[['--status', '--consumer=x'], '--consumer=x is not a flag this script reads'],
+			[['--bogus'], '--bogus is not a flag this script reads'],
+			[['--status', '--consumer', 'c', 'stray'], '--status does not read stray'],
+			[['--pin', '--consumer', 'c', '--package', 'a'], '--pin does not read --package, a'],
+			[['--status', '--consumer'], '--consumer given with no value'],
+			[['--status'], '--consumer DIR is required'],
+			[['--pin', '--consumer', 'c'], '--pin takes at least one --source DIR'],
+		]
+		for (const [argv, message] of refusals) {
+			expect([argv, parseCommand(argv)]).toStrictEqual([argv, { ok: false, message }])
+		}
+	})
+})
+
+describe('the copied helpers', () => {
+	it('B4.1 matches the local swap specs and rejects the remote swap specs', () => {
+		for (const [, spec] of buildSwapLocalSpecs()) {
+			expect({ spec, local: matchesLocalSpec(spec) }).toEqual({ spec, local: true })
+		}
+		for (const [, spec] of buildSwapRemoteSpecs()) {
+			expect({ spec, local: matchesLocalSpec(spec) }).toEqual({ spec, local: false })
+		}
+		expect(matchesLocalSpec(' \tfile:../other')).toBe(true)
+		expect(matchesLocalSpec('')).toBe(false)
+		expect(matchesLocalSpec(' \t')).toBe(false)
+	})
+
+	it('collects strings recursively and ignores non-record values', () => {
+		expect(collectSpecs('overrides', { a: { b: 'file:../other' }, c: '^1.0.0' })).toEqual([
+			['overrides.a.b', 'file:../other'],
+			['overrides.c', '^1.0.0'],
+		])
+		expect(collectSpecs('dependencies', 'file:../other')).toEqual([
+			['dependencies', 'file:../other'],
+		])
+		expect(collectSpecs('overrides', { a: null, b: ['file:../other'], c: 1 })).toEqual([])
+		expect(collectSpecs('overrides', undefined)).toEqual([])
+		expect(collectSpecs('overrides', {})).toEqual([])
+	})
+
+	it('B4.2 scans each spec field and names nested override paths', () => {
+		expect(
+			scanLocalSpecs({
+				name: 'file:../ignored',
+				dependencies: { local: 'file:../dependency', remote: '^1.0.0' },
+				devDependencies: { local: 'link:../development' },
+				peerDependencies: { local: './peer' },
+				optionalDependencies: { local: 'optional.tgz' },
+				overrides: { a: { '.': '^1.0.0', b: 'file:../override' }, remote: 'owner/other.tgz' },
+			}),
+		).toEqual([
+			['dependencies.local', 'file:../dependency'],
+			['devDependencies.local', 'link:../development'],
+			['peerDependencies.local', './peer'],
+			['optionalDependencies.local', 'optional.tgz'],
+			['overrides.a.b', 'file:../override'],
+		])
+		expect(scanLocalSpecs({})).toEqual([])
+		expect(scanLocalSpecs({ dependencies: null, overrides: ['file:../ignored'] })).toEqual([])
+	})
+
+	it('recognizes non-null non-array objects without reading their members', () => {
+		expect(isScriptRecord({})).toBe(true)
+		expect(isScriptRecord(Object.create(null))).toBe(true)
+		expect(isScriptRecord(null)).toBe(false)
+		expect(isScriptRecord(undefined)).toBe(false)
+		expect(isScriptRecord([])).toBe(false)
+		expect(isScriptRecord('record')).toBe(false)
+		expect(isScriptRecord(1)).toBe(false)
+	})
+
+	it('removes a nested tree, preserves its sibling, and accepts a missing tree', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-removal-' })
+		try {
+			scratch.write('owned/deep/file.txt', 'remove')
+			scratch.write('sibling/file.txt', 'keep')
+			const owned = scratch.ensure('owned')
+			removeTree(owned)
+			expect(scratch.has('owned')).toBe(false)
+			expect(scratch.read('sibling/file.txt')).toBe('keep')
+			removeTree(owned)
+			expect(scratch.has('owned')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads a flag value, a repeated flag, and treats a following flag as a missing value', () => {
+		const argv = ['--consumer', 'c', '--source', 'a', '--source', 'b', '--json']
+		expect(readOption(argv, '--consumer')).toBe('c')
+		expect(readOption(argv, '--absent')).toBeUndefined()
+		expect(readOption(['--json'], '--json')).toBeUndefined()
+		expect(readOptions(argv, '--source')).toEqual(['a', 'b'])
+		expect(readOption(['--consumer', '--json', 'x'], '--consumer')).toBeUndefined()
+		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
+		expect(readOptions(['--source', '--json', '--source', 'b'], '--source')).toEqual(['b'])
+		expect(
+			readMissingFlags(
+				['--consumer', '--json', '--source', 'a', '--package'],
+				['--consumer', '--source', '--package'],
+			),
+		).toEqual(['--consumer', '--package'])
+		expect(readMissingFlags(['--source', 'a'], ['--consumer'])).toEqual([])
+	})
+
+	it('normalizes slashes, parses a whole document as one record, and reads its string members', () => {
+		expect(normalizeSlashes('a\\b\\c.ts')).toBe('a/b/c.ts')
+		expect(normalizeSlashes('a/b')).toBe('a/b')
+		expect(parseJsonRecord('{\n\t"name": "@fixture/pkg"\n}\n')).toEqual({ name: '@fixture/pkg' })
+		expect(parseJsonRecord('[1]')).toBeUndefined()
+		expect(parseJsonRecord('not json')).toBeUndefined()
+		expect(parseJsonRecord('')).toBeUndefined()
+		expect(readString({ b: 'x' }, 'b')).toBe('x')
+		expect(readString({ b: 1 }, 'b')).toBeUndefined()
+		expect(readString(undefined, 'b')).toBeUndefined()
+	})
+
+	it('resolves an npm command that answers', () => {
+		const npm = resolveNpm()
+		expect(npm.prefix.length === 0 || existsSync(npm.prefix[0] ?? '')).toBe(true)
+		const result = runNpm(['--version'])
+		expect(result.status).toBe(0)
+		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
 	})
 })

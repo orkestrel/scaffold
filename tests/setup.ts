@@ -19,6 +19,7 @@ import type {
 	Ownership,
 	Plan,
 	Question,
+	Release,
 	Scaffolding,
 	Snapshot,
 } from '@src/core'
@@ -260,7 +261,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: '925bf5b3cc9a51a4ea1504d376b6d88ed4fff368bb80f6b8666dc1ff24ee2624',
+		vite: 'aa78e22e3699276b498654b25149e5a0a49848ed9765ebb491ef8e8ae33bbe3d',
 		scripts: 'cfb282751af709e58e7e59889517bd9960a14ca212adc09379b6bc793fc25851',
 	},
 ])
@@ -416,7 +417,7 @@ export function createClosableList<T>(
 	entries: ReadonlyMap<number, () => T>,
 	options: TestClosableOptions = {},
 ): TestClosableList<T> {
-	const { close = () => ({ done: true, value: undefined }), serves = Infinity } = options
+	const { close, serves = Infinity } = options
 	const recorder = createRecorder<readonly [string]>()
 	const observed = createObservedList(
 		length,
@@ -448,7 +449,7 @@ export function createClosableList<T>(
 				},
 				return: () => {
 					recorder.handler('return')
-					return close()
+					return close === undefined ? { done: true, value: undefined } : close()
 				},
 			}
 		},
@@ -711,6 +712,134 @@ export function buildMissingCase<T>(
 }
 
 /**
+ * Throws the error an iterator raises when it is closed.
+ *
+ * @returns Never.
+ * @throws EvalError - Thrown when called.
+ */
+export function refuseClose(): never {
+	throw new EvalError('close')
+}
+
+/**
+ * Creates a producer that builds one fixture anew, over the same replacements, on each call.
+ *
+ * @param build - The builder of the fixture.
+ * @param fields - The replacements handed to the builder on each call.
+ * @returns A producer of a fresh fixture.
+ *
+ * @example
+ * ```ts
+ * createProducer(buildDependency, { name: 'vue', range: '^3.5.0' })().name // 'vue'
+ * ```
+ */
+export function createProducer<F, T>(build: (fields?: F) => T, fields: F): () => T {
+	return () => build(fields)
+}
+
+/**
+ * Creates a list whose iterator yields the one value for ever.
+ *
+ * @param value - The value every step yields.
+ * @returns A list a reader can take only as far as it chooses to stop.
+ */
+export function createEndlessList<T>(value: T): Iterable<T> {
+	return {
+		*[Symbol.iterator]() {
+			for (;;) yield value
+		},
+	}
+}
+
+/**
+ * Doubles a number, as the answer a reader keeps for each value it is given.
+ *
+ * @param value - The number to double.
+ * @returns Twice the number.
+ */
+export function doubleValue(value: number): number {
+	return value * 2
+}
+
+/**
+ * Builds the entry a length reader accepts.
+ *
+ * @returns An object whose length is one.
+ */
+export function buildLengthEntry(): { readonly length: number } {
+	return { length: 1 }
+}
+
+/**
+ * Reads the length of each entry through the iterator the list names, one entry at a time.
+ *
+ * @param list - The list of entries to read.
+ * @returns The length of each entry, in order.
+ */
+export function readLengthsByIterator(list: Array<{ readonly length: number }>): number[] {
+	return Iterator.from(list)
+		.map((item) => item.length)
+		.toArray()
+}
+
+/**
+ * Reads the length of each entry through the index methods, which skip a hole and need no iterator.
+ *
+ * @param list - The list of entries to read.
+ * @returns The length of each entry, in order.
+ */
+export function readLengthsByIndex(list: Array<{ readonly length: number }>): number[] {
+	return list.map((item) => item.length)
+}
+
+/**
+ * Builds the result of a reader that returned without reading an entry.
+ *
+ * @returns A `return` outcome with no reads.
+ */
+export function buildReturnResult(): TestReadResult {
+	return { outcome: 'return', reads: [] }
+}
+
+/**
+ * Lists the paths of one file set whose bytes another file set does not share.
+ *
+ * @param base - The file set whose paths are read.
+ * @param other - The file set measured against it.
+ * @returns The paths of the base set, in order, that the other set lacks or carries different bytes for.
+ */
+export function listDifferingPaths(
+	base: Readonly<Record<string, string>>,
+	other: Readonly<Record<string, string>>,
+): readonly string[] {
+	return Object.keys(base).filter((path) => other[path] !== base[path])
+}
+
+/**
+ * Builds a found catalog entry for a package that depends on nothing.
+ *
+ * @returns A found entry with no dependencies and no peers.
+ */
+export function buildCatalogEntry(): CatalogEntry {
+	return {
+		name: '@orkestrel/free',
+		lookup: 'found',
+		version: '1.0.0',
+		dependencies: [],
+		peers: [],
+	}
+}
+
+/**
+ * Builds a found release of a package whose declared range already names the latest version.
+ *
+ * @returns A found release.
+ */
+export function buildRelease(): Release {
+	return { name: 'vite', range: '^8.2.2', lookup: 'found', latest: '8.2.2' }
+}
+
+/**
  * Builds a valid inert runtime dependency, with focused field replacements.
  *
  * @param fields - The dependency fields to replace on the returned value.
@@ -718,6 +847,16 @@ export function buildMissingCase<T>(
  */
 export function buildDependency(fields?: Partial<Dependency>): Dependency {
 	return { name: '@orkestrel/emitter', range: '^0.0.5', ...fields }
+}
+
+/**
+ * Builds a valid inert manifest script, with focused field replacements.
+ *
+ * @param fields - The script fields to replace on the returned value.
+ * @returns A script carrying the requested fields over minimal defaults.
+ */
+export function buildManifestScript(fields?: Partial<ManifestScript>): ManifestScript {
+	return { name: 'test', command: 'vitest run', accepted: ['vitest'], ...fields }
 }
 
 /**

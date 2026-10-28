@@ -23,6 +23,7 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 
 - Put every reusable or public interface/type alias in the nearest authoritative `*/types.ts`.
 - Public collection properties and return types use `readonly T[]`, `ReadonlyMap<K, V>`, or `ReadonlySet<T>`.
+- Mark every property of an interface or of a type alias's object type `readonly`. The `policy/no-mutable-property` lint rule enforces it in `src/` and `app/` and leaves an inline parameter type alone.
 - `as const` annotates a literal with its own type and never overrides the checker, so the assertion
   ban does not reach it. Use it to derive a literal union from a value and to fix a tuple's arity and
   element types. Do not write it on a value whose contract is already declared; annotate the

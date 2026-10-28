@@ -510,6 +510,7 @@ export function appJourney(
 	variant: JourneyVariant,
 	variants: readonly JourneyVariant[],
 	mode?: string,
+	override?: UserConfig,
 ): UserConfig {
 	const application = resolveApplication(mode, applications)
 	const browser = applications[application]()
@@ -531,7 +532,7 @@ export function appJourney(
 			},
 		},
 	}
-	return mergeOverride(project)
+	return mergeOverride(project, override)
 }
 `,
 			// A showcase is the browser application written to its own output, so it composes

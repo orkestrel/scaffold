@@ -52,6 +52,7 @@ import {
 } from '@src/core'
 import {
 	buildBlueprint,
+	buildCatalogEntry,
 	buildContentArtifact,
 	buildHostArtifact,
 	buildHydratedArtifact,
@@ -61,13 +62,16 @@ import {
 	buildPurityCases,
 	buildSparse,
 	createClosableList,
+	createEndlessList,
 	DIFFERING_HEX,
+	doubleValue,
 	MANIFEST_SAMPLE,
 	MATCHING_HEX,
 	OWNERSHIPS,
 	PLANNED_TEXT,
 	RANGE_CASES,
 	readLazily,
+	refuseClose,
 	refuseObject,
 } from '../../setup.js'
 import { createRecorder, waitForDelay } from '@orkestrel/test'
@@ -150,12 +154,6 @@ describe('computeTotal', () => {
 // refusal, so its reads and closes are the loop's. Each case hands it a list whose iterator records
 // its steps and its closes beside the reads of its entries.
 describe('iterateAnswers', () => {
-	const double = (value: number): number | undefined => value * 2
-	const refuse = (): undefined => undefined
-	const raise = (): never => {
-		throw new EvalError('close')
-	}
-
 	it('yields the answer to each value in source order and leaves an iterator that ended alone', () => {
 		const closable = createClosableList(
 			2,
@@ -165,9 +163,9 @@ describe('iterateAnswers', () => {
 			]),
 		)
 
-		expect(Array.from(iterateAnswers(closable.list, double))).toStrictEqual([2, 4])
+		expect(Array.from(iterateAnswers(closable.list, doubleValue))).toStrictEqual([2, 4])
 		expect(closable.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'get:1', 'next'])
-		expect(Array.from(iterateAnswers([], double))).toStrictEqual([])
+		expect(Array.from(iterateAnswers([], doubleValue))).toStrictEqual([])
 	})
 
 	it('requests the iterator once, when the first answer is read, and steps it only as answers are read', () => {
@@ -179,7 +177,7 @@ describe('iterateAnswers', () => {
 				[2, () => 3],
 			]),
 		)
-		const answers = iterateAnswers(closable.list, double)
+		const answers = iterateAnswers(closable.list, doubleValue)
 
 		expect(closable.calls).toStrictEqual([])
 		expect(answers.next()).toStrictEqual({ done: false, value: 2 })
@@ -205,16 +203,16 @@ describe('iterateAnswers', () => {
 	})
 
 	it('surfaces a close that raises or answers a non-object after a refusal', () => {
-		const raising = createClosableList(1, new Map([[0, () => 1]]), { close: raise })
+		const raising = createClosableList(1, new Map([[0, () => 1]]), { close: refuseClose })
 		const answering = createClosableList(1, new Map([[0, () => 1]]), { close: () => 5 })
 
-		expect(() => Array.from(iterateAnswers(raising.list, refuse))).toThrow(EvalError)
-		expect(() => Array.from(iterateAnswers(answering.list, refuse))).toThrow(TypeError)
+		expect(() => Array.from(iterateAnswers(raising.list, () => undefined))).toThrow(EvalError)
+		expect(() => Array.from(iterateAnswers(answering.list, () => undefined))).toThrow(TypeError)
 		expect(raising.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
 	})
 
 	it('keeps the error of an answer that throws over a close that raises, and closes once', () => {
-		const closable = createClosableList(2, new Map([[0, () => 1]]), { close: raise })
+		const closable = createClosableList(2, new Map([[0, () => 1]]), { close: refuseClose })
 
 		expect(() =>
 			Array.from(
@@ -232,7 +230,7 @@ describe('iterateAnswers', () => {
 		Object.defineProperty(missing, Symbol.iterator, { value: undefined })
 
 		expect(Array.from(iterateAnswers(sparse, (value) => [value]))).toStrictEqual([[undefined], [5]])
-		expect(() => Array.from(iterateAnswers(missing, double))).toThrow(TypeError)
+		expect(() => Array.from(iterateAnswers(missing, doubleValue))).toThrow(TypeError)
 	})
 
 	it('follows an iterator that yields more or fewer values than the list length reports', () => {
@@ -249,21 +247,15 @@ describe('iterateAnswers', () => {
 			},
 		})
 
-		expect(Array.from(iterateAnswers(longer, double))).toStrictEqual([2, 4, 6])
-		expect(Array.from(iterateAnswers(shorter, double))).toStrictEqual([18])
+		expect(Array.from(iterateAnswers(longer, doubleValue))).toStrictEqual([2, 4, 6])
+		expect(Array.from(iterateAnswers(shorter, doubleValue))).toStrictEqual([18])
 	})
 
 	it('reads an infinite source only as far as its first refusal', () => {
 		const seen = createRecorder<readonly [number]>()
-		const endless: Iterable<number> = {
-			*[Symbol.iterator]() {
-				for (;;) yield 7
-			},
-		}
-
 		expect(
 			Array.from(
-				iterateAnswers(endless, (value) => {
+				iterateAnswers(createEndlessList(7), (value) => {
 					seen.handler(value)
 					return seen.count < 3 ? value : undefined
 				}),
@@ -1135,23 +1127,15 @@ describe('renderSkillPointer', () => {
 // list reads every entry first. Each case runs the helper over a list of two recorded entries and
 // pins the constructor it raised and the entries it read, as the loop the helper replaced gave them.
 describe('helpers over a caller-supplied list read one entry at a time', () => {
-	const catalogEntry = (): CatalogEntry => ({
-		name: '@orkestrel/free',
-		lookup: 'found',
-		version: '1.0.0',
-		dependencies: [],
-		peers: [],
-	})
-
 	it.each([
 		buildLazyCase(
 			'the entries a catalog is layered over',
 			(shape) =>
 				readLazily(
 					shape,
-					catalogEntry,
+					buildCatalogEntry,
 					(entries) => catalogToLayers(entries),
-					refuseObject(catalogEntry),
+					refuseObject(buildCatalogEntry),
 				),
 			{
 				hole: { outcome: 'TypeError', reads: [1] },
@@ -1179,19 +1163,11 @@ describe('helpers over a caller-supplied list read one entry at a time', () => {
 // `Array.from` and `values()` fall back to the indexes and answer. Each case runs the helper over a
 // list whose `Symbol.iterator` is `undefined` and pins the constructor and the entries read first.
 describe('helpers over a list without an iterator refuse it as the loop did', () => {
-	const catalogEntry = (): CatalogEntry => ({
-		name: '@orkestrel/free',
-		lookup: 'found',
-		version: '1.0.0',
-		dependencies: [],
-		peers: [],
-	})
-
 	it.each([
 		// The first pass filters the entries, which reads each one, before the iterator is taken.
 		buildMissingCase(
 			'the entries a catalog is layered over',
-			catalogEntry,
+			buildCatalogEntry,
 			(entries) => catalogToLayers(entries),
 			[0, 1],
 		),

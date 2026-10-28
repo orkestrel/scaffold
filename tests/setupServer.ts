@@ -6,7 +6,15 @@ import type {
 	Worktree,
 	UpstreamOptions,
 } from '@src/server'
-import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } from '@src/core'
+import type {
+	Audit,
+	Blueprint,
+	Finding,
+	HostFile,
+	Plan,
+	ScaffoldErrorCode,
+	Snapshot,
+} from '@src/core'
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -1173,6 +1181,12 @@ export const GENERATED_INSTANCE_CASES = Object.freeze([
 	Object.freeze({
 		label: 'journey:desktop',
 		expression: "appJourney({ name: 'desktop', width: 1280, height: 800 }, [])",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'journeyed',
+		expression:
+			"appJourney({ name: 'desktop', width: 1280, height: 800 }, [], undefined, { test: { name: { label: 'journeyed' } } })",
 		prefix: '',
 	}),
 	Object.freeze({
@@ -5111,6 +5125,12 @@ export const RESULT_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/result.t
 /** Names the checkout-relative path of the dispatch skill's `sweep` script. */
 export const SWEEP_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/sweep.ts'
 
+/** Names the checkout-relative path of the dispatch skill's `patch` script. */
+export const PATCH_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/patch.ts'
+
+/** Names the checkout-relative path of the dispatch skill's `chain` script. */
+export const CHAIN_SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/chain.ts'
+
 /** Names the checkout-relative path of the publish skill's `compare` script. */
 export const COMPARE_SCRIPT = '.agents/skills/orkestrel-publish/scripts/compare.ts'
 
@@ -5131,6 +5151,9 @@ export const DISCOVERY_SCRIPT = '.agents/skills/orkestrel-harden/scripts/discove
 
 /** Names the checkout-relative path of the harden skill's `titles` script. */
 export const TITLES_SCRIPT = '.agents/skills/orkestrel-harden/scripts/titles.ts'
+
+/** Names the checkout-relative path of the harden skill's `measure` script. */
+export const MEASURE_SCRIPT = '.agents/skills/orkestrel-harden/scripts/measure.ts'
 
 /** Supplies each tables with nested calls and parentheses outside code tokens. */
 export const TITLES_TABLES: readonly string[] = Object.freeze([
@@ -5190,8 +5213,223 @@ export const TITLES_AMBIGUITIES: readonly string[] = Object.freeze([
 	"const text = `${function read() {} / 'reads' / 2}`",
 ])
 
+/** Describes one marker case: a source text and the marker counts the census reads from it. */
+export type DiscoveryMarkerCase = readonly [string, Readonly<Record<string, number>>]
+
+/** Supplies source texts with the marker counts the census reads as call forms. */
+export const DISCOVERY_MARKER_CASES: readonly DiscoveryMarkerCase[] = Object.freeze<
+	readonly DiscoveryMarkerCase[]
+>([
+	["it.todo('a')", { '.todo': 1 }],
+	["it.skipIf(process.platform === 'win32')('a', () => {})", { '.skipIf': 1 }],
+	["describe.runIf(true)('a', () => {})", { '.runIf': 1 }],
+	["it.fails('a', () => {})", { '.fails': 1 }],
+	["it.concurrent.fails('a', () => {})", { '.fails': 1 }],
+	["it.skip.each([1])('a', () => {})", {}],
+	["it.only('a', () => {})", {}],
+	["it('a', { retry: 2 }, () => {})", { retry: 1 }],
+	["const retry = 1\nit('a', { retry }, () => {})", { retry: 1 }],
+	["it('a', { 'retry' : 2, timeout: 5 }, () => {})", { retry: 1, timeout: 1 }],
+	["it('a', () => {}, 30_000)", { timeout: 1 }],
+	["it.each([1])('a', () => {}, 40_000)", { timeout: 1 }],
+	["it('a', () => {}, { timeout: 5 })", { timeout: 1 }],
+	["it.each`\n a | b\n`('a', () => {}, 5)", { timeout: 1 }],
+	["describe('group', { timeout: 10 }, () => { it.todo('inner') })", { '.todo': 1, timeout: 1 }],
+	["// it.todo('a') { retry: 1 }\nconst text = \"it.skipIf(x)('a')\"", {}],
+	["const text = `it.todo('a') ${'it.todo(1)'}`", {}],
+	["const pattern = /it\\.todo\\(/u\nit('a', () => {})", {}],
+	["it('a', () => { spawnSync('x', [], { timeout: 5, retry: 5 }) })", {}],
+	["expect(object.it.todo('a'))", {}],
+	["const half = total / 2 / 3\nit.todo('a')", { '.todo': 1 }],
+	["const text = `${{ a: `x` }.a} it.todo('a')`\nit.todo('b')", { '.todo': 1 }],
+])
+
+/** Holds a test file that carries each marker form once or more, beside forms lint owns. */
+export const DISCOVERY_MARKER_FIXTURE: string = [
+	"import { describe, it } from 'vitest'",
+	'',
+	'const retry = 1',
+	"// it.todo('in a comment') and { retry: 9, timeout: 9 }",
+	'const text = "it.todo(\'in a string\') { retry: 9 }"',
+	'const pattern = /it\\.todo\\(/u',
+	"describe('forms', () => {",
+	"\tit.todo('first todo')",
+	"\tit.todo('second todo')",
+	"\tit.skipIf(false)('skipIf', () => {})",
+	"\tit.runIf(true)('runIf', () => {})",
+	"\tit.fails('fails', () => {})",
+	"\tit('retry option', { retry: 2 }, () => {})",
+	"\tit('retry shorthand', { retry }, () => {})",
+	"\tit('timeout option', { timeout: 100 }, () => {})",
+	"\tit('timeout argument', () => {}, 30_000)",
+	"\tit.each([1])('each timeout', () => {}, 40_000)",
+	"\tit.skip('skip belongs to lint', () => {})",
+	"\tit('spawn option', () => { void Object.keys({ timeout: 5, retry: 5 }) })",
+	"\tit('text and pattern', () => { void text; void pattern })",
+	'})',
+	'',
+].join('\n')
+
+/** Supplies each gate command shape whose environment prefix or redirection the reader strips. */
+export const DISCOVERY_COMMAND_SHAPES: readonly string[] = Object.freeze([
+	'CI=1 vitest run --project core',
+	'cross-env CI=1 FORCE_COLOR=0 vitest run --project core',
+	'vitest run --project core > output.txt 2>&1',
+	'vitest run --project core >> output.txt',
+	'vitest run --project core 2> errors.txt',
+	'vitest run --project core < input.txt',
+	'vitest run --project core &> output.txt',
+])
+
+/** Supplies each `npm` call shape that runs the script `test:unit` from the script `test`. */
+export const DISCOVERY_NPM_SHAPES: readonly string[] = Object.freeze([
+	'npm run -s test:unit',
+	'npm run --silent test:unit',
+	'npm run-script test:unit',
+	'npm run test:unit',
+])
+
+/** Supplies each discovery argument list the script refuses: an equals form and an unread flag. */
+export const DISCOVERY_REFUSED_ARGUMENTS: ReadonlyArray<readonly string[]> = Object.freeze([
+	['--config=vite.config.ts'],
+	['--projects=core'],
+	['--project', 'core'],
+	['--jsno'],
+])
+
+/** Supplies each titles argument list the script refuses: an equals form and an unread flag. */
+export const TITLES_REFUSED_ARGUMENTS: ReadonlyArray<readonly string[]> = Object.freeze([
+	['--base', 'HEAD', '--root=pkg'],
+	['--base', 'HEAD', '--out=report.json'],
+	['--base=HEAD'],
+	['--base', 'HEAD', '--jsno'],
+])
+
+/** Describes one registration case: a source text and the titles it registers, in order. */
+export type TitlesPositionCase = readonly [string, ReadonlyArray<string | undefined>]
+
+/** Supplies source texts with the titles the reader finds, an undefined entry for a dynamic title. */
+export const TITLES_POSITIONS: readonly TitlesPositionCase[] = Object.freeze<
+	readonly TitlesPositionCase[]
+>([
+	['describe("outer", () => { it("inner", () => {}) })', ['outer', 'inner']],
+	[';it("semicolon", () => {})', ['semicolon']],
+	['if (true) it("guarded", () => {})', ['guarded']],
+	['it.each`\n a | b\n`("tagged %s", () => {})', ['tagged %s']],
+	["it.skipIf('win32' === process.platform)('windows', () => {})", ['windows']],
+	["describe.runIf('linux' === process.platform)('linux', () => {})", ['linux']],
+	['it.concurrent.skipIf(false)(`templated`, () => {})', ['templated']],
+	["it.for([[1, 'a']])('for %s', () => {})", ['for %s']],
+	[
+		'it(NAME, () => {})\nit("a" + NAME, () => {})\nit(read(1, 2), () => {})',
+		[undefined, undefined, undefined],
+	],
+	['it(`x ${y}`, () => {})', ['x ${y}']],
+	["const it = 1\nconst x = { it: 2 }\nobject.it('not a registration')", []],
+])
+
 /** Names the checkout-relative path of the scout skill's `map` script. */
 export const MAP_SCRIPT = '.agents/skills/orkestrel-scout/scripts/map.ts'
+
+/** Names the checkout-relative path of the falsify skill's `mutate` script. */
+export const MUTATE_SCRIPT = '.agents/skills/orkestrel-falsify/scripts/mutate.ts'
+
+/** Names the checkout-relative path of the parallel skill's `cases` script. */
+export const CASES_SCRIPT = '.agents/skills/orkestrel-parallel/scripts/cases.ts'
+
+/** Holds the CommonJS command the `mutate` proof runs: it fails when `target.txt` holds BAD and logs each run. */
+export const MUTATE_CHECK_SCRIPT = [
+	"const fs = require('node:fs')",
+	"console.log('child-ran ' + process.argv.slice(2).join(' '))",
+	"fs.appendFileSync('runs.txt', 'x')",
+	"process.exit(fs.readFileSync('target.txt', 'utf8').includes('BAD') ? 1 : 0)",
+].join('\n')
+
+/** Holds the edit file that turns GOOD into BAD in `target.txt`. */
+export const MUTATE_BREAK_EDIT = renderEditFile([
+	{ path: 'target.txt', reason: 'break it', before: 'GOOD', after: 'BAD' },
+])
+
+/** Describes one assertion result of a fixture Vitest report. */
+export interface TestCaseRow {
+	readonly file: string
+	readonly ancestors: readonly string[]
+	readonly title: string
+	readonly status: string
+}
+
+/** Holds the rows the `cases` proof reads: two green, one red, one skipped, across two files. */
+export const CASES_ROWS: readonly TestCaseRow[] = Object.freeze([
+	{ file: 'tests/a.test.ts', ancestors: ['alpha'], title: 'holds', status: 'passed' },
+	{ file: 'tests/a.test.ts', ancestors: ['alpha'], title: 'breaks', status: 'failed' },
+	{ file: 'tests/b.test.ts', ancestors: ['beta', 'inner'], title: 'holds', status: 'passed' },
+	{ file: 'tests/b.test.ts', ancestors: [], title: 'later', status: 'pending' },
+])
+
+/**
+ * Renders rows as the JSON a Vitest `--reporter=json` run prints, grouped by test file.
+ *
+ * @param root - The directory the test files sit under.
+ * @param rows - The assertion results in report order.
+ * @returns The report text.
+ */
+export function renderCasesReport(root: string, rows: readonly TestCaseRow[]): string {
+	const files = [...new Set(rows.map((row) => row.file))]
+	return JSON.stringify({
+		numTotalTests: rows.length,
+		testResults: files.map((file) => ({
+			name: join(root, file),
+			status: 'passed',
+			assertionResults: rows
+				.filter((row) => row.file === file)
+				.map((row) => ({
+					ancestorTitles: row.ancestors,
+					fullName: [...row.ancestors, row.title].join(' '),
+					title: row.title,
+					status: row.status,
+					failureMessages: row.status === 'failed' ? ['boom'] : [],
+				})),
+		})),
+	})
+}
+
+/**
+ * Lists every skill script the checkout carries under its `.agents/skills/<skill>/scripts/` directories.
+ *
+ * @returns Each script's checkout-relative path with forward slashes, sorted.
+ */
+export function readSkillScripts(): readonly string[] {
+	return globSync('.agents/skills/*/scripts/*.ts', { cwd: WORKSPACE_ROOT })
+		.map((path) => path.split('\\').join('/'))
+		.sort()
+}
+
+/** Describes one edit of an edit file: the file, the reason, and the text it swaps. */
+export interface TestEdit {
+	readonly path: string
+	readonly reason: string
+	readonly before: string
+	readonly after: string
+}
+
+/**
+ * Renders edits as the edit file `patch.ts` and `mutate.ts` read.
+ *
+ * @param edits - The edits in file order.
+ * @returns One `###` block per edit, each text in a fence longer than any backtick run it holds.
+ */
+export function renderEditFile(edits: readonly TestEdit[]): string {
+	return edits
+		.map((edit) => {
+			const longest = Math.max(
+				2,
+				...[...`${edit.before}${edit.after}`.matchAll(/`+/gu)].map((run) => run[0].length),
+			)
+			const fence = '`'.repeat(longest + 1)
+			return `### ${edit.path}\nreason: ${edit.reason}\nold:\n${fence}text\n${edit.before}\n${fence}\nnew:\n${fence}text\n${edit.after}\n${fence}\n`
+		})
+		.join('\n')
+}
 
 /** Holds the registry range every swap fixture declaration uses. */
 export const SWAP_RANGE = '^1.0.0'
@@ -6105,6 +6343,48 @@ export const WAVE_STEPS: readonly string[] = Object.freeze([
 export const RESULT_STREAM =
 	'{"type":"system","subtype":"init","session_id":"s1"}\n{"type":"result","result":"READY","duration_ms":42}\n'
 
+/**
+ * Checks whether a process with the given id is still running.
+ *
+ * @param pid - The process id.
+ * @returns True if a signal-zero probe reaches the process; false otherwise.
+ */
+export function isProcessRunning(pid: number): boolean {
+	try {
+		process.kill(pid, 0)
+		return true
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Reads one member of every row of a JSON section a skill script printed.
+ *
+ * @param section - The section, which must be an array.
+ * @param key - The member to read from each row.
+ * @returns The members as text, in row order, an empty string for a row that is no record.
+ * @throws Thrown when the section is not an array.
+ */
+export function readJsonColumn(section: unknown, key: string): readonly string[] {
+	if (!isArray(section)) throw new Error('The output carries no such section')
+	return section.map((row) => (isRecord(row) ? String(row[key]) : ''))
+}
+
+/**
+ * Reads the text of every census row of a JSON map, across its terms, in order.
+ *
+ * @param section - The census section, which must be an array of term entries.
+ * @returns Each row's text.
+ * @throws Thrown when the section is not an array.
+ */
+export function readCensusTexts(section: unknown): readonly string[] {
+	if (!isArray(section)) throw new Error('The output carries no census')
+	return section.flatMap((entry) =>
+		isRecord(entry) && isArray(entry.rows) ? readJsonColumn(entry.rows, 'text') : [],
+	)
+}
+
 /** Holds the age in seconds of a launch file old enough for the sweep to delete. */
 export const SWEEP_HOURS_AGO = 3 * 60 * 60
 
@@ -6202,6 +6482,417 @@ export function buildWhoamiEnvironment(
 	}
 }
 
+/** Describes the fixture registry that accepts uploads and serves what it accepted. */
+export interface TestPublishInterface extends TestWhoamiInterface {
+	readonly uploads: readonly string[]
+}
+
+/**
+ * Answers one request the publish fixture registry receives.
+ *
+ * Answers like {@link answerWhoami} except that a `PUT` from a session that answers `whoami` stores
+ * the upload and answers 200 unless the package is on the refused list, which answers 403; a later
+ * read of the stored name answers its packument, so a confirm reads the version after the upload.
+ *
+ * @param user - The user `whoami` reports, or undefined for none.
+ * @param refused - The package names an upload of which the registry refuses.
+ * @param published - The packuments the registry stored, keyed by package name.
+ * @param request - The request to answer.
+ * @param body - The request body.
+ * @param response - The response to write.
+ */
+export function answerPublish(
+	user: string | undefined,
+	refused: readonly string[],
+	published: Map<string, Readonly<Record<string, unknown>>>,
+	request: IncomingMessage,
+	body: string,
+	response: ServerResponse,
+): void {
+	const name = decodeURIComponent((request.url ?? '').split('?')[0] ?? '').slice(1)
+	if (request.method === 'PUT' && user !== undefined) {
+		const sent: unknown = parseJSON(body)
+		const refusal = refused.includes(name) ? 403 : isRecord(sent) ? 200 : 400
+		if (refusal === 200 && isRecord(sent)) {
+			published.set(name, { name, 'dist-tags': sent['dist-tags'], versions: sent.versions })
+		}
+		response.writeHead(refusal, { 'content-type': 'application/json' })
+		response.end(JSON.stringify(refusal === 200 ? { success: true } : { error: 'Forbidden' }))
+		return
+	}
+	const stored = published.get(name)
+	if (request.method === 'GET' && stored !== undefined) {
+		response.writeHead(200, { 'content-type': 'application/json' })
+		response.end(JSON.stringify(stored))
+		return
+	}
+	answerWhoami(user, request, response)
+}
+
+/**
+ * Starts the publish fixture registry on an ephemeral loopback port.
+ *
+ * @param user - The user `whoami` reports, or undefined for none.
+ * @param refused - The package names an upload of which the registry refuses. Default: none.
+ * @returns The running registry with its recorded requests and the names it accepted, which the
+ * caller destroys in a `finally`.
+ */
+export async function createPublishRegistry(
+	user: string | undefined,
+	refused: readonly string[] = [],
+): Promise<TestPublishInterface> {
+	const requests = createRecorder<readonly [string]>()
+	const published = new Map<string, Readonly<Record<string, unknown>>>()
+	const loopback = await createLoopback(
+		createServer((request, response) => {
+			requests.handler(`${request.method ?? ''} ${request.url ?? ''}`)
+			const chunks: Buffer[] = []
+			request.on('data', (chunk: Buffer) => {
+				chunks.push(chunk)
+			})
+			request.on('end', () => {
+				answerPublish(
+					user,
+					refused,
+					published,
+					request,
+					Buffer.concat(chunks).toString('utf8'),
+					response,
+				)
+			})
+		}),
+	)
+	return {
+		url: `${loopback.url}/`,
+		port: loopback.port,
+		get requests() {
+			return requests.calls.map(([request]) => request)
+		},
+		get uploads() {
+			return [...published.keys()]
+		},
+		destroy: loopback.destroy,
+	}
+}
+
+/** Holds the two zero blocks that end a tar archive. */
+export const TAR_END: Buffer = Buffer.alloc(1024)
+
+/**
+ * Builds one tar entry: a header block and the data padded to whole blocks.
+ *
+ * @param name - The header's name field, at most 100 bytes.
+ * @param data - The entry's data.
+ * @param type - The header's type flag. Default: `0`, a regular file.
+ * @param prefix - The ustar prefix field, at most 155 bytes. Default: none.
+ * @returns The entry's bytes.
+ */
+export function buildTarEntry(name: string, data: Buffer, type = '0', prefix = ''): Buffer {
+	const header = Buffer.alloc(512)
+	header.write(name, 0, 100, 'utf8')
+	header.write(data.length.toString(8).padStart(11, '0'), 124, 'ascii')
+	header.write(type, 156, 'ascii')
+	header.write('ustar', 257, 'ascii')
+	header.write(prefix, 345, 155, 'utf8')
+	return Buffer.concat([header, data, Buffer.alloc((512 - (data.length % 512)) % 512)])
+}
+
+/**
+ * Builds one pax extended-header record.
+ *
+ * @param key - The record's key, such as `path`.
+ * @param value - The record's value.
+ * @returns The record, whose leading length counts its own digits.
+ */
+export function buildPaxRecord(key: string, value: string): Buffer {
+	const rest = Buffer.byteLength(` ${key}=${value}\n`)
+	const digits = String(rest).length
+	const length = String(rest + digits).length === digits ? rest + digits : rest + digits + 1
+	return Buffer.from(`${String(length)} ${key}=${value}\n`)
+}
+
+/**
+ * Holds the ranges, versions, and answers the swap script's range check must give.
+ *
+ * Each bound has a version at its edge inside it and a version at its edge outside it.
+ */
+export const SWAP_RANGE_CASES: ReadonlyArray<
+	readonly [range: string, version: string, answer: boolean]
+> = [
+	['^1.2.3', '1.2.3', true],
+	['^1.2.3', '1.2.2', false],
+	['^1.2.3', '1.9.9', true],
+	['^1.2.3', '2.0.0', false],
+	['^1.2.3', '1.2.4-rc.1', false],
+	['^0.2.3', '0.2.3', true],
+	['^0.2.3', '0.2.9', true],
+	['^0.2.3', '0.3.0', false],
+	['^0.2.3', '0.2.2', false],
+	['^0.0.3', '0.0.3', true],
+	['^0.0.3', '0.0.4', false],
+	['^0.0.3', '0.0.2', false],
+	['^0.0.3', '0.0.30', false],
+	['^0.0.0', '0.0.0', true],
+	['^0.0.0', '0.0.1', false],
+	['~1.2.3', '1.2.3', true],
+	['~1.2.3', '1.2.99', true],
+	['~1.2.3', '1.3.0', false],
+	['~1.2.3', '1.2.2', false],
+	['~0.0.3', '0.0.9', true],
+	['~0.0.3', '0.1.0', false],
+	['>=1.2.3', '1.2.3', true],
+	['>=1.2.3', '1.2.2', false],
+	['>=1.2.3', '10.0.0', true],
+	['>1.2.3', '1.2.3', false],
+	['>1.2.3', '1.2.4', true],
+	['<=1.2.3', '1.2.3', true],
+	['<=1.2.3', '1.2.4', false],
+	['<=1.2.3', '0.0.1', true],
+	['<1.2.3', '1.2.3', false],
+	['<1.2.3', '1.2.2', true],
+	['=1.2.3', '1.2.3', true],
+	['=1.2.3', '1.2.4', false],
+	['=1.2.3', '1.2.2', false],
+	['1.2.3', '1.2.3', true],
+	['1.2.3', '1.2.4', false],
+	['v1.2.3', '1.2.3', true],
+	['>=1.2.3 <2.0.0', '1.2.3', true],
+	['>=1.2.3 <2.0.0', '1.9.9', true],
+	['>=1.2.3 <2.0.0', '2.0.0', false],
+	['>=1.2.3 <2.0.0', '1.2.2', false],
+	['^1.0.0 || ^3.0.0', '1.5.0', true],
+	['^1.0.0 || ^3.0.0', '2.0.0', false],
+	['^1.0.0 || ^3.0.0', '3.1.0', true],
+	['^1.0.0 || ^3.0.0', '4.0.0', false],
+	['^1.0.0 || ^3.0.0', '0.9.0', false],
+	['*', '5.0.0', true],
+	['x', '5.0.0', true],
+	['X', '5.0.0', true],
+	['', '5.0.0', true],
+	['x', '0.0.0', true],
+	['*', '1.0.0-rc.1', false],
+	['>=1.0.0-rc.1', '1.0.0-rc.2', true],
+	['>=1.0.0-rc.1', '1.0.0-rc.1', true],
+	['>=1.0.0-rc.1', '1.0.0-beta.9', false],
+	['>=1.0.0-rc.1', '1.0.0', true],
+	['>=1.0.0-rc.1', '1.0.1-rc.1', false],
+	['^1.0.0-rc.1', '1.0.0-rc.2', true],
+	['^1.0.0-rc.1', '1.0.1-rc.1', false],
+	['^1.0.0-rc.1', '1.5.0', true],
+	['^1.0.0-rc.1', '2.0.0-rc.1', false],
+	['<1.0.0', '1.0.0-rc.1', false],
+	['<1.0.0-rc.2', '1.0.0-rc.1', true],
+	['<1.0.0-rc.2', '1.0.0-rc.2', false],
+	['1.x', '1.5.0', false],
+	['^1.2', '1.2.3', false],
+	['>= 1.0.0', '1.5.0', false],
+	['1.2.3 - 2.0.0', '1.5.0', false],
+	['latest', '1.5.0', false],
+]
+
+/** Lists the ranges the swap script's range check refuses to read. */
+export const SWAP_UNREAD_RANGES: readonly string[] = Object.freeze([
+	'>= 1.0.0',
+	'1.x',
+	'^1.2',
+	'~1',
+	'latest',
+	'1.2.3 - 2.0.0',
+	'file:../x',
+	'npm:foo@1.0.0',
+	'^1.2.3 || latest',
+	'>=1.0.0 <2',
+])
+
+/** Lists the ranges the swap script's range check reads. */
+export const SWAP_READ_RANGES: readonly string[] = Object.freeze([
+	'*',
+	'x',
+	'',
+	'^1.2.3',
+	'~1.2.3',
+	'>=1.0.0 <2.0.0',
+	'^1.0.0 || ^2.0.0',
+	'=1.0.0',
+	'v1.0.0',
+	'1.0.0-rc.1',
+])
+
+/** Lists versions in ascending semantic-version order, from the prerelease ladder to the release. */
+export const SWAP_VERSION_ORDER: readonly string[] = Object.freeze([
+	'1.0.0-alpha',
+	'1.0.0-alpha.1',
+	'1.0.0-alpha.beta',
+	'1.0.0-beta',
+	'1.0.0-beta.2',
+	'1.0.0-beta.11',
+	'1.0.0-rc.1',
+	'1.0.0',
+	'1.0.1',
+	'1.1.0',
+	'2.0.0',
+])
+
+/** Lists the manifest keys oxfmt sorts after `overrides`, which a created overrides block must precede. */
+export const SWAP_FOLLOWER_KEYS: readonly string[] = Object.freeze([
+	'devEngines',
+	'engines',
+	'allowScripts',
+	'packageManager',
+	'config',
+])
+
+/**
+ * Builds a value of the type a manifest key holds.
+ *
+ * @param key - A manifest key.
+ * @returns `true` for a flag key, an empty array for a list key, an empty object for a block key, and
+ * a string otherwise, so a formatter that sorts keys changes nothing else.
+ */
+export function buildSwapKeyValue(key: string): unknown {
+	if (['private', 'sideEffects'].includes(key)) return true
+	if (
+		[
+			'categories',
+			'keywords',
+			'maintainers',
+			'contributors',
+			'workspaces',
+			'files',
+			'os',
+			'cpu',
+			'libc',
+			'bundledDependencies',
+			'bundleDependencies',
+		].includes(key)
+	)
+		return []
+	if (
+		[
+			'bugs',
+			'repository',
+			'funding',
+			'directories',
+			'binary',
+			'bin',
+			'imports',
+			'exports',
+			'publishConfig',
+			'scripts',
+			'betterScripts',
+			'dependencies',
+			'devDependencies',
+			'dependenciesMeta',
+			'peerDependencies',
+			'peerDependenciesMeta',
+			'optionalDependencies',
+			'resolutions',
+			'typesVersions',
+			'overrides',
+			'devEngines',
+			'engines',
+			'config',
+			'allowScripts',
+		].includes(key)
+	)
+		return {}
+	return 'x'
+}
+
+/**
+ * Formats a manifest file in place with this checkout's formatter and reads its key order.
+ *
+ * @param path - A `package.json` file.
+ * @returns The manifest's top-level keys in the order the formatter wrote them.
+ * @throws Thrown when the installed formatter declares no bin entry or refuses the file.
+ */
+export function readFormattedKeys(path: string): readonly string[] {
+	const directory = locatePackage(WORKSPACE_ROOT, 'oxfmt')
+	const bin = readInstalledRecord(directory).bin
+	const entry = isRecord(bin) ? bin.oxfmt : undefined
+	if (!isString(entry)) throw new Error('The installed oxfmt declares no oxfmt bin entry')
+	const run = spawnSync(
+		process.execPath,
+		[join(directory, entry), '--config', join(WORKSPACE_ROOT, '.oxfmtrc.json'), path],
+		{ cwd: WORKSPACE_ROOT, encoding: 'utf8', windowsHide: true },
+	)
+	if (run.status !== 0) throw new Error(`The installed oxfmt refused ${path}: ${run.stderr}`)
+	const formatted: unknown = parseJSON(readFileSync(path, 'utf8'))
+	return isRecord(formatted) ? Object.keys(formatted) : []
+}
+
+/**
+ * Lists visit logs and whether the wave script's failure predicate reads each as a failure.
+ *
+ * Each log row holds a step, its exit (undefined for a dry run), and whether a regeneration
+ * superseded it.
+ */
+export const WAVE_FAILURE_ROWS: ReadonlyArray<
+	readonly [
+		label: string,
+		rows: ReadonlyArray<readonly [step: string, exit: number | undefined, superseded: boolean]>,
+		failed: boolean,
+	]
+> = [
+	['an empty log', [], false],
+	['a passing step', [['pin', 0, false]], false],
+	['a failing pin', [['pin', 2, false]], true],
+	['a failing gate', [['gates', 1, false]], true],
+	['a dry run', [['pin', undefined, false]], false],
+	['a superseded failure', [['install', 1, true]], false],
+	[
+		'a superseded failure beside a later failure',
+		[
+			['install', 1, true],
+			['gates', 1, false],
+		],
+		true,
+	],
+	['a pins hit', [['pins', 3, false]], false],
+	['a compare reading', [['compare', 3, false]], false],
+	[
+		'a reading before a failure',
+		[
+			['pins', 3, false],
+			['record', 1, false],
+		],
+		true,
+	],
+]
+
+/**
+ * Builds the finished-command record `spawnSync` returns from an exit and its two streams.
+ *
+ * @param status - The exit code, or null when a signal ended the command.
+ * @param stdout - The standard output. Default: none.
+ * @param stderr - The standard error. Default: none.
+ * @returns The record a script judges.
+ */
+export function buildSpawnResult(
+	status: number | null,
+	stdout = '',
+	stderr = '',
+): {
+	readonly pid: number
+	readonly output: Array<string | null>
+	readonly stdout: string
+	readonly stderr: string
+	readonly status: number | null
+	readonly signal: NodeJS.Signals | null
+} {
+	return { pid: 0, output: [null, stdout, stderr], stdout, stderr, status, signal: null }
+}
+
+/**
+ * Builds the standard output of `git status --porcelain=v1 -z` over many untracked files.
+ *
+ * @param count - How many untracked files the output lists.
+ * @returns One `?? src/file<N>.ts` entry per file, each ended by a NUL.
+ */
+export function buildDirtyStatus(count: number): string {
+	return Array.from({ length: count }, (_, index) => `?? src/file${String(index)}.ts\0`).join('')
+}
+
 /**
  * Builds the run shape both skill runners return: the exit, both streams, and the last stdout
  * line parsed as JSON.
@@ -6218,6 +6909,79 @@ export function buildSkillRun(status: number | null, stdout: string, stderr: str
 		.at(-1)
 	const parsed = line === undefined ? undefined : parseJSON(line)
 	return { status, stdout, stderr, json: isRecord(parsed) ? parsed : undefined }
+}
+
+/**
+ * Builds a found host row, with the path and text it carries.
+ *
+ * @param path - The path the row names. Default: the Codex script.
+ * @param text - The text whose bytes the row holds. Default: a live script.
+ * @returns A found row holding the text as hexadecimal.
+ */
+export function buildFoundFile(path = 'scripts/codex.sh', text = 'live script\n'): HostFile {
+	return { path, lookup: 'found', hex: contentToHex(text) }
+}
+
+/**
+ * Builds one found row of the Codex script for each text, in order.
+ *
+ * @param texts - The text each row holds.
+ * @returns The rows, which share a path and differ in the bytes they hold.
+ */
+export function buildLiveFiles(...texts: readonly string[]): HostFile[] {
+	return texts.map((text) => buildFoundFile('scripts/codex.sh', text))
+}
+
+/**
+ * Builds a host row the live read could not find.
+ *
+ * @returns A missing row for the Codex script.
+ */
+export function buildMissingFile(): HostFile {
+	return { path: 'scripts/codex.sh', lookup: 'missing', note: 'none' }
+}
+
+/**
+ * Builds a floor entry that declares one destination at a storage path of the same name.
+ *
+ * @param destination - The destination the entry declares. Default: the Codex script.
+ * @returns An entry whose digest is computed for that destination.
+ */
+export function buildDeclaredEntry(destination = 'scripts/codex.sh'): ManifestEntry {
+	return buildManifestEntry({ storage: destination, destination })
+}
+
+/**
+ * Reads the entry a manifest declares for one destination.
+ *
+ * @param manifest - The manifest to read.
+ * @param destination - The destination whose entry is wanted.
+ * @returns The entry.
+ * @throws Error - Thrown when the manifest declares no entry for the destination.
+ */
+export function selectManifestEntry(manifest: HostManifest, destination: string): ManifestEntry {
+	return requireValue(manifest.entries.find((one) => one.destination === destination))
+}
+
+/**
+ * Builds the first entry of the staged floor manifest.
+ *
+ * @returns A fresh entry on each call.
+ */
+export function buildFloorEntry(): ManifestEntry {
+	return requireValue(buildStagedManifest().entries[0])
+}
+
+/**
+ * Builds the repository replies of a staged floor that declares the entries a case supplies.
+ *
+ * @param entries - The entries the floor manifest declares, read as the case supplies them.
+ * @returns The replies, which hold the inventory alone because the floor carries no bytes.
+ */
+export function serveFloorEntries(
+	entries: ManifestEntry[],
+): Readonly<Record<string, TestUpstreamReply>> {
+	return buildInstalledHostReplies({ manifest: { ...buildStagedManifest(), entries }, bytes: {} })
 }
 
 /** Holds immutable released proof bytes; add a release key without editing an existing fixture. */

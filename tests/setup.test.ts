@@ -6,6 +6,7 @@ import {
 	BROWSER_RESOLVER_EXPORTS,
 	buildAudit,
 	buildBlueprint,
+	buildCatalogEntry,
 	buildCompilerOptions,
 	buildContentArtifact,
 	buildDependency,
@@ -16,6 +17,8 @@ import {
 	buildHostileCases,
 	buildHydratedArtifact,
 	buildLazyCase,
+	buildLengthEntry,
+	buildManifestScript,
 	buildMissingCase,
 	buildModules,
 	buildOverride,
@@ -23,7 +26,9 @@ import {
 	buildPlan,
 	buildPurityCases,
 	buildQuestion,
+	buildRelease,
 	buildResolveCall,
+	buildReturnResult,
 	buildSelections,
 	buildSetupQuestion,
 	buildSnapshot,
@@ -35,11 +40,14 @@ import {
 	collectWrappers,
 	countEmitters,
 	createClosableList,
+	createEndlessList,
 	createObservedList,
+	createProducer,
 	createServedList,
 	DEPENDENCY_TABLES,
 	DIFFERING_HEX,
 	DOCUMENTED_OPTIONS,
+	doubleValue,
 	ENTRY_AUTHORED_TEST,
 	ENTRY_AUTHORED_VITE,
 	ENTRY_BARREL,
@@ -85,6 +93,7 @@ import {
 	FLEET_NAMES,
 	HOOK_SETUP_TEXT,
 	INSERTION_MANIFEST,
+	listDifferingPaths,
 	MANIFEST_SAMPLE,
 	MATCHING_HEX,
 	MATERIALIZED_PATHS,
@@ -101,7 +110,10 @@ import {
 	RANGE_CASES,
 	readKeyCount,
 	readLazily,
+	readLengthsByIndex,
+	readLengthsByIterator,
 	REFUSED_VALUES,
+	refuseClose,
 	refuseObject,
 	refuseRead,
 	refuseText,
@@ -242,11 +254,7 @@ describe('the inert value builders', () => {
 	})
 
 	it('lets a close answer as the case chooses and ends a reader between two passes', () => {
-		const raising = createClosableList(1, new Map([[0, () => 'a']]), {
-			close: () => {
-				throw new EvalError('close')
-			},
-		})
+		const raising = createClosableList(1, new Map([[0, () => 'a']]), { close: refuseClose })
 		const answering = createClosableList(1, new Map([[0, () => 'a']]), { close: () => 5 })
 		const serving = createClosableList(1, new Map([[0, () => 'a']]), { serves: 1 })
 
@@ -332,15 +340,12 @@ describe('the inert value builders', () => {
 	})
 
 	it('runs a reader over each recorded list and reports the constructor and the reads', () => {
-		const entry = () => ({ length: 1 })
+		const entry = buildLengthEntry
 		const refusal = refuseObject(entry)
 		// An iterator reader takes one entry at a time and takes the iterator the list names.
-		const iterate = (list: Array<{ readonly length: number }>) =>
-			Iterator.from(list)
-				.map((item) => item.length)
-				.toArray()
+		const iterate = readLengthsByIterator
 		// An index reader skips a hole, reads every entry ahead of the work, and needs no iterator.
-		const index = (list: Array<{ readonly length: number }>) => list.map((item) => item.length)
+		const index = readLengthsByIndex
 
 		expect(readLazily('hole-before-entry', entry, iterate, refusal)).toStrictEqual({
 			outcome: 'TypeError',
@@ -377,15 +382,13 @@ describe('the inert value builders', () => {
 	})
 
 	it('names a thrown value that is not an error by its type', () => {
-		const text = (): never => {
-			throw 'refused'
-		}
-
 		expect(
 			readLazily(
 				'dense-pair',
 				() => 'a',
-				text,
+				(): never => {
+					throw 'refused'
+				},
 				() => 'b',
 			),
 		).toStrictEqual({
@@ -395,28 +398,28 @@ describe('the inert value builders', () => {
 	})
 
 	it('builds a lazy case whose defaults are the loop answers and whose fields can be replaced', () => {
-		const read = () => ({ outcome: 'return', reads: [] })
-		const base = buildLazyCase('a reader', read)
+		const base = buildLazyCase('a reader', buildReturnResult)
 
 		expect(base.label).toBe('a reader')
-		expect(base.read).toBe(read)
+		expect(base.read).toBe(buildReturnResult)
 		expect(base.hole).toStrictEqual({ outcome: 'TypeError', reads: [] })
 		expect(base.refused).toStrictEqual({ outcome: 'TypeError', reads: [] })
 		expect(base.refusal).toStrictEqual({ outcome: 'TypeError', reads: [0] })
 		expect(base.dense).toStrictEqual({ outcome: 'return', reads: [0, 1] })
 		expect(
-			buildLazyCase('a reader', read, { hole: { outcome: 'return', reads: [1] } }),
+			buildLazyCase('a reader', buildReturnResult, { hole: { outcome: 'return', reads: [1] } }),
 		).toStrictEqual({ ...base, hole: { outcome: 'return', reads: [1] } })
 	})
 
 	it('builds a missing-iterator case that runs the reader over a list without an iterator', () => {
-		const entry = () => 'a'
-		const iterate = buildMissingCase('an iterating reader', entry, (list) =>
-			Iterator.from(list).toArray(),
+		const iterate = buildMissingCase(
+			'an iterating reader',
+			() => 'a',
+			(list) => Iterator.from(list).toArray(),
 		)
 		const index = buildMissingCase(
 			'an index reader',
-			entry,
+			() => 'a',
 			(list) => list.map((item) => item),
 			[0, 1],
 		)
@@ -427,6 +430,55 @@ describe('the inert value builders', () => {
 		// An index reader answers over the same list, which is the answer a case must refuse.
 		expect(index.reads).toStrictEqual([0, 1])
 		expect(index.read()).toStrictEqual({ outcome: 'return', reads: [0, 1] })
+	})
+
+	it('supplies the producers, readers, and lists the lazy and closing cases share', () => {
+		const produce = createProducer(buildDependency, { name: 'vue', range: '^3.5.0' })
+		const holed = buildSparse(2, new Map([[1, buildLengthEntry()]]))
+		const dense = [buildLengthEntry(), buildLengthEntry()]
+
+		expect(produce()).toStrictEqual({ name: 'vue', range: '^3.5.0' })
+		expect(produce()).not.toBe(produce())
+		expect(refuseClose).toThrow(EvalError)
+		expect(doubleValue(4)).toBe(8)
+		expect(Iterator.from(createEndlessList(7)).take(3).toArray()).toStrictEqual([7, 7, 7])
+		expect(buildLengthEntry()).toStrictEqual({ length: 1 })
+		expect(buildLengthEntry()).not.toBe(buildLengthEntry())
+		expect(buildReturnResult()).toStrictEqual({ outcome: 'return', reads: [] })
+		// The two readers answer alike over a dense list and part at a hole, which the iterator reads.
+		expect(readLengthsByIterator(dense)).toStrictEqual([1, 1])
+		expect(readLengthsByIndex(dense)).toStrictEqual([1, 1])
+		expect(readLengthsByIndex(holed)).toStrictEqual([1])
+		expect(() => readLengthsByIterator(holed)).toThrow(TypeError)
+	})
+
+	it('lists the paths whose bytes differ and builds the entries the readers accept', () => {
+		expect(listDifferingPaths({ a: '1', b: '2' }, { a: '1', b: '3', c: '4' })).toStrictEqual(['b'])
+		expect(listDifferingPaths({ a: '1', b: '2' }, { a: '1' })).toStrictEqual(['b'])
+		expect(listDifferingPaths({ a: '1' }, { a: '1' })).toStrictEqual([])
+		expect(buildCatalogEntry()).toStrictEqual({
+			name: '@orkestrel/free',
+			lookup: 'found',
+			version: '1.0.0',
+			dependencies: [],
+			peers: [],
+		})
+		expect(buildRelease()).toStrictEqual({
+			name: 'vite',
+			range: '^8.2.2',
+			lookup: 'found',
+			latest: '8.2.2',
+		})
+		expect(buildManifestScript()).toStrictEqual({
+			name: 'test',
+			command: 'vitest run',
+			accepted: ['vitest'],
+		})
+		expect(buildManifestScript({ name: 'build', accepted: [] })).toStrictEqual({
+			name: 'build',
+			command: 'vitest run',
+			accepted: [],
+		})
 	})
 
 	it('replaces only the named fields on the dependency, override, and question builders', () => {
@@ -675,14 +727,12 @@ describe('the entry workspace fixtures', () => {
 			'src/core/widget.ts',
 		])
 		expect(Object.isFrozen(ENTRY_FILES)).toBe(true)
-		const differing = (other: Readonly<Record<string, string>>): readonly string[] =>
-			Object.keys(ENTRY_FILES).filter((path) => other[path] !== ENTRY_FILES[path])
-		expect(differing(ENTRY_REPORTED).toSorted()).toStrictEqual([
+		expect(listDifferingPaths(ENTRY_FILES, ENTRY_REPORTED).toSorted()).toStrictEqual([
 			'README.md',
 			'guides/widget.md',
 			'src/core/widget.ts',
 		])
-		expect(differing(ENTRY_NAMELESS).toSorted()).toStrictEqual([
+		expect(listDifferingPaths(ENTRY_FILES, ENTRY_NAMELESS).toSorted()).toStrictEqual([
 			'README.md',
 			'guides/widget.md',
 			'package.json',

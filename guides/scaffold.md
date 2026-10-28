@@ -1378,10 +1378,13 @@ digest in lowercase hexadecimal. Stamping a stamped page returns it unchanged. `
 page carrying a repeated or malformed stamp, and a page whose head does not close on its own line.
 
 The journey follows the same modes. The birth-owned `configs/app/vite.journey.config.ts` wrapper
-keeps your variant list and passes the Vite mode to the root `appJourney(variant, variants, mode?)`
-factory, which selects the application through `resolveApplication` as well. Each variant project
-collects `tests/app/<application>/integration.test.ts` alone, sets the variant viewport, and
-provides `variant`, `variants`, and `capture`. The manifest runs `test:journey` for the base
+keeps your variant list and passes the Vite mode to the root
+`appJourney(variant, variants, mode?, override?)` factory, which selects the application through
+`resolveApplication` as well. Each variant project collects
+`tests/app/<application>/integration.test.ts` alone, sets the variant viewport, and provides
+`variant`, `variants`, and `capture`. The factory merges an optional `UserConfig` override last,
+through `mergeOverride`, so a wrapper changes only the fields it names and the project keeps its
+include and exclude replacement, viewport, commands, and plugin rules. The manifest runs `test:journey` for the base
 application and `test:journey:<framework>`, the same command with `--mode <framework>`, for each
 app-side browser extension, after `npm run test:app` in `test`.
 
@@ -2859,7 +2862,8 @@ The generated guide index lists each occupied Vue face with its source, tests, a
 - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
 - [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
   mirrors, the root setup mirror, suppressions, the rule map, filenames, manifest scripts, skills,
-  bridges, and the prose sweep over every authored Markdown file. The syntax-shaped laws are the
+  bridges, the prose sweep over every authored Markdown file, and the text-integrity sweep over the
+  authored and source text. The syntax-shaped laws are the
   rules of the vendored oxlint plugin `configs/policy.ts`, proven in `tests/config.test.ts`.
 - [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases, projects,
   and outputs, every plugin rule against a case pair drawn from inside and outside its membership

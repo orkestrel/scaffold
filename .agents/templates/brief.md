@@ -27,7 +27,7 @@ UNKNOWN and how the unit reports it.
 ## Scope
 
 - **Owned.** FILES, including the tests that pin the behavior, the fixtures derived from a constant, and the materialized copy of a template.
-- **Shared (report-only).** FILES; return an exact patch.
+- **Shared (report-only).** FILES; return an exact patch as an edit file: one `### <path>` block per edit, each with a `reason:` line and fenced `old:` and `new:` texts, that `.agents/skills/orkestrel-dispatch/scripts/patch.ts` applies.
 - **Off-limits.** FILES. Never list `tmp/probes/` here.
 - **Made false by this change.** FILES, derived by running the suite or by a named search bound.
 - **Tools and limits.** ALLOWED_TOOLS; scoped validation only; no tree-wide source-mutating command. For a verifier, declare each permitted output path per `.agents/orchestration.md` § Permission floor.

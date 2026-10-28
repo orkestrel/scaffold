@@ -8,13 +8,15 @@
 // edited. The second form reads every backticked token carrying a slash (a backslash counts and is
 // read as a slash), strips a `:line` or
 // `:line-line` suffix, resolves it from the working directory, and prints the ones that do not
-// exist; a bare filename is outside the check. Exit 3 when any is missing, 64 on usage.
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+// exist; a bare filename is outside the check. The two forms are two modes; name one. The script
+// refuses a flag it does not read, the `--flag=value` form included. Exit 3 when any is missing, 64
+// on usage.
+import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readMissingFlags, readOption } from './helpers.ts'
 
-const TEMPLATE = resolve(
+/** Names the brief template, found from this script's own location. */
+export const TEMPLATE = resolve(
 	dirname(fileURLToPath(import.meta.url)),
 	'..',
 	'..',
@@ -22,14 +24,85 @@ const TEMPLATE = resolve(
 	'templates',
 	'brief.md',
 )
-const LANES: Readonly<Record<string, string>> = Object.freeze({
+
+/** Maps each lane name to the directory its briefs are written under. */
+export const LANES: Readonly<Record<string, string>> = Object.freeze({
 	units: 'tmp/units',
 	cursor: 'tmp/cursor',
 	codex: 'tmp/codex',
 	claude: 'tmp/claude',
 })
 
-function readsAsPath(token: string): boolean {
+/** Lists the flags that take a value. */
+export const VALUE_FLAGS: readonly string[] = ['--unit', '--lane', '--subject', '--check']
+
+/** Lists every flag the script reads, value flags and switches alike. */
+export const FLAGS: readonly string[] = VALUE_FLAGS
+
+/** Holds the usage line printed when a call names no mode. */
+export const USAGE =
+	'usage: brief.ts --unit UNIT --lane units|cursor|codex|claude [--subject TEXT] | --check PATH'
+
+/**
+ * Reads the value that follows a flag.
+ *
+ * @remarks
+ * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
+ * and the `--flag=value` form is not read.
+ *
+ * @param argv - The arguments after the script path.
+ * @param name - The flag, such as `--unit`.
+ * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
+ * another flag.
+ */
+export function readOption(argv: readonly string[], name: string): string | undefined {
+	const index = argv.indexOf(name)
+	const value = index === -1 ? undefined : argv[index + 1]
+	return value === undefined || value.startsWith('--') ? undefined : value
+}
+
+/**
+ * Names the value flags a caller gave with no value.
+ *
+ * @param argv - The arguments after the script path.
+ * @param names - The flags that take a value.
+ * @returns Each named flag that appears last or is followed by another flag, in argument order.
+ */
+export function readMissingFlags(
+	argv: readonly string[],
+	names: readonly string[],
+): readonly string[] {
+	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
+}
+
+/**
+ * Names the flags a caller gave that the script does not read.
+ *
+ * @remarks
+ * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
+ * scan.
+ *
+ * @param argv - The arguments after the script path.
+ * @param flags - Every flag the script reads, value flags and switches alike.
+ * @returns Each argument that opens with `--` and is not a read flag, in argument order.
+ */
+export function readUnknownFlags(
+	argv: readonly string[],
+	flags: readonly string[],
+): readonly string[] {
+	const end = argv.indexOf('--')
+	return (end === -1 ? argv : argv.slice(0, end)).filter(
+		(argument) => argument.startsWith('--') && !flags.includes(argument),
+	)
+}
+
+/**
+ * Checks whether a backticked token reads as a repository path.
+ *
+ * @param token - The text between two backticks, with its line suffix already removed.
+ * @returns True if the token carries a slash and no URL, placeholder, glob, or flag form; false otherwise.
+ */
+export function readsAsPath(token: string): boolean {
 	if (token.includes('://') || /[<>*{}\s]/u.test(token)) return false
 	if (/[A-Z]{2,}_[A-Z]/u.test(token)) return false
 	if (token.startsWith('@') || token.startsWith('-') || token.startsWith('$')) return false
@@ -37,7 +110,13 @@ function readsAsPath(token: string): boolean {
 	return token.includes('/')
 }
 
-function extractPaths(content: string): readonly string[] {
+/**
+ * Extracts the slash-bearing paths a brief names.
+ *
+ * @param content - The brief text.
+ * @returns Each distinct path in sorted order, a backslash read as a slash and a line suffix removed.
+ */
+export function extractPaths(content: string): readonly string[] {
 	const found = new Set(
 		[...content.matchAll(/`([^`\n]+)`/gu)]
 			.map((match) => (match[1] ?? '').replace(/\\/gu, '/').replace(/:\d+(?:[-–]\d+)?$/u, ''))
@@ -46,12 +125,26 @@ function extractPaths(content: string): readonly string[] {
 	return [...found].sort()
 }
 
-function resolveBriefPath(directory: string, unit: string, count = 1): string {
+/**
+ * Resolves the first brief path for a unit that no file occupies.
+ *
+ * @param directory - The lane directory.
+ * @param unit - The unit name.
+ * @param count - The brief number to try first. Default: 1.
+ * @returns `<unit>-brief.md` for the first brief and `<unit>-brief-<n>.md` for a successor.
+ */
+export function resolveBriefPath(directory: string, unit: string, count = 1): string {
 	const path = join(directory, count === 1 ? `${unit}-brief.md` : `${unit}-brief-${count}.md`)
 	return existsSync(path) ? resolveBriefPath(directory, unit, count + 1) : path
 }
 
-function writeBrief(argv: readonly string[]): number {
+/**
+ * Writes a brief from the template.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The exit code: 0 on success, 64 on usage or a missing template.
+ */
+export function writeBrief(argv: readonly string[]): number {
 	const unit = readOption(argv, '--unit')
 	const lane = readOption(argv, '--lane')
 	const directory = lane === undefined ? undefined : LANES[lane]
@@ -74,7 +167,13 @@ function writeBrief(argv: readonly string[]): number {
 	return 0
 }
 
-function checkBrief(path: string): number {
+/**
+ * Checks that every path a brief names exists.
+ *
+ * @param path - The brief file.
+ * @returns The exit code: 0 when every path exists, 3 when one is missing, 64 when the brief is not a file.
+ */
+export function checkBrief(path: string): number {
 	if (!existsSync(path) || !statSync(path).isFile()) {
 		console.error(`brief: ${path} is not a file`)
 		return 64
@@ -85,10 +184,21 @@ function checkBrief(path: string): number {
 	return missing.length === 0 ? 0 : 3
 }
 
-function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, ['--unit', '--lane', '--subject', '--check'])
+/**
+ * Runs the script on its arguments.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The exit code: 0 on success, 3 when a named path is missing, 64 on usage.
+ */
+export function main(argv: readonly string[]): number {
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
 	if (missing.length > 0) {
 		console.error(`brief: ${missing.join(', ')} given with no value`)
+		return 64
+	}
+	const unknown = readUnknownFlags(argv, FLAGS)
+	if (unknown.length > 0) {
+		console.error(`brief: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
 		return 64
 	}
 	const check = readOption(argv, '--check')
@@ -98,10 +208,10 @@ function main(argv: readonly string[]): number {
 	}
 	if (check !== undefined) return checkBrief(check)
 	if (argv.includes('--unit')) return writeBrief(argv)
-	console.error(
-		'usage: brief.ts --unit UNIT --lane units|cursor|codex|claude [--subject TEXT] | --check PATH',
-	)
+	console.error(USAGE)
 	return 64
 }
 
-process.exitCode = main(process.argv.slice(2))
+if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {
+	process.exitCode = main(process.argv.slice(2))
+}

@@ -301,7 +301,7 @@ describe('Upstream lookup', () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.router]: { status: 200, body: '{"name":"@orkestrel/router"}' },
 			[UPSTREAM_PATHS.emitter]: { status: 200, body: 'not json at all' },
-			[UPSTREAM_PATHS.console]: { status: 200, body: '{"dist-tags":{"latest":"0.0.4"}}' },
+			[UPSTREAM_PATHS.console]: { status: 200, body: '{"dist-tags":{"latest":"0.0.\u00074"}}' },
 		})
 		const upstream = new Upstream({ registry: { base: server.base } })
 		try {

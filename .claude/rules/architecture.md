@@ -103,16 +103,25 @@ neither reads meaning.
 
 - The plugin proves that a module function sits in a function-kind file, that module data sits in a
   data-kind file, that every centralized declaration is exported, that a class sits in its matching
-  implementation or errors file, and that `constants.ts` declares only UPPER_SNAKE_CASE consts with
-  no bare collection literal.
+  implementation or errors file, that `constants.ts` declares only UPPER_SNAKE_CASE consts with
+  no bare collection literal, and that every interface or type-alias property is `readonly`.
+- The plugin proves that no file declares a `let` that `prefer-const` leaves, and, over
+  `POLICY_NESTED_GLOBS` and `POLICY_SCRIPT_GLOBS`, that no function sits inside another outside the
+  callback positions.
+- The plugin proves that a skill script exports every top-level declaration with a doc block and
+  runs nothing but its entry guard, over `POLICY_SCRIPT_GLOBS`.
 - The sweep proves that no source, test, config, script, or sheet file carries an `eslint-disable`,
   `oxlint-disable`, or `prettier-ignore` directive.
 - The sweep proves that every `.claude/rules/*.md` file has a rule-map row in `AGENTS.md` and that
   every row resolves to a file.
 - The sweep proves the host portability rules that are path- or text-shaped over the population
   `POLICY_PORTABILITY_GLOB` names: no path segment carries a Windows reserved device name, a
-  character Windows refuses, a trailing dot or space, or a sibling differing only by case; and no
-  `package.json` script names a `.sh` file.
+  character Windows refuses, a trailing dot or space, or a sibling differing only by case; no
+  `package.json` script names a `.sh` file; and no shell, PowerShell, Python, or batch file sits
+  outside `scripts/`.
+- The sweep proves that the authored and source text decodes as UTF-8 with no replacement,
+  byte-order, or control character beyond tab, line feed, and carriage return.
+- The sweep proves that a skill proof imports no skill file but its own script.
 - The plugin proves, over the population `POLICY_ENDING_GLOBS` names, that no source trims a
   payload before splitting it on `'\n'`, reads `os.EOL`, or imports `EOL` from `node:os`.
 - Prove a filename the host refuses from a path population, never from written files: a Windows

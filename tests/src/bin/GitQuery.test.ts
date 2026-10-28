@@ -77,7 +77,7 @@ describe('GitQuery', () => {
 			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 			try {
 				const repository = workspace.ensure('repository')
-				const path = '﻿leading.txt'
+				const path = '\uFEFFleading.txt'
 				const initialized = executeSync(
 					{ file: 'git', arguments: ['-C', repository, 'init', '--quiet'] },
 					{ strict: false },

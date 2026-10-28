@@ -1658,6 +1658,28 @@ export default appServer(override)
 			expect(checkTypes(workspace.ensure('ordinary'))).toBe('')
 			expect(workspace.read('ordinary/vite.config.ts')).not.toContain('journey')
 			expect(workspace.has('ordinary/configs/app/vite.journey.config.ts')).toBe(false)
+			// The factory takes an override typed `UserConfig` after the mode and merges it
+			// last, so the project's own include, exclusion, viewport, and instances
+			// replace nothing the override does not name. Without an override the final
+			// call receives `undefined`, which `mergeOverride` answers with the project
+			// alone, as it did before the parameter existed.
+			expect(journey).toContain('\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {')
+			expect(journey).toContain('return mergeOverride(project, override)')
+			expect(journey).not.toContain('return mergeOverride(project)\n')
+			const call = 'appJourney(variant, VARIANTS, mode)'
+			expect(wrapper).toContain(call)
+			workspace.write(
+				'journey/configs/app/vite.journey.config.ts',
+				wrapper.replace(call, 'appJourney(variant, VARIANTS, mode, { test: { retry: 1 } })'),
+			)
+			expect(checkTypes(workspace.ensure('journey'))).toBe('')
+			workspace.write(
+				'journey/configs/app/vite.journey.config.ts',
+				wrapper.replace(call, 'appJourney(variant, VARIANTS, mode, { unreachable: false })'),
+			)
+			expect(checkTypes(workspace.ensure('journey'))).toContain(
+				"'unreachable' does not exist in type 'UserConfig'",
+			)
 			workspace.write(
 				'journey/configs/app/vite.journey.config.ts',
 				wrapper.replace('width: 1280', "width: 'wide'"),

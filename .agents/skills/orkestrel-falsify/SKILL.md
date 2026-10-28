@@ -8,6 +8,12 @@ description: >-
 
 One round. It ends with a ruling. `.agents/orchestration.md` § Size gate decides when a round runs, what a fix round re-audits, and when an all-confirmed round ends the audit.
 
+## Scripts
+
+Run from the checkout root. The script's opening comment owns its behavior.
+
+- `scripts/mutate.ts --edits EDITS.md -- COMMAND [ARGS...]` runs the mutation probe. It resolves an edit file, the `### <path>` block shape that `.agents/skills/orkestrel-dispatch/scripts/patch.ts` reads, before it touches a file; saves the originals under `tmp/probes/mutate/`; writes the mutated files; runs the command with no shell and its output on standard error; restores the bytes and proves each file's SHA-256 digest; runs the command again; and prints one JSON line with both exits. A mutation that leaves the suite uncollected also reads as a failing run, so read the command's own test count on standard error. Exit 0 when the mutated run failed and the restored run passed, 3 when either did not, 2 when a restore is not proven or the command cannot start, 64 usage or an edit that does not resolve.
+
 ## Run a round the size gate does not name when
 
 - a version is about to be bumped, packed, or published;
@@ -29,7 +35,7 @@ Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/
 
 - Medium: one lane, with an independent reviewer per `.agents/orchestration.md` § Engines. Large: the objective lane and the subjective lane, same claims file, each in a clean context, neither shown the other's answer before reconciliation. Add `checker` when criteria are mechanical.
 - Tell a lane when its own engine wrote the half it audits.
-- Give a lane the evidence a read-only allowlist cannot produce: run the probe yourself, record its control and output, and hand it over.
+- Give a lane the evidence a read-only allowlist cannot produce: run the probe yourself, record its control and output, and hand it over. Run a mutation probe with `scripts/mutate.ts`; its JSON line carries both exits.
 - Auditors edit no source and spawn nothing. Their reports are immutable after they return.
 
 ## Verdict shape

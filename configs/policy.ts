@@ -14,6 +14,9 @@ export interface PolicyExpression extends PolicyNode {
 	readonly method?: boolean
 	readonly kind?: 'const' | 'get' | 'init' | 'let' | 'set' | 'var'
 	readonly expression?: boolean
+	readonly readonly?: boolean
+	readonly test?: PolicyExpression
+	readonly alternate?: PolicyExpression | null
 	readonly object?: PolicyExpression
 	readonly property?: PolicyExpression
 	readonly computed?: boolean
@@ -149,6 +152,7 @@ export interface PolicyVisitor {
 	readonly TSEnumDeclaration?: (node: PolicyNode) => void
 	readonly TSInterfaceDeclaration?: (node: PolicyNode) => void
 	readonly TSModuleDeclaration?: (node: PolicyNode) => void
+	readonly TSPropertySignature?: (node: PolicyNode) => void
 	readonly TSTypeAliasDeclaration?: (node: PolicyNode) => void
 	readonly VariableDeclaration?: (node: PolicyNode) => void
 }
@@ -283,6 +287,68 @@ export const POLICY_ENDING_GLOBS: readonly string[] = Object.freeze([
 	'app/**/*.ts',
 	'configs/**/*.ts',
 	'src/**/*.ts',
+])
+
+/** Lists every source extension the nested-function rule reads. */
+export const POLICY_CODE_EXTENSIONS: readonly string[] = Object.freeze([
+	'cjs',
+	'cts',
+	'js',
+	'jsx',
+	'mjs',
+	'mts',
+	'ts',
+	'tsx',
+	'vue',
+])
+
+/**
+ * Matches the lint population the nested-function rule runs over, as the Oxlint configuration
+ * declares it.
+ */
+export const POLICY_NESTED_GLOBS: readonly string[] = Object.freeze(
+	['src', 'app', 'tests', 'configs'].map(
+		(root) => `${root}/**/*.{${POLICY_CODE_EXTENSIONS.join(',')}}`,
+	),
+)
+
+/**
+ * Matches the lint population the skill-script rules run over, as the Oxlint configuration declares
+ * it.
+ */
+export const POLICY_SCRIPT_GLOBS: readonly string[] = Object.freeze([
+	'.agents/skills/*/scripts/*.ts',
+])
+
+/** Matches the workspace-relative path of a skill script, the file shape the script rule reads. */
+export const POLICY_SCRIPT_PATTERN = /^\.agents\/skills\/[^/]+\/scripts\/[^/]+\.ts$/u
+
+/** Holds the one entry guard a skill script runs `main` under, as its source text reads. */
+export const POLICY_ENTRY_GUARD =
+	'process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename'
+
+/** Lists every statement type that declares a name at module scope. */
+export const POLICY_DECLARATION_TYPES: readonly string[] = Object.freeze([
+	'ClassDeclaration',
+	'FunctionDeclaration',
+	'TSDeclareFunction',
+	'TSEnumDeclaration',
+	'TSInterfaceDeclaration',
+	'TSModuleDeclaration',
+	'TSTypeAliasDeclaration',
+	'VariableDeclaration',
+])
+
+/**
+ * Lists the type nodes a property signature's search for its owning declaration never crosses,
+ * because a parameter, call, or construct signature beyond one is an inline type.
+ */
+export const POLICY_INLINE_TYPES: readonly string[] = Object.freeze([
+	'TSCallSignatureDeclaration',
+	'TSConstructSignatureDeclaration',
+	'TSConstructorType',
+	'TSFunctionType',
+	'TSMethodSignature',
 ])
 
 /**
@@ -889,12 +955,37 @@ export function isPolicyVoiced(word: string): boolean {
 }
 
 /**
- * Pairs every exported top-level statement with the doc block written directly above it.
+ * Reads the doc block written directly above one top-level statement.
  *
  * @remarks
  * A statement takes the last comment that closes before it, and takes it only where that comment is
  * a doc block and nothing but whitespace separates the two. A blank line between them is still
- * whitespace, so the pairing survives one.
+ * whitespace, so the pairing survives one. Every comment is read where a `findLast` would stop at
+ * the nearest one.
+ *
+ * @param statement - The top-level statement to pair.
+ * @param comments - Every comment of the linted file, in source order.
+ * @param sourceCode - The source-text reader supplying the text between a comment and the statement.
+ * @returns The paired doc block, or `undefined` where the statement has none.
+ */
+export function statementToPolicyDoc(
+	statement: PolicyExpression,
+	comments: readonly PolicyComment[],
+	sourceCode: PolicySourceCode,
+): PolicyComment | undefined {
+	const start = statement.range[0]
+	const previous = Iterator.from(comments)
+		.flatMap((comment) => (comment.range[1] <= start ? [comment] : []))
+		.toArray()
+		.at(-1)
+	if (previous === undefined || previous.type !== 'Block') return undefined
+	if (!previous.value.startsWith('*')) return undefined
+	if (sourceCode.text.slice(previous.range[1], start).trim() !== '') return undefined
+	return previous
+}
+
+/**
+ * Pairs every exported top-level statement with the doc block written directly above it.
  *
  * @param node - The program node whose top-level statements are read.
  * @param sourceCode - The source-text reader supplying the comments and the text between them.
@@ -905,24 +996,18 @@ export function programToPolicyDocs(
 	sourceCode: PolicySourceCode,
 ): readonly PolicyDoc[] {
 	// The iterator consumes one entry at a time and reads a hole as an `undefined` entry, as a
-	// `for…of` over the list would. The comments are read only for an export statement, once per
-	// statement, and every comment is read where a `findLast` would stop at the nearest one.
+	// `for…of` over the list would. The comments are read once, and a statement pairs with one only
+	// where it is an export.
 	const comments = sourceCode.getAllComments()
 	return Iterator.from(programToPolicyStatements(node))
 		.flatMap((statement) => {
 			if (!statement.type.startsWith('Export')) return []
-			const start = statement.range[0]
-			const previous = Iterator.from(comments)
-				.flatMap((comment) => (comment.range[1] <= start ? [comment] : []))
-				.toArray()
-				.at(-1)
-			if (previous === undefined || previous.type !== 'Block') return []
-			if (!previous.value.startsWith('*')) return []
-			if (sourceCode.text.slice(previous.range[1], start).trim() !== '') return []
+			const comment = statementToPolicyDoc(statement, comments, sourceCode)
+			if (comment === undefined) return []
 			const declaration = statement.declaration
 			return [
 				{
-					comment: previous,
+					comment,
 					name:
 						identifierToPolicyName(declaration?.id) ??
 						identifierToPolicyName(declaration?.declarations?.[0]?.id),
@@ -1234,6 +1319,64 @@ export function reportEnding(context: PolicyContext, node: PolicyExpression): vo
 export function reportEndingImport(context: PolicyContext, node: PolicyExpression): void {
 	if (isPolicyAmbient(context.filename)) return
 	if (importsPolicyTerminator(node)) context.report({ node, messageId: 'terminator' })
+}
+
+/** Reports whether a path is a skill script, the one file shape the script rule reads. */
+export function isPolicyScript(filename: string, cwd: string): boolean {
+	return POLICY_SCRIPT_PATTERN.test(pathToPolicyRelative(filename, cwd))
+}
+
+/** Reports whether a statement is the one entry guard a skill script runs its main under. */
+export function isPolicyGuard(statement: PolicyExpression, sourceCode: PolicySourceCode): boolean {
+	const test = statement.test
+	if (statement.type !== 'IfStatement' || test === undefined) return false
+	if (statement.alternate !== undefined && statement.alternate !== null) return false
+	const text = sourceCode.text.slice(test.range[0], test.range[1]).replace(/\s+/gu, ' ')
+	return text === POLICY_ENTRY_GUARD
+}
+
+/** Reports a skill script's top-level statement that is hidden, undocumented, or runs at import. */
+export function reportScript(context: PolicyContext, node: PolicyExpression): void {
+	if (isPolicyAmbient(context.filename) || !isPolicyScript(context.filename, context.cwd)) return
+	const sourceCode = context.sourceCode
+	const comments = sourceCode.getAllComments()
+	const statements = programToPolicyStatements(node)
+	const guard = statements.findIndex((statement) => isPolicyGuard(statement, sourceCode))
+	for (const [index, statement] of statements.entries()) {
+		if (statement.type === 'ImportDeclaration' || index === guard) continue
+		const declaration = statement.declaration
+		if (
+			statement.type === 'ExportNamedDeclaration' &&
+			declaration !== undefined &&
+			declaration !== null
+		) {
+			if (statementToPolicyDoc(statement, comments, sourceCode) === undefined) {
+				context.report({ node: statement, messageId: 'doc' })
+			}
+			continue
+		}
+		context.report({
+			node: statement,
+			messageId: POLICY_DECLARATION_TYPES.includes(statement.type) ? 'hidden' : 'entry',
+		})
+	}
+}
+
+/** Reports whether a property signature sits in an interface or in a type alias's object type. */
+export function isPolicyOwned(node: PolicyExpression): boolean {
+	const parent = node.parent
+	if (parent === undefined || parent === null) return false
+	if (parent.type === 'TSInterfaceDeclaration' || parent.type === 'TSTypeAliasDeclaration') {
+		return true
+	}
+	if (POLICY_INLINE_TYPES.includes(parent.type)) return false
+	return isPolicyOwned(parent)
+}
+
+/** Reports a property signature of an interface or type alias that is not readonly. */
+export function reportMutable(context: PolicyContext, node: PolicyExpression): void {
+	if (isPolicyAmbient(context.filename) || node.readonly === true) return
+	if (isPolicyOwned(node)) context.report({ node, messageId: 'mutable' })
 }
 
 /** Bans function declarations and assignments inside another function body. */
@@ -1608,6 +1751,49 @@ export const VOICE_RULE: PolicyRuleInterface = {
 	},
 }
 
+/** Bans a skill script top-level statement that is hidden, undocumented, or runs at import. */
+export const SCRIPT_RULE: PolicyRuleInterface = {
+	meta: {
+		type: 'problem',
+		docs: {
+			description:
+				'Disallow an unexported declaration, an undocumented export, and a statement beyond the one guarded entry in a skill script.',
+		},
+		messages: {
+			hidden:
+				'Export this declaration; a skill script exports every declaration so its proof can test each one.',
+			doc: 'Write a one-sentence TSDoc summary directly above this export.',
+			entry:
+				'Move this statement into a function; a skill script holds imports, exported declarations, and the one process.argv[1] guard that runs main, and an import runs nothing.',
+		},
+	},
+	create(context) {
+		return {
+			Program: (node) => reportScript(context, node),
+		}
+	},
+}
+
+/** Bans a property signature in an interface or type alias that is not readonly. */
+export const MUTABLE_RULE: PolicyRuleInterface = {
+	meta: {
+		type: 'problem',
+		docs: {
+			description:
+				'Disallow a property signature without readonly in an interface or in the object type of a type alias.',
+		},
+		messages: {
+			mutable:
+				'Declare this property readonly; a contract exposes its members and no holder rewrites them.',
+		},
+	},
+	create(context) {
+		return {
+			TSPropertySignature: (node) => reportMutable(context, node),
+		}
+	},
+}
+
 /** Bans a comment carrying a term the substitution table bans unconditionally. */
 export const TERM_RULE: PolicyRuleInterface = {
 	meta: {
@@ -1649,5 +1835,7 @@ export default {
 		'no-host-line-endings': ENDING_RULE,
 		'no-malformed-summary': VOICE_RULE,
 		'no-banned-term': TERM_RULE,
+		'no-malformed-script': SCRIPT_RULE,
+		'no-mutable-property': MUTABLE_RULE,
 	},
 }

@@ -16,13 +16,19 @@ description: >-
 - Read the page for each harness that hosts a lane before its first launch: `references/claude.md`, `references/codex.md`, `references/cursor.md`, or `references/t3.md`. A harness without a page carries no writer or runner lane until § Bring up a harness is answered on a page of its own.
 - Apply `.agents/orchestration.md` for routing, session reuse, consultation, independence, and acceptance.
 
+## Scripts
+
+Run from the checkout root. The script's opening comment owns its behavior.
+
+- `scripts/cases.ts --report FILE.json [--passed NAME ...] [--failed NAME ...]` reads a Vitest `--reporter=json` report and requires every case a `--passed` name matches to have passed and every case a `--failed` name matches to have failed. A name matches a case's full name or its own title exactly; both flags repeat. A name that matches no case is missing, and a failed case no name matches is refused. It prints one summary line, each difference, and `ok` or `differences=N`. Exit 0 when the report matches, 3 when it does not, 2 when the report cannot be read as a Vitest report, 64 usage.
+
 ## Bound the host
 
 The host budget counts every lane on the machine: this session's, each peer session's, and the Orchestrator's own commands.
 
 - Set the lane bound in the plan before the first dispatch. Run one process-running lane at a time on the host: tests, checks, builds, browsers, captures, and launchers, the Orchestrator's included. Report to the user before a launch that would start a second. Lanes that run no shell command run beside it.
 - Count running lanes and owned test processes at each launch.
-- Limit terminal launches: chain commands that do not gate each other into one launch, write long output to a file and read it once, never poll with repeated short calls, never retry a run in a loop, and check once for owned leftovers before a launch.
+- Limit terminal launches: chain commands that do not gate each other into one launch (as a plan for `.agents/skills/orkestrel-dispatch/scripts/chain.ts`), write long output to a file and read it once, never poll with repeated short calls, never retry a run in a loop, and check once for owned leftovers before a launch.
 - Find the cause of an interrupted run before relaunching it.
 - While a lane that runs shell commands is live, count orphaned console and window processes. Brief a lane that needs no shell to run no command. Kill only a recorded process id, and clear orphans only when none of your lanes is live. Never kill another session's or lane's process; ask the user.
 - While a timing or live-model measurement runs, start no other test, build, or model work on the host.
@@ -93,7 +99,7 @@ expect: <red or green, named cases, required artifact>
 - State in each long command's request which line is its terminal record; that line ends the wait.
 - When the shell yields before the command exits, keep its output in the assigned file and resume its tracked session per the harness page until the terminal record arrives. Start nothing else meanwhile, and never replace the command with a second launch. Confirm owned descendants have exited before publishing completion. Escalate incomplete cleanup before releasing files or starting another command.
 - Run the commands the accepted unit and the size gate require, narrowest first, and add no standing root, guide, or entry check beyond the request. Preserve receipts and rerun checks per `.agents/orchestration.md` § Pace.
-- Stop on the first unexpected failure. Return the complete diagnostic and the owning file, and classify the failure as an assertion failure, an invocation error, a reporting failure, a cap, or an interruption. Preserve every receipt obtained before the stop.
+- Stop on the first unexpected failure. Return the complete diagnostic and the owning file, and classify the failure as an assertion failure, an invocation error, a reporting failure, a cap, or an interruption. Preserve every receipt obtained before the stop. Check an `expect:` that names cases against the command's `--reporter=json` report with `scripts/cases.ts`.
 - Record the command's input identity and expected outputs before launch. When an input changes during the run, report that result as invalid and retain each result whose input set stayed stable.
 - After every writer's current `FINAL` and the integrated review, run the Orchestrator's closing acceptance request under a unique gate number. Write `coord/runs/closing-<gate>.md`, reply with that identity, and end the turn.
 

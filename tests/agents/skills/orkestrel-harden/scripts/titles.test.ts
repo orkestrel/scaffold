@@ -7,7 +7,9 @@ import {
 	runSkillScript,
 	TITLES_AMBIGUITIES,
 	TITLES_EXPRESSIONS,
+	TITLES_POSITIONS,
 	TITLES_QUOTES,
+	TITLES_REFUSED_ARGUMENTS,
 	TITLES_SCRIPT,
 	TITLES_STATEMENTS,
 	TITLES_TABLES,
@@ -15,6 +17,19 @@ import {
 	TITLES_UNBALANCED,
 	trackFiles,
 } from '../../../../setupServer.js'
+import {
+	decodeTitle,
+	describeName,
+	escapeCell,
+	listFiles,
+	normalizeSlashes,
+	readMissingFlags,
+	readOption,
+	readRegistrations,
+	readUnknownFlags,
+	renderReport,
+	TokenScanner,
+} from '../../../../../.agents/skills/orkestrel-harden/scripts/titles.ts'
 
 describe('titles.ts', () => {
 	it.each(TITLES_TABLES)('balances each arguments over code tokens: %s', (table) => {
@@ -342,7 +357,7 @@ describe('titles.ts', () => {
 			commitFiles(scratch.path)
 			scratch.write('tests/read.test.ts', "it(`${'reads'}`, () => {})\n")
 			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
-			expect(run.status).toBe(0)
+			expect(run.status).toBe(3)
 			expect(run.json).toMatchObject({
 				missing: [],
 				moved: [{ file: 'tests/read.test.ts', title: 'reads', holder: 'tests/read.test.ts' }],
@@ -430,7 +445,7 @@ describe('titles.ts', () => {
 				"const pattern = /['/}]reads/giu\nconst count = 12 / 3 / 2\nconst text = `${({ title: 'reads', nested: `file ${/}/.source}` }).title}`\n",
 			)
 			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
-			expect(run.status).toBe(0)
+			expect(run.status).toBe(3)
 			expect(run.json?.moved).toEqual([
 				{ file: 'tests/read.test.ts', title: 'reads', holder: 'tests/read.test.ts' },
 			])
@@ -476,6 +491,7 @@ describe('titles.ts', () => {
 				count: 2,
 				missing: [],
 				moved: [],
+				dynamic: [],
 			})
 		} finally {
 			scratch.destroy()
@@ -500,7 +516,7 @@ describe('titles.ts', () => {
 			const text = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
 			expect(text.status).toBe(3)
 			expect(text.stdout).toBe(
-				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved\nmissing\ttests/nested/sample.test.ts\treads\t1\n',
+				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved, 0 dynamic\nmissing\ttests/nested/sample.test.ts\treads\t1\n',
 			)
 		} finally {
 			scratch.destroy()
@@ -550,7 +566,7 @@ describe('titles.ts', () => {
 		}
 	})
 
-	it('reports titles moved into setup data tables and exits 0', () => {
+	it('reports titles moved into setup data tables and exits 3', () => {
 		const scratch = createScratch({ prefix: 'titles-moved-' })
 		try {
 			scratch.write('tests/sample.test.ts', "it('reads', () => {})\n")
@@ -563,11 +579,12 @@ describe('titles.ts', () => {
 				"import { scenario } from './setup.js'\nit(scenario.title, () => {})\n",
 			)
 			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
-			expect(run.status).toBe(0)
+			expect(run.status).toBe(3)
 			expect(run.json).toMatchObject({
 				count: 1,
 				missing: [],
 				moved: [{ file: 'tests/sample.test.ts', title: 'reads', holder: 'tests/setup.ts' }],
+				dynamic: [{ file: 'tests/sample.test.ts', spelling: 'scenario.title', tree: 'working' }],
 			})
 			const text = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
 			expect(text.stdout).toContain('moved\ttests/sample.test.ts\treads\ttests/setup.ts')
@@ -576,7 +593,7 @@ describe('titles.ts', () => {
 			const inline = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
 				cwd: scratch.path,
 			})
-			expect(inline.status).toBe(0)
+			expect(inline.status).toBe(3)
 			expect(inline.json).toMatchObject({
 				missing: [],
 				moved: [{ file: 'tests/sample.test.ts', title: 'reads', holder: 'tests/sample.test.ts' }],
@@ -703,6 +720,279 @@ describe('titles.ts', () => {
 			})
 			expect(text.status).toBe(0)
 			expect(scratch.read('report/titles.txt')).toBe(text.stdout)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_POSITIONS)(
+		'reads the registered titles at any token position: %j',
+		(text, titles) => {
+			const registrations = readRegistrations(
+				text,
+				new TokenScanner(text, 'sample.ts').scan(),
+				'sample.ts',
+			)
+			expect(
+				registrations.map(({ token }) =>
+					token === undefined ? undefined : decodeTitle(text, token),
+				),
+			).toEqual(titles)
+		},
+	)
+
+	it('spells a dynamic title from its source and refuses an unclosed call', () => {
+		const text = "it(NAME, () => {})\nit('a' +\n NAME, () => {})\nit(`x ${y}`, () => {})\n"
+		const registrations = readRegistrations(
+			text,
+			new TokenScanner(text, 'sample.ts').scan(),
+			'sample.ts',
+		)
+		expect(registrations.map(({ spelling }) => spelling)).toEqual([
+			'NAME',
+			"'a' + NAME",
+			'`x ${y}`',
+		])
+		const open = "it('a'"
+		expect(() =>
+			readRegistrations(open, new TokenScanner(open, 'open.ts').scan(), 'open.ts'),
+		).toThrow('open.ts:1: Unbalanced call arguments')
+	})
+
+	it('reads a registration at any position, a tagged-template table, and a skipIf title', () => {
+		const scratch = createScratch({ prefix: 'titles-grammar-' })
+		try {
+			scratch.write(
+				'tests/grammar.test.ts',
+				[
+					'describe("outer", () => { it("inner", () => {}) })',
+					';it("semicolon", () => {})',
+					'it.each`',
+					' a | b',
+					'`("tagged %s", () => {})',
+					'it.skipIf("win32" === process.platform)("windows only", () => {})',
+					'',
+				].join('\n'),
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.remove('tests/grammar.test.ts')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				count: 5,
+				missing: [
+					{ file: 'tests/grammar.test.ts', title: 'outer', deficit: 1 },
+					{ file: 'tests/grammar.test.ts', title: 'inner', deficit: 1 },
+					{ file: 'tests/grammar.test.ts', title: 'semicolon', deficit: 1 },
+					{ file: 'tests/grammar.test.ts', title: 'tagged %s', deficit: 1 },
+					{ file: 'tests/grammar.test.ts', title: 'windows only', deficit: 1 },
+				],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports a non-literal title as a dynamic row for each tree', () => {
+		const scratch = createScratch({ prefix: 'titles-dynamic-' })
+		try {
+			scratch.write(
+				'tests/dynamic.test.ts',
+				"const NAME = 'x'\nit(NAME, () => {})\nit('a' + NAME, () => {})\nit('literal', () => {})\n",
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({
+				count: 1,
+				missing: [],
+				moved: [],
+				dynamic: [
+					{ file: 'tests/dynamic.test.ts', spelling: 'NAME', tree: 'baseline' },
+					{ file: 'tests/dynamic.test.ts', spelling: "'a' + NAME", tree: 'baseline' },
+					{ file: 'tests/dynamic.test.ts', spelling: 'NAME', tree: 'working' },
+					{ file: 'tests/dynamic.test.ts', spelling: "'a' + NAME", tree: 'working' },
+				],
+			})
+			const text = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
+			expect(text.stdout).toBe(
+				[
+					'titles: 1 baseline title(s) at HEAD, 0 missing, 0 moved, 4 dynamic',
+					'dynamic\ttests/dynamic.test.ts\tbaseline\tNAME',
+					"dynamic\ttests/dynamic.test.ts\tbaseline\t'a' + NAME",
+					'dynamic\ttests/dynamic.test.ts\tworking\tNAME',
+					"dynamic\ttests/dynamic.test.ts\tworking\t'a' + NAME",
+					'',
+				].join('\n'),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 3 for a lost title that an assertion value still spells', () => {
+		const scratch = createScratch({ prefix: 'titles-assertion-holder-' })
+		try {
+			scratch.write('tests/sample.test.ts', "it('works', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.write('tests/sample.test.ts', "expect(1).toBe('works')\n")
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				missing: [],
+				moved: [{ file: 'tests/sample.test.ts', title: 'works', holder: 'tests/sample.test.ts' }],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the baseline when --root sits below the repository top', () => {
+		const scratch = createScratch({ prefix: 'titles-subdirectory-' })
+		try {
+			scratch.write('pkg/tests/sample.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const root = join(scratch.path, 'pkg')
+			const unchanged = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--root', root, '--json'])
+			expect(unchanged.status).toBe(0)
+			expect(unchanged.json).toMatchObject({ count: 1, missing: [], moved: [] })
+			scratch.remove('pkg/tests/sample.test.ts')
+			const removed = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--root', root, '--json'])
+			expect(removed.status).toBe(3)
+			expect(removed.json).toMatchObject({
+				count: 1,
+				missing: [{ file: 'tests/sample.test.ts', title: 'reads', deficit: 1 }],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each(TITLES_REFUSED_ARGUMENTS)(
+		'refuses the equals form and an unread flag with exit 64: %j',
+		(...args) => {
+			const scratch = createScratch({ prefix: 'titles-unknown-flag-' })
+			try {
+				const run = runSkillScript(TITLES_SCRIPT, args, { cwd: scratch.path })
+				expect(run.status).toBe(64)
+				expect(run.stderr).toContain('is not a flag this script reads')
+				expect(run.stdout).toBe('')
+				expect(scratch.has('report.json')).toBe(false)
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
+
+	it('refuses a base that opens with a hyphen', () => {
+		const scratch = createScratch({ prefix: 'titles-hyphen-base-' })
+		try {
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', '-x'], { cwd: scratch.path })
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('opens with "-"')
+			expect(run.stderr).toContain('"-x"')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('escapes tab and newline in text rows', () => {
+		const scratch = createScratch({ prefix: 'titles-escape-' })
+		try {
+			scratch.write('tests/sample.test.ts', 'it(`a\nb\tc`, () => {})\n')
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			scratch.remove('tests/sample.test.ts')
+			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.stdout).toBe(
+				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved, 0 dynamic\nmissing\ttests/sample.test.ts\ta\\nb\\tc\t1\n',
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads flag values, missing values, and unread flags', () => {
+		const argv = ['--base', 'HEAD', '--root', 'pkg', '--json']
+		expect(readOption(argv, '--base')).toBe('HEAD')
+		expect(readOption(argv, '--absent')).toBeUndefined()
+		expect(readOption(['--json'], '--json')).toBeUndefined()
+		expect(readOption(['--base', '--json', 'x'], '--base')).toBeUndefined()
+		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
+		expect(
+			readMissingFlags(['--base', '--json', '--out', 'a', '--root'], ['--base', '--out', '--root']),
+		).toEqual(['--base', '--root'])
+		expect(readMissingFlags(['--out', 'a'], ['--base'])).toEqual([])
+		expect(
+			readUnknownFlags(
+				['--base=HEAD', '--json', '--root', 'a', '--out', 'b'],
+				['--base', '--json', '--out'],
+			),
+		).toEqual(['--base=HEAD', '--root'])
+		expect(readUnknownFlags(['--base', 'HEAD', '--', 'node', '--watch'], ['--base'])).toEqual([])
+		expect(readUnknownFlags([], [])).toEqual([])
+	})
+
+	it('normalizes slashes and echoes a name JSON-encoded and capped', () => {
+		expect(normalizeSlashes('a\\b\\c.ts')).toBe('a/b/c.ts')
+		expect(normalizeSlashes('a/b')).toBe('a/b')
+		expect(describeName('a"b')).toBe('"a\\"b"')
+		expect(describeName('x'.repeat(100))).toBe(JSON.stringify(`${'x'.repeat(80)}…`))
+	})
+
+	it('decodes quote escapes, escapes row cells, and renders every row kind', () => {
+		const text = "it('a\\'b \\\\ c', () => {})"
+		const token = new TokenScanner(text, 'sample.ts')
+			.scan()
+			.find(({ category }) => category === 'string')
+		expect(token === undefined ? undefined : decodeTitle(text, token)).toBe("a'b \\ c")
+		expect(escapeCell('a\tb\nc\rd')).toBe('a\\tb\\nc\\rd')
+		expect(
+			renderReport({
+				base: 'HEAD',
+				root: '/repo',
+				count: 3,
+				missing: [{ file: 'tests/a.test.ts', title: 'gone', deficit: 2 }],
+				moved: [{ file: 'tests/a.test.ts', title: 'went', holder: 'tests/b.ts' }],
+				dynamic: [{ file: 'tests/a.test.ts', spelling: 'NAME', tree: 'working' }],
+			}),
+		).toBe(
+			[
+				'titles: 3 baseline title(s) at HEAD, 1 missing, 1 moved, 1 dynamic',
+				'missing\ttests/a.test.ts\tgone\t2',
+				'moved\ttests/a.test.ts\twent\ttests/b.ts',
+				'dynamic\ttests/a.test.ts\tworking\tNAME',
+			].join('\n'),
+		)
+	})
+
+	it('lists files with forward slashes, skipping the excluded names exactly and at any depth', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-titles-walk-' })
+		try {
+			scratch.write('src/a.ts', '')
+			scratch.write('src/deep/b.ts', '')
+			scratch.write('src/dist/c.ts', '')
+			scratch.write('node_modules/pkg/index.js', '')
+			scratch.write('tmp/probe.ts', '')
+			const root = normalizeSlashes(scratch.path)
+			const paths = listFiles(scratch.path).map((file) => file.path.slice(root.length + 1))
+			expect(paths.every((path) => !path.includes('\\'))).toBe(true)
+			expect(paths.sort()).toEqual(['src/a.ts', 'src/deep/b.ts'])
+			expect(listFiles(scratch.path, new Set()).length).toBe(5)
+			expect(listFiles(scratch.path).every((file) => typeof file.modified === 'number')).toBe(true)
+			expect(() => listFiles(`${scratch.path}/absent`)).toThrow(/ENOENT/u)
 		} finally {
 			scratch.destroy()
 		}

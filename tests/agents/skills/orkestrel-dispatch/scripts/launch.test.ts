@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { closeSync, openSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isRecord, parseJSON } from '@orkestrel/contract'
@@ -6,10 +7,23 @@ import { createTeardown, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import {
 	buildSkillRun,
+	createRepository,
 	LAUNCH_SCRIPT,
 	runSkillScript,
 	WORKSPACE_ROOT,
 } from '../../../../setupServer.js'
+import {
+	computeCapMilliseconds,
+	endRunning,
+	forceKillTree,
+	MAX_CAP_SECONDS,
+	readGitStatus,
+	readMissingFlags,
+	readOption,
+	readUnknownFlags,
+	startCommand,
+	waitForExit,
+} from '../../../../../.agents/skills/orkestrel-dispatch/scripts/launch.ts'
 
 describe('launch.ts', () => {
 	it('B5.1 reports a shim that cannot start as exit 127 with its trailer and no pid', () => {
@@ -404,5 +418,204 @@ describe('launch.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+
+	it('refuses an unknown flag and the equals form before the separator, and starts nothing', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-unknown-' })
+		try {
+			const unknown = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', 'a', '--errors', 'b', '--bogus', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(unknown.status).toBe(64)
+			expect(unknown.stderr).toContain('--bogus')
+			expect(unknown.stdout).toBe('')
+			const equals = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal=a', '--errors', 'b', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(equals.status).toBe(64)
+			expect(equals.stderr).toContain('--journal=a')
+			expect(equals.stdout).toBe('')
+			expect(scratch.has('a')).toBe(false)
+			expect(scratch.has('b')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps an argument of the command that looks like an unknown flag intact after the separator', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-after-' })
+		try {
+			scratch.write('echo.cjs', 'process.stdout.write(process.argv.slice(2).join(" "))')
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				[
+					'--journal',
+					'tmp/units/after.jsonl',
+					'--errors',
+					'tmp/units/after.err',
+					'--cap',
+					'30',
+					'--',
+					process.execPath,
+					'echo.cjs',
+					'--bogus',
+					'--x=1',
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(scratch.read('tmp/units/after.jsonl')).toBe('--bogus --x=1')
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the cap decision', () => {
+	it('aborts the controller and kills a command that is still running when the cap lands', async () => {
+		const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 20000)'], {
+			stdio: 'ignore',
+			windowsHide: true,
+		})
+		const closed = waitForEvent<[number | null]>(
+			(listener) => {
+				child.on('close', listener)
+			},
+			'the running command closes after the cap kills it',
+			{ budget: 30_000 },
+		)
+		const ended = new AbortController()
+		endRunning(child, ended)
+		expect(ended.signal.aborted).toBe(true)
+		await closed
+		expect(child.exitCode !== null || child.signalCode !== null).toBe(true)
+	})
+
+	it('leaves the controller alone for a command that already exited on its own', async () => {
+		const child = spawn(process.execPath, ['-e', ''], { stdio: 'ignore', windowsHide: true })
+		await waitForEvent<[number | null]>(
+			(listener) => {
+				child.on('close', listener)
+			},
+			'the command exits on its own',
+			{ budget: 30_000 },
+		)
+		expect(child.exitCode).toBe(0)
+		const ended = new AbortController()
+		endRunning(child, ended)
+		expect(ended.signal.aborted).toBe(false)
+	})
+
+	it('computes whole milliseconds with 1 ms the least', () => {
+		expect(computeCapMilliseconds(1)).toBe(1000)
+		expect(computeCapMilliseconds(0.5)).toBe(500)
+		expect(computeCapMilliseconds(30.0001)).toBe(30_000)
+		expect(computeCapMilliseconds(0.0001)).toBe(1)
+		expect(computeCapMilliseconds(MAX_CAP_SECONDS)).toBe(MAX_CAP_SECONDS * 1000)
+	})
+
+	it('kills a running process tree and tolerates a process that is already gone', async () => {
+		const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 20000)'], {
+			stdio: 'ignore',
+			windowsHide: true,
+		})
+		const closed = waitForEvent<[number | null]>(
+			(listener) => {
+				child.on('close', listener)
+			},
+			'the process closes after the force kill',
+			{ budget: 30_000 },
+		)
+		const pid = child.pid
+		expect(typeof pid).toBe('number')
+		if (pid === undefined) return
+		forceKillTree(pid)
+		await closed
+		expect(() => {
+			forceKillTree(pid)
+		}).not.toThrow()
+	})
+})
+
+describe('the command start', () => {
+	it('starts a command into the journal and errors files and waits for its exit code', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-start-fd-' })
+		try {
+			const journal = openSync(join(scratch.path, 'out.txt'), 'w')
+			const errors = openSync(join(scratch.path, 'err.txt'), 'w')
+			const started = startCommand(
+				process.execPath,
+				['-e', 'process.stdout.write("out"); process.stderr.write("err"); process.exit(3)'],
+				journal,
+				errors,
+			)
+			if ('error' in started) throw new Error('The command did not start')
+			expect(await waitForExit(started)).toEqual({ code: 3, signal: null, error: undefined })
+			closeSync(journal)
+			closeSync(errors)
+			expect(scratch.read('out.txt')).toBe('out')
+			expect(scratch.read('err.txt')).toBe('err')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports a command that cannot start as an error exit', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-start-missing-' })
+		try {
+			const journal = openSync(join(scratch.path, 'out.txt'), 'w')
+			const errors = openSync(join(scratch.path, 'err.txt'), 'w')
+			const started = startCommand('this-command-does-not-exist-anywhere', [], journal, errors)
+			const exit = 'error' in started ? started : await waitForExit(started)
+			closeSync(journal)
+			closeSync(errors)
+			expect(exit.code).toBeNull()
+			expect(exit.signal).toBeNull()
+			expect(typeof exit.error).toBe('string')
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the git status reader', () => {
+	it('reads the porcelain status of a repository and names git failure outside one', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-status-' })
+		try {
+			expect(readGitStatus(scratch.path)).toMatch(/^git status failed: /u)
+			createRepository(scratch.path)
+			scratch.write('new.txt', 'x')
+			expect(readGitStatus(scratch.path)).toContain('?? new.txt')
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the argument readers', () => {
+	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
+		const argv = ['--journal', 'a.jsonl', '--errors', 'a.err', '--cap']
+		expect(readOption(argv, '--journal')).toBe('a.jsonl')
+		expect(readOption(argv, '--absent')).toBeUndefined()
+		expect(readOption(['--journal', '--errors', 'x'], '--journal')).toBeUndefined()
+		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
+		expect(readMissingFlags(argv, ['--journal', '--errors', '--cap'])).toEqual(['--cap'])
+		expect(readMissingFlags(['--journal', 'a'], ['--errors'])).toEqual([])
+	})
+
+	it('names an unread flag and the equals form, and stops at the command separator', () => {
+		expect(
+			readUnknownFlags(
+				['--journal=a', '--errors', 'b', '--status', '--bogus'],
+				['--journal', '--errors', '--status'],
+			),
+		).toEqual(['--journal=a', '--bogus'])
+		expect(readUnknownFlags(['--cap', '5', '--', 'node', '--watch'], ['--cap'])).toEqual([])
+		expect(readUnknownFlags(['--cap', '5', 'path', '-x'], ['--cap'])).toEqual([])
+		expect(readUnknownFlags([], [])).toEqual([])
 	})
 })

@@ -84,10 +84,10 @@ For every fetch, write, delete, extraction, path, protocol, or authentication bo
 
 ## Audit the tests themselves
 
-Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states (step 11 of the hardening lane): which project collects each file, which gate reaches each project, and where a file carries `.skip`, `.todo`, a conditional skip, a retry, or a timeout. Then verify:
+Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states (step 11 of the hardening lane): which project collects each file, which gate reaches each project, and where a file carries `.todo`, a conditional skip (`.skipIf`, `.runIf`), `.fails`, a retry, or a timeout. `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse `.only` and `.skip`. Then verify:
 
 - every intended test file is collected by the correct project, and the test counts and environments match the intent;
-- every declared project resolves to a real file and a gate reaches it; a project no chain runs never fails, so read the chain, not the exit code;
+- every project that collects tests has a gate: the census flags one no chain reaches as ungated, and a chained project that collects nothing as empty. A declared project that collects nothing and that no chain names is a workbench, reported without a flag; read the chain behind every workbench and rule it by its purpose, not by the exit code;
 - every flag the census reports is closed or ruled with a reason;
 - every marker it reports is justified;
 - no current-scope requirement is represented only by a todo or a placeholder;
@@ -96,7 +96,7 @@ Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states
 - helpers do not reimplement production logic;
 - real cleanup runs even after assertion or setup failure.
 
-Collection evaluates every collected project's `setupFiles`, so the census runs each setup module's load-time work, and `--projects` narrows the report, never that listing. When a setup module contacts a live service at load, such as a `service` project's readiness gate in `tests/setupService.ts`, run the census only while an instance the run may contact is up and the service's address points at it; with the address on a closed port, that project's listing fails and the census exits 2 naming its gate.
+Collection evaluates the `setupFiles` of every project the census lists, so each listed project's setup module runs its load-time work; `--projects a,b` lists only the named projects, so a project outside the names never loads. When a setup module contacts a live service at load, such as a `service` project's readiness gate in `tests/setupService.ts`, run the census only while an instance the run may contact is up and the service's address points at it, or name the other projects with `--projects`; with the address on a closed port, a listed project's listing fails and the census exits 2 naming its gate.
 
 ## Inspect generated outputs
 

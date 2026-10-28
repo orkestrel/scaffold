@@ -11,10 +11,11 @@ description: Research, audit, refactor, implement, centralize, test, document, a
 
 ## Scripts
 
-Run both from the checkout root. Each script's opening comment owns its behavior.
+Run each from the checkout root. Each script's opening comment owns its behavior.
 
-- `scripts/discovery.ts [--config vite.config.ts] [--projects a,b] [--json]` censuses which project collects each test file and which gate reaches each project. Exit 0 no finding, 3 findings, 2 tool or listing failure, 64 usage.
-- `scripts/titles.ts --base REV [--root DIR] [--json] [--out FILE]` lists each test title the working tree lost against `REV`. Exit 0 no missing title, 3 a title missing, 2 git, filesystem, or lexical refusal, 64 usage.
+- `scripts/discovery.ts [--config vite.config.ts] [--projects a,b] [--json]` censuses which project collects each test file and which root script chain (a gate) reaches each project. It needs `npm ci` first. It flags a project whose tests no gate lists (ungated), a chained project that collects nothing (empty), and a test or spec file under `tests/` that no project collects and no `node` command runs (undiscovered). It reports without a flag the marker counts per file (`.todo`, `.skipIf`, `.runIf`, `.fails`, a `retry` or timeout option, a numeric timeout argument; `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse `.only` and `.skip`) and each workbench, an empty project no chain names. The reader rules every marker and reads the chain behind every workbench. `--projects` lists only the named projects, exits 64 for a name no project matches, and skips the undiscovered scan. Exit 0 no flag, 3 a flag, 2 tool, listing, or option-table failure, 64 usage.
+- `scripts/titles.ts --base REV [--root DIR] [--json] [--out FILE.json|FILE.txt]` compares the `describe`, `it`, and `test` titles of `tests/**/*.test.ts` against `REV`. It flags a title registered fewer times than at `REV` as missing, or as moved when another string literal in `tests/**/*.ts` spells it; the reader rules each moved row by reading its holder. It reports without a flag each registration whose title is no literal (dynamic), which the comparison cannot follow, and cannot see a removed `.each` table row. `--root` defaults to the working directory and may sit below the repository top; `REV` may not open with `-`. Exit 0 no missing or moved title, 3 either, 2 git, filesystem, or lexical refusal, 64 usage.
+- `scripts/measure.ts --rule ID [--options JSON] PATH...` counts one lint rule's hits over the named paths before the rule is enabled. It writes a variant config under `tmp/probes/lint/` that enables only that rule as an error beside the workspace's `plugins` and `jsPlugins` (so a `policy/` rule loads), runs the installed oxlint from the checkout root, and prints the total and the hits per file. `--options` is the rule's JSON options, an array spread after `error` or one value. The variant carries no `ignorePatterns` and no override, so it reads exactly the named paths. It needs `npm ci` first. Exit 0 no hit, 3 a hit, 2 the config or the linter cannot run, 64 usage.
 
 ## Select the work lane
 
@@ -37,7 +38,7 @@ Load [hardening.md](references/hardening.md) for the hardening lane and for any 
 
 Load [document.md](references/document.md) for the documentation lane and for step 10 of every other lane.
 
-Load [bindings.md](references/bindings.md) for a census or a sweep under `.claude/rules/typescript.md` § Bindings, together with [equivalence.md](references/equivalence.md).
+Load [bindings.md](references/bindings.md) for a census or a sweep under `.claude/rules/typescript.md` § Bindings, together with [equivalence.md](references/equivalence.md). Before a census item becomes a lint rule, count the rule's hits with `scripts/measure.ts`.
 
 Load [equivalence.md](references/equivalence.md) for a structural lane whose rewrite claims unchanged behavior, and cite it in the claims of the review that judges one.
 

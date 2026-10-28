@@ -57,14 +57,13 @@ isolated tests for declaration-only types, constants, barrels, or error definiti
 
 Before acceptance, prove:
 
-- no stray declarations remain in implementation files;
-- no non-exported or wrong-kind declaration remains in centralized files;
-- no prohibited nested function declaration or assignment remains;
+- `npm run lint:check` passes, which refuses a stray, unexported, or wrong-kind declaration in
+  `src/` and `app/`, and a prohibited nested function;
 - no duplicate or rename-only wrapper remains;
 - every move updated imports, barrels, guides, and tests;
 - test helpers are consolidated without over-generalizing one-off setup;
-- files are valid UTF-8 with no replacement characters, mojibake, unintended control
-  characters, or accidental trailing debris.
+- the policy sweep passes `.claude/rules/workspace.md` § Text integrity, and a reading of the diff
+  finds no mojibake or accidental trailing debris.
 
 Review the complete diff after formatting. Formatting cannot substitute for the structural
 sweep.

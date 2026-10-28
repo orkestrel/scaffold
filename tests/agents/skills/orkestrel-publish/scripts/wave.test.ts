@@ -15,6 +15,51 @@ import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { createScratch, readInventory, supportsDirectoryLinks } from '@orkestrel/test/server'
 import { CLI } from '../../../../../src/bin/CLI.js'
 import {
+	collectSpecs,
+	compareRanges,
+	computeRanges,
+	describeFailure,
+	describeReading,
+	extractConflict,
+	failed,
+	isRecord as isScriptRecord,
+	judgeOverwrite,
+	judgePin,
+	judgeVerify,
+	matchesLocalSpec,
+	normalizeSlashes,
+	parseJsonRecord,
+	readDirtyPaths,
+	parseJsonLine,
+	readLayers,
+	readManifest,
+	readMissingFlags,
+	readOption,
+	readRanges,
+	readReceipt,
+	readReleases,
+	readString,
+	readUnknownFlags,
+	readVerdict,
+	removeTree,
+	renderCommand,
+	renderVisit,
+	resolveNpm,
+	resolveScaffold,
+	runNpm,
+	scanLocalSpecs,
+	validateWavePath,
+	writeRanges,
+	RANGE_FIELDS,
+} from '../../../../../.agents/skills/orkestrel-publish/scripts/wave.ts'
+import type {
+	Release,
+	StepResult,
+	Visit,
+} from '../../../../../.agents/skills/orkestrel-publish/scripts/wave.ts'
+import {
+	buildDirtyStatus,
+	buildSpawnResult,
 	commitFiles,
 	buildCLIOptions,
 	buildPackument,
@@ -30,6 +75,7 @@ import {
 	spawnNpm,
 	spawnSkillScript,
 	trackFiles,
+	WAVE_FAILURE_ROWS,
 	WAVE_REFUSALS,
 	WAVE_JOURNAL_FAILURES,
 	WAVE_SCRIPT,
@@ -457,11 +503,11 @@ describe('wave.ts', () => {
 		)
 		const row = skill.split(/\r\n|\n/).find((line) => line.startsWith('| `scripts/wave.ts`'))
 		expect(row).toContain(`(${WAVE_STEPS.join(', ')})`)
-		const helpers = readFileSync(
-			join(WORKSPACE_ROOT, '.agents/skills/orkestrel-dispatch/scripts/helpers.ts'),
+		const script = readFileSync(
+			join(WORKSPACE_ROOT, '.agents/skills/orkestrel-publish/scripts/wave.ts'),
 			'utf8',
 		)
-		expect(helpers).toContain(
+		expect(script).toContain(
 			"join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js')",
 		)
 	})
@@ -1159,5 +1205,551 @@ describe('wave.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+
+	it('refuses a flag it does not read, the equals form included, before it runs a step', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-unknown-' })
+		try {
+			scratch.write('dist/bin/main.js', '')
+			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			for (const argv of [
+				['--visit', '--dry-run', '--bogus'],
+				['--visit', '--dry-run', '--from=pin'],
+				['--visit', '--target=.', '--dry-run'],
+				['--visit', '--dry-run', '--json=1'],
+				['--plan', '--json=1'],
+				['--plan', '--catalog=table.md'],
+				['--bogus'],
+			]) {
+				const run = runSkillScript(WAVE_SCRIPT, argv, { cwd: scratch.path })
+				expect([argv, run.status]).toStrictEqual([argv, 64])
+				expect(run.stderr).toContain('wave: unknown flag')
+				expect(run.stderr).toContain('usage: wave.ts --visit')
+				expect(run.stdout).toBe('')
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reports a sweep hit as a reading and keeps the exit at zero', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-reading-' })
+		try {
+			scratch.write('dist/bin/main.js', '')
+			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			scratch.write('src/a.ts', '"1.0.0"\n')
+			const run = runSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'pins', '--to', 'pins', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(run.json?.steps).toEqual([expect.objectContaining({ step: 'pins', exit: 3 })])
+			expect(run.json?.ruling).toMatchObject({ hits: 1 })
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the failure predicate', () => {
+	it('reads a nonzero exit as a failure unless it is superseded, a dry run, or a pins or compare reading', () => {
+		for (const [label, rows, expected] of WAVE_FAILURE_ROWS) {
+			const steps = rows.map(([step, exit, superseded]): StepResult => ({
+				step,
+				command: step,
+				exit,
+				durationMs: 0,
+				note: undefined,
+				...(superseded ? { superseded: true as const } : {}),
+			}))
+			expect([label, failed(steps)]).toStrictEqual([label, expected])
+		}
+	})
+})
+
+describe('the dirty paths', () => {
+	it('reads each entry once and a rename or copy with its original path', () => {
+		expect(readDirtyPaths('')).toEqual([])
+		expect(readDirtyPaths('?? a.ts\0')).toEqual(['a.ts'])
+		expect(readDirtyPaths(' M src/b.ts\0A  c.ts\0')).toEqual(['src/b.ts', 'c.ts'])
+		expect(readDirtyPaths('R  new.ts\0M  old name.ts\0?? other.ts\0')).toEqual([
+			'new.ts',
+			'M  old name.ts',
+			'other.ts',
+		])
+		expect(readDirtyPaths('C  copy.ts\0src.ts\0')).toEqual(['copy.ts', 'src.ts'])
+		expect(readDirtyPaths(' R new.ts\0old.ts\0')).toEqual(['new.ts', 'old.ts'])
+		expect(readDirtyPaths('?? a\nb.ts\0')).toEqual(['a\nb.ts'])
+		expect(readDirtyPaths('?? Copy.ts\0?? Rename.ts\0')).toEqual(['Copy.ts', 'Rename.ts'])
+		expect(readDirtyPaths('?? last.ts')).toEqual(['last.ts'])
+	})
+
+	it('reads a status of many entries without recursing once per path', () => {
+		const paths = readDirtyPaths(buildDirtyStatus(50_000))
+		expect(paths).toHaveLength(50_000)
+		expect(paths[0]).toBe('src/file0.ts')
+		expect(paths.at(-1)).toBe('src/file49999.ts')
+	})
+})
+
+describe('the command rendering', () => {
+	it('names the running Node binary as node and joins the arguments', () => {
+		expect(renderCommand(process.execPath, ['x.js', '--a'])).toBe('node x.js --a')
+		expect(renderCommand('git', ['status', '--porcelain'])).toBe('git status --porcelain')
+		expect(renderCommand('git', [])).toBe('git')
+	})
+
+	it('renders a visit as one line per step, the ruling, each moved range, and the release row', () => {
+		const visit: Visit = {
+			target: '/t',
+			name: '@fixture/pkg',
+			version: '1.0.0',
+			steps: [
+				{ step: 'pin', command: 'npm install', exit: 0, durationMs: 12, note: 'done' },
+				{
+					step: 'compare',
+					command: 'x',
+					exit: undefined,
+					durationMs: 0,
+					note: undefined,
+					journal: 'j.log',
+				},
+			],
+			ruling: { distMoved: true, rangesMoved: false, ranges: ['r1'], hits: 2 },
+			row: '| @fixture/pkg | 1.0.0 | bump | reading | round |',
+		}
+		const lines = renderVisit(visit).split('\n')
+		expect(lines[0]).toMatch(/^wave: pin +exit=0 +12 ms {2}npm install {2}\(done\)$/u)
+		expect(lines[1]).toMatch(/^wave: compare +exit=dry +0 ms {2}x {2}journal=j\.log$/u)
+		expect(lines.slice(2)).toEqual([
+			'wave: ruling dist moved, ranges same, 2 self-pin hit(s)',
+			'wave: range r1',
+			'| @fixture/pkg | 1.0.0 | bump | reading | round |',
+			'',
+		])
+		expect(describeReading(undefined, 'moved', 'same')).toBe('unanswered')
+		expect(describeReading(true, 'moved', 'same')).toBe('moved')
+		expect(describeReading(false, 'moved', 'same')).toBe('same')
+	})
+})
+
+describe('the audit readings', () => {
+	it('reads the release readings out of an audit envelope and refuses one that carries none', () => {
+		const envelope =
+			'noise\n{"releases":[{"name":"a","range":"^1.0.0","latest":"1.2.0"},{"name":"b"},5,{"name":"c","range":"1.0.0"}]}\n'
+		expect(readReleases(envelope)).toEqual([
+			{ name: 'a', range: '^1.0.0', latest: '1.2.0' },
+			{ name: 'c', range: '1.0.0', latest: undefined },
+		])
+		expect(readReleases('{"releases":[]}')).toEqual([])
+		expect(readReleases('{}')).toBeUndefined()
+		expect(readReleases('{"releases":"x"}')).toBeUndefined()
+		expect(readReleases('')).toBeUndefined()
+	})
+
+	it('names a failure by its envelope, its note, or the tail of its standard error', () => {
+		expect(describeFailure(buildSpawnResult(0, '{"note":"n"}', 'e'))).toBeUndefined()
+		expect(
+			describeFailure(buildSpawnResult(1, '{"error":{"code":"TARGET","message":"m"}}', 'e')),
+		).toBe('TARGET: m')
+		expect(describeFailure(buildSpawnResult(1, '{"note":"n"}', 'e'))).toBe('n')
+		expect(describeFailure(buildSpawnResult(1, '', 'a\nb\n\nc\nd\n'))).toBe('b | c | d')
+		expect(describeFailure(buildSpawnResult(1, '{"error":{"code":"X"}}', 'e1\n'))).toBe('e1')
+		expect(readVerdict(buildSpawnResult(null))).toEqual({ exit: undefined, note: '' })
+		expect(readVerdict(buildSpawnResult(0))).toEqual({ exit: 0, note: undefined })
+	})
+
+	it('reads the pin audit exit 1 as the drift the step closes and refuses an audit with no envelope', () => {
+		const envelope = '{"releases":[{"name":"a","range":"^1.0.0","latest":"1.2.0"}]}'
+		expect(judgePin(buildSpawnResult(0, envelope))).toEqual({
+			exit: 0,
+			note: '1 release reading(s)',
+		})
+		expect(judgePin(buildSpawnResult(1, envelope))).toEqual({
+			exit: 0,
+			note: '1 release reading(s)',
+		})
+		expect(judgePin(buildSpawnResult(2, envelope, 'bad\n'))).toEqual({ exit: 2, note: 'bad' })
+		expect(judgePin(buildSpawnResult(0, ''))).toEqual({
+			exit: 2,
+			note: 'the audit printed no releases envelope',
+		})
+		expect(judgePin(buildSpawnResult(3, ''))).toEqual({
+			exit: 3,
+			note: 'the audit printed no releases envelope',
+		})
+		expect(judgePin(buildSpawnResult(null, ''))).toMatchObject({ exit: 2 })
+	})
+
+	it('reads the offline catalog refusal as a pass and every other overwrite exit by its code', () => {
+		const refusal = '{"note":"\'catalog\' does not take --offline"}'
+		expect(judgeOverwrite(buildSpawnResult(1, refusal), true)).toEqual({
+			exit: 0,
+			note: 'offline overwrite skipped the catalog step by design',
+		})
+		expect(judgeOverwrite(buildSpawnResult(1, '{"note":"other"}'), true)).toEqual({
+			exit: 1,
+			note: 'other',
+		})
+		expect(judgeOverwrite(buildSpawnResult(1, refusal), false)).toEqual({
+			exit: 1,
+			note: expect.any(String),
+		})
+		expect(judgeOverwrite(buildSpawnResult(0), true)).toEqual({ exit: 0, note: undefined })
+		expect(judgeOverwrite(buildSpawnResult(2, refusal), true).exit).toBe(2)
+	})
+
+	it('reads the verify audit exit 1 as expected on the scaffold checkout alone', () => {
+		const envelope = '{"releases":[]}'
+		expect(judgeVerify(buildSpawnResult(1, envelope), true)).toEqual({
+			exit: 0,
+			note: 'foreign-path findings are expected on the scaffold checkout',
+		})
+		expect(judgeVerify(buildSpawnResult(1, envelope, 'drift\n'), false)).toEqual({
+			exit: 1,
+			note: 'drift',
+		})
+		expect(judgeVerify(buildSpawnResult(0, envelope), false)).toEqual({ exit: 0, note: undefined })
+		expect(judgeVerify(buildSpawnResult(2, envelope), true).exit).toBe(2)
+		expect(judgeVerify(buildSpawnResult(1, ''), true)).toEqual({
+			exit: 1,
+			note: 'the audit printed no releases envelope',
+		})
+		expect(judgeVerify(buildSpawnResult(0, ''), false).exit).toBe(2)
+	})
+
+	it('reads the conflict an ERESOLVE install names and nothing from another failure', () => {
+		const code = 'npm error code ERESOLVE\n'
+		expect(
+			extractConflict(
+				buildSpawnResult(
+					1,
+					'',
+					`${code}npm error Could not resolve dependency:\nnpm error Conflicting peer dependency: x@1\n`,
+				),
+			),
+		).toBe('Conflicting peer dependency: x@1')
+		expect(
+			extractConflict(buildSpawnResult(1, '', `${code}npm ERR! Could not resolve dependency:\n`)),
+		).toBe('Could not resolve dependency:')
+		expect(extractConflict(buildSpawnResult(1, '', code))).toBe(
+			'the install could not move a locked peer',
+		)
+		expect(extractConflict(buildSpawnResult(1, '', 'npm error code E404\n'))).toBeUndefined()
+		expect(extractConflict(buildSpawnResult(0, '', 'ERESOLVEX'))).toBeUndefined()
+	})
+})
+
+describe('the manifest ranges', () => {
+	it('reads a manifest, the string ranges of its fields, and refuses an absent or unreadable one', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-ranges-' })
+		try {
+			expect(readManifest(scratch.path)).toBeUndefined()
+			scratch.write('package.json', '{ this is not json')
+			expect(readManifest(scratch.path)).toBeUndefined()
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					dependencies: { a: '^1.0.0' },
+					devDependencies: { b: '~2.0.0', n: 1 },
+					peerDependencies: 'x',
+				}),
+			)
+			const manifest = readManifest(scratch.path)
+			if (manifest === undefined) throw new Error('The manifest did not read')
+			expect([...readRanges(manifest, RANGE_FIELDS)]).toEqual([
+				['dependencies a', '^1.0.0'],
+				['devDependencies b', '~2.0.0'],
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lists each range the final set added, removed, or changed against the published set, sorted', () => {
+		expect(
+			compareRanges(
+				new Map([
+					['dependencies a', '^1.0.0'],
+					['dependencies c', '^1.0.0'],
+					['dependencies d', '^1.0.0'],
+				]),
+				new Map([
+					['dependencies a', '^1.1.0'],
+					['dependencies b', '^1.0.0'],
+					['dependencies d', '^1.0.0'],
+				]),
+			),
+		).toEqual([
+			'dependencies a ^1.0.0 -> ^1.1.0',
+			'dependencies b ^1.0.0 added',
+			'dependencies c ^1.0.0 removed',
+		])
+		expect(compareRanges(new Map(), new Map())).toEqual([])
+	})
+
+	it('moves each named dependency to the caret of its latest release, once per name', () => {
+		const releases: readonly Release[] = [
+			{ name: 'a', range: '^1.0.0', latest: '1.2.0' },
+			{ name: 'a', range: '^1.0.0', latest: '1.2.0' },
+			{ name: 'b', range: '^1.0.0', latest: undefined },
+			{ name: 'c', range: '^1.0.0', latest: '3.0.0' },
+		]
+		expect(computeRanges({ a: '^1.0.0', b: '^1.0.0', n: 1 }, releases)).toEqual({
+			ranges: { a: '^1.2.0', b: '^1.0.0', n: 1 },
+			moved: ['a ^1.0.0 -> ^1.2.0'],
+		})
+		expect(computeRanges({ a: '^1.2.0' }, releases)).toEqual({ ranges: { a: '^1.2.0' }, moved: [] })
+	})
+
+	it('rewrites the manifest only when a range moved', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-write-' })
+		try {
+			expect(writeRanges(scratch.path, [])).toEqual([])
+			const original = `{\n  "name": "x",\n  "dependencies": { "a": "^1.2.0" }\n}\n`
+			scratch.write('package.json', original)
+			const same: readonly Release[] = [{ name: 'a', range: '^1.2.0', latest: '1.2.0' }]
+			expect(writeRanges(scratch.path, same)).toEqual([])
+			expect(scratch.read('package.json')).toBe(original)
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					name: 'x',
+					dependencies: { a: '^1.0.0' },
+					peerDependencies: { a: '^1.0.0' },
+					devDependencies: { a: '^1.0.0' },
+				}),
+			)
+			const moved: readonly Release[] = [{ name: 'a', range: '^1.0.0', latest: '1.2.0' }]
+			expect(writeRanges(scratch.path, moved)).toEqual([
+				'a ^1.0.0 -> ^1.2.0',
+				'a ^1.0.0 -> ^1.2.0',
+				'a ^1.0.0 -> ^1.2.0',
+			])
+			expect(scratch.read('package.json')).toBe(
+				`${JSON.stringify(
+					{
+						name: 'x',
+						dependencies: { a: '^1.2.0' },
+						peerDependencies: { a: '^1.2.0' },
+						devDependencies: { a: '^1.2.0' },
+					},
+					null,
+					'\t',
+				)}\n`,
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the scaffold executable, the receipt, and the catalog', () => {
+	it('prefers the installed scaffold entry, then the target own build, and answers none otherwise', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-scaffold-' })
+		try {
+			expect(resolveScaffold(scratch.path)).toEqual([])
+			const own = scratch.write('dist/bin/main.js', '')
+			expect(resolveScaffold(scratch.path).map((path) => normalizeSlashes(path))).toEqual(
+				[process.execPath, own].map((path) => normalizeSlashes(path)),
+			)
+			const installed = scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
+			expect(resolveScaffold(scratch.path).map((path) => normalizeSlashes(path))).toEqual(
+				[process.execPath, installed].map((path) => normalizeSlashes(path)),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the overwrite receipt and refuses one that is absent, unreadable, or short a field', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-receipt-' })
+		try {
+			expect(readReceipt(scratch.path)).toBeUndefined()
+			const receipt = { head: 'abc', version: '1.0.0', offline: false, written: ['a'], removed: [] }
+			scratch.write('tmp/units/wave/overwrite.json', JSON.stringify(receipt))
+			expect(readReceipt(scratch.path)).toEqual(receipt)
+			for (const bad of [
+				'not json',
+				'[]',
+				JSON.stringify({ ...receipt, head: 1 }),
+				JSON.stringify({ ...receipt, version: undefined }),
+				JSON.stringify({ ...receipt, offline: 'no' }),
+				JSON.stringify({ ...receipt, written: 'a' }),
+				JSON.stringify({ ...receipt, written: [1] }),
+				JSON.stringify({ ...receipt, removed: [null] }),
+			]) {
+				scratch.write('tmp/units/wave/overwrite.json', bad)
+				expect([bad, readReceipt(scratch.path)]).toStrictEqual([bad, undefined])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the catalog table by layer in numeric order and refuses a file with no table', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-catalog-' })
+		try {
+			expect(readLayers(join(scratch.path, 'absent.md'))).toBeUndefined()
+			const bare = scratch.write('bare.md', '| `@orkestrel/a` | `1.0.0` | L0 | |\n')
+			expect(readLayers(bare)).toBeUndefined()
+			const table = scratch.write(
+				'table.md',
+				[
+					'<!-- orkestrel:catalog -->',
+					'| `@orkestrel/b` | `1.0.0` | L10 | x |',
+					'| `@orkestrel/a` | `0.1.0` | L2 | |',
+					'| `@orkestrel/c` | `0.2.0` | L2 | |',
+					'| not a row |',
+					'<!-- /orkestrel:catalog -->',
+					'| `@orkestrel/d` | `0.3.0` | L0 | |',
+				].join('\n'),
+			)
+			const layers = readLayers(table)
+			expect([...(layers ?? [])]).toEqual([
+				['L2', ['@orkestrel/a 0.1.0', '@orkestrel/c 0.2.0']],
+				['L10', ['@orkestrel/b 1.0.0']],
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps a wave path inside the target, off links, and under directories', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-path-' })
+		try {
+			expect(() => {
+				validateWavePath(scratch.path, join(scratch.path, 'tmp', 'units', 'wave', 'x.log'))
+			}).not.toThrow()
+			expect(() => {
+				validateWavePath(scratch.path, scratch.path)
+			}).not.toThrow()
+			expect(() => {
+				validateWavePath(scratch.path, join(scratch.path, '..', 'outside'))
+			}).toThrow('unsafe wave path')
+			expect(() => {
+				validateWavePath(scratch.path, join(scratch.path, '..'))
+			}).toThrow('resolves outside')
+			const file = scratch.write('file.txt', 'x')
+			expect(() => {
+				validateWavePath(scratch.path, join(file, 'child'))
+			}).toThrow('is not a directory')
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the copied helpers', () => {
+	it('reads a flag value, treats a following flag as a missing value, and keeps the first occurrence', () => {
+		expect(readOption(['--target', 'dir', '--json'], '--target')).toBe('dir')
+		expect(readOption(['--target', 'dir'], '--absent')).toBeUndefined()
+		expect(readOption(['--json'], '--json')).toBeUndefined()
+		expect(readOption(['--from', '--to', 'x'], '--from')).toBeUndefined()
+		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
+		expect(
+			readMissingFlags(
+				['--target', '--json', '--out', 'a', '--from'],
+				['--target', '--out', '--from'],
+			),
+		).toEqual(['--target', '--from'])
+		expect(readMissingFlags(['--out', 'a'], ['--target'])).toEqual([])
+	})
+
+	it('names an unread flag and the equals form, and stops at the command separator', () => {
+		expect(
+			readUnknownFlags(
+				['--target=dir', '--json', '--prior', '1.0.0', '--prio', 'x'],
+				['--target', '--json', '--prior'],
+			),
+		).toEqual(['--target=dir', '--prio'])
+		expect(readUnknownFlags(['--from', 'pin', '--', 'node', '--watch'], ['--from'])).toEqual([])
+		expect(readUnknownFlags(['--from', 'pin', 'path', '-x'], ['--from'])).toEqual([])
+		expect(readUnknownFlags([], [])).toEqual([])
+	})
+
+	it('reads the last JSON object line and a whole document, and typed members', () => {
+		expect(parseJsonLine('noise\n{"a":1,"b":"x"}\n\n')).toEqual({ a: 1, b: 'x' })
+		expect(parseJsonLine('{"a":1}\n[1]\n')).toBeUndefined()
+		expect(parseJsonLine('')).toBeUndefined()
+		const formatted = '{\n\t"name": "@fixture/pkg",\n\t"version": "1.0.0"\n}\n'
+		expect(parseJsonRecord(formatted)).toEqual({ name: '@fixture/pkg', version: '1.0.0' })
+		expect(parseJsonLine(formatted)).toBeUndefined()
+		expect(parseJsonRecord('[1]')).toBeUndefined()
+		expect(parseJsonRecord('not json')).toBeUndefined()
+		expect(parseJsonRecord('')).toBeUndefined()
+		expect(readString({ b: 'x' }, 'b')).toBe('x')
+		expect(readString({ b: 1 }, 'b')).toBeUndefined()
+		expect(readString(undefined, 'b')).toBeUndefined()
+		expect(normalizeSlashes('a\\b\\c.ts')).toBe('a/b/c.ts')
+		expect(normalizeSlashes('a/b')).toBe('a/b')
+		expect(isScriptRecord({})).toBe(true)
+		expect(isScriptRecord(Object.create(null))).toBe(true)
+		expect(isScriptRecord(null)).toBe(false)
+		expect(isScriptRecord([])).toBe(false)
+		expect(isScriptRecord('record')).toBe(false)
+	})
+
+	it('matches the local specs, collects nested specs, and names the local ones by path', () => {
+		for (const spec of [
+			'file:../other',
+			'link:../other',
+			'./peer',
+			'../up',
+			'/abs',
+			'C:/x',
+			'a.tgz',
+		]) {
+			expect([spec, matchesLocalSpec(spec)]).toStrictEqual([spec, true])
+		}
+		for (const spec of [
+			'^1.0.0',
+			'npm:other@^1.0.0',
+			'owner/other.tgz',
+			'github:orkestrel/other',
+			'',
+		]) {
+			expect([spec, matchesLocalSpec(spec)]).toStrictEqual([spec, false])
+		}
+		expect(collectSpecs('overrides', { a: { b: 'file:../other' }, c: '^1.0.0' })).toEqual([
+			['overrides.a.b', 'file:../other'],
+			['overrides.c', '^1.0.0'],
+		])
+		expect(collectSpecs('overrides', { a: null, b: ['file:../other'], c: 1 })).toEqual([])
+		expect(
+			scanLocalSpecs({
+				dependencies: { local: 'file:../dependency', remote: '^1.0.0' },
+				overrides: { a: { b: 'file:../override' } },
+			}),
+		).toEqual([
+			['dependencies.local', 'file:../dependency'],
+			['overrides.a.b', 'file:../override'],
+		])
+		expect(scanLocalSpecs({})).toEqual([])
+	})
+
+	it('removes a nested tree, preserves its sibling, and accepts a missing tree', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-removal-' })
+		try {
+			scratch.write('owned/deep/file.txt', 'remove')
+			scratch.write('sibling/file.txt', 'keep')
+			const owned = scratch.ensure('owned')
+			removeTree(owned)
+			expect(scratch.has('owned')).toBe(false)
+			expect(scratch.read('sibling/file.txt')).toBe('keep')
+			removeTree(owned)
+			expect(scratch.has('owned')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('resolves an npm command that answers', () => {
+		const npm = resolveNpm()
+		expect(npm.prefix.length === 0 || existsSync(npm.prefix[0] ?? '')).toBe(true)
+		const result = runNpm(['--version'])
+		expect(result.status).toBe(0)
+		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
 	})
 })
