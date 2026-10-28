@@ -2727,6 +2727,43 @@ describe('emitted distribution classifier', () => {
 		}
 	}, 20_000)
 
+	it('declares the required peers in the consumer manifest, as a host carries them', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-peers-' })
+		try {
+			const classifier = writeDistributionHarness(workspace)
+			workspace.write('bare/package.json', JSON.stringify({ name: 'bare' }))
+			workspace.write(
+				'peered/package.json',
+				JSON.stringify({
+					name: 'peered',
+					peerDependencies: { vite: '^8.3.5', vitest: '>=4.1.12 <5', playwright: '^1', odd: 3 },
+					peerDependenciesMeta: { playwright: { optional: true }, vite: { optional: false } },
+				}),
+			)
+			const bare = JSON.stringify(join(workspace.path, 'bare/package.json'))
+			const peered = JSON.stringify(join(workspace.path, 'peered/package.json'))
+			const answers = driveModule(classifier, 'classifier', [
+				`classifier.readDistributionPeers(${bare})`,
+				`classifier.readDistributionPeers(${peered})`,
+				`classifier.createDistributionConsumerManifest({})`,
+				`JSON.parse(classifier.createDistributionConsumerManifest({ vitest: '>=4.1.12 <5' }))`,
+			])
+			expect(answers).toStrictEqual([
+				{},
+				{ vite: '^8.3.5', vitest: '>=4.1.12 <5' },
+				'{ "name": "distribution-consumer", "private": true, "type": "module" }\n',
+				{
+					name: 'distribution-consumer',
+					private: true,
+					type: 'module',
+					dependencies: { vitest: '>=4.1.12 <5' },
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
 	it('classifies native addon targets as modules', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-classifier-' })
 		try {

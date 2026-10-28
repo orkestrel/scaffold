@@ -2403,6 +2403,8 @@ export const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'isDistributionList',
 	'matchesDistributionPackageTarget',
 	'readDistributionJSON',
+	'readDistributionPeers',
+	'createDistributionConsumerManifest',
 	'resolveDistributionPackageTarget',
 	'resolveDistributionTarget',
 	'resolvesDistributionBrowser',
