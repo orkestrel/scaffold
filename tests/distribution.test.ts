@@ -477,7 +477,6 @@ describe('installed package consumer', () => {
 			'guides/sqlite.md',
 			'guides/sse.md',
 			'guides/study.md',
-			'guides/supervisor.md',
 			'guides/table.md',
 			'guides/template.md',
 			'guides/terminal.md',

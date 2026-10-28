@@ -466,7 +466,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "e4c866c28296c3509a0dcc1d7bbc9af84650417955b3173cc61a005f16f31ca3"
+			"digest": "6e20db03239a7b63cae850238346443cc1f3c8ebae9416111a4135a3bbceb8d4"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -598,7 +598,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "757e18d4d9ffa385b08252d6d17b258ccf1e8d1d7db781088de80a27191093fb"
+			"digest": "4259f802db848899577c1b0a5bee127c139e4c76784ebab4c2a9794f08bd709c"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1156,7 +1156,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "05f4a2769a89f4235236b6a577637a05cd6046516836a0280f8fab35b881f5ba"
+			"digest": "1fb53b1cc5b376d4e3574da798ddf2c28dafe7690988c51c3fe1fd0bb5015de4"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1187,12 +1187,6 @@
 			"destination": "guides/study.md",
 			"executable": false,
 			"digest": "2a85a221bdff846aeadfc9b7885a8d758e15c034abe3c6a90f2a4f140a31bb4b"
-		},
-		{
-			"storage": "guides/supervisor.md",
-			"destination": "guides/supervisor.md",
-			"executable": false,
-			"digest": "f19868bb64835bc5179f6fe49c2550f7029a8c9c99dd708fbd4fa521fe9b5e42"
 		},
 		{
 			"storage": "guides/table.md",
@@ -1396,13 +1390,6 @@
 			]
 		},
 		{
-			"name": "Brief",
-			"owners": [
-				"brief",
-				"supervisor"
-			]
-		},
-		{
 			"name": "CHOICE_LIMIT",
 			"owners": [
 				"form",
@@ -1414,13 +1401,6 @@
 			"owners": [
 				"probe",
 				"reason"
-			]
-		},
-		{
-			"name": "Client",
-			"owners": [
-				"middleware",
-				"supervisor"
 			]
 		},
 		{
@@ -1564,13 +1544,6 @@
 			]
 		},
 		{
-			"name": "JournalInterface",
-			"owners": [
-				"supervisor",
-				"test"
-			]
-		},
-		{
 			"name": "MAX_DEPTH",
 			"owners": [
 				"html",
@@ -1610,27 +1583,6 @@
 			"owners": [
 				"csv",
 				"workspace"
-			]
-		},
-		{
-			"name": "ProviderInterface",
-			"owners": [
-				"agent",
-				"supervisor"
-			]
-		},
-		{
-			"name": "ProviderOptions",
-			"owners": [
-				"agent",
-				"supervisor"
-			]
-		},
-		{
-			"name": "RelayOptions",
-			"owners": [
-				"agent",
-				"supervisor"
 			]
 		},
 		{
@@ -1716,13 +1668,6 @@
 			"owners": [
 				"agent",
 				"server"
-			]
-		},
-		{
-			"name": "Supervisor",
-			"owners": [
-				"process",
-				"supervisor"
 			]
 		},
 		{
@@ -1814,13 +1759,6 @@
 			"owners": [
 				"interpret",
 				"template"
-			]
-		},
-		{
-			"name": "WorkflowFault",
-			"owners": [
-				"supervisor",
-				"workflow"
 			]
 		},
 		{
@@ -1973,38 +1911,10 @@
 			]
 		},
 		{
-			"name": "freezeDeep",
-			"owners": [
-				"brief",
-				"supervisor"
-			]
-		},
-		{
 			"name": "hasReservedKey",
 			"owners": [
 				"program",
 				"qualifier"
-			]
-		},
-		{
-			"name": "isBoundedJSONRecord",
-			"owners": [
-				"contract",
-				"supervisor"
-			]
-		},
-		{
-			"name": "isBoundedJSONValue",
-			"owners": [
-				"contract",
-				"supervisor"
-			]
-		},
-		{
-			"name": "isBrief",
-			"owners": [
-				"brief",
-				"supervisor"
 			]
 		},
 		{
@@ -2071,20 +1981,6 @@
 			]
 		},
 		{
-			"name": "isNonNegativeInteger",
-			"owners": [
-				"contract",
-				"supervisor"
-			]
-		},
-		{
-			"name": "isNonNegativeNumber",
-			"owners": [
-				"contract",
-				"supervisor"
-			]
-		},
-		{
 			"name": "isStage",
 			"owners": [
 				"probe",
@@ -2099,13 +1995,6 @@
 			]
 		},
 		{
-			"name": "isTerminalStatus",
-			"owners": [
-				"supervisor",
-				"workflow"
-			]
-		},
-		{
 			"name": "isText",
 			"owners": [
 				"brief",
@@ -2117,13 +2006,6 @@
 			"owners": [
 				"html",
 				"markdown"
-			]
-		},
-		{
-			"name": "matchesJSONDepth",
-			"owners": [
-				"contract",
-				"supervisor"
 			]
 		},
 		{
@@ -2247,5 +2129,5 @@
 			]
 		}
 	],
-	"digest": "1295a9a1bd035de469d32974c8b486af68e966dcab81615e06ae3a4f9008fcef"
+	"digest": "f6cb4165068781329284c106807770b2f173e7cf6070f65cc8fcbad7f31fd11c"
 }

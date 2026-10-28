@@ -2633,7 +2633,7 @@ and the regenerated root configuration registers no project for it. Restore the 
 hand, then run `repair`.
 
 **A fleet target holding Vue code under `app/browser` cannot repair.** On 2026-09-30 the
-`elements`, `mailbox`, `roughnotes`, and `supervisor` checkouts each held `.vue` files under
+`elements`, `mailbox`, and `roughnotes` checkouts each held `.vue` files under
 `app/browser`, read by a recursive count in each local checkout. The migration guard refuses
 `repair` and `overwrite` in each of them until its components move to `app/vue`, so each moves them
 in its own change before it adopts the release that carries the guard.

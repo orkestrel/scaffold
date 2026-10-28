@@ -423,7 +423,7 @@ describe('the manifest builders', () => {
 		expect(destinations).toContain('.claude/agents/orkestrel.md')
 		expect(destinations).toContain('LICENSE')
 		expect(destinations).toContain('guides/router.md')
-		expect(destinations).toContain('guides/supervisor.md')
+		expect(destinations).toContain('guides/study.md')
 		// The skill canon a pointer set hydrates from is declared at the digest of the
 		// text the host root stores, so a value host read from it verifies.
 		for (const [destination, text] of Object.entries(SKILL_CANON_FILES)) {
