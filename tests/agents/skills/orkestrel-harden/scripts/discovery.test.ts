@@ -1387,7 +1387,7 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('refuses a --projects name no project matches and names the declared projects', () => {
+	it('refuses a --projects name no project matches without listing a project outside the named set', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-unmatched-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -1399,20 +1399,20 @@ export default ({ mode }) => {
 				'vite.config.ts',
 				"export default { test: { projects: ['core', 'other'].map((name) => ({ test: { name, include: ['tests/' + name + '.test.ts'] } })) } }\n",
 			)
-			for (const name of ['core', 'other'])
-				scratch.write(
-					`tests/${name}.test.ts`,
-					"import { it } from 'vitest'\nit('collects', () => {})\n",
-				)
+			scratch.write('tests/core.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			scratch.write(
+				'tests/other.test.ts',
+				"import { writeFileSync } from 'node:fs'\nimport { it } from 'vitest'\nwriteFileSync('collected', 'yes')\nit('collects', () => {})\n",
+			)
 			for (const named of ['nosuch', 'core,nosuch', 'no*such']) {
 				const run = runSkillScript(DISCOVERY_SCRIPT, ['--projects', named, '--json'], {
 					cwd: scratch.path,
 				})
 				expect.soft(run.status, named + run.stdout + run.stderr).toBe(64)
 				expect.soft(run.stderr).toContain(named.includes('*') ? '"no*such"' : '"nosuch"')
-				expect.soft(run.stderr).toContain('"core"')
-				expect.soft(run.stderr).toContain('"other"')
+				expect.soft(run.stderr).not.toContain('"other"')
 				expect.soft(run.stdout).toBe('')
+				expect.soft(scratch.has('collected'), named).toBe(false)
 			}
 			const matched = runSkillScript(DISCOVERY_SCRIPT, ['--projects', 'cor*', '--json'], {
 				cwd: scratch.path,

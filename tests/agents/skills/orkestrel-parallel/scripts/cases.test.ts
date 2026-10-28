@@ -1,22 +1,28 @@
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import {
 	CASES_ROWS,
 	CASES_SCRIPT,
 	renderCasesReport,
+	renderUncollectedReport,
 	runSkillScript,
 } from '../../../../setupServer.js'
 import {
 	countStatus,
 	describeFile,
+	isUnsuccessful,
 	judgeCases,
+	judgeFailures,
 	matchesCase,
 	readCase,
 	readCases,
+	readFailedFiles,
 	readMissingFlags,
 	readOptions,
 	readPositionals,
 	readUnknownFlags,
+	relativeFile,
 } from '../../../../../.agents/skills/orkestrel-parallel/scripts/cases.ts'
 
 describe('cases.ts', () => {
@@ -221,6 +227,86 @@ describe('cases.ts', () => {
 			const bare = runSkillScript(CASES_SCRIPT, ['--report', 'report.json', '--passed'], cwd)
 			expect(bare.status).toBe(64)
 			expect(bare.stderr).toContain('--passed given with no value')
+			const missingBesideUnknown = runSkillScript(CASES_SCRIPT, ['--report', '--no-such-flag'], cwd)
+			expect(missingBesideUnknown.status).toBe(64)
+			expect(missingBesideUnknown.stderr).toContain('--no-such-flag')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the test files that failed with no failed case, and whether the report says the run failed', () => {
+		const root = join('root', 'dir')
+		expect(readFailedFiles(JSON.parse(renderUncollectedReport(root)))).toStrictEqual([
+			join(root, 'tests/x.test.ts'),
+		])
+		expect(readFailedFiles(JSON.parse(renderCasesReport(root, CASES_ROWS)))).toStrictEqual([])
+		expect(
+			readFailedFiles({
+				testResults: [
+					{ name: 'a', status: 'failed', assertionResults: [{ title: 't', status: 'failed' }] },
+					{ name: 'b', status: 'failed', assertionResults: [{ title: 't', status: 'passed' }] },
+					{ name: 'c', status: 'failed' },
+					{ status: 'failed', assertionResults: [] },
+					{ name: 'd', status: 'passed', assertionResults: [] },
+					'text',
+				],
+			}),
+		).toStrictEqual(['b', 'c', ''])
+		expect(readFailedFiles({})).toStrictEqual([])
+		expect(readFailedFiles([])).toStrictEqual([])
+		expect(isUnsuccessful({ success: false })).toBe(true)
+		expect(isUnsuccessful({ success: true })).toBe(false)
+		expect(isUnsuccessful({})).toBe(false)
+		expect(isUnsuccessful(null)).toBe(false)
+		expect(relativeFile('/root', '/root/tests/a.test.ts')).toBe('tests/a.test.ts')
+	})
+
+	it('judges a failed file as an unnamed failure, and a report that failed with nothing named as one', () => {
+		const cases = readCases(JSON.parse(renderCasesReport('/root', CASES_ROWS))) ?? []
+		const passing = cases.filter((entry) => entry.status !== 'failed')
+		expect(judgeFailures(passing, [join('/root', 'tests/x.test.ts')], true, '/root')).toStrictEqual(
+			['unnamed failure: "tests/x.test.ts" failed with no failed case'],
+		)
+		expect(judgeFailures(passing, [''], false, '/root')).toStrictEqual([
+			'unnamed failure: a test file failed with no failed case',
+		])
+		expect(judgeFailures(passing, [], true, '/root')).toStrictEqual([
+			'unnamed failure: the report is not successful, yet no case and no file in it failed',
+		])
+		expect(judgeFailures(cases, [], true, '/root')).toStrictEqual([])
+		expect(judgeFailures(passing, [], false, '/root')).toStrictEqual([])
+		expect(judgeFailures([], [], false, '/root')).toStrictEqual([])
+	})
+
+	it('exits 3 for a test file that failed to collect, however the cases read, and for a failed report that names no failure', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-cases-uncollected-' })
+		try {
+			scratch.write('uncollected.json', renderUncollectedReport(scratch.path))
+			scratch.write('silent.json', JSON.stringify({ success: false, testResults: [] }))
+			const cwd = { cwd: scratch.path }
+			const uncollected = runSkillScript(CASES_SCRIPT, ['--report', 'uncollected.json'], cwd)
+			expect(uncollected.status).toBe(3)
+			expect(uncollected.stdout).toContain(
+				'unnamed failure: "tests/x.test.ts" failed with no failed case',
+			)
+			expect(uncollected.stdout).toContain('differences=1')
+			const named = runSkillScript(
+				CASES_SCRIPT,
+				['--report', 'uncollected.json', '--passed', 'alpha holds'],
+				cwd,
+			)
+			expect(named.status).toBe(3)
+			const silent = runSkillScript(CASES_SCRIPT, ['--report', 'silent.json'], cwd)
+			expect(silent.status).toBe(3)
+			expect(silent.stdout).toContain('the report is not successful')
+			scratch.write('report.json', renderCasesReport(scratch.path, CASES_ROWS))
+			const expected = runSkillScript(
+				CASES_SCRIPT,
+				['--report', 'report.json', '--passed', 'alpha holds', '--failed', 'breaks'],
+				cwd,
+			)
+			expect(expected.status).toBe(0)
 		} finally {
 			scratch.destroy()
 		}

@@ -5394,6 +5394,65 @@ export function renderCasesReport(root: string, rows: readonly TestCaseRow[]): s
 }
 
 /**
+ * Renders the source of a linter entry that prints a fixed report and exits with a fixed status.
+ *
+ * @remarks
+ * A scratch directory that links no `node_modules` writes this as `node_modules/oxlint/bin/oxlint`,
+ * so the `measure` script runs it in place of the installed linter.
+ *
+ * @param output - The text the entry prints on standard output.
+ * @param status - The exit status the entry ends with.
+ * @param error - The text the entry prints on standard error.
+ * @returns The entry's source.
+ */
+export function renderLinterFixture(output: string, status: number, error: string): string {
+	return [
+		`process.stdout.write(${JSON.stringify(output)})`,
+		`process.stderr.write(${JSON.stringify(error)})`,
+		`process.exitCode = ${String(status)}`,
+	].join('\n')
+}
+
+/**
+ * Renders a Vitest report in which one test file passed and another failed with no failed case.
+ *
+ * @remarks
+ * The failed file is the shape Vitest writes for a file that did not collect: its `status` is
+ * `failed`, its message names the cause, its assertion results are empty, and the run is not
+ * successful.
+ *
+ * @param root - The directory the test files sit under.
+ * @returns The report text.
+ */
+export function renderUncollectedReport(root: string): string {
+	return JSON.stringify({
+		success: false,
+		numFailedTestSuites: 1,
+		testResults: [
+			{
+				name: join(root, 'tests/a.test.ts'),
+				status: 'passed',
+				assertionResults: [
+					{
+						ancestorTitles: ['alpha'],
+						fullName: 'alpha holds',
+						title: 'holds',
+						status: 'passed',
+						failureMessages: [],
+					},
+				],
+			},
+			{
+				name: join(root, 'tests/x.test.ts'),
+				status: 'failed',
+				message: 'Failed to load url ./missing.js',
+				assertionResults: [],
+			},
+		],
+	})
+}
+
+/**
  * Lists every skill script the checkout carries under its `.agents/skills/<skill>/scripts/` directories.
  *
  * @returns Each script's checkout-relative path with forward slashes, sorted.
@@ -5402,6 +5461,96 @@ export function readSkillScripts(): readonly string[] {
 	return globSync('.agents/skills/*/scripts/*.ts', { cwd: WORKSPACE_ROOT })
 		.map((path) => path.split('\\').join('/'))
 		.sort()
+}
+
+/**
+ * Names the checkout-relative path of the built twin of a skill script.
+ *
+ * @param script - The script path relative to the checkout root, such as
+ * `.agents/skills/orkestrel-dispatch/scripts/cite.ts`.
+ * @returns The path of the compiled file the build writes, such as
+ * `dist/agents/skills/orkestrel-dispatch/scripts/cite.js`.
+ */
+export function readBuiltScript(script: string): string {
+	return script.replace(/^\.agents\//u, 'dist/agents/').replace(/\.ts$/u, '.js')
+}
+
+/**
+ * Runs a script file at an absolute path as a child of the current Node binary.
+ *
+ * @param file - The absolute path of the file, which may reach the script by a link.
+ * @param args - The arguments after the script path.
+ * @param options - `cwd` (Default: the checkout root) and `env` entries laid over the process
+ * environment.
+ * @returns The exit status, both streams as text, and the last non-empty stdout line parsed when it
+ * is a JSON object.
+ */
+export function runScriptFile(
+	file: string,
+	args: readonly string[],
+	options?: TestSkillRunOptions,
+): TestSkillRun {
+	const result = spawnSync(process.execPath, [file, ...args], {
+		cwd: options?.cwd ?? WORKSPACE_ROOT,
+		encoding: 'utf8',
+		env: buildEnvironment(options?.env),
+		windowsHide: true,
+		maxBuffer: 64 * 1024 * 1024,
+	})
+	return buildSkillRun(result.status, result.stdout, result.stderr)
+}
+
+/**
+ * Reads the value flags a skill script declares from the source of its `VALUE_FLAGS` export.
+ *
+ * @param script - The script path relative to the checkout root.
+ * @returns Each quoted `--flag` in the declaration, in order; empty when the script declares none.
+ */
+export function readScriptValueFlags(script: string): readonly string[] {
+	const source = readFileSync(join(WORKSPACE_ROOT, script), 'utf8')
+	const declaration = /export const VALUE_FLAGS\b[^=]*=([\s\S]*?)\n\n/u.exec(source)?.[1] ?? ''
+	return [
+		...new Set((declaration.match(/'--[a-z][a-z-]*'/gu) ?? []).map((text) => text.slice(1, -1))),
+	]
+}
+
+/** Describes one refusal a script owes: the arguments to give it and the flag its message must name. */
+export type TestFlagRefusal = readonly [args: readonly string[], named: string]
+
+/**
+ * Builds the refusals every skill script owes a call that gives an unknown flag.
+ *
+ * @remarks
+ * Each value flag appears once beside an unknown flag, so the unknown flag must be named although a
+ * value is also missing, and once beside a `--flag=value` form the script does not read.
+ *
+ * @param flags - The script's value flags.
+ * @returns The unknown flag alone, then the pair for each value flag.
+ */
+export function buildFlagRefusals(flags: readonly string[]): readonly TestFlagRefusal[] {
+	return [
+		[['--no-such-flag'], '--no-such-flag'],
+		...flags.flatMap((flag): readonly TestFlagRefusal[] => [
+			[[flag, '--no-such-flag'], '--no-such-flag'],
+			[['--no-such=1', flag], '--no-such=1'],
+		]),
+	]
+}
+
+/**
+ * Reads a directory as one digest of its entry paths and the bytes of its files.
+ *
+ * @param root - The directory to read.
+ * @returns The hex digest; two reads differ when an entry was added, removed, or changed.
+ */
+export function readTreeDigest(root: string): string {
+	const hash = createHash('sha256')
+	for (const path of globSync('**/*', { cwd: root }).sort()) {
+		hash.update(`${path}\0`)
+		if (isFile(join(root, path))) hash.update(readFileSync(join(root, path)))
+		hash.update('\0')
+	}
+	return hash.digest('hex')
 }
 
 /** Describes one edit of an edit file: the file, the reason, and the text it swaps. */

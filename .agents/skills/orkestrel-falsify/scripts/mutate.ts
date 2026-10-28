@@ -9,36 +9,53 @@
 // its output sent to this script's standard error, restores the original bytes and proves each
 // file's SHA-256 digest equals the original, runs the command again, and prints one JSON line:
 // `{"edits":N,"files":[{"path":"...","digest":"..."}],"mutatedExit":N,"restoredExit":N,"restored":true}`.
-// The saved bytes are deleted once the restore is proven. A mutation that leaves the suite
-// uncollected also reads as a failing run, so read the command's own test count on standard error.
-// The script refuses a flag it does not read before the bare `--`, the `--flag=value` form included.
-// Exit 0 when the mutated run failed and the restored run passed, 3 when either did not, 2 when a
-// restore is not proven or the command cannot start, 64 on usage or an edit that does not resolve.
+// The saved bytes are deleted once the restore is proven. Edits that spell one file two ways
+// (`a.ts` and `./a.ts`, or a case-only difference on a host that folds case) apply to it in order,
+// each against the text the earlier ones left. A mutation that leaves the suite uncollected also
+// reads as a failing run, so read the command's own test count on standard error.
+// A killed parent leaves the tree mutated, so a run refuses to start while a run directory remains
+// and names the line that restores it, and
+//   node .agents/skills/orkestrel-falsify/scripts/mutate.ts --restore tmp/probes/mutate/run-NAME
+// writes each saved original back, proves each file's SHA-256 digest against the run's manifest,
+// deletes the run directory, and prints `{"files":[{"path":"...","digest":"..."}],"restored":true}`.
+// The script refuses a flag it does not read before the bare `--`, the `--flag=value` form included,
+// and names an unknown flag before a flag given with no value.
+// Exit 0 when the mutated run failed and the restored run passed (or a `--restore` is proven), 3
+// when either did not, 2 when a restore is not proven or the command cannot start, 64 on usage, an
+// edit that does not resolve, or a run directory an earlier run left.
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	realpathSync,
 	rmSync,
 	statSync,
 	writeFileSync,
 } from 'node:fs'
-import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 
 /** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--edits']
+export const VALUE_FLAGS: readonly string[] = ['--edits', '--restore']
 
 /** Lists every flag the script reads, value flags and switches alike. */
 export const FLAGS: readonly string[] = VALUE_FLAGS
 
 /** Holds the usage line printed when a call names no edit file or no command. */
-export const USAGE = 'usage: mutate.ts --edits EDITS.md -- COMMAND [ARGS...]'
+export const USAGE =
+	'usage: mutate.ts --edits EDITS.md -- COMMAND [ARGS...] | mutate.ts --restore tmp/probes/mutate/run-NAME'
 
 /** Holds the directory, under the working directory, that keeps the original bytes of a run. */
 export const BACKUP_ROOT = 'tmp/probes/mutate'
+
+/** Holds the name every run directory opens with. */
+export const RUN_PREFIX = 'run-'
+
+/** Holds the name of the manifest file a run directory keeps beside its saved bytes. */
+export const MANIFEST = 'manifest.json'
 
 /** Matches one edit block with its path, reason, and fenced old and new texts. */
 export const EDIT_BLOCK =
@@ -60,6 +77,13 @@ export interface Mutation {
 	readonly path: string
 	readonly original: Buffer
 	readonly mutated: string
+}
+
+/** Describes one file a run directory saved: its path, the saved bytes' file, and their digest. */
+export interface ManifestEntry {
+	readonly path: string
+	readonly backup: string
+	readonly digest: string
 }
 
 /** Describes what resolving the edits against the files found. */
@@ -247,16 +271,42 @@ export function applyEdits(
 }
 
 /**
+ * Folds a path's case on a host whose file names ignore case.
+ *
+ * @param path - The path to fold.
+ * @param platform - The host platform, as `process.platform` names it.
+ * @returns The path in lowercase on `win32` and `darwin`; the path unchanged elsewhere.
+ */
+export function foldPath(path: string, platform: string): string {
+	return platform === 'win32' || platform === 'darwin' ? path.toLowerCase() : path
+}
+
+/**
+ * Names the file an edit changes, so two spellings of one path share a name.
+ *
+ * @param root - The working directory the edit paths resolve against.
+ * @param edit - The edit.
+ * @returns The edit's resolved path, case-folded where the host folds case.
+ */
+export function keyEdit(root: string, edit: Edit): string {
+	return foldPath(resolve(root, edit.path), process.platform)
+}
+
+/**
  * Resolves every edit against the files under a root, writing nothing.
+ *
+ * @remarks
+ * Edits that name one file under two spellings are one file's edits, applied in file order.
  *
  * @param root - The working directory the edit paths resolve against.
  * @param edits - The edits in file order.
  * @returns One mutation per file whose edits all resolved, and each problem found in any file.
  */
 export function resolveMutations(root: string, edits: readonly Edit[]): Resolution {
-	const results = [...new Set(edits.map((edit) => edit.path))].map((path) => {
+	const results = [...new Set(edits.map((edit) => keyEdit(root, edit)))].map((key) => {
+		const own = edits.filter((edit) => keyEdit(root, edit) === key)
+		const path = own[0]?.path ?? ''
 		const target = resolve(root, path)
-		const own = edits.filter((edit) => edit.path === path)
 		if (!isInside(root, target)) {
 			return { mutation: undefined, problems: [`${path}: path leaves the working directory`] }
 		}
@@ -388,12 +438,12 @@ export function tryRestore(root: string, mutations: readonly Mutation[]): string
 export function saveOriginals(root: string, mutations: readonly Mutation[]): string {
 	const base = resolve(root, BACKUP_ROOT)
 	mkdirSync(base, { recursive: true })
-	const directory = mkdtempSync(join(base, 'run-'))
+	const directory = mkdtempSync(join(base, RUN_PREFIX))
 	for (const [index, mutation] of mutations.entries()) {
 		writeFileSync(join(directory, `${String(index)}.bak`), mutation.original)
 	}
 	writeFileSync(
-		join(directory, 'manifest.json'),
+		join(directory, MANIFEST),
 		JSON.stringify(
 			mutations.map((mutation, index) => ({
 				path: mutation.path,
@@ -406,26 +456,170 @@ export function saveOriginals(root: string, mutations: readonly Mutation[]): str
 }
 
 /**
+ * Lists the run directories an earlier run left under the backup root.
+ *
+ * @param root - The working directory the backup root sits under.
+ * @returns The name of each run directory, sorted; empty when none remains.
+ */
+export function readLeftovers(root: string): readonly string[] {
+	const base = resolve(root, BACKUP_ROOT)
+	return existsSync(base)
+		? readdirSync(base)
+				.filter((name) => name.startsWith(RUN_PREFIX))
+				.sort()
+		: []
+}
+
+/**
+ * Checks whether a value is one entry of a run directory's manifest.
+ *
+ * @param value - The parsed JSON value.
+ * @returns True when the value names a path, a backup file with no directory part, and a digest.
+ */
+export function isManifestEntry(value: unknown): value is ManifestEntry {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		'path' in value &&
+		typeof value.path === 'string' &&
+		'backup' in value &&
+		typeof value.backup === 'string' &&
+		value.backup !== '' &&
+		basename(value.backup) === value.backup &&
+		'digest' in value &&
+		typeof value.digest === 'string'
+	)
+}
+
+/**
+ * Reads the manifest of a run directory.
+ *
+ * @param directory - The run directory.
+ * @returns Each saved file in order, or undefined when the manifest is missing, is not JSON, or
+ * holds anything but entries.
+ */
+export function readManifest(directory: string): readonly ManifestEntry[] | undefined {
+	try {
+		const parsed: unknown = JSON.parse(readFileSync(join(directory, MANIFEST), 'utf8'))
+		return Array.isArray(parsed) && parsed.every(isManifestEntry) ? parsed : undefined
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Writes each saved file's bytes back to its path and names the refusal when the host rejects a
+ * write.
+ *
+ * @param root - The working directory the paths resolve against.
+ * @param directory - The run directory that holds the saved bytes.
+ * @param entries - The manifest entries to write back.
+ * @returns The host's refusal message, or undefined when every file was written.
+ */
+export function writeSaved(
+	root: string,
+	directory: string,
+	entries: readonly ManifestEntry[],
+): string | undefined {
+	try {
+		for (const entry of entries) {
+			writeFileSync(resolve(root, entry.path), readFileSync(join(directory, entry.backup)))
+		}
+		return undefined
+	} catch (error) {
+		return error instanceof Error ? error.message : String(error)
+	}
+}
+
+/**
+ * Restores the files a run directory saved and proves each digest from its manifest.
+ *
+ * @param root - The working directory the manifest paths resolve against.
+ * @param argument - The run directory as the caller gave it.
+ * @returns The exit code: 0 when every file is back and proven and the run directory is deleted, 2
+ * when a saved file no longer matches its digest or a restore is not proven, 64 when the argument
+ * is no run directory of this script or its manifest cannot be trusted.
+ */
+export function restoreRun(root: string, argument: string): number {
+	const base = resolve(root, BACKUP_ROOT)
+	const directory = resolve(root, argument)
+	if (
+		foldPath(dirname(directory), process.platform) !== foldPath(base, process.platform) ||
+		!basename(directory).startsWith(RUN_PREFIX)
+	) {
+		console.error(
+			`mutate: ${quote(argument)} is not a run directory under ${BACKUP_ROOT}; ${USAGE}`,
+		)
+		return 64
+	}
+	const entries = readManifest(directory)
+	if (entries === undefined) {
+		console.error(`mutate: ${quote(argument)} holds no readable ${MANIFEST}; ${USAGE}`)
+		return 64
+	}
+	const outside = entries.filter((entry) => !isInside(root, resolve(root, entry.path)))
+	if (outside.length > 0) {
+		console.error(
+			`mutate: ${MANIFEST} names a path outside the working directory: ${outside.map((entry) => quote(entry.path)).join(', ')}; nothing was written`,
+		)
+		return 64
+	}
+	const damaged = entries.filter(
+		(entry) => digestFile(join(directory, entry.backup)) !== entry.digest,
+	)
+	if (damaged.length > 0) {
+		console.error(
+			`mutate: the saved bytes of ${damaged.map((entry) => entry.path).join(', ')} no longer match ${MANIFEST}; nothing was written`,
+		)
+		return 2
+	}
+	const refusal = writeSaved(root, directory, entries)
+	const drift = entries.filter((entry) => digestFile(resolve(root, entry.path)) !== entry.digest)
+	if (refusal !== undefined || drift.length > 0) {
+		console.error(
+			`mutate: restore not proven for ${drift.map((entry) => entry.path).join(', ')}${refusal === undefined ? '' : ` (${refusal})`}; the originals stay under ${directory}`,
+		)
+		return 2
+	}
+	rmSync(directory, { recursive: true, force: true })
+	console.log(
+		JSON.stringify({
+			files: entries.map((entry) => ({ path: entry.path, digest: entry.digest })),
+			restored: true,
+		}),
+	)
+	return 0
+}
+
+/**
  * Runs the script on its arguments.
  *
  * @param argv - The arguments after the script path.
- * @returns The exit code: 0 when the mutated run failed and the restored run passed, 3 when either
- * did not, 2 when a restore is not proven or the command cannot start, 64 on usage or an edit that
- * does not resolve.
+ * @returns The exit code: 0 when the mutated run failed and the restored run passed or a `--restore`
+ * is proven, 3 when either did not, 2 when a restore is not proven or the command cannot start, 64
+ * on usage, an edit that does not resolve, or a run directory an earlier run left.
  */
 export function main(argv: readonly string[]): number {
 	const end = argv.indexOf('--')
 	const own = end === -1 ? argv : argv.slice(0, end)
 	const command = end === -1 ? [] : argv.slice(end + 1)
+	const unknown = readUnknownFlags(argv, FLAGS)
+	if (unknown.length > 0) {
+		console.error(`mutate: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
 	const missing = readMissingFlags(own, VALUE_FLAGS)
 	if (missing.length > 0) {
 		console.error(`mutate: ${missing.join(', ')} given with no value`)
 		return 64
 	}
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`mutate: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
-		return 64
+	const restore = readOption(own, '--restore')
+	if (restore !== undefined) {
+		if (end !== -1 || own.includes('--edits') || readPositionals(own, VALUE_FLAGS).length > 0) {
+			console.error(USAGE)
+			return 64
+		}
+		return restoreRun(process.cwd(), restore)
 	}
 	const source = readOption(own, '--edits')
 	const executable = command[0]
@@ -451,6 +645,13 @@ export function main(argv: readonly string[]): number {
 		return 64
 	}
 	const root = process.cwd()
+	const leftovers = readLeftovers(root)
+	if (leftovers.length > 0) {
+		console.error(
+			`mutate: an earlier run left its saved originals, so the tree may still be mutated; no file was touched and no command ran. Restore it first: ${leftovers.map((name) => `mutate.ts --restore ${BACKUP_ROOT}/${name}`).join('; ')}`,
+		)
+		return 64
+	}
 	const resolution = resolveMutations(root, edits)
 	if (resolution.problems.length > 0) {
 		console.error(

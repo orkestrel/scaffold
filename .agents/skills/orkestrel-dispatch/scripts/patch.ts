@@ -14,7 +14,8 @@
 // A fence opens with three or more backticks and closes with the same count, so a block can carry a
 // shorter fence. Prose outside the blocks is ignored, but a stray `###`, `reason:`, `old:`, or `new:`
 // line that opens no complete block is refused. Every `old` text must occur exactly once in its file
-// after the earlier edits to that file, and nothing is written unless every selected edit resolves.
+// after the earlier edits to that file, however the blocks spell its path (`src/a.ts` and `./src/a.ts`
+// name one file), and nothing is written unless every selected edit resolves.
 // `--plan` prints each edit's resolution and writes nothing; `--apply` writes the files after every
 // edit resolved. `--skip N` leaves out edit number N, as the plan numbers them, and repeats. The
 // script refuses a flag it does not read, the `--flag=value` form included.
@@ -271,10 +272,18 @@ export function resolveEdits(
 	root: string,
 	edits: readonly Edit[],
 ): { readonly outcomes: readonly Outcome[]; readonly files: readonly Resolved[] } {
-	const results = [...new Set(edits.map((edit) => edit.path))].map((path) => {
-		const own = edits.filter((edit) => edit.path === path)
-		const target = resolve(root, path)
-		const problem = readTargetProblem(root, target)
+	const keyed = edits.map((edit) => {
+		const target = resolve(root, edit.path)
+		return { edit, target, key: readFileKey(target) }
+	})
+	const results = [...new Set(keyed.map((item) => item.key))].map((key) => {
+		const group = keyed.filter((item) => item.key === key)
+		const own = group.map((item) => item.edit)
+		const path = own[0]?.path ?? ''
+		const target = group[0]?.target ?? ''
+		const problem = group
+			.map((item) => readTargetProblem(root, item.target))
+			.find((candidate) => candidate !== undefined)
 		if (problem !== undefined) {
 			return { path, text: undefined, outcomes: own.map((edit) => describeOutcome(edit, problem)) }
 		}
@@ -288,6 +297,20 @@ export function resolveEdits(
 			result.text === undefined ? [] : [{ path: result.path, text: result.text }],
 		),
 	}
+}
+
+/**
+ * Names the file an edit target stands for, so every spelling of one file shares one key.
+ *
+ * @remarks
+ * The host's own path resolution folds case where the host folds it, so `./src/a.ts`, `src/a.ts`, and
+ * on a case-folding host `SRC/A.ts` name one key when the file exists.
+ *
+ * @param target - The resolved target path.
+ * @returns The file's canonical path when it exists, and the resolved path otherwise.
+ */
+export function readFileKey(target: string): string {
+	return existsSync(target) ? realpathSync.native(target) : target
 }
 
 /**
@@ -310,14 +333,14 @@ export function readTargetProblem(root: string, target: string): string | undefi
  * @returns The exit code: 0 when every selected edit resolved, 1 when one did not, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`patch: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`patch: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`patch: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const modes = MODE_FLAGS.filter((flag) => argv.includes(flag))

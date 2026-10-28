@@ -287,14 +287,14 @@ export function formatStep(step: Step, finish: Finish): string {
  * cannot start, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`chain: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`chain: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`chain: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const path = readOption(argv, '--plan')

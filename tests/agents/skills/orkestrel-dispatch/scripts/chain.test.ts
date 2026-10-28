@@ -217,6 +217,10 @@ describe('chain.ts', () => {
 			const bare = runSkillScript(CHAIN_SCRIPT, ['--plan', '--journal', 'j'], cwd)
 			expect(bare.status).toBe(64)
 			expect(bare.stderr).toContain('--plan given with no value')
+			const both = runSkillScript(CHAIN_SCRIPT, ['--plan', '--journal=out'], cwd)
+			expect(both.status).toBe(64)
+			expect(both.stderr).toContain('--journal=out')
+			expect(scratch.has('out')).toBe(false)
 		} finally {
 			scratch.destroy()
 		}

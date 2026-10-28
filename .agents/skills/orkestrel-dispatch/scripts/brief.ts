@@ -191,14 +191,14 @@ export function checkBrief(path: string): number {
  * @returns The exit code: 0 on success, 3 when a named path is missing, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`brief: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`brief: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`brief: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const check = readOption(argv, '--check')

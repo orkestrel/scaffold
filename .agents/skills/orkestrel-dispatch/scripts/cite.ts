@@ -280,14 +280,14 @@ export function judgeLines(
  * @returns The exit code: 0 when every citation resolves, 3 when one does not, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`cite: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`cite: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`cite: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const root = readOption(argv, '--root') ?? process.cwd()

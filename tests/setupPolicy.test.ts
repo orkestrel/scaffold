@@ -76,6 +76,10 @@ import {
 	POLICY_SURFACE_HOST,
 	POLICY_SURFACE_EXPORT_CASES,
 	POLICY_WIRING_RULES,
+	POLICY_WIRING_SETTINGS,
+	collectPolicyOverrideSegments,
+	collectPolicySpecifiers,
+	isPolicyIgnoreReaching,
 	createPolicySurfaceGuide,
 	readPolicyDeclarations,
 	readPolicyJSON,
@@ -1474,6 +1478,27 @@ describe('inspectSkillProof', () => {
 			].join('\n'),
 			['.agents/skills/other/scripts/a.ts', '.agents/skills/other/scripts/b.ts'],
 		],
+		[
+			'refuses a dynamic import of another skill file',
+			`const other = await import('${root}/other/scripts/helpers.ts')`,
+			['.agents/skills/other/scripts/helpers.ts'],
+		],
+		[
+			'refuses a dynamic import nested in a function body',
+			`export async function load() { return import('${root}/other/scripts/a.ts') }`,
+			['.agents/skills/other/scripts/a.ts'],
+		],
+		[
+			'admits a dynamic import of its own script',
+			`const own = await import('${root}/sample/scripts/tool.ts')`,
+			[],
+		],
+		[
+			'admits a dynamic import of a package and a Node module',
+			"await import('vitest')\nawait import('node:path')",
+			[],
+		],
+		['reads no dynamic import whose source is no literal', 'await import(name)', []],
 	])('%s', (_name, source, refused) => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-proof-' })
 		try {
@@ -1497,6 +1522,150 @@ describe('inspectSkillProof', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('collectPolicySpecifiers', () => {
+	it('reads the literal source of each declaration and each import expression, in order', () => {
+		const tree = {
+			type: 'Program',
+			body: [
+				{ type: 'ImportDeclaration', source: { type: 'Literal', value: './a.ts' } },
+				{ type: 'ExportAllDeclaration', source: { type: 'Literal', value: './b.ts' } },
+				{ type: 'ExportNamedDeclaration', source: null },
+				{
+					type: 'ExportNamedDeclaration',
+					source: { type: 'Literal', value: './c.ts' },
+					declaration: {
+						type: 'FunctionDeclaration',
+						body: [{ type: 'ImportExpression', source: { type: 'Literal', value: './d.ts' } }],
+					},
+				},
+			],
+		}
+		expect(collectPolicySpecifiers(tree)).toStrictEqual(['./a.ts', './b.ts', './c.ts', './d.ts'])
+	})
+
+	it('reads an import expression nested in another', () => {
+		const nested = {
+			type: 'ImportExpression',
+			source: { type: 'ImportExpression', source: { type: 'Literal', value: './a.ts' } },
+		}
+		expect(collectPolicySpecifiers(nested)).toStrictEqual(['./a.ts'])
+	})
+
+	it('skips a source that is no string literal and a node that is no declaration', () => {
+		expect(
+			collectPolicySpecifiers({ type: 'ImportExpression', source: { type: 'Identifier' } }),
+		).toStrictEqual([])
+		expect(
+			collectPolicySpecifiers({
+				type: 'ImportExpression',
+				source: { type: 'Literal', value: 1 },
+			}),
+		).toStrictEqual([])
+		expect(
+			collectPolicySpecifiers({
+				type: 'CallExpression',
+				source: { type: 'Literal', value: './a.ts' },
+			}),
+		).toStrictEqual([])
+		expect(collectPolicySpecifiers('./a.ts')).toStrictEqual([])
+		expect(collectPolicySpecifiers(null)).toStrictEqual([])
+	})
+})
+
+describe('the policy wiring guard over a rule setting', () => {
+	const enabled = { ...POLICY_WIRING_SETTINGS }
+	const accessibility = 'typescript/explicit-member-accessibility'
+	const declared = JSON.stringify(POLICY_WIRING_SETTINGS[accessibility])
+
+	it('admits the whole setting the shipped configuration declares', () => {
+		expect(inspectPolicyConfiguration({ rules: enabled })).toStrictEqual([])
+	})
+
+	it.each([
+		['an option that switches the check off', ['error', { accessibility: 'off' }]],
+		['an option that widens the check', ['error', { accessibility: 'explicit' }]],
+		['an empty options record', ['error', {}]],
+		['a severity with no options', 'error'],
+		['a warning severity', ['warn', { accessibility: 'no-public' }]],
+		['an off severity', 'off'],
+	])('refuses %s', (_name, setting) => {
+		expect(
+			inspectPolicyConfiguration({ rules: { ...enabled, [accessibility]: setting } }),
+		).toStrictEqual([`${accessibility} must have the top-level setting ${declared}`])
+	})
+
+	it('refuses an option on a rule the shipped configuration declares with none', () => {
+		const rule = 'typescript/parameter-properties'
+		expect(
+			inspectPolicyConfiguration({
+				rules: { ...enabled, [rule]: ['error', { allow: ['private readonly'] }] },
+			}),
+		).toStrictEqual([`${rule} must have the top-level setting "error"`])
+	})
+
+	it('refuses a rule the configuration omits', () => {
+		const rules = Object.fromEntries(
+			Object.entries(enabled).filter(([rule]) => rule !== accessibility),
+		)
+		expect(inspectPolicyConfiguration({ rules })).toStrictEqual([
+			`${accessibility} must have the top-level setting ${declared}`,
+		])
+	})
+})
+describe('isPolicyIgnoreReaching', () => {
+	const overrides = [
+		{ files: ['.agents/skills/*/scripts/*.ts'] },
+		{ files: ['configs/policy.ts', 'src/**/*.{ts,vue}'] },
+		{ files: ['./*.{cjs,ts}'] },
+	]
+
+	it.each([
+		['a glob that matches a name at any depth', '*.ts'],
+		['a double-star glob', '**'],
+		['a directory name an override routes through', 'scripts'],
+		['that directory name with a trailing slash', 'scripts/'],
+		['a file name an override routes through', 'policy.ts'],
+		['a guarded root', 'src'],
+		['a guarded root with a leading dot segment', './tests/'],
+		['a guarded root glob', 's*/legacy'],
+		['a directory under a guarded root', '.agents/skills/'],
+	])('reaches %s', (_name, pattern) => {
+		expect(isPolicyIgnoreReaching(pattern, overrides)).toBe(true)
+	})
+
+	it.each([
+		['an unguarded hidden directory', '.orkestrel/'],
+		['an unguarded directory name', 'dist'],
+		['a negation', '!src/keep.ts'],
+		['a negated glob', '!*.ts'],
+		['an anchored name under the workspace root', './scripts'],
+		['an anchored path outside every guarded root', 'docs/generated'],
+	])('does not reach %s', (_name, pattern) => {
+		expect(isPolicyIgnoreReaching(pattern, overrides)).toBe(false)
+	})
+
+	it('reads a directory name as unguarded where no override routes through it', () => {
+		expect(isPolicyIgnoreReaching('scripts', [])).toBe(false)
+		expect(isPolicyIgnoreReaching('scripts', undefined)).toBe(false)
+		expect(isPolicyIgnoreReaching('*.ts', undefined)).toBe(true)
+	})
+
+	it('lists the literal segments of the override globs and no glob, dot, or empty segment', () => {
+		expect(collectPolicyOverrideSegments(overrides)).toStrictEqual([
+			'.agents',
+			'skills',
+			'scripts',
+			'configs',
+			'policy.ts',
+			'src',
+		])
+		expect(collectPolicyOverrideSegments(undefined)).toStrictEqual([])
+		expect(collectPolicyOverrideSegments([null, { files: 'src' }, { files: [1] }])).toStrictEqual(
+			[],
+		)
 	})
 })
 
@@ -1701,7 +1870,7 @@ describe('the text sweep readers', () => {
 })
 
 describe('the inspectors over caller-supplied lists with holes', () => {
-	const enabled = Object.fromEntries(POLICY_WIRING_RULES.map((rule) => [rule, 'error']))
+	const enabled = { ...POLICY_WIRING_SETTINGS }
 	const malformed = ['override entries must be records']
 
 	it('builds a list whose holes are absent rather than undefined', () => {

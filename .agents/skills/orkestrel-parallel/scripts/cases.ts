@@ -5,11 +5,14 @@
 // that opens with `--` cannot be given. Each `--passed NAME` requires every case it matches to have
 // passed and each `--failed NAME` requires every one to have failed; a name that matches no case is
 // missing. A failed case that no name matches is refused, so a run that fails more than the request
-// expected reads as a difference. Name no case to require a report with no failure. Both flags repeat
-// and a name may not be given to both. The script prints one summary line, one line per difference,
-// and `ok` or `differences=N`. The script refuses a flag it does not read, the `--flag=value` form
-// included. Exit 0 when the report matches the names, 3 when it does not, 2 when the report cannot
-// be read as a Vitest report, 64 on usage.
+// expected reads as a difference. A test file that failed with no failed case (it did not collect,
+// or a hook threw) is an unnamed failure named by its file, and a report whose `success` is false
+// while no case and no file failed is a difference too. Name no case to require a report with no
+// failure. Both flags repeat and a name may not be given to both. The script prints one summary
+// line, one line per difference, and `ok` or `differences=N`. The script refuses a flag it does not
+// read, the `--flag=value` form included, and names an unknown flag before a flag given with no
+// value. Exit 0 when the report matches the names, 3 when it does not, 2 when the report cannot be
+// read as a Vitest report, 64 on usage.
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { relative } from 'node:path'
 
@@ -171,6 +174,33 @@ export function readCases(report: unknown): readonly Case[] | undefined {
 }
 
 /**
+ * Reads the test files of a report that failed with no failed case.
+ *
+ * @param report - The parsed JSON value of the report.
+ * @returns The `name` of each `testResults` entry whose `status` is `failed` and whose assertion
+ * results hold no failed case, in file order; an empty text stands for an entry with no name.
+ */
+export function readFailedFiles(report: unknown): readonly string[] {
+	if (!isRecord(report) || !Array.isArray(report.testResults)) return []
+	return report.testResults.flatMap((suite): readonly string[] => {
+		if (!isRecord(suite) || suite.status !== 'failed') return []
+		const results = Array.isArray(suite.assertionResults) ? suite.assertionResults : []
+		if (results.some((result) => isRecord(result) && result.status === 'failed')) return []
+		return [typeof suite.name === 'string' ? suite.name : '']
+	})
+}
+
+/**
+ * Checks whether a report states that the run did not succeed.
+ *
+ * @param report - The parsed JSON value of the report.
+ * @returns True when the report is an object whose `success` is `false`; false otherwise.
+ */
+export function isUnsuccessful(report: unknown): boolean {
+	return isRecord(report) && report.success === false
+}
+
+/**
  * Checks whether a name matches a case.
  *
  * @param entry - The case.
@@ -222,6 +252,44 @@ export function judgeCases(
 }
 
 /**
+ * Judges the failures a report holds outside its cases.
+ *
+ * @param cases - The report's cases.
+ * @param failedFiles - The test files that failed with no failed case, from {@link readFailedFiles}.
+ * @param unsuccessful - Whether the report states that the run did not succeed.
+ * @param base - The directory the file names in each difference are written relative to.
+ * @returns One unnamed failure per failed file; or, when no file and no case failed yet the report
+ * is not successful, one unnamed failure for the report; empty otherwise.
+ */
+export function judgeFailures(
+	cases: readonly Case[],
+	failedFiles: readonly string[],
+	unsuccessful: boolean,
+	base: string,
+): readonly string[] {
+	if (failedFiles.length > 0) {
+		return failedFiles.map(
+			(file) =>
+				`unnamed failure: ${file === '' ? 'a test file' : quote(relativeFile(base, file))} failed with no failed case`,
+		)
+	}
+	return unsuccessful && cases.every((entry) => entry.status !== 'failed')
+		? ['unnamed failure: the report is not successful, yet no case and no file in it failed']
+		: []
+}
+
+/**
+ * Writes a test file path relative to a directory.
+ *
+ * @param base - The directory the path is written relative to.
+ * @param file - The test file path from the report.
+ * @returns The relative path with forward slashes.
+ */
+export function relativeFile(base: string, file: string): string {
+	return relative(base, file).split('\\').join('/')
+}
+
+/**
  * Describes the file a case belongs to, written relative to a directory.
  *
  * @param base - The directory the path is written relative to.
@@ -229,7 +297,7 @@ export function judgeCases(
  * @returns ` in <path>` with forward slashes, or an empty text when the report names no file.
  */
 export function describeFile(base: string, file: string): string {
-	return file === '' ? '' : ` in ${relative(base, file).split('\\').join('/')}`
+	return file === '' ? '' : ` in ${relativeFile(base, file)}`
 }
 
 /**
@@ -265,14 +333,14 @@ export function readReport(path: string): unknown {
  * cannot be read as a Vitest report, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`cases: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`cases: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`cases: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const reports = readOptions(argv, '--report')
@@ -294,14 +362,18 @@ export function main(argv: readonly string[]): number {
 		console.error(`cases: ${quote(path)} is not a readable file`)
 		return 2
 	}
-	const cases = readCases(readReport(path))
+	const report = readReport(path)
+	const cases = readCases(report)
 	if (cases === undefined) {
 		console.error(
 			`cases: ${quote(path)} is not a Vitest JSON report; it needs a "testResults" array (run vitest with --reporter=json)`,
 		)
 		return 2
 	}
-	const differences = judgeCases(cases, passed, failed, process.cwd())
+	const differences = [
+		...judgeCases(cases, passed, failed, process.cwd()),
+		...judgeFailures(cases, readFailedFiles(report), isUnsuccessful(report), process.cwd()),
+	]
 	const green = countStatus(cases, 'passed')
 	const red = countStatus(cases, 'failed')
 	console.log(

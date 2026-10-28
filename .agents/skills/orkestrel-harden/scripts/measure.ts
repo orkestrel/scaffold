@@ -9,9 +9,15 @@
 // `error`, any other value is the one argument. The workspace's `ignorePatterns` and its override
 // blocks are not carried over, so a rule measured here reads exactly the named paths with no
 // per-file override. A rule that reads `context.cwd` must run from the checkout root, so run the
-// script there. Enable only the rule under measure to count a rule the workspace might drop. The
-// script refuses a flag it does not read, the `--flag=value` form included.
-// Exit 0 when the rule has no hit, 3 when it has, 2 when the linter cannot run, 64 on usage.
+// script there. Enable only the rule under measure to count a rule the workspace might drop. A hit
+// is a diagnostic whose `code` names the rule (`<plugin>(<name>)`, with `eslint` for an unprefixed
+// id and the plugin's own scope for a built-in plugin such as `typescript-eslint`); any other
+// diagnostic, a parse error included, is not a hit and refuses the measurement, because a file the
+// linter could not read has no count. A linter that exits other than 0 or 1, or exits 1 with no
+// diagnostic, refuses it too. The script refuses a flag it does not read, the `--flag=value` form
+// included, and names an unknown flag before a flag given with no value.
+// Exit 0 when the rule has no hit, 3 when it has, 2 when the linter cannot run or reports another
+// diagnostic, 64 on usage.
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
@@ -31,10 +37,18 @@ export const PROBE_ROOT = 'tmp/probes/lint'
 /** Holds the linter entry, under the working directory, that the script runs. */
 export const LINTER_ENTRY = 'node_modules/oxlint/bin/oxlint'
 
-/** Describes the hits per file a lint run found. */
+/** Maps a plugin name to the code scope oxlint reports for it when that is neither the name nor `eslint-plugin-` and the name. */
+export const CODE_SCOPES: Readonly<Record<string, string>> = Object.freeze({
+	typescript: 'typescript-eslint',
+	node: 'eslint-plugin-n',
+	nextjs: 'eslint-plugin-next',
+})
+
+/** Describes the hits per file a lint run found, and the diagnostics that were not hits. */
 export interface Hits {
 	readonly total: number
 	readonly files: ReadonlyArray<readonly [string, number]>
+	readonly foreign: readonly string[]
 }
 
 /**
@@ -233,20 +247,77 @@ export function readRuleOptions(text: string | undefined): readonly unknown[] | 
 }
 
 /**
+ * Lists the code scopes oxlint may print for a rule's diagnostics.
+ *
+ * @param rule - The rule id, such as `policy/no-let` or `no-debugger`.
+ * @returns `eslint` for an unprefixed id; for a prefixed id, the prefix, the prefix after
+ * `eslint-plugin-`, and the scope {@link CODE_SCOPES} gives the plugin.
+ */
+export function readCodeScopes(rule: string): readonly string[] {
+	const slash = rule.lastIndexOf('/')
+	if (slash === -1) return ['eslint']
+	const plugin = rule.slice(0, slash)
+	const mapped = CODE_SCOPES[plugin]
+	return [plugin, `eslint-plugin-${plugin}`, ...(mapped === undefined ? [] : [mapped])]
+}
+
+/**
+ * Checks whether a diagnostic's code names a rule.
+ *
+ * @param code - The diagnostic's `code` value.
+ * @param rule - The rule id.
+ * @returns True when the code reads `<scope>(<name>)` with the rule's name and one of its scopes;
+ * false for any other code, a missing one included.
+ */
+export function namesRule(code: unknown, rule: string): boolean {
+	const match = typeof code === 'string' ? /^(.+?)\((.+)\)$/u.exec(code) : null
+	if (match === null) return false
+	return (
+		match[2] === rule.slice(rule.lastIndexOf('/') + 1) &&
+		readCodeScopes(rule).includes(match[1] ?? '')
+	)
+}
+
+/**
+ * Checks whether a diagnostic is a hit of a rule.
+ *
+ * @param diagnostic - One diagnostic record.
+ * @param rule - The rule id.
+ * @returns True when the diagnostic names a file and its code names the rule; false otherwise.
+ */
+export function isHit(diagnostic: Record<string, unknown>, rule: string): boolean {
+	return typeof diagnostic.filename === 'string' && namesRule(diagnostic.code, rule)
+}
+
+/**
+ * Describes a diagnostic for a refusal.
+ *
+ * @param diagnostic - One diagnostic record.
+ * @returns Its code when it has one, otherwise its message, otherwise a fixed phrase.
+ */
+export function describeDiagnostic(diagnostic: Record<string, unknown>): string {
+	if (typeof diagnostic.code === 'string' && diagnostic.code !== '') return diagnostic.code
+	return typeof diagnostic.message === 'string' ? diagnostic.message : 'a diagnostic with no code'
+}
+
+/**
  * Reads the hits per file from oxlint's JSON output.
  *
  * @param output - The JSON text oxlint printed.
- * @returns The total and each file with its hits, most hits first and ties by path; undefined when
- * the output is not a report with a `diagnostics` array.
+ * @param rule - The rule id the hits are counted for.
+ * @returns The total and each file with its hits, most hits first and ties by path, and each other
+ * diagnostic described once; undefined when the output is not a report with a `diagnostics` array.
  */
-export function readHits(output: string): Hits | undefined {
+export function readHits(output: string, rule: string): Hits | undefined {
 	const report = parseJson(output)
 	if (!isRecord(report) || !Array.isArray(report.diagnostics)) return undefined
-	const names = report.diagnostics.flatMap((diagnostic): readonly string[] =>
-		isRecord(diagnostic) && typeof diagnostic.filename === 'string'
+	const records = report.diagnostics.filter(isRecord)
+	const names = records.flatMap((diagnostic): readonly string[] =>
+		isHit(diagnostic, rule) && typeof diagnostic.filename === 'string'
 			? [normalizeSlashes(diagnostic.filename)]
 			: [],
 	)
+	const foreign = records.filter((diagnostic) => !isHit(diagnostic, rule)).map(describeDiagnostic)
 	const files = [...new Set(names)]
 		.map((name): readonly [string, number] => [
 			name,
@@ -255,7 +326,7 @@ export function readHits(output: string): Hits | undefined {
 		.sort(
 			([leftName, left], [rightName, right]) => right - left || leftName.localeCompare(rightName),
 		)
-	return { total: names.length, files }
+	return { total: names.length, files, foreign: [...new Set(foreign)] }
 }
 
 /**
@@ -280,14 +351,14 @@ export function formatHits(rule: string, hits: Hits): string {
  * 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`measure: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`measure: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`measure: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const rule = readOption(argv, '--rule')
@@ -320,10 +391,28 @@ export function main(argv: readonly string[]): number {
 		[linter, '--config', variant, '--format', 'json', ...paths],
 		{ cwd: root, encoding: 'utf8', windowsHide: true, maxBuffer: 256 * 1024 * 1024 },
 	)
-	const hits = run.error === undefined ? readHits(run.stdout) : undefined
+	const hits = run.error === undefined ? readHits(run.stdout, rule) : undefined
 	if (hits === undefined) {
 		console.error(
 			`measure: the linter did not report: ${run.error?.message ?? quote(run.stderr.slice(0, 400))}`,
+		)
+		return 2
+	}
+	if (run.status !== 0 && run.status !== 1) {
+		console.error(
+			`measure: the linter exited ${String(run.status ?? 'by a signal')}, not 0 or 1: ${quote(run.stderr.slice(0, 400))}`,
+		)
+		return 2
+	}
+	if (run.status === 1 && hits.total + hits.foreign.length === 0) {
+		console.error(
+			`measure: the linter exited 1 with no diagnostic: ${quote(run.stderr.slice(0, 400))}`,
+		)
+		return 2
+	}
+	if (hits.foreign.length > 0) {
+		console.error(
+			`measure: the linter reported a diagnostic beside the rule, so the count is not the rule's: ${hits.foreign.slice(0, 5).map(quote).join(', ')}`,
 		)
 		return 2
 	}

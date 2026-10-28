@@ -102,6 +102,7 @@ import {
 	POLICY_NAME_CASES,
 	POLICY_PUBLISHES,
 	POLICY_ROOT,
+	POLICY_WIRING_SETTINGS,
 	POLICY_VUE_COMPOSABLE_SOURCE,
 	POLICY_VUE_RELATIVE_SOURCES,
 	POLICY_VUE_TARGET_CASES,
@@ -1666,6 +1667,37 @@ describe('root configuration', () => {
 		expect(inspectPolicyConfiguration(ignored)).toEqual([
 			'ignorePatterns must not reach .agents/skills/',
 		])
+		// An entry without an inner slash matches at any depth, so a glob or a directory name the
+		// overrides route through silences guarded files while its first segment names no root.
+		for (const pattern of ['*.ts', 'scripts', 'scripts/', 'policy.ts']) {
+			expect(
+				inspectPolicyConfiguration({ ...readConfigRecord(parsed), ignorePatterns: [pattern] }),
+			).toEqual([`ignorePatterns must not reach ${pattern}`])
+		}
+		for (const patterns of [['.orkestrel/'], ['.orkestrel/', '!src/keep.ts'], ['./scripts']]) {
+			expect(
+				inspectPolicyConfiguration({ ...readConfigRecord(parsed), ignorePatterns: patterns }),
+			).toEqual([])
+		}
+	})
+
+	it('refuses a wiring rule whose options weaken it beneath an error severity', () => {
+		const parsed: unknown = JSON.parse(readFileSync(resolve(POLICY_ROOT, '.oxlintrc.json'), 'utf8'))
+		const rules = readConfigRecord(readConfigRecord(parsed).rules)
+		for (const [rule, setting] of [
+			['typescript/explicit-member-accessibility', ['error', { accessibility: 'off' }]],
+			['typescript/parameter-properties', ['error', { allow: ['private readonly'] }]],
+			['no-var', ['error', { ignore: true }]],
+		] as const) {
+			expect(
+				inspectPolicyConfiguration({
+					...readConfigRecord(parsed),
+					rules: { ...rules, [rule]: setting },
+				}),
+			).toEqual([
+				`${rule} must have the top-level setting ${JSON.stringify(POLICY_WIRING_SETTINGS[rule])}`,
+			])
+		}
 	})
 
 	it('omits the audit-confirmed dead policy type exports', () => {
@@ -1794,6 +1826,22 @@ describe('policy plugin', () => {
 			{ name: 'accepts const', code: 'const value = 1\nread(value)' },
 			{ name: 'leaves var to no-var', code: 'var value\nvalue = 1' },
 			{ name: 'accepts an ambient let', code: 'declare let value: number' },
+			{
+				name: 'accepts a let in a global augmentation',
+				code: 'declare global { let ambient: number }',
+			},
+			{
+				name: 'accepts an exported let in a declared module',
+				code: "declare module 'm' { export let ambient: string }",
+			},
+			{
+				name: 'accepts a let in a declared namespace',
+				code: 'declare namespace Ambient { let value: number }',
+			},
+			{
+				name: 'accepts a let in a namespace nested in a declared module',
+				code: "declare module 'm' { namespace Inner { let value: number } }",
+			},
 		],
 		invalid: [
 			...[
@@ -1814,6 +1862,24 @@ describe('policy plugin', () => {
 				{ form: 'value assigned later', code: 'let value: number\nvalue = 1\nread(value)' },
 			].map(({ form, code }) => ({
 				name: `rejects a let by ${form} [membership: let that prefer-const leaves]`,
+				code,
+				errors: [{ messageId: 'let' }],
+			})),
+			...[
+				{
+					form: 'a bare let beside a global augmentation',
+					code: 'declare global { let ambient: number }\nlet value\nread(value)',
+				},
+				{
+					form: 'a reassigned let beside a declared module',
+					code: "declare module 'm' { export let ambient: string }\nlet count = 0\ncount++",
+				},
+				{
+					form: 'a bare let in a namespace that is not declared',
+					code: 'namespace Local { let value: number }',
+				},
+			].map(({ form, code }) => ({
+				name: `rejects ${form} [membership: let outside an ambient block]`,
 				code,
 				errors: [{ messageId: 'let' }],
 			})),
@@ -3810,6 +3876,7 @@ createSomething({
 										['../../orkestrel-dispatch/scripts/helpers.ts', true],
 										['@orkestrel/test', true],
 										['fs', true],
+										['', true],
 										['n', true],
 										['no', true],
 										['nod', true],
@@ -4286,6 +4353,23 @@ createSomething({
 				),
 			).toEqual([`no override files list declares the population exactly: ${population.join(' ')}`])
 		}
+		// The control: the script override keeps its exact population while the rule it enables is
+		// set to off, which names the rule as enabled by no record.
+		const disabled = {
+			...readConfigRecord(parsed),
+			overrides: overrides.map((override: unknown) => {
+				const record = readConfigRecord(override)
+				return Object.hasOwn(readConfigRecord(record.rules ?? {}), 'policy/no-malformed-script')
+					? {
+							...record,
+							rules: { ...readConfigRecord(record.rules), 'policy/no-malformed-script': 'off' },
+						}
+					: record
+			}),
+		}
+		expect(
+			inspectPolicyWiring(disabled, ['policy/no-malformed-script'], [POLICY_SCRIPT_GLOBS]),
+		).toEqual(['policy/no-malformed-script is enabled by no top-level or override rules record'])
 	})
 
 	it('loads every configured policy rule through the real binary', () => {
@@ -4344,6 +4428,22 @@ createSomething({
 				'.agents/skills/sample/scripts/shared.ts',
 				["import { readOption } from './helpers.ts'", 'void readOption'].join('\n'),
 			)
+			// The fence reads a dynamic specifier as it reads a static one, and the empty specifier opens
+			// with no `node:` as every other refused specifier does.
+			scratch.write(
+				'.agents/skills/sample/scripts/dynamic.ts',
+				[
+					'/** Loads a sibling. */',
+					"export function load(): Promise<unknown> { return import('./other.ts') }",
+				].join('\n'),
+			)
+			scratch.write(
+				'.agents/skills/sample/scripts/empty.ts',
+				[
+					'/** Loads nothing. */',
+					"export function load(): Promise<unknown> { return import('') }",
+				].join('\n'),
+			)
 			scratch.write(
 				'.agents/skills/sample/scripts/alone.ts',
 				["import { readFileSync } from 'node:fs'", 'void readFileSync'].join('\n'),
@@ -4380,6 +4480,66 @@ createSomething({
 					'if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {',
 					'\tprocess.exitCode = main()',
 					'}',
+				].join('\n'),
+			)
+			// Every form of write to a parameter or a catch binding draws the built-in rule, one file per
+			// form so that a form the binary misses names itself.
+			const reassignments = [
+				{
+					file: 'param-update',
+					code: 'no-param-reassign',
+					source: 'export function f(a: number) { a++; return a }',
+				},
+				{
+					file: 'param-array-target',
+					code: 'no-param-reassign',
+					source: 'export function f(b: number[]) { ;[b] = [[1]]; return b }',
+				},
+				{
+					file: 'param-object-target',
+					code: 'no-param-reassign',
+					source: 'export function f(c: object) { ;({ c } = { c: {} }); return c }',
+				},
+				{
+					file: 'param-for-in-head',
+					code: 'no-param-reassign',
+					source: 'export function f(e: string, c: object) { for (e in c) void e; return e }',
+				},
+				{
+					file: 'param-for-of-head',
+					code: 'no-param-reassign',
+					source: "export function f(e: string) { for (e of ['x']) void e; return e }",
+				},
+				{
+					file: 'catch-update',
+					code: 'no-ex-assign',
+					source: 'try { void 0 } catch (err) { err++ }',
+				},
+				{
+					file: 'catch-destructured',
+					code: 'no-ex-assign',
+					source: "try { void 0 } catch ({ message }) { message = 'x' }",
+				},
+				{
+					file: 'catch-for-of-head',
+					code: 'no-ex-assign',
+					source: 'try { void 0 } catch (err) { for (err of [1]) void err }',
+				},
+			].map(({ file, code, source }) => ({
+				code: `eslint(${code})`,
+				filename: `src/violations/reassign/${file}.ts`,
+				source,
+			}))
+			for (const { filename, source } of reassignments) scratch.write(filename, source)
+			// An ambient block holds a `let` with no value and no `declare` flag of its own, and the
+			// `debugger` statement proves the file entered the run the absence assertion reads.
+			scratch.write(
+				'src/violations/ambient.ts',
+				[
+					'declare global { let ambientGlobal: number }',
+					"declare module 'ambient-module' { export let ambientExport: string }",
+					'debugger',
+					'export {}',
 				].join('\n'),
 			)
 			scratch.write(
@@ -4549,6 +4709,14 @@ createSomething({
 					code: 'eslint(no-restricted-imports)',
 					filename: '.agents/skills/sample/scripts/shared.ts',
 				},
+				{
+					code: 'eslint(no-restricted-imports)',
+					filename: '.agents/skills/sample/scripts/dynamic.ts',
+				},
+				{
+					code: 'eslint(no-restricted-imports)',
+					filename: '.agents/skills/sample/scripts/empty.ts',
+				},
 				{ code: 'policy(no-nested-functions)', filename: 'src/violations/fixture.ts' },
 				{
 					code: 'policy(no-malformed-script)',
@@ -4587,6 +4755,17 @@ createSomething({
 					`${code} ${normalizePolicyFilename(comparisonRoot, filename)}`,
 				)
 			}
+			for (const { code, filename } of reassignments) {
+				expect(violationCodes).toContain(
+					`${code} ${normalizePolicyFilename(comparisonRoot, filename)}`,
+				)
+			}
+			expect(violationCodes).toContain(
+				`eslint(no-debugger) ${normalizePolicyFilename(comparisonRoot, 'src/violations/ambient.ts')}`,
+			)
+			expect(violationCodes).not.toContain(
+				`policy(no-let) ${normalizePolicyFilename(comparisonRoot, 'src/violations/ambient.ts')}`,
+			)
 			expect(violationCodes).toContain(
 				`eslint(no-debugger) ${normalizePolicyFilename(comparisonRoot, 'scripts/read.ts')}`,
 			)

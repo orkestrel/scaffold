@@ -1,4 +1,4 @@
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import {
@@ -13,10 +13,15 @@ import {
 	countOccurrences,
 	digestBytes,
 	digestFile,
+	foldPath,
 	isInside,
+	isManifestEntry,
+	keyEdit,
 	parseEdits,
 	quote,
 	readDrift,
+	readLeftovers,
+	readManifest,
 	readMissingFlags,
 	readOption,
 	readPositionals,
@@ -28,6 +33,7 @@ import {
 	runMutated,
 	saveOriginals,
 	tryRestore,
+	writeSaved,
 } from '../../../../../.agents/skills/orkestrel-falsify/scripts/mutate.ts'
 
 describe('mutate.ts', () => {
@@ -368,6 +374,14 @@ describe('mutate.ts', () => {
 			const bare = runSkillScript(MUTATE_SCRIPT, ['--edits', '--', node, '-e', '0'], cwd)
 			expect(bare.status).toBe(64)
 			expect(bare.stderr).toContain('--edits given with no value')
+			const both = runSkillScript(
+				MUTATE_SCRIPT,
+				['--edits', '--no-such-flag', '--', node, '-e', '0'],
+				cwd,
+			)
+			expect(both.status).toBe(64)
+			expect(both.stderr).toContain('--no-such-flag')
+			expect(scratch.has('tmp')).toBe(false)
 			const passed = runSkillScript(
 				MUTATE_SCRIPT,
 				[
@@ -384,6 +398,237 @@ describe('mutate.ts', () => {
 			)
 			expect(passed.json).toMatchObject({ mutatedExit: 0, restoredExit: 0 })
 			expect(scratch.read('target.txt')).toBe('GOOD\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('folds case only where the host folds it, and names one file once whatever its spelling', () => {
+		expect(foldPath('A/B.TS', 'win32')).toBe('a/b.ts')
+		expect(foldPath('A/B.TS', 'darwin')).toBe('a/b.ts')
+		expect(foldPath('A/B.TS', 'linux')).toBe('A/B.TS')
+		const root = join('root', 'dir')
+		const [first, second, third] = parseEdits(
+			renderEditFile([
+				{ path: 'src/a.ts', reason: 'r', before: 'x', after: 'y' },
+				{ path: './src/a.ts', reason: 'r', before: 'x', after: 'y' },
+				{ path: 'src/b.ts', reason: 'r', before: 'x', after: 'y' },
+			]),
+		)
+		expect(first === undefined ? '' : keyEdit(root, first)).toBe(
+			second === undefined ? '-' : keyEdit(root, second),
+		)
+		expect(first === undefined ? '' : keyEdit(root, first)).not.toBe(
+			third === undefined ? '' : keyEdit(root, third),
+		)
+	})
+
+	it('applies edits that spell one file two ways in order, so an edit to text an earlier edit removed does not resolve', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-spelling-' })
+		try {
+			scratch.write('src/a.txt', 'alpha')
+			scratch.write('check.cjs', MUTATE_CHECK_SCRIPT)
+			const aliased = renderEditFile([
+				{ path: 'src/a.txt', reason: 'r', before: 'alpha', after: 'beta' },
+				{ path: './src/a.txt', reason: 'r', before: 'alpha', after: 'gamma' },
+			])
+			const refused = resolveMutations(scratch.path, parseEdits(aliased))
+			expect(refused.problems).toStrictEqual(['#2 ./src/a.txt: old text occurs 0 times'])
+			expect(refused.mutations).toStrictEqual([])
+			const chained = resolveMutations(
+				scratch.path,
+				parseEdits(
+					renderEditFile([
+						{ path: 'src/a.txt', reason: 'r', before: 'alpha', after: 'beta' },
+						{ path: './src/a.txt', reason: 'r', before: 'beta', after: 'gamma' },
+					]),
+				),
+			)
+			expect(chained.problems).toStrictEqual([])
+			expect(chained.mutations.map((mutation) => [mutation.path, mutation.mutated])).toStrictEqual([
+				['src/a.txt', 'gamma'],
+			])
+			scratch.write('aliased.md', aliased)
+			const run = runSkillScript(
+				MUTATE_SCRIPT,
+				['--edits', 'aliased.md', '--', process.execPath, 'check.cjs'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('#2 ./src/a.txt: old text occurs 0 times')
+			expect(scratch.read('src/a.txt')).toBe('alpha')
+			expect(scratch.has('runs.txt')).toBe(false)
+			expect(scratch.has('tmp')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the run directories an earlier run left, the manifest they keep, and writes the saved bytes back', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-manifest-' })
+		try {
+			expect(readLeftovers(scratch.path)).toStrictEqual([])
+			scratch.write('tmp/probes/mutate/run-b/manifest.json', '[]')
+			scratch.write('tmp/probes/mutate/run-a/manifest.json', '[]')
+			scratch.write('tmp/probes/mutate/other/manifest.json', '[]')
+			expect(readLeftovers(scratch.path)).toStrictEqual(['run-a', 'run-b'])
+			const entry = { path: 'a.txt', backup: '0.bak', digest: 'abc' }
+			expect(isManifestEntry(entry)).toBe(true)
+			expect(isManifestEntry({ ...entry, backup: 'x/0.bak' })).toBe(false)
+			expect(isManifestEntry({ ...entry, backup: '' })).toBe(false)
+			expect(isManifestEntry({ path: 'a.txt', backup: '0.bak' })).toBe(false)
+			expect(isManifestEntry({ ...entry, path: 1 })).toBe(false)
+			expect(isManifestEntry(null)).toBe(false)
+			scratch.write('tmp/probes/mutate/run-a/manifest.json', JSON.stringify([entry]))
+			expect(readManifest(join(scratch.path, 'tmp/probes/mutate/run-a'))).toStrictEqual([entry])
+			scratch.write('tmp/probes/mutate/run-a/manifest.json', JSON.stringify([entry, 'x']))
+			expect(readManifest(join(scratch.path, 'tmp/probes/mutate/run-a'))).toBeUndefined()
+			scratch.write('tmp/probes/mutate/run-a/manifest.json', '{')
+			expect(readManifest(join(scratch.path, 'tmp/probes/mutate/run-a'))).toBeUndefined()
+			scratch.write('tmp/probes/mutate/run-a/manifest.json', '{}')
+			expect(readManifest(join(scratch.path, 'tmp/probes/mutate/run-a'))).toBeUndefined()
+			expect(readManifest(join(scratch.path, 'tmp/probes/mutate/run-none'))).toBeUndefined()
+			scratch.write('tmp/probes/mutate/run-a/0.bak', 'saved')
+			scratch.write('a.txt', 'changed')
+			const directory = join(scratch.path, 'tmp/probes/mutate/run-a')
+			expect(writeSaved(scratch.path, directory, [entry])).toBeUndefined()
+			expect(scratch.read('a.txt')).toBe('saved')
+			scratch.remove('a.txt')
+			scratch.ensure('a.txt')
+			expect(writeSaved(scratch.path, directory, [entry])).toBeDefined()
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a new run while a run directory remains, names the --restore line, and touches nothing', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-leftover-' })
+		try {
+			scratch.write('target.txt', 'GOOD\n')
+			scratch.write('check.cjs', MUTATE_CHECK_SCRIPT)
+			scratch.write('edits.md', MUTATE_BREAK_EDIT)
+			scratch.write('tmp/probes/mutate/run-left/manifest.json', '[]')
+			const run = runSkillScript(
+				MUTATE_SCRIPT,
+				['--edits', 'edits.md', '--', process.execPath, 'check.cjs'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('--restore tmp/probes/mutate/run-left')
+			expect(run.stderr).toContain('no file was touched and no command ran')
+			expect(scratch.read('target.txt')).toBe('GOOD\n')
+			expect(scratch.has('runs.txt')).toBe(false)
+			expect(scratch.names('tmp/probes/mutate')).toStrictEqual(['run-left'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('restores the saved originals of a killed run, proves each digest from the manifest, and deletes the run directory', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-restore-run-' })
+		try {
+			scratch.write('a.txt', 'one')
+			scratch.write('sub/b.txt', 'two')
+			const { mutations } = resolveMutations(
+				scratch.path,
+				parseEdits(
+					renderEditFile([
+						{ path: 'a.txt', reason: 'r', before: 'one', after: '1' },
+						{ path: 'sub/b.txt', reason: 'r', before: 'two', after: '2' },
+					]),
+				),
+			)
+			const name = basename(saveOriginals(scratch.path, mutations))
+			scratch.write('a.txt', '1')
+			scratch.write('sub/b.txt', '2')
+			const run = runSkillScript(MUTATE_SCRIPT, ['--restore', `tmp/probes/mutate/${name}`], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			expect(run.json).toStrictEqual({
+				files: [
+					{ path: 'a.txt', digest: digestBytes(Buffer.from('one')) },
+					{ path: 'sub/b.txt', digest: digestBytes(Buffer.from('two')) },
+				],
+				restored: true,
+			})
+			expect(scratch.read('a.txt')).toBe('one')
+			expect(scratch.read('sub/b.txt')).toBe('two')
+			expect(scratch.names('tmp/probes/mutate')).toStrictEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('writes nothing and keeps the run directory when a saved file no longer matches the manifest', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-restore-damaged-' })
+		try {
+			scratch.write('a.txt', 'one')
+			const { mutations } = resolveMutations(
+				scratch.path,
+				parseEdits(renderEditFile([{ path: 'a.txt', reason: 'r', before: 'one', after: '1' }])),
+			)
+			const name = basename(saveOriginals(scratch.path, mutations))
+			scratch.write('a.txt', '1')
+			scratch.write(join('tmp/probes/mutate', name, '0.bak'), 'tampered')
+			const run = runSkillScript(MUTATE_SCRIPT, ['--restore', `tmp/probes/mutate/${name}`], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('a.txt')
+			expect(run.stderr).toContain('no longer match')
+			expect(scratch.read('a.txt')).toBe('1')
+			expect(scratch.names('tmp/probes/mutate')).toStrictEqual([name])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a --restore that names no run directory, a manifest path that escapes, and a --restore beside a run', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-restore-usage-' })
+		try {
+			scratch.write('edits.md', MUTATE_BREAK_EDIT)
+			scratch.write('tmp/probes/mutate/other/manifest.json', '[]')
+			scratch.write('tmp/probes/mutate/run-bare/note.txt', 'no manifest')
+			scratch.write(
+				'tmp/probes/mutate/run-evil/manifest.json',
+				JSON.stringify([{ path: '../escape.txt', backup: '0.bak', digest: 'abc' }]),
+			)
+			scratch.write('tmp/probes/mutate/run-evil/0.bak', 'x')
+			const cwd = { cwd: scratch.path }
+			const node = process.execPath
+			for (const argument of ['tmp/probes/mutate/run-gone', 'tmp/probes/mutate/other', '..', '.']) {
+				const run = runSkillScript(MUTATE_SCRIPT, ['--restore', argument], cwd)
+				expect.soft(run.status, argument).toBe(64)
+			}
+			const bare = runSkillScript(MUTATE_SCRIPT, ['--restore', 'tmp/probes/mutate/run-bare'], cwd)
+			expect(bare.status).toBe(64)
+			expect(bare.stderr).toContain('holds no readable manifest.json')
+			const evil = runSkillScript(MUTATE_SCRIPT, ['--restore', 'tmp/probes/mutate/run-evil'], cwd)
+			expect(evil.status).toBe(64)
+			expect(evil.stderr).toContain('outside the working directory')
+			expect(evil.stderr).toContain('nothing was written')
+			const beside = runSkillScript(
+				MUTATE_SCRIPT,
+				['--restore', 'tmp/probes/mutate/run-evil', '--edits', 'edits.md'],
+				cwd,
+			)
+			expect(beside.status).toBe(64)
+			const command = runSkillScript(
+				MUTATE_SCRIPT,
+				['--restore', 'tmp/probes/mutate/run-evil', '--', node, '-e', '0'],
+				cwd,
+			)
+			expect(command.status).toBe(64)
+			const stray = runSkillScript(
+				MUTATE_SCRIPT,
+				['--restore', 'tmp/probes/mutate/run-evil', 'extra'],
+				cwd,
+			)
+			expect(stray.status).toBe(64)
+			const missing = runSkillScript(MUTATE_SCRIPT, ['--restore'], cwd)
+			expect(missing.status).toBe(64)
+			expect(missing.stderr).toContain('--restore given with no value')
 		} finally {
 			scratch.destroy()
 		}

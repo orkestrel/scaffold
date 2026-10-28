@@ -12,7 +12,16 @@ export interface PolicyExpression extends PolicyNode {
 	readonly key?: PolicyExpression
 	readonly id?: PolicyExpression | null
 	readonly method?: boolean
-	readonly kind?: 'const' | 'get' | 'init' | 'let' | 'set' | 'var'
+	readonly kind?:
+		| 'const'
+		| 'get'
+		| 'global'
+		| 'init'
+		| 'let'
+		| 'module'
+		| 'namespace'
+		| 'set'
+		| 'var'
 	readonly expression?: boolean
 	readonly readonly?: boolean
 	readonly test?: PolicyExpression
@@ -1137,9 +1146,33 @@ export function isPolicyReassigned(variable: PolicyVariable): boolean {
 	)
 }
 
+/**
+ * Checks whether a node sits inside a `declare` module, namespace, or global augmentation.
+ *
+ * @remarks
+ * A declaration inside such a block carries no `declare` flag of its own and no value, because the
+ * block is the ambient context. A `global` block is ambient wherever it stands.
+ */
+export function isPolicyInDeclaredModule(node: PolicyExpression): boolean {
+	const parent = node.parent
+	if (parent === undefined || parent === null) return false
+	return (
+		(parent.type === 'TSModuleDeclaration' &&
+			(parent.declare === true || parent.kind === 'global')) ||
+		isPolicyInDeclaredModule(parent)
+	)
+}
+
 /** Reports a let declaration that prefer-const leaves: one reassigned or declared without a value. */
 export function reportLet(context: PolicyContext, node: PolicyExpression): void {
-	if (node.kind !== 'let' || node.declare === true || isPolicyAmbient(context.filename)) return
+	if (
+		node.kind !== 'let' ||
+		node.declare === true ||
+		isPolicyAmbient(context.filename) ||
+		isPolicyInDeclaredModule(node)
+	) {
+		return
+	}
 	const head = node.parent?.type === 'ForInStatement' || node.parent?.type === 'ForOfStatement'
 	const bare =
 		!head &&

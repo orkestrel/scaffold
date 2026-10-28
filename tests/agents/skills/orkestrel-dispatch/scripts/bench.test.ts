@@ -10,6 +10,7 @@ import {
 	parseJsonLine,
 	probeClaude,
 	probeCodex,
+	quote,
 	readMissingFlags,
 	readNumber,
 	readOption,
@@ -17,6 +18,7 @@ import {
 	readUnknownFlags,
 	readVersion,
 	runRoundTrip,
+	SANDBOX_MODES,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/bench.ts'
 
 describe('bench.ts', () => {
@@ -50,6 +52,26 @@ describe('bench.ts', () => {
 			expect(run.stdout).toBe('')
 		}
 		expect(runSkillScript(BENCH_SCRIPT, ['--claude', '--cap', '5'], { env: dark }).status).toBe(3)
+	})
+
+	it('refuses a sandbox outside the three modes and --resolve without --cursor as usage faults', () => {
+		const dark = { PATH: '', Path: '' }
+		for (const sandbox of ['sudo', 'READ-ONLY', 'workspace', '']) {
+			const run = runSkillScript(BENCH_SCRIPT, ['--codex', '--sandbox', sandbox], { env: dark })
+			expect({ sandbox, status: run.status }).toEqual({ sandbox, status: 64 })
+			expect(run.stderr).toContain('--sandbox takes one of read-only, workspace-write')
+			expect(run.stdout).toBe('')
+		}
+		for (const sandbox of SANDBOX_MODES) {
+			const run = runSkillScript(BENCH_SCRIPT, ['--codex', '--sandbox', sandbox], { env: dark })
+			expect({ sandbox, status: run.status }).toEqual({ sandbox, status: 3 })
+		}
+		for (const bench of ['--codex', '--claude']) {
+			const run = runSkillScript(BENCH_SCRIPT, [bench, '--resolve'], { env: dark })
+			expect({ bench, status: run.status }).toEqual({ bench, status: 64 })
+			expect(run.stderr).toContain('--resolve belongs to --cursor')
+			expect(run.stdout).toBe('')
+		}
 	})
 
 	it('reports a Claude CLI that cannot start as a dark bench', () => {
@@ -345,6 +367,14 @@ describe('the argument readers', () => {
 		expect(readUnknownFlags(['--cap', '5', '--', 'node', '--watch'], ['--cap'])).toEqual([])
 		expect(readUnknownFlags(['--cap', '5', 'path', '-x'], ['--cap'])).toEqual([])
 		expect(readUnknownFlags([], [])).toEqual([])
+	})
+})
+
+describe('the quoter', () => {
+	it('encodes an untrusted text as JSON and cuts a long one inside the quotes', () => {
+		expect(quote('a"b')).toBe('"a\\"b"')
+		expect(quote('x'.repeat(100))).toBe(`"${'x'.repeat(80)}…"`)
+		expect(SANDBOX_MODES).toEqual(['read-only', 'workspace-write', 'danger-full-access'])
 	})
 })
 

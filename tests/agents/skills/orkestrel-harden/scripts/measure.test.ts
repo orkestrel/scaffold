@@ -1,17 +1,26 @@
 import { isAbsolute, join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
-import { MEASURE_SCRIPT, WORKSPACE_ROOT, runSkillScript } from '../../../../setupServer.js'
+import {
+	MEASURE_SCRIPT,
+	WORKSPACE_ROOT,
+	renderLinterFixture,
+	runSkillScript,
+} from '../../../../setupServer.js'
 import {
 	anchorPlugin,
 	anchorSpecifier,
 	buildVariant,
+	describeDiagnostic,
 	formatHits,
+	isHit,
 	isRecord,
 	nameProbe,
+	namesRule,
 	normalizeSlashes,
 	parseJson,
 	quote,
+	readCodeScopes,
 	readHits,
 	readMissingFlags,
 	readOption,
@@ -85,30 +94,65 @@ describe('measure.ts', () => {
 		expect(readRuleOptions('')).toBeUndefined()
 	})
 
-	it('reads the hits per file, most first with ties by path, and refuses output that is not a report', () => {
+	it('lists the code scopes a rule id may print under, and matches a diagnostic code to the rule', () => {
+		expect(readCodeScopes('no-debugger')).toStrictEqual(['eslint'])
+		expect(readCodeScopes('policy/no-let')).toStrictEqual(['policy', 'eslint-plugin-policy'])
+		expect(readCodeScopes('typescript/no-explicit-any')).toStrictEqual([
+			'typescript',
+			'eslint-plugin-typescript',
+			'typescript-eslint',
+		])
+		expect(readCodeScopes('node/no-process-exit')).toContain('eslint-plugin-n')
+		expect(namesRule('eslint(no-debugger)', 'no-debugger')).toBe(true)
+		expect(namesRule('policy(no-let)', 'policy/no-let')).toBe(true)
+		expect(namesRule('typescript-eslint(no-explicit-any)', 'typescript/no-explicit-any')).toBe(true)
+		expect(namesRule('eslint-plugin-import(no-cycle)', 'import/no-cycle')).toBe(true)
+		expect(namesRule('policy(no-var)', 'policy/no-let')).toBe(false)
+		expect(namesRule('eslint(no-let)', 'policy/no-let')).toBe(false)
+		expect(namesRule('policy(no-let)', 'no-let')).toBe(false)
+		expect(namesRule('no-debugger', 'no-debugger')).toBe(false)
+		expect(namesRule('', 'no-debugger')).toBe(false)
+		expect(namesRule(undefined, 'no-debugger')).toBe(false)
+		expect(isHit({ filename: 'a.ts', code: 'eslint(no-debugger)' }, 'no-debugger')).toBe(true)
+		expect(isHit({ code: 'eslint(no-debugger)' }, 'no-debugger')).toBe(false)
+		expect(isHit({ filename: 'a.ts' }, 'no-debugger')).toBe(false)
+		expect(describeDiagnostic({ code: 'eslint(x)', message: 'm' })).toBe('eslint(x)')
+		expect(describeDiagnostic({ code: '', message: 'Unexpected token' })).toBe('Unexpected token')
+		expect(describeDiagnostic({})).toBe('a diagnostic with no code')
+	})
+
+	it('reads the hits of one rule per file, most first with ties by path, and sets every other diagnostic apart', () => {
 		const output = JSON.stringify({
 			diagnostics: [
-				{ filename: 'b/c.ts' },
-				{ filename: 'a.ts' },
-				{ filename: 'b\\c.ts' },
-				{ filename: 'a.ts' },
-				{ filename: 'z.ts' },
+				...['b/c.ts', 'a.ts', 'b\\c.ts', 'a.ts', 'z.ts'].map((filename) => ({
+					filename,
+					code: 'eslint(no-debugger)',
+				})),
+				{ filename: 'p.ts', code: '', message: 'Unexpected token' },
+				{ filename: 'q.ts', code: 'eslint(no-var)' },
+				{ filename: 'r.ts', code: 'eslint(no-var)' },
 				{ message: 'no filename' },
+				'text',
 			],
 		})
-		expect(readHits(output)).toStrictEqual({
+		expect(readHits(output, 'no-debugger')).toStrictEqual({
 			total: 5,
 			files: [
 				['a.ts', 2],
 				['b/c.ts', 2],
 				['z.ts', 1],
 			],
+			foreign: ['Unexpected token', 'eslint(no-var)', 'no filename'],
 		})
-		expect(readHits('{"diagnostics":[]}')).toStrictEqual({ total: 0, files: [] })
-		expect(readHits('')).toBeUndefined()
-		expect(readHits('{}')).toBeUndefined()
-		expect(readHits('{"diagnostics":5}')).toBeUndefined()
-		expect(readHits('[]')).toBeUndefined()
+		expect(readHits('{"diagnostics":[]}', 'no-debugger')).toStrictEqual({
+			total: 0,
+			files: [],
+			foreign: [],
+		})
+		expect(readHits('', 'no-debugger')).toBeUndefined()
+		expect(readHits('{}', 'no-debugger')).toBeUndefined()
+		expect(readHits('{"diagnostics":5}', 'no-debugger')).toBeUndefined()
+		expect(readHits('[]', 'no-debugger')).toBeUndefined()
 	})
 
 	it('formats a summary line and one tab-separated line per file', () => {
@@ -119,9 +163,12 @@ describe('measure.ts', () => {
 					['a.ts', 2],
 					['b.ts', 1],
 				],
+				foreign: [],
 			}),
 		).toBe('rule=no-var hits=3 files=2\n2\ta.ts\n1\tb.ts')
-		expect(formatHits('no-var', { total: 0, files: [] })).toBe('rule=no-var hits=0 files=0')
+		expect(formatHits('no-var', { total: 0, files: [], foreign: [] })).toBe(
+			'rule=no-var hits=0 files=0',
+		)
 	})
 
 	it('reads flags and positionals, and names every missing or unknown flag', () => {
@@ -277,6 +324,76 @@ describe('measure.ts', () => {
 			const bare = runSkillScript(MEASURE_SCRIPT, ['a.ts', '--rule'], cwd)
 			expect(bare.status).toBe(64)
 			expect(bare.stderr).toContain('--rule given with no value')
+			const both = runSkillScript(MEASURE_SCRIPT, ['--rule', '--no-such-flag', 'a.ts'], cwd)
+			expect(both.status).toBe(64)
+			expect(both.stderr).toContain('--no-such-flag')
+			expect(scratch.has('tmp')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a measurement when the linter reports a diagnostic beside the rule, a parse error included', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-measure-parse-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write('.oxlintrc.json', JSON.stringify({ plugins: ['typescript'] }))
+			scratch.write('broken.ts', 'const =\n')
+			scratch.write('b.ts', 'debugger\n')
+			scratch.write('c.ts', 'export const clean = 1\n')
+			const cwd = { cwd: scratch.path }
+			const run = runSkillScript(
+				MEASURE_SCRIPT,
+				['--rule', 'no-debugger', 'broken.ts', 'b.ts'],
+				cwd,
+			)
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('a diagnostic beside the rule')
+			expect(run.stdout).toBe('')
+			const alone = runSkillScript(MEASURE_SCRIPT, ['--rule', 'no-debugger', 'broken.ts'], cwd)
+			expect(alone.status).toBe(2)
+			const clean = runSkillScript(MEASURE_SCRIPT, ['--rule', 'no-debugger', 'b.ts', 'c.ts'], cwd)
+			expect(clean.status).toBe(3)
+			expect(clean.stdout).toContain('hits=1 files=1')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the linter’s exit status: only 0 or 1 is a measurement, and 1 needs a diagnostic', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-measure-status-' })
+		try {
+			scratch.write('.oxlintrc.json', '{}')
+			scratch.write('a.ts', 'debugger\n')
+			const cwd = { cwd: scratch.path }
+			const hit = JSON.stringify({
+				diagnostics: [{ filename: 'a.ts', code: 'eslint(no-debugger)' }],
+			})
+			const empty = JSON.stringify({ diagnostics: [] })
+			const args = ['--rule', 'no-debugger', 'a.ts']
+			scratch.write('node_modules/oxlint/bin/oxlint', renderLinterFixture(hit, 1, ''))
+			const counted = runSkillScript(MEASURE_SCRIPT, args, cwd)
+			expect(counted.status).toBe(3)
+			expect(counted.stdout).toContain('hits=1 files=1')
+			scratch.write('node_modules/oxlint/bin/oxlint', renderLinterFixture(empty, 0, ''))
+			expect(runSkillScript(MEASURE_SCRIPT, args, cwd).status).toBe(0)
+			scratch.write(
+				'node_modules/oxlint/bin/oxlint',
+				renderLinterFixture(empty, 7, 'plugin failed'),
+			)
+			const crashed = runSkillScript(MEASURE_SCRIPT, args, cwd)
+			expect(crashed.status).toBe(2)
+			expect(crashed.stderr).toContain('exited 7')
+			expect(crashed.stderr).toContain('plugin failed')
+			expect(crashed.stdout).toBe('')
+			scratch.write(
+				'node_modules/oxlint/bin/oxlint',
+				renderLinterFixture(empty, 1, 'could not load'),
+			)
+			const silent = runSkillScript(MEASURE_SCRIPT, args, cwd)
+			expect(silent.status).toBe(2)
+			expect(silent.stderr).toContain('exited 1 with no diagnostic')
+			expect(silent.stdout).toBe('')
 		} finally {
 			scratch.destroy()
 		}

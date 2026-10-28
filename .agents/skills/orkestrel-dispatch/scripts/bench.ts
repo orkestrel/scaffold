@@ -5,9 +5,11 @@
 // --cursor resolves the Cursor CLI entry (the newest versioned install under LOCALAPPDATA on
 // Windows, `agent` on PATH elsewhere), reads its version (an entry that cannot answer `--version` is
 // dark, with or without --resolve), and runs one bounded prompt through
-// launch.ts into tmp/cursor/bench.jsonl; --resolve stops after printing the entry. --codex reads
+// launch.ts into tmp/cursor/bench.jsonl; --resolve, which only --cursor takes, stops after printing
+// the entry. --codex reads
 // `codex --version` and `codex login status`, then runs one bounded exec into tmp/codex/bench.jsonl
-// under the sandbox the host allows (danger-full-access on Windows, read-only elsewhere). --claude
+// under the sandbox the host allows (danger-full-access on Windows, read-only elsewhere) unless
+// --sandbox names read-only, workspace-write, or danger-full-access. --claude
 // reads `claude --version` and runs one bounded print-mode prompt into tmp/claude/bench.jsonl. The
 // script runs launch.ts and result.ts as child processes beside it and imports neither. The JSON
 // summary carries the command, the version, the session id, the answer, and `live`. --cap is a
@@ -42,6 +44,13 @@ export const DEFAULT_CAP = 180
 
 /** Holds the longest cap in whole seconds that a Node timer carries through the launcher. */
 export const MAX_CAP_SECONDS = 2_147_483
+
+/** Lists the sandbox modes `--sandbox` may name, which the Codex CLI reads. */
+export const SANDBOX_MODES: readonly string[] = [
+	'read-only',
+	'workspace-write',
+	'danger-full-access',
+]
 
 /** Lists the flags that each select one bench. */
 export const BENCH_FLAGS: readonly string[] = ['--cursor', '--codex', '--claude']
@@ -132,6 +141,16 @@ export function readUnknownFlags(
 	return (end === -1 ? argv : argv.slice(0, end)).filter(
 		(argument) => argument.startsWith('--') && !flags.includes(argument),
 	)
+}
+
+/**
+ * Quotes an untrusted text for a diagnostic, JSON-encoded and cut to a bounded length.
+ *
+ * @param text - The text to quote.
+ * @returns The JSON string literal of the text, ending in an ellipsis inside the quotes when cut.
+ */
+export function quote(text: string): string {
+	return JSON.stringify(text.length > 80 ? `${text.slice(0, 80)}…` : text)
 }
 
 /**
@@ -489,18 +508,29 @@ export function selectProbe(argv: readonly string[], cap: number, root: string):
  * @returns The exit code: 0 live, 3 dark, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`bench: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`bench: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
 		return 64
 	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`bench: ${missing.join(', ')} given with no value`)
+		return 64
+	}
 	if (BENCH_FLAGS.filter((flag) => argv.includes(flag)).length !== 1) {
 		console.error(USAGE)
+		return 64
+	}
+	if (argv.includes('--resolve') && !argv.includes('--cursor')) {
+		console.error('bench: --resolve belongs to --cursor and reads nothing for another bench')
+		return 64
+	}
+	const sandbox = readOption(argv, '--sandbox')
+	if (sandbox !== undefined && !SANDBOX_MODES.includes(sandbox)) {
+		console.error(
+			`bench: --sandbox takes one of ${SANDBOX_MODES.join(', ')}; got ${quote(sandbox)}`,
+		)
 		return 64
 	}
 	const cap = parseCap(readOption(argv, '--cap'))

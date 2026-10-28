@@ -4,23 +4,27 @@
 // and so does a REV that opens with `-`. The baseline is read from the tree REV names, resolved
 // once with `--end-of-options`, with paths relative to --root, so a --root below the repository top
 // works.
-// Compare exact decoded describe/it/test title counts in tests/**/*.test.ts against REV. A baseline
-// title with a deficit is moved when another tests/**/*.ts string literal spells it, and missing
-// otherwise. A moved row is a claim to rule, not proof: a literal that only spells the title (an
-// assertion value, a data table) also holds it, so the reader rules each moved row by reading its
-// holder, as it rules each missing row. Read a registration at any token position, with its
-// modifiers: `.each` tables (call or tagged template) and `.skipIf(...)` and `.runIf(...)` read the
-// title of the call that follows. A title that is no string or template literal is a dynamic row,
-// named per tree with its source spelling: the comparison cannot follow it, and a removed `.each`
-// table row leaves its one registered title in place. Decode quote and backslash escapes only.
+// Compare exact decoded describe/it/test/suite title counts in tests/**/*.test.ts against REV. A
+// baseline title with a deficit is moved when another tests/**/*.ts string literal spells it, and
+// missing otherwise. A moved row is a claim to rule, not proof: a literal that only spells the
+// title (an assertion value, a data table) also holds it, so the reader rules each moved row by
+// reading its holder, as it rules each missing row. Read a registration at any token position, with
+// its modifiers: `.each` tables (call or tagged template) and `.skipIf(...)` and `.runIf(...)` read
+// the title of the call that follows. A title that is no string or template literal is a dynamic
+// row, named per tree with its source spelling: the comparison cannot follow it, and a removed
+// `.each` table row leaves its one registered title in place. A file with fewer dynamic
+// registrations than at REV is a lost-dynamic row, which the comparison cannot rule on, so it
+// exits 3 as a missing row does. A title registered through an alias (a `test.extend` result bound
+// to another name, or `const spec = it`) is not read, and a `test.extend({...})` call itself reads
+// as one dynamic registration. Decode quote and backslash escapes only.
 // Balance each-table parentheses over code tokens, skipping lexical regions. Print text by default
 // or one JSON line with --json; --out writes .json or .txt independently. Text rows escape tab and
 // newline. Compare interpolated templates by full raw spelling. Refuse unclosed lexical tokens.
 // Track lexical brace context without a syntax tree. Function-expression and arrow bodies cannot
 // establish a following slash's grammar; refuse that detectable ambiguity instead of claiming a move.
 // Only .test.ts files register titles; a .test.tsx or .test.mts file is invisible to it.
-// Exit 0 with no missing or moved titles, 3 with either, 2 on git, filesystem or token refusal, 64
-// on usage.
+// Exit 0 with no missing or moved titles and no lost-dynamic file, 3 with any, 2 on git, filesystem
+// or token refusal, 64 on usage.
 import { spawnSync } from 'node:child_process'
 import {
 	existsSync,
@@ -60,7 +64,7 @@ export const REGEX_PREFIX =
 export const IDENTIFIER_PATTERN = /^[\p{ID_Start}_$][\p{ID_Continue}$]*$/u
 
 /** Names the identifiers that open a test registration. */
-export const REGISTRARS: ReadonlySet<string> = new Set(['it', 'test', 'describe'])
+export const REGISTRARS: ReadonlySet<string> = new Set(['it', 'test', 'describe', 'suite'])
 
 /** Names the calls whose argument list or table precedes the registration call. */
 export const ARGUMENT_MODIFIERS: ReadonlySet<string> = new Set(['each', 'skipIf', 'runIf', 'for'])
@@ -94,6 +98,12 @@ export interface Dynamic {
 	readonly tree: 'baseline' | 'working'
 }
 
+/** Describes a file that registers fewer non-literal titles than it did at the baseline. */
+export interface LostDynamic {
+	readonly file: string
+	readonly deficit: number
+}
+
 /** Holds the comparison of the working tree with the baseline. */
 export interface Report {
 	readonly base: string
@@ -102,6 +112,7 @@ export interface Report {
 	readonly missing: readonly Missing[]
 	readonly moved: readonly Moved[]
 	readonly dynamic: readonly Dynamic[]
+	readonly lostDynamic: readonly LostDynamic[]
 }
 
 /** Describes one lexical token, with the tokens nested in its template expressions. */
@@ -680,6 +691,42 @@ export function readDynamic(
 }
 
 /**
+ * Counts the registrations that have no literal title.
+ *
+ * @param registrations - A file's registrations.
+ * @returns How many have no title token.
+ */
+export function countDynamic(registrations: readonly Registration[]): number {
+	return registrations.filter((registration) => registration.token === undefined).length
+}
+
+/**
+ * Lists the files that register fewer non-literal titles than the baseline did.
+ *
+ * @param baseline - Each baseline test file with its registrations.
+ * @param working - Each working test file with its registrations.
+ * @returns One row per baseline file whose count of non-literal registrations dropped, with the
+ * drop; a file absent from the working tree counts none.
+ */
+export function readLostDynamic(
+	baseline: ReadonlyArray<{
+		readonly file: string
+		readonly registrations: readonly Registration[]
+	}>,
+	working: ReadonlyArray<{
+		readonly file: string
+		readonly registrations: readonly Registration[]
+	}>,
+): readonly LostDynamic[] {
+	return baseline.flatMap(({ file, registrations }) => {
+		const before = countDynamic(registrations)
+		const now = working.find((entry) => entry.file === file)
+		const after = now === undefined ? 0 : countDynamic(now.registrations)
+		return before > after ? [{ file, deficit: before - after }] : []
+	})
+}
+
+/**
  * Runs git in a directory and returns its output.
  *
  * @param root - The directory to run in.
@@ -791,6 +838,7 @@ export function readReport(base: string, root: string): Report {
 			),
 			...files.flatMap(({ file, registrations }) => readDynamic(file, registrations, 'working')),
 		],
+		lostDynamic: readLostDynamic(baselineFiles, files),
 	}
 }
 
@@ -812,7 +860,7 @@ export function escapeCell(cell: string): string {
  */
 export function renderReport(report: Report): string {
 	return [
-		`titles: ${report.count} baseline title(s) at ${report.base}, ${report.missing.length} missing, ${report.moved.length} moved, ${report.dynamic.length} dynamic`,
+		`titles: ${report.count} baseline title(s) at ${report.base}, ${report.missing.length} missing, ${report.moved.length} moved, ${report.dynamic.length} dynamic, ${report.lostDynamic.length} lost dynamic`,
 		...report.missing.map(({ file, title, deficit }) =>
 			['missing', file, title, String(deficit)].map(escapeCell).join('\t'),
 		),
@@ -822,6 +870,9 @@ export function renderReport(report: Report): string {
 		...report.dynamic.map(({ file, spelling, tree }) =>
 			['dynamic', file, tree, spelling].map(escapeCell).join('\t'),
 		),
+		...report.lostDynamic.map(({ file, deficit }) =>
+			['lost-dynamic', file, String(deficit)].map(escapeCell).join('\t'),
+		),
 	].join('\n')
 }
 
@@ -829,7 +880,8 @@ export function renderReport(report: Report): string {
  * Runs the comparison and prints its report.
  *
  * @param argv - The arguments after the script path.
- * @returns The exit code: 0 clean, 3 a missing or moved title, 2 a tool failure, 64 usage.
+ * @returns The exit code: 0 clean, 3 a missing or moved title or a lost-dynamic file, 2 a tool
+ * failure, 64 usage.
  */
 export function main(argv: readonly string[]): number {
 	const unknown = readUnknownFlags(argv, FLAGS)
@@ -866,7 +918,7 @@ export function main(argv: readonly string[]): number {
 			writeFileSync(target, `${extname(target) === '.json' ? json : text}\n`)
 		}
 		console.log(argv.includes('--json') ? json : text)
-		return report.missing.length + report.moved.length > 0 ? 3 : 0
+		return report.missing.length + report.moved.length + report.lostDynamic.length > 0 ? 3 : 0
 	} catch (error) {
 		console.error(`titles: ${error instanceof Error ? error.message : String(error)}`)
 		return 2

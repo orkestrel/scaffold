@@ -18,11 +18,13 @@ import {
 	trackFiles,
 } from '../../../../setupServer.js'
 import {
+	countDynamic,
 	decodeTitle,
 	describeName,
 	escapeCell,
 	listFiles,
 	normalizeSlashes,
+	readLostDynamic,
 	readMissingFlags,
 	readOption,
 	readRegistrations,
@@ -492,6 +494,7 @@ describe('titles.ts', () => {
 				missing: [],
 				moved: [],
 				dynamic: [],
+				lostDynamic: [],
 			})
 		} finally {
 			scratch.destroy()
@@ -516,7 +519,7 @@ describe('titles.ts', () => {
 			const text = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
 			expect(text.status).toBe(3)
 			expect(text.stdout).toBe(
-				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved, 0 dynamic\nmissing\ttests/nested/sample.test.ts\treads\t1\n',
+				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved, 0 dynamic, 0 lost dynamic\nmissing\ttests/nested/sample.test.ts\treads\t1\n',
 			)
 		} finally {
 			scratch.destroy()
@@ -822,7 +825,7 @@ describe('titles.ts', () => {
 			const text = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
 			expect(text.stdout).toBe(
 				[
-					'titles: 1 baseline title(s) at HEAD, 0 missing, 0 moved, 4 dynamic',
+					'titles: 1 baseline title(s) at HEAD, 0 missing, 0 moved, 4 dynamic, 0 lost dynamic',
 					'dynamic\ttests/dynamic.test.ts\tbaseline\tNAME',
 					"dynamic\ttests/dynamic.test.ts\tbaseline\t'a' + NAME",
 					'dynamic\ttests/dynamic.test.ts\tworking\tNAME',
@@ -830,6 +833,117 @@ describe('titles.ts', () => {
 					'',
 				].join('\n'),
 			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads Vitest’s suite alias as a registration, so a renamed suite title is missing', () => {
+		const scratch = createScratch({ prefix: 'titles-suite-' })
+		try {
+			scratch.write(
+				'tests/grouped.test.ts',
+				"suite('grouped title', () => {\n\tit('case', () => {})\n})\n",
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const unchanged = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(unchanged.status).toBe(0)
+			expect(unchanged.json).toMatchObject({ count: 2, missing: [], moved: [] })
+			scratch.write(
+				'tests/grouped.test.ts',
+				"suite('renamed', () => {\n\tit('case', () => {})\n})\n",
+			)
+			const renamed = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(renamed.status).toBe(3)
+			expect(renamed.json).toMatchObject({
+				count: 2,
+				missing: [{ file: 'tests/grouped.test.ts', title: 'grouped title', deficit: 1 }],
+				moved: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('counts the registrations with no literal title and lists the files whose count dropped', () => {
+		const text =
+			"const NAME = 'x'\nit(NAME, () => {})\nit('a' + NAME, () => {})\nit('literal', () => {})\n"
+		const registrations = readRegistrations(
+			text,
+			new TokenScanner(text, 'a.test.ts').scan(),
+			'a.test.ts',
+		)
+		expect(countDynamic(registrations)).toBe(2)
+		expect(countDynamic([])).toBe(0)
+		const two = { file: 'tests/a.test.ts', registrations }
+		const one = { file: 'tests/a.test.ts', registrations: registrations.slice(1) }
+		const none = { file: 'tests/a.test.ts', registrations: registrations.slice(2) }
+		expect(readLostDynamic([two], [two])).toStrictEqual([])
+		expect(readLostDynamic([two], [one])).toStrictEqual([{ file: 'tests/a.test.ts', deficit: 1 }])
+		expect(readLostDynamic([two], [none])).toStrictEqual([{ file: 'tests/a.test.ts', deficit: 2 }])
+		expect(readLostDynamic([two], [])).toStrictEqual([{ file: 'tests/a.test.ts', deficit: 2 }])
+		expect(readLostDynamic([one], [two])).toStrictEqual([])
+		expect(readLostDynamic([], [two])).toStrictEqual([])
+		expect(readLostDynamic([{ file: 'tests/b.test.ts', registrations }], [two])).toStrictEqual([
+			{ file: 'tests/b.test.ts', deficit: 2 },
+		])
+	})
+
+	it('exits 3 for a file that lost a non-literal registration, and keeps literal titles on today’s comparison', () => {
+		const scratch = createScratch({ prefix: 'titles-lost-dynamic-' })
+		try {
+			scratch.write(
+				'tests/dynamic.test.ts',
+				"const NAME = 'x'\nit(NAME, () => {})\nit('a' + NAME, () => {})\nit('literal', () => {})\n",
+			)
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const unchanged = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(unchanged.status).toBe(0)
+			expect(unchanged.json).toMatchObject({ lostDynamic: [] })
+			scratch.write(
+				'tests/dynamic.test.ts',
+				"const NAME = 'x'\nit(NAME, () => {})\nit('a' + NAME, () => {})\nit('literal', () => {})\nit('more' + NAME, () => {})\n",
+			)
+			const added = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(added.status).toBe(0)
+			scratch.write(
+				'tests/dynamic.test.ts',
+				"const NAME = 'x'\nit(NAME, () => {})\nit('literal', () => {})\n",
+			)
+			const lost = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(lost.status).toBe(3)
+			expect(lost.json).toMatchObject({
+				missing: [],
+				moved: [],
+				lostDynamic: [{ file: 'tests/dynamic.test.ts', deficit: 1 }],
+			})
+			const text = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
+			expect(text.status).toBe(3)
+			expect(text.stdout).toContain('1 lost dynamic')
+			expect(text.stdout).toContain('lost-dynamic\ttests/dynamic.test.ts\t1')
+			scratch.remove('tests/dynamic.test.ts')
+			const removed = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(removed.status).toBe(3)
+			expect(removed.json).toMatchObject({
+				missing: [{ file: 'tests/dynamic.test.ts', title: 'literal', deficit: 1 }],
+				lostDynamic: [{ file: 'tests/dynamic.test.ts', deficit: 2 }],
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -917,7 +1031,7 @@ describe('titles.ts', () => {
 			const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.stdout).toBe(
-				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved, 0 dynamic\nmissing\ttests/sample.test.ts\ta\\nb\\tc\t1\n',
+				'titles: 1 baseline title(s) at HEAD, 1 missing, 0 moved, 0 dynamic, 0 lost dynamic\nmissing\ttests/sample.test.ts\ta\\nb\\tc\t1\n',
 			)
 		} finally {
 			scratch.destroy()
@@ -967,13 +1081,15 @@ describe('titles.ts', () => {
 				missing: [{ file: 'tests/a.test.ts', title: 'gone', deficit: 2 }],
 				moved: [{ file: 'tests/a.test.ts', title: 'went', holder: 'tests/b.ts' }],
 				dynamic: [{ file: 'tests/a.test.ts', spelling: 'NAME', tree: 'working' }],
+				lostDynamic: [{ file: 'tests/c.test.ts', deficit: 2 }],
 			}),
 		).toBe(
 			[
-				'titles: 3 baseline title(s) at HEAD, 1 missing, 1 moved, 1 dynamic',
+				'titles: 3 baseline title(s) at HEAD, 1 missing, 1 moved, 1 dynamic, 1 lost dynamic',
 				'missing\ttests/a.test.ts\tgone\t2',
 				'moved\ttests/a.test.ts\twent\ttests/b.ts',
 				'dynamic\ttests/a.test.ts\tworking\tNAME',
+				'lost-dynamic\ttests/c.test.ts\t2',
 			].join('\n'),
 		)
 	})

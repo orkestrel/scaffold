@@ -1253,7 +1253,11 @@ export function parseCommand(argv: readonly string[]): CommandResult {
 		...VALUE_FLAGS[candidate],
 		...SWITCH_FLAGS[candidate],
 	])
-	const foreign = argv.filter((token) => token.startsWith('--') && !known.includes(token))
+	// A bare `--` ends the arguments the script reads; nothing after it is a flag of this script.
+	const end = argv.indexOf('--')
+	const foreign = (end === -1 ? argv : argv.slice(0, end)).filter(
+		(token) => token.startsWith('--') && !known.includes(token),
+	)
 	if (foreign.length > 0) {
 		return { ok: false, message: `${foreign.join(', ')} is not a flag this script reads` }
 	}

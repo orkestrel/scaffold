@@ -20,7 +20,7 @@ description: >-
 
 Run from the checkout root. The script's opening comment owns its behavior.
 
-- `scripts/cases.ts --report FILE.json [--passed NAME ...] [--failed NAME ...]` reads a Vitest `--reporter=json` report and requires every case a `--passed` name matches to have passed and every case a `--failed` name matches to have failed. A name matches a case's full name or its own title exactly; both flags repeat. A name that matches no case is missing, and a failed case no name matches is refused. It prints one summary line, each difference, and `ok` or `differences=N`. Exit 0 when the report matches, 3 when it does not, 2 when the report cannot be read as a Vitest report, 64 usage.
+- `scripts/cases.ts --report FILE.json [--passed NAME ...] [--failed NAME ...]` reads a Vitest `--reporter=json` report and requires every case a `--passed` name matches to have passed and every case a `--failed` name matches to have failed. A name matches a case's full name or its own title exactly; both flags repeat. A name that matches no case is missing, and a failed case no name matches is refused, as is a test file that failed with no failed case (it did not collect, or a hook threw) and a report whose `success` is false while nothing in it failed. It prints one summary line, each difference, and `ok` or `differences=N`. Exit 0 when the report matches, 3 when it does not, 2 when the report cannot be read as a Vitest report, 64 usage.
 
 ## Bound the host
 

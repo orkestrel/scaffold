@@ -16,9 +16,11 @@
 // units. Exit 2 naming the Vitest version when the option table lacks a required option.
 // With --projects, list only the named projects: the universe, each gate listing, each project
 // reading, the units enumerated, and the empty-project rescan carry the names, and a gate that
-// reaches none of them is not listed. A name holding `*` or opening with `!` is a Vitest pattern the
-// script cannot match beforehand, so a gate that names projects keeps its own. Exit 64 for a name no
-// project in the config matches, and skip the undiscovered scan.
+// reaches none of them is not listed. An exact name never lists a project outside the set, and the
+// refusal for a name that matches none lists no other project either. A name holding `*` or opening
+// with `!` is a Vitest pattern the script cannot match beforehand, so a gate that names projects
+// keeps its own and a listing for such a name can reach projects beyond the names. Exit 64 for a
+// name no project in the config matches, and skip the undiscovered scan.
 // Flag ungated projects, empty chained projects, and undiscovered files under tests/ (the test
 // and spec names, any extension). Report marker counts for the forms that need a ruling (`.todo`,
 // `.skipIf`, `.runIf`, `.fails`, a `retry` option, a timeout option or a numeric last argument),
@@ -1698,15 +1700,8 @@ export function main(argv: readonly string[]): number {
 			return 2
 		}
 		if (unmatched.length > 0) {
-			const declared = [
-				...new Set(
-					(listCollected(readUnitArguments(base), false, cache)?.entries ?? []).map(
-						(entry) => entry.projectName,
-					),
-				),
-			].sort()
 			console.error(
-				`discovery: --projects ${unmatched.map(describeName).join(', ')} matches no project in ${describeName(canonical)}; the projects that collect tests there: ${declared.map(describeName).join(', ') || 'none'}`,
+				`discovery: --projects ${unmatched.map(describeName).join(', ')} matches no project in ${describeName(canonical)}; run without --projects to list every project that collects tests, since naming them here would collect the projects outside the set`,
 			)
 			return 64
 		}

@@ -245,14 +245,14 @@ export function describeEvent(event: Record<string, unknown> | undefined): strin
  * @returns The exit code: 0 when the lane answered, 3 when it carries no session or answer, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`result: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`result: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`result: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	const modes = MODE_FLAGS.filter((flag) => argv.includes(flag))

@@ -14,8 +14,9 @@
 // printing its section; --json prints one object; --out writes the output to FILE instead of the
 // terminal. Give each flag once; a later duplicate is not read. A value that opens with `--` is a
 // missing value, so census a custom property without its leading dashes. The script refuses a flag
-// it does not read, the `--flag=value` form included. Exit 0, or 64 when no mode is given, a flag
-// is given with no value, or a flag is unknown.
+// it does not read, the `--flag=value` form included, and names every unknown flag and every flag
+// given with no value in one refusal. Exit 0, or 64 when no mode is given, a flag is given with no
+// value, or a flag is unknown.
 import {
 	existsSync,
 	mkdirSync,
@@ -722,14 +723,15 @@ export function renderReport(report: Report): string {
  * @returns The exit code: 0 on success, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`map: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`map: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (unknown.length > 0 || missing.length > 0) {
+		console.error(
+			`map: ${[
+				...(unknown.length > 0 ? [`${unknown.join(', ')} is not a flag this script reads`] : []),
+				...(missing.length > 0 ? [`${missing.join(', ')} given with no value`] : []),
+			].join('; ')}; ${USAGE}`,
+		)
 		return 64
 	}
 	const roots = (readOption(argv, '--paths') ?? '.').split(',')

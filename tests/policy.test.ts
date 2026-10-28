@@ -996,6 +996,29 @@ describe('policy configuration wiring', () => {
 		])
 	})
 
+	it('counts a rule as enabled only at error severity, in the string or an array first member', () => {
+		const configuration = {
+			rules: { 'rule/top-off': 'off', 'rule/top-warn': ['warn'], 'rule/top-error': 'error' },
+			overrides: [
+				{
+					files: ['a/**'],
+					rules: { 'rule/scoped-off': 'off', 'rule/scoped-error': ['error', {}] },
+				},
+			],
+		}
+		expect(
+			inspectPolicyWiring(
+				configuration,
+				['rule/top-off', 'rule/top-warn', 'rule/top-error', 'rule/scoped-off', 'rule/scoped-error'],
+				[],
+			),
+		).toEqual(
+			['rule/top-off', 'rule/top-warn', 'rule/scoped-off'].map(
+				(rule) => `${rule} is enabled by no top-level or override rules record`,
+			),
+		)
+	})
+
 	it('reports a configuration that is not a record', () => {
 		expect(inspectPolicyWiring([], [], [])).toEqual(['Oxlint configuration must be a record'])
 	})

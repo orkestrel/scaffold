@@ -99,7 +99,7 @@
 					{
 						"patterns": [
 							{
-								"regex": "^(?:[^n]|n[^o]|no[^d]|nod[^e]|node[^:]|n$|no$|nod$|node$)",
+								"regex": "^(?:[^n]|n[^o]|no[^d]|nod[^e]|node[^:]|n$|no$|nod$|node$|$)",
 								"message": "a skill script is self-contained: import node: modules only and declare every helper in the script"
 							}
 						]

@@ -9,6 +9,7 @@ import {
 	isMissingValue,
 	parseEdits,
 	quote,
+	readFileKey,
 	readInvalidSkips,
 	readMissingFlags,
 	readOptions,
@@ -176,6 +177,92 @@ describe('patch.ts', () => {
 			scratch.destroy()
 		}
 	})
+
+	it('applies every block for one file in sequence however the blocks spell its path', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-patch-spellings-' })
+		try {
+			scratch.write('src/a.ts', 'alpha beta')
+			const edits = parseEdits(
+				renderEditFile([
+					{ path: 'src/a.ts', reason: 'first', before: 'alpha', after: 'ALPHA' },
+					{ path: './src/a.ts', reason: 'second', before: 'beta', after: 'BETA' },
+				]),
+			)
+			const resolution = resolveEdits(scratch.path, edits)
+			expect(resolution.outcomes.map((outcome) => outcome.problem)).toStrictEqual([
+				undefined,
+				undefined,
+			])
+			expect(resolution.files.map((file) => [file.path, file.text])).toStrictEqual([
+				['src/a.ts', 'ALPHA BETA'],
+			])
+			expect(readFileKey(resolve(scratch.path, 'src/none.ts'))).toBe(
+				resolve(scratch.path, 'src/none.ts'),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads a later block of one file against the text an earlier block of another spelling left', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-patch-consumed-' })
+		try {
+			scratch.write('src/a.ts', 'one\n')
+			const consumed = resolveEdits(
+				scratch.path,
+				parseEdits(
+					renderEditFile([
+						{ path: 'src/a.ts', reason: 'consumes', before: 'one', after: 'two' },
+						{ path: './src/a.ts', reason: 'reads the original', before: 'one', after: 'three' },
+					]),
+				),
+			)
+			expect(consumed.outcomes.map((outcome) => outcome.problem)).toStrictEqual([
+				undefined,
+				'old text occurs 0 times',
+			])
+			expect(consumed.files).toStrictEqual([])
+			scratch.write(
+				'edits.md',
+				renderEditFile([
+					{ path: 'src/a.ts', reason: 'first', before: 'one', after: 'two' },
+					{ path: './src/a.ts', reason: 'second', before: 'two', after: 'three' },
+				]),
+			)
+			const run = runSkillScript(PATCH_SCRIPT, ['edits.md', '--apply'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.stdout).toContain('applied edits to 1 file(s)')
+			expect(scratch.read('src/a.ts')).toBe('three\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	// Windows resolves a path without regard to case on NTFS, so `SRC/A.TS` opens the file `src/a.ts`
+	// names; a host that tells the two apart keeps them two files, which this case does not describe.
+	it.runIf(process.platform === 'win32')(
+		'groups spellings of one path that differ only in case where the host folds case',
+		() => {
+			const scratch = createScratch({ prefix: 'orkestrel-patch-case-' })
+			try {
+				scratch.write('src/a.ts', 'alpha beta')
+				const resolution = resolveEdits(
+					scratch.path,
+					parseEdits(
+						renderEditFile([
+							{ path: 'src/a.ts', reason: 'first', before: 'alpha', after: 'ALPHA' },
+							{ path: 'SRC/A.TS', reason: 'second', before: 'beta', after: 'BETA' },
+						]),
+					),
+				)
+				expect(resolution.files.map((file) => [file.path, file.text])).toStrictEqual([
+					['src/a.ts', 'ALPHA BETA'],
+				])
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
 
 	it('plans without writing, applies after every edit resolved, and honors a repeated skip', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-patch-apply-' })

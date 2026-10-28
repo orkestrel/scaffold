@@ -518,14 +518,14 @@ export function runUnit(unit: string | undefined, remove: boolean): number {
  * @returns The exit code: 0 on success, 2 when a deletion is refused, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`sweep: ${missing.join(', ')} given with no value`)
-		return 64
-	}
 	const unknown = readUnknownFlags(argv, FLAGS)
 	if (unknown.length > 0) {
 		console.error(`sweep: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+		return 64
+	}
+	const missing = readMissingFlags(argv, VALUE_FLAGS)
+	if (missing.length > 0) {
+		console.error(`sweep: ${missing.join(', ')} given with no value`)
 		return 64
 	}
 	if (!existsSync('.git')) {

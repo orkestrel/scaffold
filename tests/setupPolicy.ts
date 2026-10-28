@@ -32,6 +32,7 @@ import {
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, matchesGlob, relative as relativePath, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isDeepStrictEqual } from 'node:util'
 import { parseAst, parseSync } from 'vite'
 import { stripPolicyCode, textToPolicyHits } from '../configs/policy.js'
 
@@ -636,7 +637,7 @@ export const POLICY_LAZY_CASES: readonly PolicyLazyCase[] = Object.freeze([
 		'inspectPolicyConfiguration overrides',
 		(list: unknown[]) =>
 			inspectPolicyConfiguration({
-				rules: Object.fromEntries(POLICY_WIRING_RULES.map((rule) => [rule, 'error'])),
+				rules: POLICY_WIRING_SETTINGS,
 				overrides: list,
 			}),
 		{ valid: () => ({}), refusal: createPolicyRevoked },
@@ -655,7 +656,7 @@ export const POLICY_LAZY_CASES: readonly PolicyLazyCase[] = Object.freeze([
 		'inspectPolicyConfiguration ignorePatterns',
 		(list: unknown[]) =>
 			inspectPolicyConfiguration({
-				rules: Object.fromEntries(POLICY_WIRING_RULES.map((rule) => [rule, 'error'])),
+				rules: POLICY_WIRING_SETTINGS,
 				ignorePatterns: list,
 			}),
 		// The reader skips every entry that is not a string, so no entry refuses it and no row uses the
@@ -917,23 +918,35 @@ export const POLICY_TEXT_GLOB: readonly string[] = Object.freeze([
 	'.prettierignore',
 ])
 
+/**
+ * Maps each rule whose workspace-wide lint wiring must not be weakened to the whole top-level
+ * setting the shipped configuration declares for it.
+ *
+ * @remarks
+ * A setting carries its options as well as its severity, so a rule listed at `error` with an option
+ * that switches its check off differs from the value declared here.
+ */
+export const POLICY_WIRING_SETTINGS: Readonly<Record<string, unknown>> = Object.freeze({
+	'policy/no-mocking': 'error',
+	'policy/no-keyword-privacy': 'error',
+	'policy/no-let': 'error',
+	'policy/no-malformed-summary': 'error',
+	'policy/no-banned-term': 'error',
+	'no-var': 'error',
+	'prefer-const': 'error',
+	'no-param-reassign': 'error',
+	'no-ex-assign': 'error',
+	'vitest/no-identical-title': 'error',
+	'vitest/no-focused-tests': 'error',
+	'vitest/no-disabled-tests': 'error',
+	'typescript/parameter-properties': 'error',
+	'typescript/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
+})
+
 /** Lists the rules whose workspace-wide lint wiring must not be weakened by configuration. */
-export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
-	'policy/no-mocking',
-	'policy/no-keyword-privacy',
-	'policy/no-let',
-	'policy/no-malformed-summary',
-	'policy/no-banned-term',
-	'no-var',
-	'prefer-const',
-	'no-param-reassign',
-	'no-ex-assign',
-	'vitest/no-identical-title',
-	'vitest/no-focused-tests',
-	'vitest/no-disabled-tests',
-	'typescript/parameter-properties',
-	'typescript/explicit-member-accessibility',
-])
+export const POLICY_WIRING_RULES: readonly string[] = Object.freeze(
+	Object.keys(POLICY_WIRING_SETTINGS),
+)
 
 /** Lists the linted workspace roots that ignore patterns must not reach. */
 export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
@@ -943,6 +956,9 @@ export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
 	'configs',
 	'.agents',
 ])
+
+/** Matches a character that makes a path segment a glob rather than a literal name. */
+export const POLICY_GLOB_CHARACTER = /[*?[\]{}]/u
 
 /** Matches either lint suppression token or the formatter directive the text sweep refuses. */
 export const POLICY_SUPPRESSION_PATTERN = new RegExp(
@@ -1432,6 +1448,63 @@ export function inspectPolicyText(root: string): readonly PolicyViolation[] {
 }
 
 /**
+ * Collects the literal path segments the files globs of a configuration's overrides route through.
+ *
+ * @remarks
+ * A segment that carries a glob character is not literal, and neither is an empty or dot segment.
+ *
+ * @param overrides - The parsed `overrides` value of an Oxlint configuration.
+ * @returns Each literal segment, in the order the globs declare them.
+ */
+export function collectPolicyOverrideSegments(overrides: unknown): readonly string[] {
+	return (Array.isArray(overrides) ? overrides : []).flatMap((override: unknown) => {
+		const files: unknown = isPolicyRecord(override)
+			? Object.getOwnPropertyDescriptor(override, 'files')?.value
+			: undefined
+		return (Array.isArray(files) ? files : []).flatMap((glob: unknown) =>
+			typeof glob === 'string'
+				? normalizePolicyPath(glob)
+						.split('/')
+						.filter(
+							(segment) =>
+								segment !== '' &&
+								segment !== '.' &&
+								segment !== '..' &&
+								!POLICY_GLOB_CHARACTER.test(segment),
+						)
+				: [],
+		)
+	})
+}
+
+/**
+ * Checks whether an ignore pattern can silence files inside a linted workspace root.
+ *
+ * @remarks
+ * Oxlint reads an ignore pattern with gitignore semantics. A pattern with a slash before its last
+ * character is anchored to the configuration directory, so only its first segment can reach a
+ * root. A pattern without one matches a name at any depth, so it reaches a root when it carries a
+ * glob character or names a segment the overrides route through. A negation reaches nothing.
+ *
+ * @param pattern - One entry of the configuration's `ignorePatterns`.
+ * @param overrides - The parsed `overrides` value of the same configuration.
+ * @returns Whether the pattern can silence a guarded file.
+ */
+export function isPolicyIgnoreReaching(pattern: string, overrides: unknown): boolean {
+	if (pattern.startsWith('!')) return false
+	const normalized = normalizePolicyPath(pattern)
+	const [first = ''] = normalized.replace(/^\.\//u, '').replace(/^\//u, '').split('/')
+	if (
+		POLICY_WIRING_ROOTS.some((root) => first === root || (first !== '' && matchesGlob(root, first)))
+	) {
+		return true
+	}
+	const name = normalized.replace(/\/$/u, '')
+	if (name.includes('/')) return false
+	return POLICY_GLOB_CHARACTER.test(name) || collectPolicyOverrideSegments(overrides).includes(name)
+}
+
+/**
  * Inspects the lint configuration that keeps policy rules active across the workspace.
  *
  * @param configuration - The parsed Oxlint configuration to inspect.
@@ -1449,29 +1522,23 @@ export function inspectPolicyConfiguration(configuration: unknown): readonly str
 	)?.value
 	const overrides: unknown = Object.getOwnPropertyDescriptor(configuration, 'overrides')?.value
 	return [
-		...POLICY_WIRING_RULES.flatMap((rule) => {
+		...Object.entries(POLICY_WIRING_SETTINGS).flatMap(([rule, declared]) => {
 			const setting = isPolicyRecord(rules)
 				? Object.getOwnPropertyDescriptor(rules, rule)?.value
 				: undefined
-			const severity = Array.isArray(setting) ? setting[0] : setting
-			return severity === 'error' ? [] : [`${rule} must have top-level error severity`]
+			return isDeepStrictEqual(setting, declared)
+				? []
+				: [`${rule} must have the top-level setting ${JSON.stringify(declared)}`]
 		}),
 		...(ignorePatterns !== undefined && !Array.isArray(ignorePatterns)
 			? ['ignorePatterns must be an array when declared']
 			: // The mapper runs on each pattern as the iterator yields it, as the loop it replaced did.
 				Iterator.from(Array.isArray(ignorePatterns) ? ignorePatterns : [])
-					.flatMap((pattern) => {
-						if (typeof pattern !== 'string' || pattern.startsWith('!')) return []
-						const normalized = normalizePolicyPath(pattern)
-							.replace(/^\.\//u, '')
-							.replace(/^\//u, '')
-						const [first = ''] = normalized.split('/')
-						return POLICY_WIRING_ROOTS.some(
-							(root) => first === root || (first !== '' && matchesGlob(root, first)),
-						)
+					.flatMap((pattern) =>
+						typeof pattern === 'string' && isPolicyIgnoreReaching(pattern, overrides)
 							? [`ignorePatterns must not reach ${pattern}`]
-							: []
-					})
+							: [],
+					)
 					.toArray()),
 		...(overrides !== undefined && !Array.isArray(overrides)
 			? ['overrides must be an array when declared']
@@ -1522,9 +1589,15 @@ export function inspectPolicyWiring(
 			return [{ record, declared: Array.isArray(files) ? [files.join(' ')] : [] }]
 		})
 		.toArray()
+	// A name enables its rule only at error severity: the string, or the first member of an array.
 	const enabled = new Set(
 		[topRules, ...entries.map(({ record }) => record)].flatMap((record) =>
-			isPolicyRecord(record) ? Object.getOwnPropertyNames(record) : [],
+			isPolicyRecord(record)
+				? Object.getOwnPropertyNames(record).filter((name) => {
+						const setting = Object.getOwnPropertyDescriptor(record, name)?.value
+						return (Array.isArray(setting) ? setting[0] : setting) === 'error'
+					})
+				: [],
 		),
 	)
 	const declaredPopulations = entries.flatMap(({ declared }) => declared)
@@ -2341,13 +2414,43 @@ export function inspectSkillImports(
 }
 
 /**
+ * Collects every module specifier a syntax tree names, in source order.
+ *
+ * @remarks
+ * A specifier is the literal source of an `import` or `export … from` declaration, or of an
+ * `import()` expression anywhere in the tree. An `import()` whose source is no literal names none.
+ *
+ * @param node - The syntax tree, or any node or list of nodes within it.
+ * @returns Each literal specifier the tree names.
+ */
+export function collectPolicySpecifiers(node: unknown): readonly string[] {
+	if (Array.isArray(node)) return node.flatMap((child: unknown) => collectPolicySpecifiers(child))
+	if (!isPolicyRecord(node)) return []
+	const type: unknown = Object.getOwnPropertyDescriptor(node, 'type')?.value
+	const source: unknown = Object.getOwnPropertyDescriptor(node, 'source')?.value
+	const value: unknown = isPolicyRecord(source)
+		? Object.getOwnPropertyDescriptor(source, 'value')?.value
+		: undefined
+	return [
+		...(typeof value === 'string' &&
+		(type === 'ImportDeclaration' ||
+			type === 'ExportAllDeclaration' ||
+			type === 'ExportNamedDeclaration' ||
+			type === 'ImportExpression')
+			? [value]
+			: []),
+		...Object.values(node).flatMap((child: unknown) => collectPolicySpecifiers(child)),
+	]
+}
+
+/**
  * Inspects one skill script proof for an import of a skill file other than the script it proves.
  *
  * @remarks
- * Each relative `import` and `export … from` specifier resolves against the proof's directory. A
- * script is self-contained and no file but its own proof imports it, so a proof that reaches another
- * script, or any other file beneath the skill family, shares a helper the script law places in the
- * test setup modules.
+ * Each relative `import`, `export … from`, and literal `import()` specifier resolves against the
+ * proof's directory. A script is self-contained and no file but its own proof imports it, so a
+ * proof that reaches another script, or any other file beneath the skill family, shares a helper
+ * the script law places in the test setup modules.
  *
  * @param root - The workspace root to inspect.
  * @param proof - The workspace-relative path of the proof.
@@ -2361,17 +2464,9 @@ export function inspectSkillProof(
 ): readonly PolicyViolation[] {
 	if (!isPolicyFile(root, proof)) return []
 	const directory = dirname(join(root, proof))
-	return parseAst(readFileSync(join(root, proof), 'utf8'), { lang: 'ts' }).body.flatMap(
-		(statement) => {
-			if (
-				statement.type !== 'ImportDeclaration' &&
-				statement.type !== 'ExportAllDeclaration' &&
-				statement.type !== 'ExportNamedDeclaration'
-			) {
-				return []
-			}
-			const specifier = statement.source?.value
-			if (typeof specifier !== 'string' || !specifier.startsWith('.')) return []
+	return collectPolicySpecifiers(parseAst(readFileSync(join(root, proof), 'utf8'), { lang: 'ts' }))
+		.filter((specifier) => specifier.startsWith('.'))
+		.flatMap((specifier) => {
 			const imported = normalizePolicyPath(relativePath(root, resolve(directory, specifier)))
 			return imported.startsWith(`${SKILL_FAMILY_ROOT}/`) &&
 				imported.replace(/\.js$/u, '.ts') !== script
@@ -2383,8 +2478,7 @@ export function inspectSkillProof(
 						),
 					]
 				: []
-		},
-	)
+		})
 }
 
 /**

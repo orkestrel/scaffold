@@ -225,6 +225,23 @@ describe('map.ts', () => {
 		}
 	})
 
+	it('names an unknown flag and a flag given with no value in one refusal', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-map-both-' })
+		try {
+			scratch.write('docs/a.md', '# Title\n')
+			const run = runSkillScript(MAP_SCRIPT, ['--tree', '--bogus', '--out=tmp/map.txt'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('--bogus, --out=tmp/map.txt is not a flag this script reads')
+			expect(run.stderr).toContain('--tree given with no value')
+			expect(run.stdout).toBe('')
+			expect(scratch.has('tmp')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('hides the lines inside tilde, four-backtick, and indented fences from a heading list', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-map-fences-' })
 		try {

@@ -7,6 +7,8 @@ import { isProcessRunning, runSkillScript, LOGIN_SCRIPT } from '../../../../setu
 import {
 	CODE_PATTERN,
 	loginClaude,
+	MAX_CAP_SECONDS,
+	STATUS_GRACE_MS,
 	loginCodex,
 	parseCap,
 	pollLogin,
@@ -83,7 +85,7 @@ describe('login.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-login-cap-' })
 		try {
 			const dark = { PATH: '', Path: '' }
-			for (const cap of ['abc', '0', '-5', '', 'Infinity']) {
+			for (const cap of ['abc', '0', '-5', '', 'Infinity', '1e306', String(MAX_CAP_SECONDS + 1)]) {
 				const run = runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap', cap], {
 					cwd: scratch.path,
 					env: dark,
@@ -253,10 +255,21 @@ describe('the cap reader', () => {
 		expect(parseCap('1000000')).toBe(1_000_000)
 	})
 
-	it('refuses zero, a negative, a non-number, a blank, and an infinity', () => {
-		for (const text of ['0', '-1', 'abc', '', ' ', 'Infinity', 'NaN']) {
+	it('refuses zero, a negative, a non-number, a blank, an infinity, and a cap past the longest', () => {
+		for (const text of [
+			'0',
+			'-1',
+			'abc',
+			'',
+			' ',
+			'Infinity',
+			'NaN',
+			'1e306',
+			String(MAX_CAP_SECONDS + 1),
+		]) {
 			expect({ text, cap: parseCap(text) }).toEqual({ text, cap: undefined })
 		}
+		expect(parseCap(String(MAX_CAP_SECONDS))).toBe(MAX_CAP_SECONDS)
 	})
 })
 
@@ -293,6 +306,40 @@ describe('the status reader and the poll', () => {
 		expect(absent.live).toBe(false)
 		expect(absent.text).toContain('this-command-does-not-exist-anywhere could not start')
 	})
+
+	it('ends a status read that outlasts its timeout and reads it as dark', () => {
+		const started = Date.now()
+		const hung = readLoginStatus(process.execPath, ['-e', 'setTimeout(() => {}, 20000)'], 300)
+		expect(hung).toEqual({
+			started: true,
+			live: false,
+			text: `${process.execPath} did not answer within the cap`,
+		})
+		expect(Date.now() - started).toBeLessThan(10_000)
+		expect(readLoginStatus(process.execPath, ['-e', 'process.stdout.write("ok")'], 10_000)).toEqual(
+			{
+				started: true,
+				live: true,
+				text: 'ok',
+			},
+		)
+	})
+
+	it('ends the poll at the cap although the status command never answers', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-login-poll-hung-' })
+		try {
+			const flow: Flow = {
+				...buildFlow(scratch.path, false),
+				status: { command: process.execPath, args: ['-e', 'setTimeout(() => {}, 20000)'] },
+			}
+			const started = Date.now()
+			const poll = await pollLogin(started, 0.2, flow, createRecorder<[line: string]>().handler)
+			expect(poll).toEqual({ url: undefined, code: undefined, live: false })
+			expect(Date.now() - started).toBeLessThan(STATUS_GRACE_MS * 8)
+		} finally {
+			scratch.destroy()
+		}
+	}, 30_000)
 
 	it('waits the given milliseconds and resolves', async () => {
 		const before = Date.now()
