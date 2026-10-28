@@ -1965,11 +1965,14 @@ of `STYLES_DEV_DEPENDENCIES`, is a seed as well: it carries the `^1.105.1` range
 Outside the selected showcase pair, a newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
 question, and a person decides whether the generated toolchain supports it.
 
-`TOOLCHAIN_HOLDS` records the majors that decision has already settled. TypeScript stays at 6:
-TypeScript 7 is the Go compiler, its JavaScript compiler API is gone, and its package layout, its
-diagnostics, and the declaration roll-up are unproved. Vitest stays at 4, and
-`@vitest/browser-playwright` with it: Vitest 5 is unproved across the fleet, and its companion
-packages require Vitest 5 exactly, so a mixed install refuses. For a held tool `audit` reports the
+`TOOLCHAIN_HOLDS` records the majors that decision has already settled, from upgrade trials run on
+2026-10-28. TypeScript stays at 6: TypeScript 7's package exports no `typescript/bin/tsc`, which
+the generated build helper and proofs resolve; `vue-tsc` cannot run on it before TypeScript 7.1;
+and `@orkestrel/probe` refuses it. Its diagnostics, exit codes, and emitted declarations matched.
+Vitest stays at 4, and `@vitest/browser-playwright` with it: Vitest 5 rewrites the benchmark API
+the generated probe project uses, scales the tester frame that capture staging measures, joins
+full names with `' > '` where exact-case filters use spaces, and the fleet's own `vitest` peers
+pin 4, so a Vitest 5 install refuses until they widen. For a held tool `audit` reports the
 hold and its reason in place of the newer-major question, and reports a declaration past the hold.
 [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) fails when scaffold's own
 manifest raises a held tool past its hold. Lift a hold in a round of its own: prove the fleet on

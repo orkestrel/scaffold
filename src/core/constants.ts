@@ -675,12 +675,12 @@ export const TOOLCHAIN_HOLDS: Readonly<Record<string, ToolchainHold>> = Object.f
 	typescript: Object.freeze({
 		major: 6,
 		reason:
-			'TypeScript 7 is the Go compiler without the JavaScript compiler API; its package layout, its diagnostics, and the declaration roll-up are unproved',
+			'TypeScript 7 drops the typescript/bin/tsc export the generated build helper and proofs resolve, vue-tsc cannot run on it before TypeScript 7.1, and @orkestrel/probe refuses it',
 	}),
 	vitest: Object.freeze({
 		major: 4,
 		reason:
-			'Vitest 5 is unproved across the fleet, and its companion packages require Vitest 5 exactly, so a mixed install refuses',
+			"Vitest 5 rewrites the benchmark API the generated probe project uses, scales the tester frame capture staging measures, joins full names with ' > ' where exact-case filters use spaces, and the fleet's own vitest peers pin 4",
 	}),
 	'@vitest/browser-playwright': Object.freeze({
 		major: 4,
