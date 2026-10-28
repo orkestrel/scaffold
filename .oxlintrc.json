@@ -50,14 +50,18 @@
 		"no-unused-private-class-members": "error",
 		"no-var": "error",
 		"prefer-const": "error",
+		"no-param-reassign": "error",
+		"no-ex-assign": "error",
 		"no-debugger": "error",
 		"no-underscore-dangle": "warn",
 
 		"vitest/no-alias-methods": "error",
+		"vitest/no-identical-title": "error",
 		"vitest/warn-todo": "off",
 
 		"policy/no-mocking": "error",
 		"policy/no-keyword-privacy": "error",
+		"policy/no-let": "error",
 		"policy/no-malformed-summary": "error",
 		"policy/no-banned-term": "error"
 	},

@@ -834,8 +834,14 @@ export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
 export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
 	'policy/no-mocking',
 	'policy/no-keyword-privacy',
+	'policy/no-let',
 	'policy/no-malformed-summary',
 	'policy/no-banned-term',
+	'no-var',
+	'prefer-const',
+	'no-param-reassign',
+	'no-ex-assign',
+	'vitest/no-identical-title',
 	'typescript/parameter-properties',
 	'typescript/explicit-member-accessibility',
 ])

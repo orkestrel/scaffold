@@ -161,6 +161,30 @@ export function readMissingFlags(
 }
 
 /**
+ * Names the flags a caller gave that a script does not read.
+ *
+ * @remarks
+ * Reads the arguments before a bare `--`, which opens a command a script passes on. A `--flag=value`
+ * argument is unknown, because no skill script reads that form.
+ *
+ * @param argv - The arguments after the script path.
+ * @param flags - Every flag the script reads, value flags and switches alike.
+ * @returns Each argument that opens with `--` and is not a read flag, in argument order.
+ * @example
+ * readUnknownFlags(['--config=vite.config.ts', '--json'], ['--config', '--json'])
+ * // ['--config=vite.config.ts']
+ */
+export function readUnknownFlags(
+	argv: readonly string[],
+	flags: readonly string[],
+): readonly string[] {
+	const end = argv.indexOf('--')
+	return (end === -1 ? argv : argv.slice(0, end)).filter(
+		(argument) => argument.startsWith('--') && !flags.includes(argument),
+	)
+}
+
+/**
  * Reads every value that follows a repeatable flag.
  *
  * @param argv - The arguments after the script path.

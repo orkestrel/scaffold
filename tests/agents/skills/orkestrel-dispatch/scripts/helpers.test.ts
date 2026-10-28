@@ -16,6 +16,7 @@ import {
 	readOption,
 	readOptions,
 	readString,
+	readUnknownFlags,
 	removeTree,
 	resolveNpm,
 	runNpm,
@@ -129,6 +130,18 @@ describe('the argument readers', () => {
 			),
 		).toEqual(['--config', '--refs'])
 		expect(readMissingFlags(['--out', 'a'], ['--config'])).toEqual([])
+	})
+
+	it('names an unread flag and the equals form, and stops at the command separator', () => {
+		expect(
+			readUnknownFlags(
+				['--config=vite.config.ts', '--json', '--project', 'a', '--projects', 'a'],
+				['--config', '--json', '--projects'],
+			),
+		).toEqual(['--config=vite.config.ts', '--project'])
+		expect(readUnknownFlags(['--cap', '5', '--', 'node', '--watch'], ['--cap'])).toEqual([])
+		expect(readUnknownFlags(['--cap', '5', 'path', '-x'], ['--cap'])).toEqual([])
+		expect(readUnknownFlags([], [])).toEqual([])
 	})
 })
 

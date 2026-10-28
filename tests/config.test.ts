@@ -7,7 +7,7 @@ import type {
 	PolicyContext,
 	PolicyDiagnostic,
 	PolicyExpression,
-	PolicySourceCode,
+	PolicyScopeCode,
 } from '../configs/policy.js'
 import type { PolicyProject } from './setupPolicy.js'
 import { spawnSync } from 'node:child_process'
@@ -42,6 +42,7 @@ import policyPlugin, {
 	FUNCTION_RULE,
 	FUNCTION_SOURCE_FILES,
 	HIDDEN_RULE,
+	LET_RULE,
 	MOCKING_RULE,
 	NESTED_RULE,
 	PARSER_RULE,
@@ -1761,6 +1762,46 @@ describe('policy plugin', () => {
 		],
 	})
 
+	tester.run('no-let', LET_RULE, {
+		valid: [
+			{ name: 'leaves an unwritten let to prefer-const', code: 'let value = 1\nread(value)' },
+			{
+				name: 'leaves an unwritten for-of head to prefer-const',
+				code: 'for (let entry of entries) read(entry)',
+			},
+			{
+				name: 'leaves an unwritten for-in head to prefer-const',
+				code: 'for (let key in record) read(key)',
+			},
+			{ name: 'accepts const', code: 'const value = 1\nread(value)' },
+			{ name: 'leaves var to no-var', code: 'var value\nvalue = 1' },
+			{ name: 'accepts an ambient let', code: 'declare let value: number' },
+		],
+		invalid: [
+			...[
+				{ form: 'assignment', code: 'let count = 0\ncount = 1' },
+				{ form: 'compound assignment', code: 'let count = 0\ncount += 1' },
+				{ form: 'logical assignment', code: 'let count: number | undefined = 0\ncount ??= 1' },
+				{ form: 'update', code: 'let count = 0\ncount++' },
+				{ form: 'counter loop', code: 'for (let index = 0; index < 3; index++) read(index)' },
+				{ form: 'array destructuring target', code: 'let [first] = [1]\n;[first] = [2]' },
+				{ form: 'object destructuring target', code: 'let { a } = record\n;({ a } = other)' },
+				{
+					form: 'for-of head written in the body',
+					code: 'for (let entry of entries) { entry = 1 }',
+				},
+				{ form: 'closure write', code: 'let ready = false\nlisten(() => { ready = true })' },
+				{ form: 'later declarator', code: 'let a = 1, b = 2\nb = 3\nread(a, b)' },
+				{ form: 'declaration without a value', code: 'let value\nread(value)' },
+				{ form: 'value assigned later', code: 'let value: number\nvalue = 1\nread(value)' },
+			].map(({ form, code }) => ({
+				name: `rejects a let by ${form} [membership: let that prefer-const leaves]`,
+				code,
+				errors: [{ messageId: 'let' }],
+			})),
+		],
+	})
+
 	tester.run('no-nested-functions', NESTED_RULE, {
 		valid: [
 			{
@@ -2887,7 +2928,11 @@ createSomething({
 			range: [47, 63],
 			declaration: { type: 'FunctionDeclaration', range: [0, 0], id: name },
 		}
-		const source: PolicySourceCode = { text: '', getAllComments: () => [] }
+		const source: PolicyScopeCode = {
+			text: '',
+			getAllComments: () => [],
+			getDeclaredVariables: () => [],
+		}
 
 		it('refuses a hole in the declarators of a statement as the declarator it reads as', () => {
 			const declarator: PolicyExpression = {
@@ -3916,6 +3961,15 @@ createSomething({
 					"export const STATUS = 'ready'",
 					"export const lines = text.trim().split('\\n')",
 					'export const ending = os.EOL + EOL',
+					'let counter = 0',
+					'counter++',
+					'let unchanged = 1',
+					'var legacy = 1',
+					'function shiftValue(value: number) { value += 1; return value }',
+					'try { void counter } catch (error) { error = undefined; void error }',
+					'void unchanged',
+					'void legacy',
+					'void shiftValue',
 					'void PrivateMember',
 					'void ParameterMember',
 					'void PublicMember',
@@ -3933,6 +3987,14 @@ createSomething({
 			scratch.write('src/violations/composables.ts', "export const READY = 'yes'\n")
 			scratch.write('app/browser/composables/useTheme.ts', 'export function useMode(): void {}\n')
 			scratch.write('app/vue/helpers.ts', "export * from '../print/index.js'\ndebugger\n")
+			scratch.write(
+				'tests/titles.test.ts',
+				[
+					"import { expect, it } from 'vitest'",
+					"it('reads one value', () => expect(1).toBe(1))",
+					"it('reads one value', () => expect(2).toBe(2))",
+				].join('\n'),
+			)
 			// The line-ending population reaches src, app, and configs alone, so this module
 			// outside them carries the same defect and must draw no diagnostic. The `debugger`
 			// statement is the arrival control the root `no-debugger` rule reports, which proves
@@ -3985,7 +4047,17 @@ createSomething({
 			const config = resolve(scratch.path, '.oxlintrc.json')
 			const violations = spawnSync(
 				process.execPath,
-				[binary, '--config', config, '--format', 'json', 'src/violations', 'app', 'scripts'],
+				[
+					binary,
+					'--config',
+					config,
+					'--format',
+					'json',
+					'src/violations',
+					'app',
+					'scripts',
+					'tests',
+				],
 				{ cwd: scratch.path, encoding: 'utf8', timeout: 15_000 },
 			)
 			const clean = spawnSync(
@@ -4023,6 +4095,12 @@ createSomething({
 			for (const { code, filename } of [
 				{ code: 'policy(no-mocking)', filename: 'src/violations/fixture.ts' },
 				{ code: 'policy(no-keyword-privacy)', filename: 'src/violations/fixture.ts' },
+				{ code: 'policy(no-let)', filename: 'src/violations/fixture.ts' },
+				{ code: 'eslint(prefer-const)', filename: 'src/violations/fixture.ts' },
+				{ code: 'eslint(no-var)', filename: 'src/violations/fixture.ts' },
+				{ code: 'eslint(no-param-reassign)', filename: 'src/violations/fixture.ts' },
+				{ code: 'eslint(no-ex-assign)', filename: 'src/violations/fixture.ts' },
+				{ code: 'vitest(no-identical-title)', filename: 'tests/titles.test.ts' },
 				{ code: 'policy(no-nested-functions)', filename: 'src/violations/fixture.ts' },
 				{ code: 'policy(no-misplaced-type)', filename: 'src/violations/fixture.ts' },
 				{ code: 'policy(no-misplaced-data)', filename: 'src/violations/fixture.ts' },
@@ -4990,7 +5068,7 @@ describe('policy readers consume a caller-supplied list one entry at a time', ()
 					{
 						filename: '/ws/src/server/execution/run.ts',
 						cwd: '/ws',
-						sourceCode: { text: '', getAllComments: () => [] },
+						sourceCode: { text: '', getAllComments: () => [], getDeclaredVariables: () => [] },
 						report: (diagnostic) => {
 							reports.push(diagnostic.messageId)
 						},

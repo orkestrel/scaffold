@@ -42,7 +42,8 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - **Variables.** Never write a `let` or `var` declaration, at module scope, in a function, in a loop
   head, or in a test; declare each variable with the `const` keyword. Never assign to a parameter or
   a `catch` binding, whether by `=`, by a compound operator such as `+=` or `??=`, by `++` or `--`,
-  or as a destructuring target.
+  or as a destructuring target. The lint rules `no-var`, `prefer-const`, `policy/no-let`,
+  `no-param-reassign`, and `no-ex-assign` enforce this bullet.
 - **Derivation.** Derive a value instead of accumulating it: write the expression that produces it
   (`some`, `every`, `find`, `filter`, `map`, `reduce`, a conditional expression), or extract a
   `{verb}{Noun}` helper that returns it. Build text from its parts with `join` or a template literal,

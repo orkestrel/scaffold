@@ -25,6 +25,7 @@ export interface PolicyExpression extends PolicyNode {
 	readonly quasis?: readonly PolicyExpression[]
 	readonly expressions?: readonly PolicyExpression[]
 	readonly accessibility?: 'private' | 'protected' | 'public' | null
+	readonly declare?: boolean
 	readonly declaration?: PolicyExpression
 	readonly declarations?: readonly PolicyExpression[]
 	readonly init?: PolicyExpression | null
@@ -52,10 +53,28 @@ export interface PolicyComment extends PolicyNode {
 	readonly value: string
 }
 
+/** Describes one reference the scope manager records to a declared variable. */
+export interface PolicyReference {
+	readonly identifier: PolicyNode
+	readonly init?: boolean
+	isWrite(): boolean
+}
+
+/** Describes one variable the scope manager records for a declaration. */
+export interface PolicyVariable {
+	readonly identifiers: readonly PolicyNode[]
+	readonly references: readonly PolicyReference[]
+}
+
 /** Lists the Oxlint source-text operations the comment rules read. */
 export interface PolicySourceCode {
 	readonly text: string
 	getAllComments(): readonly PolicyComment[]
+}
+
+/** Adds the Oxlint scope operation the binding rule reads. */
+export interface PolicyScopeCode extends PolicySourceCode {
+	getDeclaredVariables(node: PolicyNode): readonly PolicyVariable[]
 }
 
 /** Pairs one doc block with the declared name its first sentence must not repeat. */
@@ -89,7 +108,7 @@ export interface PolicyContext {
 	readonly filename: string
 	/** Names the directory Oxlint resolves `filename` against. */
 	readonly cwd: string
-	readonly sourceCode: PolicySourceCode
+	readonly sourceCode: PolicyScopeCode
 	report(diagnostic: PolicyDiagnostic): void
 }
 
@@ -1023,6 +1042,30 @@ export function reportPrivacy(context: PolicyContext, node: PolicyExpression): v
 	}
 }
 
+/** Checks whether code writes a declared variable anywhere but in its own declaration. */
+export function isPolicyReassigned(variable: PolicyVariable): boolean {
+	return variable.references.some(
+		(reference) =>
+			reference.isWrite() &&
+			reference.init !== true &&
+			!variable.identifiers.includes(reference.identifier),
+	)
+}
+
+/** Reports a let declaration that prefer-const leaves: one reassigned or declared without a value. */
+export function reportLet(context: PolicyContext, node: PolicyExpression): void {
+	if (node.kind !== 'let' || node.declare === true || isPolicyAmbient(context.filename)) return
+	const head = node.parent?.type === 'ForInStatement' || node.parent?.type === 'ForOfStatement'
+	const bare =
+		!head &&
+		(node.declarations ?? []).some(
+			(declarator) => declarator.init === undefined || declarator.init === null,
+		)
+	if (bare || context.sourceCode.getDeclaredVariables(node).some(isPolicyReassigned)) {
+		context.report({ node, messageId: 'let' })
+	}
+}
+
 /** Reports a centralized declaration that carries no export. */
 export function reportHidden(context: PolicyContext, node: PolicyExpression): void {
 	if (isPolicyAmbient(context.filename)) return
@@ -1258,6 +1301,25 @@ export const PRIVACY_RULE: PolicyRuleInterface = {
 			TSAbstractMethodDefinition: (node) => reportPrivacy(context, node),
 			TSAbstractPropertyDefinition: (node) => reportPrivacy(context, node),
 			TSAbstractAccessorProperty: (node) => reportPrivacy(context, node),
+		}
+	},
+}
+
+/** Bans a let declaration that prefer-const does not already report. */
+export const LET_RULE: PolicyRuleInterface = {
+	meta: {
+		type: 'problem',
+		docs: {
+			description:
+				'Disallow a let declaration that is reassigned or declared without a value; prefer-const reports the rest.',
+		},
+		messages: {
+			let: 'Declare this binding with const and derive its value: an expression, a helper that returns it, or a for…of over entries() in place of a counter.',
+		},
+	},
+	create(context) {
+		return {
+			VariableDeclaration: (node) => reportLet(context, node),
 		}
 	},
 }
@@ -1571,6 +1633,7 @@ export default {
 	rules: {
 		'no-mocking': MOCKING_RULE,
 		'no-keyword-privacy': PRIVACY_RULE,
+		'no-let': LET_RULE,
 		'no-nested-functions': NESTED_RULE,
 		'no-hidden-declaration': HIDDEN_RULE,
 		'no-misplaced-type': TYPE_RULE,

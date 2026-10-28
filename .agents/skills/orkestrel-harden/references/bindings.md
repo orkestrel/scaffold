@@ -15,8 +15,7 @@ Find candidates with the item's signatures, and rule each candidate by the item'
 - **Tool.** Run each signature with ripgrep's default engine, `rg -n`, and add `-U` where the item
   says a pattern spans lines.
 - **Ruling.** Treat a signature hit as a candidate, and rule it by reading its source. A text search
-  reports on text (`.claude/rules/quality.md` § Instruments); an AST pass over the TypeScript parser
-  is the exact instrument for `variables.assignments`.
+  reports on text (`.claude/rules/quality.md` § Instruments).
 - **Report.** Record each ruled candidate as `path:line`, the item's key, and the ruling.
 
 ## Run the controls
@@ -35,8 +34,8 @@ signatures or the reading before you run the item over the checkout.
 
 ## Keys outside the census
 
-- Run no item for these keys: `variables.declarations`, `derivation.expression`,
-  `iteration.counter`, `try.helper`, `try.log`, `running.definition`, `lists.derived`, `logs.loop`,
+- Run no item for the **Variables** bullet; the lint rules it names decide it.
+- Run no item for these keys: `derivation.expression`, `iteration.counter`, `try.helper`, `try.log`, `running.definition`, `lists.derived`, `logs.loop`,
   `logs.scan`, `exemptions.reach`, `percall.entity`, `percall.lifetime`, `percall.relative`,
   `entity.home`, `entity.pointers`, `slots.route`, `slots.exclusions`, `resets.home`, `bound.read`,
   `bound.several`, `bound.selection`, `bound.latch`, `registry.clear`, `registry.scope`,
@@ -44,66 +43,6 @@ signatures or the reading before you run the item over the checkout.
 - Read `logs.forms` through `logs.final`, `logs.last`, and `percall.concurrent`, which it widens to
   logs a `reduce` call returns. Read `bound.unit` through `bound.field`. Read `running.position`
   through `running.cell`, `bound.field`, and `registry.reads`.
-
-## `variables.assignments` (**Variables**)
-
-- **Precheck.** Run `\b(?:let|var)\s+[A-Za-z_$\[{]` first, and rule each hit in code, outside
-  comments and strings, under `variables.declarations`. Hold a parameter-only reading of this item
-  until every such declaration is ruled: after the precheck, a bare-identifier assignment can only
-  target a parameter, a `catch` binding, a declaration the precheck found, or a name TypeScript
-  refuses.
-- **Signatures.**
-  - Assignment statements: `(?:^|[;{}]\s*)\s*[A-Za-z_$][\w$]*\s*(?:[-+*/%&|^]|\*\*|<<|>>>?|\?\?|\|\||&&)?=[^=>]`.
-  - Guarded assignments: `(?:\)|\belse|=>)\s*[A-Za-z_$][\w$]*\s*(?:[-+*/%&|^]|\*\*|<<|>>>?|\?\?|\|\||&&)?=[^=>]`.
-  - Updates: `(?:^|[^.#\w$])[A-Za-z_$][\w$]*\s*(?:\+\+|--)` and `(?:\+\+|--)\s*[A-Za-z_$][\w$]*\b`.
-  - Destructuring targets: `^\s*\[[^\]]*\]\s*=[^=]` and `^\s*\(\s*\{[^}]*\}\s*=[^=]`.
-  - Declaration-free loop heads: `for\s*(?:await\s*)?\(\s*[A-Za-z_$][\w$]*\s+(?:of|in)\b`.
-- **Reading.** Keep a hit whose target resolves to a parameter of the enclosing function or to a
-  `catch` binding (**Variables**). Drop a parameter default on its own line, a public class field,
-  an enum member, a member update such as `++this.#count`, and a target the precheck found.
-
-Hit fixture, `variables.assignments.hit.ts`:
-
-```ts
-function normalizeName(name: string): string {
-	name = name.trim()
-	return name
-}
-
-function labelRow(label: string): string {
-	if (label === '') label = 'untitled'
-	return label
-}
-
-function mergeOverride(base: ProjectConfig, override?: ProjectConfig): ProjectConfig {
-	if (override !== undefined && 'command' in override && 'mode' in override) {
-		if (typeof override.mode !== 'string') {
-			throw new Error('The project invocation carries no string mode')
-		}
-		override = { mode: override.mode }
-	}
-	return override === undefined ? { ...base } : mergeConfig(base, override)
-}
-```
-
-Clear fixture, `variables.assignments.clear.ts`:
-
-```ts
-class Transport {
-	#count = 0
-
-	async readWithRetries(
-		url: string,
-		timeout: number,
-		spent: number[],
-		accept?: string,
-		binary = false,
-	): Promise<TextReadResult | BytesReadResult> {
-		const id = ++this.#count
-		return binary ? readBytes(url, timeout, spent, id) : readText(url, timeout, spent, id, accept)
-	}
-}
-```
 
 ## `running.carriers` (**Running values**)
 
