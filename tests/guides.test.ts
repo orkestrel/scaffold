@@ -1129,7 +1129,7 @@ await new GuideCommand({
 			const chain = 'npm run test:app && npm run test:journey && npm run test:journey:vue'
 			expect(scripts.test).toContain(chain)
 			const vite = blueprintToRootVite(blueprint)
-			expect(vite).toContain('\tmode?: string,\n): UserConfig {')
+			expect(vite).toContain('\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {')
 			expect(vite).toContain('const application = resolveApplication(mode, applications)')
 			expect(vite).toContain('exclude: [],')
 			expect(vite).toContain('provide: { variant: variant.name, variants, capture },')

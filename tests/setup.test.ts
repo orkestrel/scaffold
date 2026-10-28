@@ -448,7 +448,8 @@ describe('the inert value builders', () => {
 		// The two readers answer alike over a dense list and part at a hole, which the iterator reads.
 		expect(readLengthsByIterator(dense)).toStrictEqual([1, 1])
 		expect(readLengthsByIndex(dense)).toStrictEqual([1, 1])
-		expect(readLengthsByIndex(holed)).toStrictEqual([1])
+		// `map` skips the hole and keeps it a hole, so only index 1 holds a length.
+		expect(Object.entries(readLengthsByIndex(holed))).toStrictEqual([['1', 1]])
 		expect(() => readLengthsByIterator(holed)).toThrow(TypeError)
 	})
 
