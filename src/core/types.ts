@@ -371,6 +371,18 @@ export type CatalogEntry =
 	  }
 
 /**
+ * Represents one foreign tool held at a major, with the reason the next major waits.
+ *
+ * @remarks
+ * `major` is the highest major the fleet runs, and `reason` names what moving past it would break or
+ * leave unproved.
+ */
+export interface ToolchainHold {
+	readonly major: number
+	readonly reason: string
+}
+
+/**
  * Represents one declared dependency range measured against a registry release.
  *
  * @remarks

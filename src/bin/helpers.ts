@@ -13,6 +13,7 @@ import type {
 	Mirror,
 	Question,
 	Release,
+	ToolchainHold,
 } from '@src/core'
 import type {
 	CLICommand,
@@ -66,6 +67,7 @@ import {
 	STYLES_ENTRY_PATH,
 	THEMES_BARREL_PATH,
 	THEMES_ENTRY_PATH,
+	TOOLCHAIN_HOLDS,
 } from '@src/core'
 import {
 	isExactCaseFile,
@@ -590,15 +592,18 @@ export function releasesToExit(releases: readonly Release[]): number {
 }
 
 /**
- * Projects foreign floor and supported-major drift into audit questions.
+ * Projects foreign floor, supported-major, and held-major drift into audit questions.
  *
  * @param releases - The release verdicts to measure.
  * @param served - Alternate release verdicts used to detect a newer served major.
- * @returns One non-blocking question for each stale floor and each crossed major.
+ * @param holds - The foreign tools held at a major; default: `TOOLCHAIN_HOLDS`.
+ * @returns One non-blocking question for each stale floor, each crossed major, and each declaration
+ * past its hold. A held tool's newer served major reads as its hold and the reason.
  */
 export function releasesToQuestions(
 	releases: readonly Release[],
 	served: readonly Release[] = releases,
+	holds: Readonly<Record<string, ToolchainHold>> = TOOLCHAIN_HOLDS,
 ): readonly Question[] {
 	// The iterator consumes one release at a time, and reads a hole as an `undefined` release, which
 	// the name read refuses before a later release is read.
@@ -617,6 +622,7 @@ export function releasesToQuestions(
 			const published =
 				release.major ??
 				(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
+			const hold = Object.hasOwn(holds, release.name) ? holds[release.name] : undefined
 			return [
 				...(declared !== undefined &&
 				current !== undefined &&
@@ -636,7 +642,19 @@ export function releasesToQuestions(
 					? [
 							{
 								field: 'dependencies',
-								message: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
+								message:
+									hold?.major === declared
+										? `${release.name} is held at major ${String(declared)}, while the registry serves major ${String(published)}: ${hold.reason}.`
+										: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
+								blocking: false,
+							},
+						]
+					: []),
+				...(declared !== undefined && hold !== undefined && declared > hold.major
+					? [
+							{
+								field: 'dependencies',
+								message: `${release.name} declares major ${String(declared)}, past its hold at major ${String(hold.major)}: ${hold.reason}.`,
 								blocking: false,
 							},
 						]

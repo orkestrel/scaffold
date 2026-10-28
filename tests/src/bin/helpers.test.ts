@@ -11,6 +11,7 @@ import {
 	createBlueprint,
 	MAX_PATH_LENGTH,
 	ScaffoldError,
+	TOOLCHAIN_HOLDS,
 } from '@src/core'
 import { MAX_INVENTORY_PATHS } from '@src/server'
 import { captureError, requireValue } from '@orkestrel/test'
@@ -540,7 +541,7 @@ describe('release evidence', () => {
 			},
 			{
 				field: 'dependencies',
-				message: 'typescript declares major 6, while the registry serves major 7.',
+				message: `typescript is held at major 6, while the registry serves major 7: ${TOOLCHAIN_HOLDS.typescript?.reason ?? ''}.`,
 				blocking: false,
 			},
 		])
@@ -551,6 +552,7 @@ describe('release evidence', () => {
 			releasesToQuestions(
 				[{ name: 'typescript', range: '^6.0.3', lookup: 'failed', note: 'missing' }],
 				[{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '7.0.2' }],
+				{},
 			),
 		).toStrictEqual([
 			{
@@ -559,6 +561,66 @@ describe('release evidence', () => {
 				blocking: false,
 			},
 		])
+	})
+
+	it('holds TypeScript at 6 and Vitest with its browser provider at 4', () => {
+		expect(
+			Object.entries(TOOLCHAIN_HOLDS).map(([name, hold]) => [name, hold.major, hold.reason !== '']),
+		).toStrictEqual([
+			['typescript', 6, true],
+			['vitest', 4, true],
+			['@vitest/browser-playwright', 4, true],
+		])
+	})
+
+	it('names the hold and its reason where a held tool meets a newer served major', () => {
+		const holds = { vitest: { major: 4, reason: 'the next major is unproved' } }
+		expect(
+			releasesToQuestions(
+				[
+					{ name: 'vitest', range: '^4.1.12', lookup: 'found', latest: '4.1.12', major: 5 },
+					{ name: 'vite', range: '^8.3.5', lookup: 'found', latest: '8.3.5', major: 9 },
+				],
+				undefined,
+				holds,
+			),
+		).toStrictEqual([
+			{
+				field: 'dependencies',
+				message:
+					'vitest is held at major 4, while the registry serves major 5: the next major is unproved.',
+				blocking: false,
+			},
+			{
+				field: 'dependencies',
+				message: 'vite declares major 8, while the registry serves major 9.',
+				blocking: false,
+			},
+		])
+	})
+
+	it('reports a declaration past its hold, and none at or below it', () => {
+		const holds = { typescript: { major: 6, reason: 'the compiler API moved' } }
+		expect(
+			releasesToQuestions(
+				[{ name: 'typescript', range: '^7.0.2', lookup: 'found', latest: '7.0.2', major: 7 }],
+				undefined,
+				holds,
+			),
+		).toStrictEqual([
+			{
+				field: 'dependencies',
+				message: 'typescript declares major 7, past its hold at major 6: the compiler API moved.',
+				blocking: false,
+			},
+		])
+		expect(
+			releasesToQuestions(
+				[{ name: 'typescript', range: '^5.9.3', lookup: 'found', latest: '5.9.3', major: 5 }],
+				undefined,
+				holds,
+			),
+		).toStrictEqual([])
 	})
 
 	it('refuses a hole in the releases as the release it reads as', () => {

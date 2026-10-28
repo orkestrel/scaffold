@@ -111,6 +111,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `Scaffolding`           | interface | Represents the replayable outcome of one compile.                                                 |
 | `SrcDefinition`         | interface | Describes the build and export settings one published `src` environment contributes.              |
 | `StylesExtension`       | interface | Represents a named sheet face under `src/<name>`.                                                 |
+| `ToolchainHold`         | interface | Represents one foreign tool held at a major, with the reason the next major waits.                |
 | `ViteMachinery`         | interface | Names which host-specific pipelines a generated root Vite configuration carries.                  |
 
 #### Constants
@@ -203,6 +204,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `TARGET_SKILL_NAMES`              | const | Lists the package-facing skills a target receives pointers for, frozen and alphabetical.                                                                                               |
 | `THEMES_BARREL_PATH`              | const | Names the themes stylesheet marker.                                                                                                                                                    |
 | `THEMES_ENTRY_PATH`               | const | Names the themes build entry marker.                                                                                                                                                   |
+| `TOOLCHAIN_HOLDS`                 | const | Holds foreign tools at the major the fleet runs, with the reason the next major waits.                                                                                                 |
 | `TREE_TEST_PATH`                  | const | Names the real-tree proof whose presence makes a workspace `tree`.                                                                                                                     |
 | `VERSION_PATTERN`                 | const | Matches the exact `major.minor.patch` version syntax a blueprint declares.                                                                                                             |
 | `WORKSPACE_DEV_ENGINES`           | const | Holds the `devEngines` record every generated manifest carries.                                                                                                                        |
@@ -1961,7 +1963,17 @@ of `STYLES_DEV_DEPENDENCIES`, is a seed as well: it carries the `^1.105.1` range
 `@orkestrel/veneer` checkout declared on 2026-09-30, and that test names it in the seeded set.
 
 Outside the selected showcase pair, a newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
-question, and a person decides whether the generated toolchain supports it. Inside the declared
+question, and a person decides whether the generated toolchain supports it.
+
+`TOOLCHAIN_HOLDS` records the majors that decision has already settled. TypeScript stays at 6:
+TypeScript 7 is the Go compiler, its JavaScript compiler API is gone, and its package layout, its
+diagnostics, and the declaration roll-up are unproved. Vitest stays at 4, and
+`@vitest/browser-playwright` with it: Vitest 5 is unproved across the fleet, and its companion
+packages require Vitest 5 exactly, so a mixed install refuses. For a held tool `audit` reports the
+hold and its reason in place of the newer-major question, and reports a declaration past the hold.
+[`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) fails when scaffold's own
+manifest raises a held tool past its hold. Lift a hold in a round of its own: prove the fleet on
+the next major, then move the row and the manifest together. Inside the declared
 major the verbs raise the floor themselves, which is what makes the caret's own width beside the
 point: `^0.64.0` admits no `0.65.0`, and `repair` rewrites the range to `^0.65.0` rather than
 widening it.

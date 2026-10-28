@@ -35,6 +35,7 @@ import {
 	SKILLS_CONFIG_PATH,
 	STUDIES_TEST_INCLUDE,
 	TARGET_SKILL_NAMES,
+	TOOLCHAIN_HOLDS,
 } from '@src/core'
 import { readFileHex, readHostFloor, stageHost } from '@src/server'
 import { isRecord } from '@orkestrel/contract'
@@ -1899,7 +1900,7 @@ describe('CLI audit', () => {
 			})
 			expect(result.questions).toContainEqual({
 				field: 'dependencies',
-				message: 'typescript declares major 6, while the registry serves major 7.',
+				message: `typescript is held at major 6, while the registry serves major 7: ${TOOLCHAIN_HOLDS.typescript?.reason ?? ''}.`,
 				blocking: false,
 			})
 			expect(result.releases).toContainEqual({

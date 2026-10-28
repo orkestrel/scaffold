@@ -9,6 +9,7 @@ import {
 	ORKESTREL_RANGE_PATTERN,
 	SEED_GUIDE_PATHS,
 	SHOWCASE_DEV_DEPENDENCIES,
+	TOOLCHAIN_HOLDS,
 } from '@src/core'
 import { buildBlueprint, DEPENDENCY_TABLES, TOOLCHAIN_RANGE_PATTERN } from '../../setup.js'
 import { collectRuntimeClosure, readCheckoutRanges, selectSeededNames } from '../../setupServer.js'
@@ -20,6 +21,24 @@ describe('browse upstream', () => {
 	it('equals the installed runtime closure of the browser package', () => {
 		expect(BROWSE_UPSTREAM).toStrictEqual(collectRuntimeClosure('@orkestrel/browser'))
 		expect(Object.isFrozen(BROWSE_UPSTREAM)).toBe(true)
+	})
+})
+
+describe('toolchain holds', () => {
+	// A held major moves only when a person raises scaffold's manifest, so the manifest is where the
+	// hold is enforced: raising a held tool past its hold reddens here until the row moves with it.
+	it('keeps every held tool of the manifest at its held major', () => {
+		const declared = readCheckoutRanges()
+		expect(
+			Object.entries(TOOLCHAIN_HOLDS).map(([name, hold]) => [
+				name,
+				extractRangeMajor(declared[name] ?? ''),
+				hold.major,
+			]),
+		).toStrictEqual(
+			Object.entries(TOOLCHAIN_HOLDS).map(([name, hold]) => [name, hold.major, hold.major]),
+		)
+		expect(Object.isFrozen(TOOLCHAIN_HOLDS)).toBe(true)
 	})
 })
 

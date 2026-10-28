@@ -8,6 +8,7 @@ import type {
 	Group,
 	SrcDefinition,
 	Surface,
+	ToolchainHold,
 } from './types.js'
 import manifest from '../../package.json' with { type: 'json' }
 
@@ -658,6 +659,33 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	typescript: manifest.devDependencies.typescript,
 	vite: manifest.devDependencies.vite,
 	vitest: manifest.devDependencies.vitest,
+})
+
+/**
+ * Holds foreign tools at the major the fleet runs, with the reason the next major waits.
+ *
+ * @remarks
+ * The verbs never cross a major on their own, so a held major moves only when a person raises
+ * scaffold's own manifest. `audit` names the hold where it would report a newer served major, and
+ * reports a declaration past it; `tests/src/core/constants.test.ts` fails when scaffold's manifest
+ * moves a held tool past its hold. Lift a hold in its own round: prove the fleet on the next major,
+ * then change the row and the manifest together.
+ */
+export const TOOLCHAIN_HOLDS: Readonly<Record<string, ToolchainHold>> = Object.freeze({
+	typescript: Object.freeze({
+		major: 6,
+		reason:
+			'TypeScript 7 is the Go compiler without the JavaScript compiler API; its package layout, its diagnostics, and the declaration roll-up are unproved',
+	}),
+	vitest: Object.freeze({
+		major: 4,
+		reason:
+			'Vitest 5 is unproved across the fleet, and its companion packages require Vitest 5 exactly, so a mixed install refuses',
+	}),
+	'@vitest/browser-playwright': Object.freeze({
+		major: 4,
+		reason: 'the browser provider moves with Vitest',
+	}),
 })
 
 /**
