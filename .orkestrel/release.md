@@ -199,6 +199,18 @@ The actual `prepublishOnly` chain passed, exit 0 uncapped in 931651 ms. Format, 
 
 Agent and Study campaign custody has left Scaffold, including the older tree recovered during main integration. After registry confirmation, Agent and Study must re-pin the Scaffold development dependency, run repair, and verify their gates against the published artifact. Those consumer visits do not authorize an Agent or Study release.
 
+## Scaffold 0.0.111, 2026-10-29
+
+The release carries one conformance fix:
+- `tests/config.test.ts` awaits the journey wrapper's result, as it already awaited each project factory (`7540fb0e8`, closing `ROADMAP.md` item 68 from `9e3329ab9`).
+- Before the fix, an async Vite factory failed the case with `Expected a configuration record`. Veneer met that adopting `@orkestrel/capture` 0.0.1, and capture's consumer fixture uses the same shape.
+- Control in a generated app workspace: the 0.0.110 case failed an async wrapper (1 failed, 535 passed). The awaited case passed it (536), and passed the generated synchronous wrapper (536).
+
+Release-chain notes:
+- The first fresh-clone run, on `1f4f3d169`, failed `format:check`: closing item 68 had dropped the roadmap's final newline (`608ac543d`).
+- `608ac543d` passed every step on a fresh clone: `npm test` 3,428 passed, templates 91, and release-mode distribution 11 passed with the npm-floor case skipped.
+- **Scaffold 0.0.111: published** 2026-10-29 from `608ac543d`, with the user's one-time code. `window.ts --publish` answered accepted and unconfirmed, and `--confirm` served it within the wait.
+
 ## Scaffold 0.0.110, 2026-10-29
 
 The release carries the debrief of the 0.0.109 stretch:
