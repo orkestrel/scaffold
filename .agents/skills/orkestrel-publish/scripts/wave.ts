@@ -1384,10 +1384,38 @@ export function runRecord(runner: Runner, name: string | undefined): void {
 }
 
 /**
+ * Moves one declared range to the registry caret of a release, keeping every other major a
+ * disjunctive range admits.
+ *
+ * @remarks
+ * A range of one comparator set becomes the caret. A range joined by `||` names one supported major
+ * per arm, so only the arm in the release's major becomes the caret; a range with no arm in that
+ * major stays as declared, which keeps the wave inside each declared major.
+ *
+ * @param current - The declared range.
+ * @param latest - The release's version.
+ * @returns The moved range.
+ * @example
+ * ```ts
+ * moveRange('^4.1.11 || ^5.0.4', '5.0.5') // '^4.1.11 || ^5.0.5'
+ * ```
+ */
+export function moveRange(current: unknown, latest: string): unknown {
+	const caret = `^${latest}`
+	if (typeof current !== 'string' || !current.includes('||')) return caret
+	const major = /^(\d+)\./u.exec(latest)?.[1]
+	return current
+		.split(/\s*\|\|\s*/u)
+		.map((arm) => (/^[\^~=v\s]*(\d+)/u.exec(arm)?.[1] === major ? caret : arm))
+		.join(' || ')
+}
+
+/**
  * Moves each named dependency to the registry caret of its latest release.
  *
  * @remarks
- * A later release of the same name reads the range the earlier reading wrote.
+ * A later release of the same name reads the range the earlier reading wrote. A disjunctive range
+ * moves only its arm in the release's major, per {@link moveRange}.
  *
  * @param ranges - The block's ranges by name.
  * @param releases - The audit's release readings.
@@ -1400,12 +1428,16 @@ export function computeRanges(
 	return releases.reduce<RangeMove>(
 		(state, release) => {
 			if (release.latest === undefined || !(release.name in state.ranges)) return state
-			const caret = `^${release.latest}`
-			return state.ranges[release.name] === caret
+			const current = state.ranges[release.name]
+			const next = moveRange(current, release.latest)
+			return current === next
 				? state
 				: {
-						ranges: { ...state.ranges, [release.name]: caret },
-						moved: [...state.moved, `${release.name} ${String(release.range)} -> ${caret}`],
+						ranges: { ...state.ranges, [release.name]: next },
+						moved: [
+							...state.moved,
+							`${release.name} ${typeof current === 'string' ? current : String(release.range)} -> ${String(next)}`,
+						],
 					}
 		},
 		{ ranges, moved: [] },

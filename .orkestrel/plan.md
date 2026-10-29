@@ -40,6 +40,7 @@ Each package is the repository `https://github.com/orkestrel/<name>` checked out
 Each row is a scaffold defect the wave found, fixed on scaffold's `main` and shipped in the one release § Scaffold pin names.
 
 1. **Vitest 5's file-system module cache breaks command-loaded source.** Vitest 5.0.5 reads a cached module's code as bytes (`readFile(result.tmp)` with no encoding in its server module runner's transport), and Vite 8.3.5's `prepareStackTrace` hook then throws `code.charCodeAt is not a function` on every stack read inside source a browser command loads through `context.project.vitest.import`, which `.claude/rules/workspace.md` § Configuration authority prescribes. The generated root configuration and scaffold's own set `fsModuleCache: false`, the rule names why, and `tests/src/core/compilers.test.ts` pins it; measured in `@orkestrel/test`'s `chooseFiles` case, red with the cache on and green with `--fsModuleCache=false`, on 2026-10-29.
+2. **The visit's re-pin collapses a disjunctive range.** `computeRanges` in `.agents/skills/orkestrel-publish/scripts/wave.ts` replaced every audited range with one caret, so the pin step narrowed `typescript: ^6.0.3 || ^7.0.2` to `^6.0.3` and `vitest: ^4.1.12 || ^5.0.5` to `^4.1.12` in the peer blocks of probe, test, and capture on 2026-10-29. Probe reads its peer range at run time, so its rebuilt server refused TypeScript 7.0.2 at its handshake. `moveRange` moves only the arm in the release's major, `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository states it, and the wave proof pins it; a mutation that restores the collapse reddened that case alone (1 failed, 58 passed). The three peer blocks are restored by hand until the re-pin runs on the release.
 
 ## Visit procedure
 
@@ -64,6 +65,7 @@ Run these steps for each package, in order, with the checkout's `main` clean apa
 
 ## Improvement
 
+- A consumer adopts a promoted export at its re-pin, after the owner publishes it: mcp, browser, and ollama take item 44's exports from test, and lsp, mcp, browser, probe, and study take item 61's ruling from process.
 - Rename an exported name the `surface` policy rule reports as claimed by another package, under `.claude/rules/names.md` § Fleet name ownership, and rule the bump it obliges (`.agents/skills/orkestrel-publish/references/release.md` § What a bump obliges).
 - Replace a local helper whose job an installed `@orkestrel` export does, dependency-first.
 - Evaluate the promotion items in their owning packages before any consumer adopts them: `ROADMAP.md` items 44 and 45 in test, item 61 in process, item 63 in capture, and item 62 in the package that owns the bounded retry.
@@ -73,7 +75,7 @@ Run these steps for each package, in order, with the checkout's `main` clean apa
 ## Lanes
 
 - One runner lane runs every install, test, build, visit, and release chain on the host, one at a time.
-- Writer lanes run beside it, one per package checkout, each running only the format check, lint, and type check over its owned files, at most three at once, on the user's go-ahead of 2026-10-29 to run the work in parallel.
+- Writer lanes run beside it, one per package checkout, each running only the format check, lint, and type check over its owned files, at most five at once (raised from three on 2026-10-29 with 107 GB of 127.7 GB memory free and 3 Codex processes live; the T3 lane host was unusable at six concurrent children on 2026-10-21), on the user's go-ahead of 2026-10-29 to run the work in parallel.
 - A layer's realignment can start before the layer under it publishes; the layer re-pins to the versions npm serves, and reruns its gates, before it publishes.
 - Scaffold is never a writer's checkout; scaffold changes are the Orchestrator's.
 
@@ -107,7 +109,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-29: the probe checkout is installed from its manifest as it stands and rebuilt, so the probe server the writer lanes require starts; probe's own visit stays at L5.
 - 2026-10-29: contract's checkout is prepared at `514b5e3`, and its realignment unit runs.
 - 2026-10-29: L1 and L2 are prepared on scaffold 0.0.112; § Scaffold release row 1 is fixed on scaffold's `main`.
-- Next: dispatch the L1 and L2 writers as lanes free, and prepare L3.
+- 2026-10-29: L3 is prepared on scaffold 0.0.112; codec is realigned at codec `2f7540f`.
+- Next: dispatch writers as lanes free, prepare L4, and prepare L5 with the probe junction restored after probe's install.
 
 ## Sequence
 

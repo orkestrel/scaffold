@@ -18,6 +18,7 @@ import {
 	collectSpecs,
 	compareRanges,
 	computeRanges,
+	moveRange,
 	describeFailure,
 	describeChange,
 	extractConflict,
@@ -1501,6 +1502,24 @@ describe('the manifest ranges', () => {
 			moved: ['a ^1.0.0 -> ^1.2.0'],
 		})
 		expect(computeRanges({ a: '^1.2.0' }, releases)).toEqual({ ranges: { a: '^1.2.0' }, moved: [] })
+	})
+
+	it('moves only the arm of a disjunctive range in the release major and keeps every other arm', () => {
+		expect(moveRange('^4.1.11', '4.1.12')).toBe('^4.1.12')
+		expect(moveRange('^4.1.11 || ^5.0.4', '5.0.5')).toBe('^4.1.11 || ^5.0.5')
+		expect(moveRange('^6.0.3 || ^7.0.2', '6.0.3')).toBe('^6.0.3 || ^7.0.2')
+		expect(moveRange('^6.0.2||~7.0.1', '6.0.3')).toBe('^6.0.3 || ~7.0.1')
+		expect(moveRange('^4.1.12 || ^5.0.5', '6.0.0')).toBe('^4.1.12 || ^5.0.5')
+		expect(moveRange(undefined, '1.2.0')).toBe('^1.2.0')
+		const releases: readonly Release[] = [{ name: 'vitest', range: '^4.1.11', latest: '4.1.12' }]
+		expect(computeRanges({ vitest: '^4.1.11 || ^5.0.5' }, releases)).toEqual({
+			ranges: { vitest: '^4.1.12 || ^5.0.5' },
+			moved: ['vitest ^4.1.11 || ^5.0.5 -> ^4.1.12 || ^5.0.5'],
+		})
+		expect(computeRanges({ vitest: '^4.1.12 || ^5.0.5' }, releases)).toEqual({
+			ranges: { vitest: '^4.1.12 || ^5.0.5' },
+			moved: [],
+		})
 	})
 
 	it('rewrites the manifest only when a range moved', () => {
