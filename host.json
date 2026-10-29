@@ -766,7 +766,7 @@
 			"storage": "claude/skills/orkestrel-harden/SKILL.md",
 			"destination": ".claude/skills/orkestrel-harden/SKILL.md",
 			"executable": false,
-			"digest": "face4ee60e44fa97bbd3ee009fd549b7d26940f3b4dc63c0b290a4adf2b31872"
+			"digest": "247686b0a2ece8557e00fe19cb5f38f5bc6b80c2dd3fbcb864cb0a6ba40f4db5"
 		},
 		{
 			"storage": "claude/skills/orkestrel-journey/SKILL.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "3ff54e3837d774a5b335dbaf09f86bae1299cdd180c514b80af962ea7cf12121"
+	"digest": "a229157af893bb3425d9f6448b4018515b6e78312286a3bff89bd23ecc60852d"
 }
