@@ -100,6 +100,21 @@ Each published rename a realignment made, which every consumer adopts at its re-
 | workflow | `isSkipping` | `matchesAbortedAttempt` | `.claude/rules/names.md` § Fixed lifecycle vocabulary and § Fixed derivation/construction forms |
 | workflow | `scheduleHost` | `createHostSchedule` | `.claude/rules/architecture.md` § Kind purity (an entity factory) |
 | workflow | `delayHost` | `createHostDelay` | the same |
+| mcp | `ModelContextAdoptOptions.debugging` | `ModelContextAdoptOptions.debug` | `.claude/rules/names.md` § General vocabulary |
+| mcp | `HTTPHandlerOptions.streaming`, inherited by `HTTPTransportOptions` | `stream` | the same |
+| mcp | `createScopeMessageListener` (removed) | the `ScopeServer` that `createScopeServer` returns | `.claude/rules/typescript.md` § Immutability (it wrote a caller-owned map) |
+| middleware | `isBufferingIneligible` | `matchesUnbufferableResponse` | `.claude/rules/names.md` § Fixed derivation/construction forms |
+| middleware | `LimiterResult.resetAt`, `LimiterEntry.resetAt` (added this wave) | `expiry` | `.claude/rules/names.md` § Entity-scoped names |
+| agent | `AgentTurn.ending` | `AgentTurn.outcome` | `.claude/rules/names.md` § General vocabulary |
+| agent | `MessageMeasure.framing` | `MessageMeasure.uniform` | the same |
+| agent | `LedgerPlanningGroup` | `LedgerPlanGroup` | the same |
+| study | `StudyAgentReading`, `parseStudyReading` | `StudyAgentMeasurement`, `parseStudyMeasurement` | the same |
+| study | `StudyGradeReading` | `StudyGradeVerdict` | the same |
+| study | `StudyGrading`, `parseStudyGrading`, `isStudyGrading`, `StudyGradingContext`, `StudyGradingStore`, `StudyGradingStoreOptions` | `StudyAssessment`, `parseStudyAssessment`, `isStudyAssessment`, `StudyAssessmentContext`, `StudyAssessmentStore`, `StudyAssessmentStoreOptions` | the same |
+| study | `StudyLabeling`, `parseStudyLabeling`, `isStudyLabeling`, `translateStudyPacketLabeling` | `StudyLabels`, `parseStudyLabels`, `isStudyLabels`, `translateStudyPacketLabels` | the same |
+| study | `StudyResultReading` | `StudyResultView` | the same |
+| study | `validateStudyOllamaRecording`, `validateStudyRecordingDeclaration` | `validateStudyOllamaCapture`, `validateStudyCaptureDeclaration` | the same |
+| study | the `grading` member of `StudyLabelRequest`, `StudyReportRequest`, `StudyAssessmentContext`, and the grade, label, and report outputs; the report output's `labeling`; the CLI `--grading` flag | `assessment`; `labels`; `--assessment` (the recorded `grading.json` artifact keeps its name) | the same |
 
 ## Lanes
 
@@ -133,6 +148,7 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - **Test's guide proof reads its own build.** `tests/guides.test.ts:9` in test imports `readInventory` from `@orkestrel/test/server`, which the package's own `exports` resolves to `dist/src/server`, so the guide run needs a build first; the gate chain builds before `test`, so no gate reddens. Owner: test, with scaffold's guide-command source loading. Trigger: `npm run test:guides` in a checkout with no build output.
 - **Contract changes committed before a review pass.** `.agents/orchestration.md` § Size gate owes one independent review of a public contract change, and csv, indexeddb, msg, sqlite, sse, pool, budget, process, template, tool, table, websocket, qualifier, rater, relation, workspace, and reason (error-guard recognition), html, msg, and reason (published renames), markdown (the insert-only `coalesceText` and the extracted helpers), and process (renames, `inspectProcess`, the `execute` move) were accepted on gates alone. Three review lanes ran on 2026-10-29 over the guard and rename packages and process; their findings are repaired in each package's `Repair the error-guard review's findings` commit. Still owed: one review of reason, markdown, database, console, form, middleware (`SessionControl`, the limiter and asset stores, and the multipart `Upload` over untrusted input), server (`HTTPError`'s rebrand), workflow (its renames and `HostSchedule`), and lsp, and one re-check of the guard repairs. Owner: one batched review lane. Trigger: before § Sequence step 6 publishes their layer.
 - **Cost-class regressions the gates do not pin.** A bindings rewrite can swap an algorithm for one that does more work and still pass every gate: database's wildcard matcher went from a greedy scan to a table, and only its timing test caught it. Most realigned packages pin no cost. Owner: one review lane over every realigned package's rewritten hot paths, comparing each with its base on a sized input. Trigger: before § Sequence step 6 publishes their layer.
+- **A fixture entry imports a sibling fixture module.** lsp's `tests/src/server/fixtures/protocol.mjs` exports framing helpers that the raw peer entries `peer.mjs` and `holder.mjs` import; `.claude/rules/tests.md` § Shared test infrastructure places a fixture as data or an entry and names no rule for a module that only entries import, which cannot import the TypeScript setup modules. Owner: scaffold's test rules. Trigger: the debrief, or a second package with the same shape.
 - **No catalog package carries an app face.** The trial in § Sequence step 1 covered core, browser, server, and bin; the app face is proved by scaffold's `test:templates` project alone. Owner: scaffold. Trigger: a catalog package adds an `app/` environment.
 
 ## State
