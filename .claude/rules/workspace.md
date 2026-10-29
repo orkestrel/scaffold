@@ -209,7 +209,7 @@ one environment, so each is its own project:
 subjects, not names for one.
 Keep `conformance` in `test`: measure this package against an installed official artifact, and start
 any server the proof drives itself. Keep `tree` in `test`: read the real tree in Node and drive no
-build, install, or service. Keep `integration` in `test`: compose the workspace's public
+build, install, or service. Keep `integration` in `test` whatever its cost: compose the workspace's public
 surfaces without packing, installing, or driving an external service. In a publishing workspace,
 run `distribution`, `studies`, and `service` from `prepublishOnly`: pack and install the package in
 `distribution`, run the authored study proofs in `studies` after `npm test` and before the release
@@ -233,7 +233,7 @@ ignored by git; and `.claude/rules/tests.md` governs what may live there.
 - Prepare the external service before invoking the `service` project. Use `tests/setupService.ts`
   to verify readiness, apply `.claude/rules/tests.md`, and name the project `service` whatever it
   drives.
-- The proof's subject decides its project and its cost decides only its budget and isolation inside that project; `integration` stays in `test` whatever its cost.
+- The proof's subject decides its project, and its cost decides only its budget and isolation inside that project.
 - Give every isolated project its own script, and place that script by the preceding paragraph.
 
 Setup assets:

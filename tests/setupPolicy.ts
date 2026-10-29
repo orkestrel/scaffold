@@ -2421,11 +2421,48 @@ export function inspectSkillImports(
 }
 
 /**
+ * Reads the text of a specifier source that names one literally.
+ *
+ * @remarks
+ * A string literal names its value, and a template literal with no substitution names its cooked
+ * text, which TypeScript resolves the same way. Any other source, a template literal with a
+ * substitution included, names nothing.
+ *
+ * @param source - The `source` node of a declaration or an `import()` expression.
+ * @returns The literal specifier, or `undefined` when the source is computed.
+ */
+export function readPolicyLiteral(source: unknown): string | undefined {
+	if (!isPolicyRecord(source)) return undefined
+	const value: unknown = Object.getOwnPropertyDescriptor(source, 'value')?.value
+	if (typeof value === 'string') return value
+	const expressions: unknown = Object.getOwnPropertyDescriptor(source, 'expressions')?.value
+	const quasis: unknown = Object.getOwnPropertyDescriptor(source, 'quasis')?.value
+	if (
+		Object.getOwnPropertyDescriptor(source, 'type')?.value !== 'TemplateLiteral' ||
+		!Array.isArray(expressions) ||
+		expressions.length > 0 ||
+		!Array.isArray(quasis) ||
+		quasis.length !== 1
+	) {
+		return undefined
+	}
+	const [quasi]: readonly unknown[] = quasis
+	const text: unknown = isPolicyRecord(quasi)
+		? Object.getOwnPropertyDescriptor(quasi, 'value')?.value
+		: undefined
+	const cooked: unknown = isPolicyRecord(text)
+		? Object.getOwnPropertyDescriptor(text, 'cooked')?.value
+		: undefined
+	return typeof cooked === 'string' ? cooked : undefined
+}
+
+/**
  * Collects every module specifier a syntax tree names, in source order.
  *
  * @remarks
  * A specifier is the literal source of an `import` or `export … from` declaration, or of an
- * `import()` expression anywhere in the tree. An `import()` whose source is no literal names none.
+ * `import()` expression anywhere in the tree, a template literal with no substitution included. An
+ * `import()` whose source is computed names none.
  *
  * @param node - The syntax tree, or any node or list of nodes within it.
  * @returns Each literal specifier the tree names.
@@ -2434,12 +2471,9 @@ export function collectPolicySpecifiers(node: unknown): readonly string[] {
 	if (Array.isArray(node)) return node.flatMap((child: unknown) => collectPolicySpecifiers(child))
 	if (!isPolicyRecord(node)) return []
 	const type: unknown = Object.getOwnPropertyDescriptor(node, 'type')?.value
-	const source: unknown = Object.getOwnPropertyDescriptor(node, 'source')?.value
-	const value: unknown = isPolicyRecord(source)
-		? Object.getOwnPropertyDescriptor(source, 'value')?.value
-		: undefined
+	const value = readPolicyLiteral(Object.getOwnPropertyDescriptor(node, 'source')?.value)
 	return [
-		...(typeof value === 'string' &&
+		...(value !== undefined &&
 		(type === 'ImportDeclaration' ||
 			type === 'ExportAllDeclaration' ||
 			type === 'ExportNamedDeclaration' ||
@@ -2456,8 +2490,8 @@ export function collectPolicySpecifiers(node: unknown): readonly string[] {
  * @remarks
  * `npm run check` runs before `npm run build`, so a clean clone holds no `dist/` for such an import to
  * resolve. Each relative specifier of a static `import`, an `export … from`, and an `import()` with a
- * literal source resolves against its file's directory. An `import()` with a computed source names
- * no specifier and is left out. A file the parser refuses reports a violation, because its
+ * literal source, a template literal with no substitution included, resolves against its file's
+ * directory. An `import()` with a computed source names no specifier and is left out. A file the parser refuses reports a violation, because its
  * specifiers cannot be read.
  *
  * @param root - The workspace root to inspect.
@@ -5150,6 +5184,24 @@ export const DIST_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 			{
 				path: 'app/server/control.ts',
 				content: "export const load = () => import('../../dist/app/server/main.js')\n",
+			},
+		],
+		violations: [
+			{
+				rule: 'dist',
+				path: 'app/server/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../dist/app/server/main.js`,
+			},
+		],
+	},
+	{
+		label: 'rejects a dynamic import whose template literal has no substitution',
+		membership: 'import() expressions with a template-literal source and no substitution',
+		rule: 'dist',
+		files: [
+			{
+				path: 'app/server/control.ts',
+				content: 'export const load = () => import(`../../dist/app/server/main.js`)\n',
 			},
 		],
 		violations: [

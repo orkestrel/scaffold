@@ -51,7 +51,7 @@ Record which engine was right and on what.
 ## Rule
 
 - Every retained finding names the fix-brief item that carries it; walk the list once.
-- Class every retained finding's remedy as a correction, a design question, or a deferral before it enters a fix brief.
+- Class every retained finding's remedy per `.agents/orchestration.md` § Size gate before it enters a fix brief.
 - Drop, on the record, anything no lane can substantiate against the evidence.
 - Promote anything that must outlive the round into a durable artifact before the working files are swept.
 - Assign the fix round per `.agents/orchestration.md` § Size gate. The next round's brief is this round's successor.

@@ -24,4 +24,4 @@ Reviewing work you wrote or helped design; review runs in a clean context.
 
 ## Return
 
-The `orkestrel-falsify` verdict shape: numbered verdicts with evidence, findings outside the claims, tested-and-held, one terminal line. Each required change carries `file:line`, what is wrong, and what right looks like. For a remedy that would add a mechanism, return the failing case, the violated property, and the design question, never the mechanism. A dispatch-named skill that fixes another shape wins. Nothing else.
+The `orkestrel-falsify` verdict shape: numbered verdicts with evidence, findings outside the claims, tested-and-held, one terminal line. Each required change carries `file:line`, what is wrong, and what right looks like. For a remedy that adds a mechanism per `.agents/orchestration.md` § Size gate, return the failing case and the violated property, never the mechanism. A dispatch-named skill that fixes another shape wins. Nothing else.

@@ -11,6 +11,7 @@ Give every claims brief these rows.
 - **Already established.** What the Orchestrator verified directly, so no lane re-derives it or re-reports it. State that the Orchestrator verified each item itself.
 - **Review evidence.** The actual diff and the actual `git status --porcelain` output, by path. For a rendered or externally driven surface, the capture; source is corroboration.
 - **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. A finding against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
+- **Release bar.** The observable consequences that make a finding outside the claims enter the terminal line, or `none`; a brief that names none puts every substantiated outside finding there. In a harden campaign, the plan's bar.
 - **Unknowns.** What the Orchestrator does not know that the round needs, and how the lane reports on it.
 
 ## The lane's brief

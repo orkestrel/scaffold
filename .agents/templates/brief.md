@@ -57,3 +57,5 @@ Stop and report (expected, found, evidence, done or not done, one hypothesis) on
 ## Review evidence
 
 The actual diff and `git status --porcelain` for a code change; the capture portfolio for a rendered surface; the proposal, the canon it must satisfy, and its motivation for a process proposal.
+
+**Release bar.** RELEASE_BAR_OR_NONE: for a review brief, the observable consequences that make a finding outside the claims enter the terminal line; `none` puts every substantiated outside finding there.

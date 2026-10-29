@@ -179,8 +179,8 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 - A `distribution` proof reads `import.meta.env.MODE` and fails, rather than skips, on an unreachable
   registry under `--mode release`. The publish gate invokes it that way, so a proof that skips there
   passes the gate without ever proving the artifact installs. An ordinary local run may still skip.
-- Accept a process, race, or lock proof only under the suite load it ships in and at a repeat count the brief sets from the failure's nature and states with its reason, reported as passes over runs by a `verifier`.
-- Slow and hermetic is reason enough to isolate a proof; it need not touch an external service.
+- Accept a process, race, or lock proof only under the suite load it ships in and at a repeat count the brief sets from the failure's nature and states with its reason, re-examined against the stop signals `.agents/orchestration.md` § Size gate names, reported as passes over runs by a `verifier`.
+- Slowness decides a proof's budget and isolation inside the project its subject names, per `.claude/rules/workspace.md` § Test project matrix, and the proof need not touch an external service.
 - Where such a proof stays in a shared project, size its budget from a full contended run rather than from an isolated one. A budget that clears the isolated cost by a thin margin turns contention into a red gate reporting a timeout, which carries no diagnostic about the code and costs a full investigation to dismiss.
 
 ## Shared test infrastructure

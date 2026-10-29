@@ -25,15 +25,15 @@ For each applicable seam, state the invariant, the failure mode, the observable 
 
 Test through public behavior with:
 
-| Seam                                    | The real thing it must be driven with                                    |
-| --------------------------------------- | ------------------------------------------------------------------------ |
-| Package behavior                        | Real package classes and composed managers                               |
-| Filesystem                              | Temporary directories and files                                          |
-| Network protocol                        | Actual local sockets and protocol-faithful fixture servers               |
-| Browser                                 | An actual Chromium-family browser when the browser is the system         |
-| Declared dependency                     | The actual installed dependency                                          |
-| External service or model               | The real service in its dedicated project when its behavior is the claim |
-| Third-party client or protocol consumer | One representative real foreign client, driven end to end                |
+| Seam                                    | The real thing it must be driven with                                                          |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Package behavior                        | Real package classes and composed managers                                                     |
+| Filesystem                              | Temporary directories and files                                                                |
+| Network protocol                        | Actual local sockets and protocol-faithful fixture servers                                     |
+| Browser                                 | An actual Chromium-family browser when the browser is the system                               |
+| Declared dependency                     | The actual installed dependency                                                                |
+| External service or model               | The real service in its dedicated project when its behavior is the claim                       |
+| Third-party client or protocol consumer | Representative real foreign clients of each client class the contract names, driven end to end |
 
 A third-party seam is the one case where the package's own tests cannot close the claim:
 protocol tests prove the protocol, and only a real client of that class proves the
@@ -71,7 +71,7 @@ Exercise:
 - cancellation propagation and bounded shutdown;
 - no busy polling, open handles, leaked processes, sessions, pages, files, or listeners.
 
-Set each pressure proof's load, concurrency, and repeat count from the coordination defect it must expose, state them with the reason beside the proof, accept the proof under the suite load it ships in, and re-examine the figures when the proof's cost outgrows what it exposes.
+Set each pressure proof's load and concurrency from the coordination defect it must expose and state them with the reason beside the proof. `.claude/rules/tests.md` § Expensive proofs owns the repeat count and acceptance under suite load.
 
 ## Hold the package's bounds
 
@@ -79,8 +79,8 @@ A seam's finding concerns the package when it falsifies a promise the contract m
 
 - When a finding falsifies a promise, repair it within its row and close the repair with the mutation probe `.agents/orchestration.md` § Size gate names.
 - When a finding describes a host behavior the contract never promised to survive, open one design question on the package's dependence on that behavior: remove the dependence, narrow the promise, or refuse on that host. Never add a mechanism around the behavior.
-- When a finding is outside the bounds and below the release bar, record it in the deferral list with an owner and an observable trigger, and reopen it only when the trigger fires.
-- Before another round at one seam, weigh a further repair against a design question and re-examine the stop set for that seam; stop when a round introduces as many defects as it closes, a repair adds a mechanism, findings move from the contract to the host, findings stop converging on a source, or the cost outgrows the goal's importance. `.agents/orchestration.md` § Size gate owns the general stop law; this list names the hardening lane's signals.
+- When a finding is outside the bounds and below the release bar, record it in the deferral list (`.claude/rules/campaign.md` § Content), and reopen it only when its trigger fires.
+- Before another round at one seam, weigh a further repair against a design question and re-examine the stop set for that seam against the signals `.agents/orchestration.md` § Size gate names; the hardening lane adds one: findings move from the contract to the host.
 - A seam that reprices on every edit (a count, a timing) is not a seam; drop the claim per the `orkestrel-falsify` skill § End the depth search.
 
 ## Audit security and destructive paths

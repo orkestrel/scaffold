@@ -83,6 +83,7 @@ import {
 	createPolicySurfaceGuide,
 	readPolicyDeclarations,
 	readPolicyJSON,
+	readPolicyLiteral,
 	readPolicyPackage,
 	readPolicyPermissions,
 	readPolicySurface,
@@ -1529,6 +1530,52 @@ describe('inspectSkillProof', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+function createTemplateElement(cooked: unknown): unknown {
+	return { type: 'TemplateElement', value: { raw: 'x', cooked } }
+}
+
+describe('readPolicyLiteral', () => {
+	it('reads a string literal and a template literal with no substitution', () => {
+		expect(readPolicyLiteral({ type: 'Literal', value: './a.ts' })).toBe('./a.ts')
+		expect(
+			readPolicyLiteral({
+				type: 'TemplateLiteral',
+				expressions: [],
+				quasis: [createTemplateElement('./b.ts')],
+			}),
+		).toBe('./b.ts')
+	})
+
+	it('names nothing for a substitution, a missing cooked text, or a non-literal node', () => {
+		expect(
+			readPolicyLiteral({
+				type: 'TemplateLiteral',
+				expressions: [{ type: 'Identifier' }],
+				quasis: [createTemplateElement('./'), createTemplateElement('.ts')],
+			}),
+		).toBeUndefined()
+		expect(
+			readPolicyLiteral({
+				type: 'TemplateLiteral',
+				expressions: [],
+				quasis: [createTemplateElement(null)],
+			}),
+		).toBeUndefined()
+		expect(
+			readPolicyLiteral({ type: 'TemplateLiteral', quasis: [createTemplateElement('./a.ts')] }),
+		).toBeUndefined()
+		expect(
+			readPolicyLiteral({ type: 'TemplateLiteral', expressions: [], quasis: [] }),
+		).toBeUndefined()
+		expect(
+			readPolicyLiteral({ type: 'TemplateLiteral', expressions: [], quasis: [null] }),
+		).toBeUndefined()
+		expect(readPolicyLiteral({ type: 'Identifier' })).toBeUndefined()
+		expect(readPolicyLiteral({ type: 'Literal', value: 1 })).toBeUndefined()
+		expect(readPolicyLiteral(null)).toBeUndefined()
 	})
 })
 

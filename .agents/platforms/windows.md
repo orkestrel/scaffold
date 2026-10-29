@@ -11,7 +11,7 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 - Spawn npm without a shell through its JavaScript entry: `node <node directory>/node_modules/npm/bin/npm-cli.js <arguments>`. A `.cmd` shim cannot start without a shell, and `launch.ts` reports exit `127`.
 - `cmd /c` keeps a trailing space inside `set VAR=value && …`; write `set "VAR=value"`.
 - Deliver a console Ctrl+C through `WScript.Shell` `AppActivate` then `SendKeys('^c')` after confirming activation when no computer-use tool is available.
-- A `rename` onto a freshly hard-linked file can return `EPERM` while a scanner holds it (measured 2026-10-28); retry under a budget the caller sets and pin the retry proof to `win32`.
+- A `rename` onto a freshly hard-linked file can return `EPERM` while a scanner holds it.
 - A child CLI can leak orphaned `conhost.exe` processes and open console windows. Count them with `Get-Process conhost` at each launch while such a lane is live.
 
 ## PowerShell 5.1

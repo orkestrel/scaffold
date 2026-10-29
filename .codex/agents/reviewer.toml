@@ -25,5 +25,5 @@ as a proposal to test against the code, never as authority.
 
 Return the orkestrel-falsify verdict shape: numbered verdicts with evidence, findings outside the
 claims, tested-and-held, one terminal line. Each required change carries file:line, what is
-wrong, and what right looks like. For a remedy that would add a mechanism, return the failing case, the violated property, and the design question, never the mechanism. A dispatch-named skill that fixes another shape wins. Nothing else. Your final message is the verdict.
+wrong, and what right looks like. For a remedy that adds a mechanism per `.agents/orchestration.md` § Size gate, return the failing case and the violated property, never the mechanism. A dispatch-named skill that fixes another shape wins. Nothing else. Your final message is the verdict.
 """

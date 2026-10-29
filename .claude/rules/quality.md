@@ -16,7 +16,7 @@ These rules govern how a claim is established: the evidence read before a change
 - Treat existing code, tests, `old/`, branches, and copied projects as evidence, not authority.
 - Research when the user asks, when comparing an upstream or legacy implementation, or when current external behavior changes the design. Use primary sources for external capabilities and the installed declarations for dependencies. Separate verified fact from inference.
 - A brief or ruling that restates or changes a pinned behavior cites the test that pins it and states what that test demands in the new state.
-- For a broad API or production-readiness change, build a capability/defect matrix before editing. Every row ends as implement, repair, retain, or exclude with evidence. The matrix is the definition of done; fix it when the change starts. Record a finding outside it for the next matrix.
+- For a broad API or production-readiness change, build a capability/defect matrix before editing. Every row ends as implement, repair, retain, or exclude with evidence. The matrix is the definition of done; fix it when the change starts. Record a finding outside it for the next matrix, or block on it when it stands above the change's release bar.
 
 ## Probes before arguments
 
