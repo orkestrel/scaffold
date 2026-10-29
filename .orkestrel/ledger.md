@@ -24,5 +24,8 @@ One row per dispatched unit and per user ruling on routing or scope, in order (`
 | 2026-10-29 | reason-realign: realign reason | astra | pending |
 | 2026-10-29 | database-realign: realign database | astra | pending |
 | 2026-10-29 | placement-review: falsify the closed test-infrastructure set (§ Scaffold release, row 4) | analyst | claims 1 and 4 falsified, repaired per the prescription |
-| 2026-10-29 | test-review: falsify test's realignment and its promoted contract (`ROADMAP.md` items 44, 45, 62) | analyst | pending |
+| 2026-10-29 | test-review: falsify test's realignment and its promoted contract (`ROADMAP.md` items 44, 45, 62) | analyst | claims 1 and 5 falsified (an overbroad mutation claim; a retry refusal-order change and a lost assertion), plus module-scope helpers in test files; repair sent |
 | 2026-10-29 | l2-rest-realign: realign console and form in sequence | astra | pending |
+| 2026-10-29 | Orchestrator ruling on process's `execute` placement stop: `execute` and `executeSync` become function modules in the registered `src/server/execution` domain (scaffold `305af0c65`), with one run's state in an implementation class | rule | process's realignment unit |
+| 2026-10-29 | l3-small-realign: realign qualifier, rater, relation, and workspace in sequence | astra | pending |
+| 2026-10-29 | User ruling: enforce `.claude/rules/tests.md`'s no-local-helper law with a lint rule in the scaffold release, every package moving its helpers before it passes the re-pin | user | § Scaffold release, row 5 |

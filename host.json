@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "63a9423270590e0d064b52205a803b652df2e7c790d02e4e97101039adbd5e2b"
+			"digest": "0504d1ee45e180e732508a385e349a08ce1edd0827f4d810086ef708d1af5e09"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -328,7 +328,7 @@
 			"storage": "agents/skills/orkestrel-harden/scripts/titles.ts",
 			"destination": ".agents/skills/orkestrel-harden/scripts/titles.ts",
 			"executable": false,
-			"digest": "fb029665990e92407a9805a863d6ffc88f0a9e8a891ed50196a7c3a98eae24b1"
+			"digest": "d6bacace9ec7dae25a5d867cb8f12f7201a1226bb07ca06a9e9a107da3c2e7e5"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
@@ -472,7 +472,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "86474895668e2e6bb0da3eaa70dc434787513cae46dfb7e0c189c884e769a131"
+			"digest": "fc032347f23deb3d21da8ac4ba7e6e6c5e7deb3ddba103f046b6681066fe590d"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -502,7 +502,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/wave.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/wave.ts",
 			"executable": false,
-			"digest": "b287101aa6a85f9a3051a77ed5e675ca078c9d8c91b39c82bf629c060b44bd83"
+			"digest": "b3161a8890d2bf28e749c27ddb86a0831b3200d88d64478fd713dc6baad8d421"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/window.ts",
@@ -604,7 +604,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "2a1895d1205648961be79f6bc7d92e27fffa3f6aa6e9f2ff6ff8588992feb4d0"
+			"digest": "f8f70955ba02ae23b7a501de9415b4e0de914b355a03974eeee0d648232b37c2"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -700,7 +700,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "3a192979f45a81fe0cb5be249064c63ea0187c4bea2c7eeb8440578053662630"
+			"digest": "28d8cb65fbebd35b1608ccc9a4416bd8ad43e23343221ae7941daca1add5b32f"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -712,7 +712,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "362240820975555fc2cafe379832bd4e65c3cdd46d964a83434e5a4969b65789"
+			"digest": "b0dd50110df9e3e05adf270d4e4ecfbe9ff9867102c1de811da2d411c5815714"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -892,7 +892,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "f68b8a7ead761d35fcdaa32a63c979a4e0401847fc5357adf2c6b24f1e9f475b"
+			"digest": "b80d6a2b5e4d693341cec7c02ad6097d04218d4adcd4640976971c19fda219ab"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -946,7 +946,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "d644dea01bc19a4ecb40e36b09a4636de21899e9bece8cc6101f3b08091bd29c"
+			"digest": "8c459fbf2120d1de42cdf6380e26988c96044253578c6b2b9749cab322155c62"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1306,19 +1306,19 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "1e8e35c602078aacf2e40e1bb997af96f6b491f5acc57a804bb315f9a33d0d28"
+			"digest": "2890c13c60e8d9a7ff5194ce766d00648043a518d003e04c104afaabcd6823a6"
 		},
 		{
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "5144bb711810c8aa6bc4f27dbb27e7a84a5a363131aa08cfe902c1c5c7fd56e0"
+			"digest": "af7f29b43ea7761f99bfd40a9253ccd4bc200908d8ff0ffc6429f5b2b39ce516"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "51b2cb41616a7935e320d743354ebcb11f748a4b03312d457d96090beaa1d46a"
+			"digest": "311efff7dce707c5f8553271076d7de853da5c9f795f2ba83f19e35131bbc6ce"
 		}
 	],
 	"roots": [
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "19edeedcc3bcdc463dde191bb46603599dbb048e41cac5a6ee6d948aa5ff14fa"
+	"digest": "d45c2c3ccf15445b3daee9d972b5dfda902726c3c3a4ab6ca171606acda774c6"
 }

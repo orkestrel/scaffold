@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { createRecorder, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { execute } from '@orkestrel/process/server'
+import { createTemplateElement } from './setup.js'
 import {
 	blueprintToConfigArtifacts,
 	blueprintToSourceArtifacts,
@@ -1546,10 +1547,6 @@ describe('inspectSkillProof', () => {
 		}
 	})
 })
-
-function createTemplateElement(cooked: unknown): unknown {
-	return { type: 'TemplateElement', value: { raw: 'x', cooked } }
-}
 
 describe('isPolicyCodeSpecifier', () => {
 	it.each([

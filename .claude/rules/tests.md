@@ -202,7 +202,10 @@ Test helpers are shared infrastructure, not local test-file clutter.
 - Export every reusable helper, fixture type, factory, constant, and guard from setup files.
 - A setup file owns everything an assertion needs and nothing an assertion is: `describe`, `it`, `test`, and `expect` never appear in a `setup*.ts`; lint refuses their import from `vitest` there.
 - Data tables and case matrices belong in a setup file at any size; test registration does not.
-- Test files import shared infrastructure rather than declaring local fixture factories.
+- Test files import shared infrastructure rather than declaring local fixture factories. The
+  `policy/no-test-helper` lint rule refuses a module-scope function, class, or function-valued
+  binding in a mirrored test file (`tests/src/**`, `tests/app/**`) or a root setup proof; move each
+  into the setup module its environment names.
 - Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.
 - Prefer small customizable factories/stubs that seed inert data for a real scenario over repeated inline setup.
 - Helper names follow module-helper naming: `createFixtureServer`, `buildElement`, `appendItems`, `renderRows`, `waitForReady`, `extractDetail`.

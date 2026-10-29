@@ -2925,3 +2925,13 @@ export const MATERIALIZED_PATHS = [
 	'guides/guide.md',
 	'scripts/codex.sh',
 ]
+
+/**
+ * Creates an inert template-element node, the shape a policy literal reader receives for one quasi.
+ *
+ * @param cooked - The quasi's cooked value.
+ * @returns The node, raw text fixed to `x`.
+ */
+export function createTemplateElement(cooked: unknown): unknown {
+	return { type: 'TemplateElement', value: { raw: 'x', cooked } }
+}
