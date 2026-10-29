@@ -1544,8 +1544,11 @@ describe('isPolicyCodeSpecifier', () => {
 		['../dist/src/core/index.d.ts', true],
 		['../dist/src/core', true],
 		['..', true],
+		['../dist/meta.json', true],
+		['../dist/configs/vite.journey.config', true],
 		['../dist/src/styles/index.css?raw', false],
 		['../dist/src/styles/index.css', false],
+		['../dist/src/icon.SVG', false],
 		['../dist/src/icon.svg#mark', false],
 	])('reads %s as a code module: %s', (specifier, code) => {
 		expect(isPolicyCodeSpecifier(specifier)).toBe(code)

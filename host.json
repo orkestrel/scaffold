@@ -1318,7 +1318,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "da163db979b1427e2e23cca656ee6e3f9afbe4d171220b6f764aa518e300f50b"
+			"digest": "51b2cb41616a7935e320d743354ebcb11f748a4b03312d457d96090beaa1d46a"
 		}
 	],
 	"roots": [
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "a55257bc1b56f05df6221f40f0578a5c3acecc2562135def8e172ad23a7880aa"
+	"digest": "1f3b6b412516088d5712f62069d1efaff471f55a3b88bb8d80c849b27dcfba52"
 }

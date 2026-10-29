@@ -2484,25 +2484,61 @@ export function collectPolicySpecifiers(node: unknown): readonly string[] {
 	]
 }
 
-/** Names the extensions TypeScript resolves a relative specifier to as a code module. */
-export const POLICY_CODE_EXTENSIONS: ReadonlySet<string> = new Set([
-	'.js',
-	'.mjs',
-	'.cjs',
-	'.jsx',
-	'.ts',
-	'.mts',
-	'.cts',
-	'.tsx',
+/** Names the asset extensions `vite/client` types through an ambient wildcard declaration. */
+export const POLICY_ASSET_EXTENSIONS: ReadonlySet<string> = new Set([
+	'.css',
+	'.scss',
+	'.sass',
+	'.less',
+	'.styl',
+	'.stylus',
+	'.pcss',
+	'.sss',
+	'.apng',
+	'.bmp',
+	'.png',
+	'.jpg',
+	'.jpeg',
+	'.jfif',
+	'.pjpeg',
+	'.pjp',
+	'.gif',
+	'.svg',
+	'.ico',
+	'.webp',
+	'.avif',
+	'.cur',
+	'.jxl',
+	'.mp4',
+	'.webm',
+	'.ogg',
+	'.mp3',
+	'.wav',
+	'.flac',
+	'.aac',
+	'.opus',
+	'.mov',
+	'.m4a',
+	'.vtt',
+	'.woff',
+	'.woff2',
+	'.eot',
+	'.ttf',
+	'.otf',
+	'.webmanifest',
+	'.pdf',
+	'.txt',
+	'.wasm',
 ])
 
 /**
- * Tells whether TypeScript resolves a relative specifier as a code module.
+ * Tells whether the type check resolves a relative specifier as a module on disk.
  *
  * @remarks
- * A specifier with a query or a fragment, or one whose final segment carries a non-code extension,
- * is an asset an ambient wildcard declaration types, so the type check never reads it from disk. A
- * final segment with no extension, and the `.` and `..` directory segments, resolve as modules.
+ * Every relative specifier resolves on disk (a script, a declaration, a `.json` file under
+ * `resolveJsonModule`, or a dotted name the bundler resolution completes) unless an ambient wildcard
+ * declaration types it: a specifier with a query or a fragment, or one whose final segment ends in an
+ * asset extension `vite/client` declares.
  *
  * @param specifier - The relative import specifier.
  * @returns True when the type check resolves the specifier as a module on disk.
@@ -2510,8 +2546,8 @@ export const POLICY_CODE_EXTENSIONS: ReadonlySet<string> = new Set([
 export function isPolicyCodeSpecifier(specifier: string): boolean {
 	if (/[?#]/u.test(specifier)) return false
 	const segment = specifier.slice(specifier.lastIndexOf('/') + 1)
-	if (segment === '.' || segment === '..' || !segment.includes('.')) return true
-	return POLICY_CODE_EXTENSIONS.has(segment.slice(segment.lastIndexOf('.')))
+	const dot = segment.lastIndexOf('.')
+	return dot <= 0 || !POLICY_ASSET_EXTENSIONS.has(segment.slice(dot).toLowerCase())
 }
 
 /**
@@ -5294,6 +5330,31 @@ export const DIST_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 			},
 		],
 		violations: [],
+	},
+	{
+		label: 'rejects a JSON import and a dotted extensionless import that resolve into dist',
+		membership:
+			'specifiers the type check reads from disk under resolveJsonModule and bundler resolution',
+		rule: 'dist',
+		files: [
+			{
+				path: 'tests/src/core/control.ts',
+				content:
+					"import meta from '../../../dist/meta.json'\nimport config from '../../../dist/configs/vite.journey.config'\nvoid meta\nvoid config\n",
+			},
+		],
+		violations: [
+			{
+				rule: 'dist',
+				path: 'tests/src/core/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../../dist/meta.json`,
+			},
+			{
+				rule: 'dist',
+				path: 'tests/src/core/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../../dist/configs/vite.journey.config`,
+			},
+		],
 	},
 	{
 		label: 'admits a built asset an ambient declaration types',
