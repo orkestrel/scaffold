@@ -48,3 +48,5 @@ stays true.
 - **63.** Evaluate promoting the PNG byte budget into `@orkestrel/capture`, so a consumer reads one budget formula.
 - **64.** Apply the TypeScript hold in the `repair` and `overwrite` verbs: a workspace born on TypeScript 7 that later adds a Vue face keeps 7, and its `check:app:vue` script cannot resolve `typescript/lib/tsc`. Reopen when a workspace adds a Vue face after birth.
 - **65.** Rule whether the one-Grok-lane limit in `.agents/orchestration.md` § Parallelism and the `max_concurrent_threads_per_session` setting in `.codex/config.toml` are bench or tool limits, which stay, or capacity choices the plan sets under `.agents/skills/orkestrel-parallel/SKILL.md` § Bound the host, which leave the instruction files.
+- **66.** Run the `CAPTURE_UPSTREAM` check for the seeded `journey` and `capture` scripts, as the capture dependency already does. Reopen when a capture command is renamed.
+- **67.** Rename `ScriptStep.running` in `src/bin/types.ts`, a flag named with a lifecycle word, under `.claude/rules/names.md`. Reopen when the fleet -ing campaign reaches scaffold.

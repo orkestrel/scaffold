@@ -304,7 +304,7 @@
 			"storage": "agents/skills/orkestrel-harden/references/hardening.md",
 			"destination": ".agents/skills/orkestrel-harden/references/hardening.md",
 			"executable": false,
-			"digest": "83c7390b0bb3ffbd0101b8f52852e131b22ab5f2f45b619b25e1f99eb9198f7e"
+			"digest": "507693fb4fdfcd4dfce4b873293267f5e04e086be53657e372fee2a073ad3f94"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/references/research.md",
@@ -538,7 +538,7 @@
 			"storage": "agents/transports/claude-cli.md",
 			"destination": ".agents/transports/claude-cli.md",
 			"executable": false,
-			"digest": "de55d606ffa600c3d53799eef1c30be1a8b45be95f669cdad190cd33efdf5f69"
+			"digest": "edd671a43bf7417fa8f404334e2e58cfd962d3960201321d7ce39ce5e922080e"
 		},
 		{
 			"storage": "agents/transports/codex.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "8714c4c5c677c2e0d79b9311399fa7ca8a91d905b25b6e99e3ddac66b4947cc8"
+	"digest": "a55257bc1b56f05df6221f40f0578a5c3acecc2562135def8e172ad23a7880aa"
 }

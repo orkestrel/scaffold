@@ -8,7 +8,7 @@ For harnesses that route work to the Claude Opus 5.5 bench, follow this file. Ro
 node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/claude/<unit>.jsonl --errors tmp/claude/<unit>.err --cap <seconds> --status -- claude -p "Read tmp/claude/<unit>-brief.md and execute it exactly. Your final message is the report it specifies." --model opus --output-format stream-json --verbose --permission-mode <mode>
 ```
 
-- Pass the permission mode the route pins and `--model opus` for every route. Never substitute another alias, `fable`, or a fixed Claude model id, except the consultant dispatch `.agents/orchestration.md` § Engines admits, which passes `model: fable` per invocation.
+- Pass the permission mode the route pins and `--model opus` for every route. Never substitute another alias, `fable`, or a fixed Claude model id.
 - Write the brief to `tmp/claude/<unit>-brief.md` with `scripts/brief.ts --lane claude`; the prompt is a pointer to it.
 - Read the answer and the session id with `node .agents/skills/orkestrel-dispatch/scripts/result.ts --claude tmp/claude/<unit>.jsonl`. A unit with no journal ran on its driver's engine, however normal its answer reads.
 - A driver pinned `workspace-write` writes the brief itself.

@@ -71,7 +71,7 @@ Exercise:
 - cancellation propagation and bounded shutdown;
 - no busy polling, open handles, leaked processes, sessions, pages, files, or listeners.
 
-Set each pressure proof's load and concurrency from the coordination defect it must expose and state them with the reason beside the proof. `.claude/rules/tests.md` § Expensive proofs owns the repeat count and acceptance under suite load.
+Set each pressure proof's load and concurrency from the coordination defect it must expose, state them with the reason beside the proof, and re-examine them against the stop signals `.agents/orchestration.md` § Size gate names. `.claude/rules/tests.md` § Expensive proofs owns the repeat count and acceptance under suite load.
 
 ## Hold the package's bounds
 
