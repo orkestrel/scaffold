@@ -199,6 +199,39 @@ The actual `prepublishOnly` chain passed, exit 0 uncapped in 931651 ms. Format, 
 
 Agent and Study campaign custody has left Scaffold, including the older tree recovered during main integration. After registry confirmation, Agent and Study must re-pin the Scaffold development dependency, run repair, and verify their gates against the published artifact. Those consumer visits do not authorize an Agent or Study release.
 
+## Scaffold 0.0.109, 2026-10-29
+
+The release carries:
+- the commits from `b5432d733` through `ddd2e18bf`;
+- the toolchain move, the capture seed, and the -ing naming rule (`09133688c`);
+- the catalog's pipe escaping and capture's hosted guide (`19f883899`);
+- the naming rule's fourth kind (`7a1eb15fc`).
+
+The toolchain move: Vitest 5.0.5, TypeScript 7.0.2 (a Vue face holds 6.0.3), oxlint 1.90.0, oxfmt 0.75.0, api-extractor 7.60.0, and Playwright 1.64.1. Its dependencies landed first: probe 0.0.25 and test 0.0.30 (2026-10-28), then `@orkestrel/capture` 0.0.1 (2026-10-29, `025a8e2`).
+
+Release-chain notes:
+- The first clean-clone run of `09133688c` failed `format:check` on the catalog table. The verb escaped `|` only in note cells, so the first `||` peer ranges (probe 0.0.25, test 0.0.30) split their rows. The same table made two generated workspaces in the release-mode distribution proof fail their own format gate. `19f883899` escapes every range and adds the proof.
+- The same run's A9.1 fixed proof caught the studies comment's new bytes, and its distribution inventory lacked `guides/capture.md`. Both are fixed in `19f883899`.
+- `19f883899` passed every step on a fresh clone: `npm test` 3,401 passed, templates passed, and release-mode distribution passed 11 with the npm-floor case skipped.
+- One falsify round audited the batch's nine claims:
+  - Confirmed: compiler resolution under TypeScript 6 and 7, the harness imports, benchmarks, studies wording, the catalog, the capture seed, and the pins.
+  - Claim 6: the naming rule did not name the adjectives the code keeps (`blocking`, `remaining`). `7a1eb15fc` names them.
+  - Claim 3 is narrowed by the orchestrator's ruling: `new` plans the framework hold, and `audit` reports a held tool declared past its hold. `repair` and `overwrite` keep the declared major, because `guides/scaffold.md` never crosses a newer major for the maintainer.
+- `7a1eb15fc` passed every step on a fresh clone:
+  - `npm test` 3,402 passed;
+  - templates 91 passed;
+  - release-mode distribution 11 passed with the npm-floor case skipped.
+- **Scaffold 0.0.109: published** 2026-10-29 from `7a1eb15fc`, with the user's one-time code. `window.ts --publish` answered "accepted, unconfirmed"; `--confirm` showed it served within the wait.
+
+Deferred to 0.0.110, each with its trigger:
+- `repair` and `overwrite` do not apply the TypeScript hold. A workspace born on 7 that later adds a Vue face keeps 7, and its `check:app:vue` cannot resolve `typescript/lib/tsc`. Trigger: a workspace adds a Vue face after birth.
+- The old `test:bench` (`--project probe`) is not an accepted predecessor, so a repaired workspace keeps it and `audit` reports it. Trigger: the first fleet adoption.
+- `.claude/rules/workspace.md` still describes `test:bench` as collecting every test file. Trigger: the next rules edit.
+- The hold's reason cites `@volar/typescript`'s peer range; the failure is vue-tsc resolving `typescript/lib/tsc`. Trigger: the next hold edit.
+- `window.ts --confirm` reports `results`, not `readings`, and nothing documents that. Trigger: the next publish-skill edit.
+- The seeded `journey` and `capture` scripts skip the `CAPTURE_UPSTREAM` check the dependency takes. Trigger: a capture command rename.
+- `ScriptStep.running` names a flag with a lifecycle word. Trigger: the fleet -ing campaign.
+
 ## Scaffold 0.0.101 publication, 2026-10-14
 
 The Veneer session published Scaffold 0.0.101 from `3c043f0a3` with the user's one-time code through `scripts/window.ts --publish`, after reading the handoff: `main` clean and level with `origin/main`, the version one step above the registry's 0.0.100, no Veneer path and no `enterprise-veneer` in `TARGET_SKILL_NAMES`, `dist/` built after `607c82c0e`, and a dry-run pack of 232 files under `dist/` beside `LICENSE`, `README.md`, and `package.json`, with no coordination file, `tmp/`, or campaign record. The registry serves 0.0.101 with 232 files. Every consumer re-pins `@orkestrel/scaffold` to `^0.0.101`, runs `repair`, and proves its gates; Veneer's visit follows its running capture regeneration.
