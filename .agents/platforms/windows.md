@@ -38,5 +38,5 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 ## Deleting untracked files
 
 - When a sweep you run by hand deletes untracked files, send them to the Recycle Bin through a shell file operation with undo, never permanent deletion, and report what went there. Leave emptying the bin to the user; hand them `Clear-RecycleBin -Force`.
-- `DeleteDirectory(..., SendToRecycleBin)` fails on an npm-installed tree; recycle each file with `DeleteFile` and remove the emptied folders.
+- Recycle a folder with `DeleteDirectory(..., SendToRecycleBin)` first; it recycled four npm-installed clones holding no links, 24,600 files, in 6.8 seconds (2026-10-29). When it refuses a tree, recycle each file with `DeleteFile` and remove the emptied folders.
 - Remove a worktree with `git worktree remove`. Delete a leftover `node_modules` junction without recursing into its target.

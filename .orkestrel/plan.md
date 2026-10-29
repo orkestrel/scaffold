@@ -1,0 +1,113 @@
+# Fleet wave of 2026-10-29: scaffold re-pin and rule realignment
+
+## Goal
+
+Publish every catalog package on the scaffold release this plan names in § Scaffold pin, with every `@orkestrel` dependency at the highest version the registry serves, each package realigned to the rules scaffold carries from 0.0.107 to that release.
+
+## Exit criterion
+
+- Every package in the catalog table of `.claude/agents/orkestrel.md` is published at a registry-confirmed version, pinned to the scaffold release § Scaffold pin names, with every `@orkestrel` range at the caret of the version the registry served when its layer ran.
+- Every package passes `format:check`, `lint:check`, `check`, `build`, and `test`, and its release chain in a fresh clone, with no suppression directive.
+- Every repository is on a clean `main`, level with `origin/main`.
+- The catalog table carries the served versions, and scaffold is released when its catalog or canon changed.
+- Every deferral in § Deferred names an owner and a trigger.
+- The `orkestrel-debrief` round has run on the wave and landed its lessons in scaffold.
+
+## Repositories
+
+Each package is the repository `https://github.com/orkestrel/<name>` checked out beside scaffold as `<name>`. The layers are those `node .agents/skills/orkestrel-publish/scripts/wave.ts --plan` printed on 2026-10-29 after the catalog refresh:
+
+| Layer | Packages |
+| --- | --- |
+| L0 | contract |
+| L1 | abort, budget, codec, csv, emitter, html, indexeddb, msg, ndjson, sqlite, sse, test, timeout |
+| L2 | console, database, form, markdown, pool, process, reason, router, table, template, tool, websocket |
+| L3 | capture, guide, interpret, lsp, qualifier, queue, rater, relation, scaffold, sea, server, terminal, workspace |
+| L4 | brief, mcp, middleware, program, worker, workflow |
+| L5 | agent, browser, probe |
+| L6 | ollama, toolbox |
+| L7 | study |
+
+- Scaffold holds its L3 row until the last layer closes: its runtime dependencies publish in L0 to L2, and the wave pins one scaffold release, so scaffold re-pins them and releases after L7 (§ Sequence, step 6).
+- Out of scope: every repository the catalog does not list, including the applications that consume the fleet.
+
+## Scaffold pin
+
+- The wave pins `@orkestrel/scaffold` `^0.0.112`. The trial of § Sequence step 1 found no scaffold defect that blocks a visit, so no scaffold release precedes L0; the defects it found that block nothing are rows of § Deferred.
+
+## Visit procedure
+
+Run these steps for each package, in order, with the checkout's `main` clean apart from the deleted lockfile the wave started with:
+
+1. Install from the manifest, which regenerates the deleted lockfile.
+2. Run `node .agents/skills/orkestrel-publish/scripts/wave.ts --visit --target <checkout> --to record`.
+3. When the `record` step refuses a path the overwrite did not write and the visit's `format` step rewrote it, commit the receipt's written and removed paths with the manifest and the lockfile as `Overwrite with scaffold <version>`, then the remaining formatter rewrites as `Format with oxfmt <version>` (`.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository, step 8).
+4. Lift the toolchain majors the visit keeps: `vitest` and `@vitest/browser-playwright` to `^5.0.5`, and `typescript` to `^7.0.2`, where the manifest declares each. Install, and add `.vitest/` to the package's own `.gitignore`.
+5. Run the gates once as the baseline and count each bindings rule with `node .agents/skills/orkestrel-harden/scripts/measure.ts`.
+6. A writer unit realigns the package to the rules in § Realignment, then runs the improvement pass in § Improvement, within the stop its brief states.
+7. The runner lane runs the gates and `node .agents/skills/orkestrel-publish/scripts/compare.ts`; the bump is ruled per `.agents/skills/orkestrel-publish/references/wave.md` § Rule on the bump.
+8. Before the layer publishes, each package's release chain runs through `node .agents/skills/orkestrel-dispatch/scripts/chain.ts` in the package's own checkout on a clean `main`, after `npm ci` reinstalls from the committed lockfile and `npm run clean` empties `dist/`; the user ruled out clones on 2026-10-29, so this replaces the fresh clone `.agents/skills/orkestrel-publish/references/wave.md` § Prepare a layer names.
+
+## Realignment
+
+- **Bindings.** `.claude/rules/typescript.md` § Bindings, enforced by `policy/no-let`, `prefer-const`, `no-var`, `no-param-reassign`, and `no-ex-assign`, with `policy/no-nested-functions` beside them, which reaches `tests/` and `configs/` as well as `src/`. Every conversion derives the value; the census and its controls follow `.agents/skills/orkestrel-harden/references/bindings.md`, and a rewrite that claims unchanged behavior follows `.agents/skills/orkestrel-harden/references/equivalence.md`.
+- **Names.** `.claude/rules/names.md` § General vocabulary: no -ing word names an option, field, result, record, constant, or action, outside the four kinds that rule keeps.
+- **Toolchain.** Vitest 5.0.5, TypeScript 7.0.2, oxlint 1.90.0, oxfmt 0.75.0, api-extractor 7.60.0, and Playwright 1.64.1, with the test-shape changes they force; Vitest 5 joins a test's name with ` > `.
+- **Tests.** `.claude/rules/tests.md` § Test contract: no test depends on a git-ignored directory or on `dist/` before `build`, and the `policy` project's `dist` rule passes.
+- **Conventions.** Fix any other convention breach inside the package; record one outside its bounds in § Deferred with an owner and a trigger.
+
+## Improvement
+
+- Rename an exported name the `surface` policy rule reports as claimed by another package, under `.claude/rules/names.md` § Fleet name ownership, and rule the bump it obliges (`.agents/skills/orkestrel-publish/references/release.md` § What a bump obliges).
+- Replace a local helper whose job an installed `@orkestrel` export does, dependency-first.
+- Evaluate the promotion items in their owning packages before any consumer adopts them: `ROADMAP.md` items 44 and 45 in test, item 61 in process, item 63 in capture, and item 62 in the package that owns the bounded retry.
+- Back every behavior change with real-implementation tests.
+- Each brief states the package's stop and its reason, from its complexity and the goal; the pass ends at that stop or at an overdoing signal `.agents/orchestration.md` § Size gate names, and never holds up the layer.
+
+## Lanes
+
+- One runner lane runs every install, test, build, visit, and release chain on the host, one at a time.
+- Writer lanes run beside it, one per package checkout, each running only the format check, lint, and type check over its owned files, at most three at once, on the user's go-ahead of 2026-10-29 to run the work in parallel.
+- A layer's realignment can start before the layer under it publishes; the layer re-pins to the versions npm serves, and reruns its gates, before it publishes.
+- Scaffold is never a writer's checkout; scaffold changes are the Orchestrator's.
+
+## Claims
+
+1. Every catalog package's manifest pins the scaffold release § Scaffold pin names and every `@orkestrel` dependency at the caret of the version the registry served when its layer ran.
+2. Every package that declares `vitest`, `@vitest/browser-playwright`, or `typescript` declares `^5.0.5`, `^5.0.5`, and `^7.0.2`, and every other toolchain range matches scaffold's canon.
+3. `lint:check` passes in every package with no suppression directive.
+4. No option, field, result, record, constant, or action in any package is named with an -ing word outside the four kinds `.claude/rules/names.md` keeps.
+5. No test depends on a git-ignored directory or on `dist/` before `build`.
+6. Every package's `.gitignore` lists `.vitest/`.
+7. Every package's release chain passed on a clean `main` at the commit it published.
+8. Every package is published at a registry-confirmed version, and its `main` is pushed.
+
+## Release bar
+
+A finding blocks a layer when it fails a gate or the release chain, falsifies a claim, or breaks a contract a published guide states. Every other finding enters § Deferred.
+
+## Deferred
+
+- **The visit records a formatter rewrite as unrelated work.** The `record` step of `wave.ts` refuses a path the visit's own `format` step rewrote, so every package whose owned files the oxfmt move reformats needs the hand record of § Visit procedure step 3. Owner: scaffold. Trigger: scaffold's release after L7.
+- **The visit resolves a bin package's own executable as scaffold.** `resolveScaffold` in `.agents/skills/orkestrel-publish/scripts/wave.ts` falls back to the target's `dist/bin/main.js` when `node_modules` holds no scaffold, so a bin package with no install runs its own executable as scaffold. § Visit procedure step 1 installs first. Owner: scaffold. Trigger: scaffold's release after L7.
+- **The visit keeps the declared toolchain major.** The pin and the overwrite keep each declared major, so the Vitest 5 and TypeScript 7 move is § Visit procedure step 4, by hand. Owner: scaffold, as a design question on whether a visit lifts to the canon's major. Trigger: scaffold's release after L7.
+- **The vendored Codex probe entry carries a relative path and no `cwd`.** `.codex/config.toml` registers `probe` as `node_modules/@orkestrel/probe/dist/bin/main.js` with no `cwd`, so a same-named user-level entry that sets `cwd` and `required` resolves that path inside another checkout, and every session that loads both fails to start. The probe checkout's `node_modules/@orkestrel/probe` junction to the checkout itself holds the merged path until probe's visit reinstalls it. Owner: scaffold. Trigger: probe's visit at L5, or scaffold's release after L7, whichever comes first.
+- **No catalog package carries an app face.** The trial in § Sequence step 1 covered core, browser, server, and bin; the app face is proved by scaffold's `test:templates` project alone. Owner: scaffold. Trigger: a catalog package adds an `app/` environment.
+
+## State
+
+- 2026-10-29: the catalog refresh moved scaffold's row from 0.0.108 to 0.0.112; every other row matched the registry.
+- 2026-10-29: the trial of § Sequence step 1 ran in fresh clones of timeout (core), table (browser), websocket (server), and capture (bin): after the visit and the toolchain lift, `format:check`, `check`, `build`, and `test` passed in all four and `lint:check` failed on the bindings rules alone. Each clone's difference was folded into its checkout and the clones went to the Recycle Bin.
+- 2026-10-29: the probe checkout is installed from its manifest as it stands and rebuilt, so the probe server the writer lanes require starts; probe's own visit stays at L5.
+- 2026-10-29: contract's checkout is prepared at `514b5e3`, and its realignment unit runs.
+- Next: prepare L1, and dispatch L1 writers as lanes free.
+
+## Sequence
+
+1. **Settle scaffold.** Trial the visit in fresh clones, one package per blueprint kind the catalog holds; fix a blocking scaffold defect and release scaffold once before L0.
+2. **L0.** Visit contract as the single-lane writer trial, prepare the layer, and publish it.
+3. **L1 to L7.** Visit each layer, prepare it, publish it, refresh the registry, and sweep the self-pins before the next.
+4. **Capture.** Its visit fires the rows of capture's `.orkestrel/capture/plan.md` § Deferred whose trigger is its scaffold adoption (the duplicate test helpers; Vitest 5 coverage beyond R8) and the 0.0.2 defects (the late journal refusal; the two wrapper shapes).
+5. **Promotions.** Land `ROADMAP.md` items 44, 45, 61, 62, and 63 in their owners at their layers, before any consumer adopts them.
+6. **Scaffold.** Re-pin scaffold's own dependencies, refresh the catalog with the served versions, land the deferred scaffold rows, and release scaffold when its catalog or canon changed.
+7. **Debrief.** Run `orkestrel-debrief` on the wave and land its lessons in scaffold.
