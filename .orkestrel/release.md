@@ -199,6 +199,28 @@ The actual `prepublishOnly` chain passed, exit 0 uncapped in 931651 ms. Format, 
 
 Agent and Study campaign custody has left Scaffold, including the older tree recovered during main integration. After registry confirmation, Agent and Study must re-pin the Scaffold development dependency, run repair, and verify their gates against the published artifact. Those consumer visits do not authorize an Agent or Study release.
 
+## Scaffold 0.0.110, 2026-10-29
+
+The release carries the debrief of the 0.0.109 stretch:
+- the debrief's canon delta and unit C1 (`864a29b24`);
+- the canon-review repairs (`b1ba5286e`, `e746adffa`);
+- the `dist` policy scope (`dcff47c3d`, `c1f593594`);
+- the process retrospective's laws (`52ee4ef5c`);
+- the retired rerun-alone verdict (`89e2f74dd`).
+
+Its headline is `orkestrel-harden`:
+- hardening proves the package's own contract on its supported hosts, against a tracked finish line of claims, a release bar, and an owned deferral list;
+- a new step, Hold the bounds, turns a host-behavior finding into one design question on the package's dependence;
+- every stop is set by the model working the package, stated with its reason, re-examined, and backed by named signals of overdoing.
+
+Release-chain notes:
+- The first fresh-clone run of `222f28f1f` failed the `policy` bridge rule: the harden skill's description had changed without its bridge (`82cdcc528`).
+- The next run failed one setup expectation once the new `dist` rule failed closed on an unreadable barrel (`a1180aa70`).
+- The release-mode distribution proof then refused scaffold's own generated sheet tests, which read a built stylesheet `?raw`. The rule now refuses every relative specifier into `dist` that the type check reads from disk, and admits only queried or `vite/client` asset-extension imports (`dcff47c3d`, `c1f593594`).
+- One review lane audited the canon delta on nine claims. It failed claims 1, 2, 5, and 7 at first; after the repairs and their re-audits, all nine hold at `89e2f74dd`. Items below the release bar are deferred, and `ROADMAP.md` rows 59–67 carry the forward work.
+- `89e2f74dd` passed every step on a fresh clone: `npm test` 3,428 passed, templates 91, and release-mode distribution 11 passed with the npm-floor case skipped.
+- **Scaffold 0.0.110: published** 2026-10-29 from `89e2f74dd`, with the user's one-time code. `window.ts --publish` answered accepted and unconfirmed, and `--confirm` served it within the wait.
+
 ## Scaffold 0.0.109, 2026-10-29
 
 The release carries:
