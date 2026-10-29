@@ -81,7 +81,7 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 
 - Spend process only where it changes a result. Launch, run, and report: no fixed clock windows, readiness-only turns, per-command acknowledgments, hash pins of a brief, or process queries beyond the recorded process ids.
 - When a verifier lane fails in its harness rather than in the gate, run the gate once yourself and read its exit code; write no comparator, snapshot, or retry chain to obtain evidence.
-- Keep valid receipts. Re-run a check only when its inputs, configuration, environment, or claim changed; never repeat a passing check to collect another receipt.
+- Keep valid receipts. Re-run a check only when a change to its inputs, configuration, environment, or claim could alter what it proved, and then run the narrowest check that covers the change. Never repeat a passing check to collect another receipt or to have every suite pass in one command; name the receipt that covers each check a brief does not rerun.
 - Ask the user only for a decision that is theirs: scope, the spend ceiling and stop line § Hold the plan names, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Decide routine matters yourself, such as time and lane allowances, retries, and order, and report them, with time in whole minutes.
 - Never end a turn with work pending and nothing that will wake the session: run the work as a tracked background command or a child whose completion notifies, or schedule a wake. While a lane runs, continue independent work.
 

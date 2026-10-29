@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "55e6d92f02c3e69dafc516aa9c046220eb35762c1e170278635cd29b29396549"
+			"digest": "9f61611ce7f38a80d4070018884d6dfc9ca3791d51e561919489cc2fdb29965f"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "d764520ad345c57c046166547c3bcbcf00f39c75ca31b101e8d56692b450ea8b"
+	"digest": "36f3c02280119e109486a83452a6a57de13c1fcead1bc31843297d426cbc8f84"
 }
