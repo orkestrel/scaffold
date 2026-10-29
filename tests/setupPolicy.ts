@@ -2484,6 +2484,36 @@ export function collectPolicySpecifiers(node: unknown): readonly string[] {
 	]
 }
 
+/** Names the extensions TypeScript resolves a relative specifier to as a code module. */
+export const POLICY_CODE_EXTENSIONS: ReadonlySet<string> = new Set([
+	'.js',
+	'.mjs',
+	'.cjs',
+	'.jsx',
+	'.ts',
+	'.mts',
+	'.cts',
+	'.tsx',
+])
+
+/**
+ * Tells whether TypeScript resolves a relative specifier as a code module.
+ *
+ * @remarks
+ * A specifier with a query or a fragment, or one whose final segment carries a non-code extension,
+ * is an asset an ambient wildcard declaration types, so the type check never reads it from disk. A
+ * final segment with no extension, and the `.` and `..` directory segments, resolve as modules.
+ *
+ * @param specifier - The relative import specifier.
+ * @returns True when the type check resolves the specifier as a module on disk.
+ */
+export function isPolicyCodeSpecifier(specifier: string): boolean {
+	if (/[?#]/u.test(specifier)) return false
+	const segment = specifier.slice(specifier.lastIndexOf('/') + 1)
+	if (segment === '.' || segment === '..' || !segment.includes('.')) return true
+	return POLICY_CODE_EXTENSIONS.has(segment.slice(segment.lastIndexOf('.')))
+}
+
 /**
  * Inspects the tracked TypeScript for an import that resolves into the workspace's built output.
  *
@@ -2498,6 +2528,8 @@ export function collectPolicySpecifiers(node: unknown): readonly string[] {
  * @returns One violation per import into `dist/`, and one per unparsed file, in path order.
  */
 export function inspectPolicyDist(root: string): readonly PolicyViolation[] {
+	// A specifier TypeScript types through an ambient wildcard declaration (an asset with a query or a
+	// non-code extension, such as a built sheet read `?raw`) never resolves on disk during the check.
 	return globSync(POLICY_DIST_GLOB, { cwd: root })
 		.map(normalizePolicyPath)
 		.sort()
@@ -2511,7 +2543,7 @@ export function inspectPolicyDist(root: string): readonly PolicyViolation[] {
 			}
 			const directory = dirname(join(root, path))
 			return collectPolicySpecifiers(source.program)
-				.filter((specifier) => specifier.startsWith('.'))
+				.filter((specifier) => specifier.startsWith('.') && isPolicyCodeSpecifier(specifier))
 				.flatMap((specifier) => {
 					const target = normalizePolicyPath(relativePath(root, resolve(directory, specifier)))
 					return target === POLICY_DIST_ROOT || target.startsWith(`${POLICY_DIST_ROOT}/`)
@@ -5259,6 +5291,19 @@ export const DIST_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 			{
 				path: 'scripts/control.ts',
 				content: "import '../dist/src/core/index.js'\n",
+			},
+		],
+		violations: [],
+	},
+	{
+		label: 'admits a built asset an ambient declaration types',
+		membership: 'specifiers with a query or a non-code extension',
+		rule: 'dist',
+		files: [
+			{
+				path: 'tests/src/styles/index.test.ts',
+				content:
+					"import sheet from '../../../dist/src/styles/index.css?raw'\nimport icon from '../../../dist/src/icon.svg'\nvoid sheet\nvoid icon\n",
 			},
 		],
 		violations: [],
