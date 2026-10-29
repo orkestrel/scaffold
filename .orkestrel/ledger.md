@@ -15,17 +15,23 @@ One row per dispatched unit and per user ruling on routing or scope, in order (`
 | 2026-10-29 | Orchestrator ruling on contract-realign's deviation: `.claude/rules/typescript.md` § Errors and outcomes (scaffold `3c851efb6`, 2026-10-20) outranks `guides/contract.md`'s exact-name requirement, under the user's direction to realign to every rule since 0.0.107; the guide follows the rule | user direction | `contract/tmp/units/contract-realign-brief-2.md` |
 | 2026-10-29 | User ruling: realign every layer first, gather every scaffold fix into one release, re-pin the fleet to it, then publish layer by layer | user | this plan |
 | 2026-10-29 | test-chooser consult: traced the crash to Vitest 5.0.5's file-system module cache handing the module runner bytes; recommended `fsModuleCache: false`, confirmed by the red-then-green reproduction | planner (consultant) | § Scaffold release row 1 |
-| 2026-10-29 | test-realign: realign test with `ROADMAP.md` items 44, 45 (the two-tier ruling), and 62 | astra | pending |
+| 2026-10-29 | test-realign: realign test with `ROADMAP.md` items 44, 45 (the two-tier ruling), and 62 | astra | test `adf7751` after the review repair |
 | 2026-10-29 | l1-small-realign: realign abort, emitter, timeout, sqlite, and sse in sequence | astra | abort `f6f7243`, emitter `8a4a892`, timeout `f6152c9`, sqlite `88c3225`, sse `73c0eb1` |
 | 2026-10-29 | l1-rest-realign: realign ndjson, csv, indexeddb, and msg in sequence | astra | ndjson `dd5ca1c`, csv `3319e34`, msg `010074d`, indexeddb after one runner repair |
-| 2026-10-29 | l2-small-realign: realign template, tool, router, table, and websocket in sequence | astra | pending |
-| 2026-10-29 | mix-realign-1: realign budget, process (with `ROADMAP.md` item 61), and pool in sequence | astra | pending |
+| 2026-10-29 | l2-small-realign: realign template, tool, router, table, and websocket in sequence | astra | template `70a1bb9`, tool `91204dc`, router `58d7b57`, table `f66eae0`, websocket `67d1378` |
+| 2026-10-29 | mix-realign-1: realign budget, process (with `ROADMAP.md` item 61), and pool in sequence | astra | budget `8b71e9a`, pool `49c4468`, process `27e6360` after one guide repair |
 | 2026-10-29 | markdown-realign: realign markdown | astra | pending |
 | 2026-10-29 | reason-realign: realign reason | astra | pending |
 | 2026-10-29 | database-realign: realign database | astra | pending |
 | 2026-10-29 | placement-review: falsify the closed test-infrastructure set (§ Scaffold release, row 4) | analyst | claims 1 and 4 falsified, repaired per the prescription |
-| 2026-10-29 | test-review: falsify test's realignment and its promoted contract (`ROADMAP.md` items 44, 45, 62) | analyst | claims 1 and 5 falsified (an overbroad mutation claim; a retry refusal-order change and a lost assertion), plus module-scope helpers in test files; repair sent |
+| 2026-10-29 | test-review: falsify test's realignment and its promoted contract (`ROADMAP.md` items 44, 45, 62) | analyst | claims 1 and 5 falsified (an overbroad mutation claim; a retry refusal-order change and a lost assertion), plus module-scope helpers in test files; repaired, the retry order held by a mutation that reddened one case |
 | 2026-10-29 | l2-rest-realign: realign console and form in sequence | astra | pending |
 | 2026-10-29 | Orchestrator ruling on process's `execute` placement stop: `execute` and `executeSync` become function modules in the registered `src/server/execution` domain (scaffold `305af0c65`), with one run's state in an implementation class | rule | process's realignment unit |
-| 2026-10-29 | l3-small-realign: realign qualifier, rater, relation, and workspace in sequence | astra | pending |
+| 2026-10-29 | l3-small-realign: realign qualifier, rater, relation, and workspace in sequence | astra | qualifier `29e3f64`, rater `14ea937`, relation `e2ff80d`, workspace `a8a8d8f` |
 | 2026-10-29 | User ruling: enforce `.claude/rules/tests.md`'s no-local-helper law with a lint rule in the scaffold release, every package moving its helpers before it passes the re-pin | user | § Scaffold release, row 5 |
+| 2026-10-29 | helpers-relocate: move test-file helpers into the setup modules of csv, emitter, html, indexeddb, msg, ndjson, sqlite, pool, router, table, template, and tool | astra | csv `560b045`, emitter `2fb9bc6`, html `11ef9f1`, indexeddb `d2b5df1`, msg `b45cee6`, ndjson `c3c3045`, sqlite `97c635a`, pool `b72ccc7`, router `be098d3`, table `2f207c5`, template `c91e6bf`, tool `22cef5e` |
+| 2026-10-29 | contract-review: falsify contract's realignment (`contract/tmp/units/contract-review-brief.md`) | analyst | claims 1 and 2 falsified (an inherited iterator or species read on a protected path; an inherited `code` accepted by `isContractError`); repair sent (`contract/tmp/units/contract-realign-brief-3.md`) |
+| 2026-10-29 | Orchestrator ruling on reason's per-call state classes: `InferenceJoin`, `LogicalState`, and `SymbolicState` stay internal, because each reasoner publishes the result it projects rather than the instance (`.claude/rules/architecture.md` § Barrel exports) | rule | `reason/tmp/units/reason-realign-brief-2.md` |
+| 2026-10-29 | guards-review-a: falsify the committed error guards of csv, indexeddb, msg, sqlite, sse, pool, and budget, and the html and msg renames | analyst | pending |
+| 2026-10-29 | guards-review-b: falsify the committed error guards of template, tool, table, websocket, qualifier, rater, relation, and workspace | analyst | pending |
+| 2026-10-29 | process-review: falsify process's committed realignment (the `execute` move, the renames, `inspectProcess`, the guard) | analyst | pending |

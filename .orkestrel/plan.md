@@ -88,6 +88,10 @@ Each published rename a realignment made, which every consumer adopts at its re-
 | msg | `MSG_PIDLID_MAPPING` | `MSG_PIDLIDS` | a lookup constant names its values |
 | process | `ProcessInterface.stopping`, `Process.stopping`, `SessionInterface.stopping`, `Session.stopping`, `Supervisor.stopping` | `terminated` on each | `.claude/rules/names.md` § General vocabulary |
 | process | `SessionInterface.ending`, `Session.ending`, `Supervisor.ending` | `ended` on each | `.claude/rules/names.md` § General vocabulary |
+| reason | `ChainingStrategy` | `ChainStrategy` | `.claude/rules/names.md` § General vocabulary |
+| reason | `isChainingStrategy` | `isChainStrategy` | `.claude/rules/names.md` § General vocabulary |
+| reason | `LogicalChainingResult` | `LogicalChainResult` | `.claude/rules/names.md` § General vocabulary |
+| reason | `InferentialChainingResult` | `InferentialChainResult` | `.claude/rules/names.md` § General vocabulary |
 
 ## Lanes
 
@@ -119,7 +123,7 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - **The vendored Codex probe entry carries a relative path and no `cwd`.** `.codex/config.toml` registers `probe` as `node_modules/@orkestrel/probe/dist/bin/main.js` with no `cwd`, so a same-named user-level entry that sets `cwd` and `required` resolves that path inside another checkout, and every session that loads both fails to start. The probe checkout's `node_modules/@orkestrel/probe` junction to the checkout itself holds the merged path until probe's visit reinstalls it. Owner: scaffold. Trigger: probe's visit at L5, or scaffold's release after L7, whichever comes first.
 - **Legacy distribution harnesses launch npm through a shell.** The package-authored `tests/distribution.test.ts` of 44 catalog packages names `npm.cmd` and spawns it with `shell: true` on Windows, which `.claude/rules/portability.md` § Processes and executables refuses; scaffold's emitted proof runs through the vendored `tests/setupDistribution.ts` harness instead. Owner: each package, by moving its proof onto that harness. Trigger: the package's next hardening campaign, or a distribution run that fails on a shell-sensitive path.
 - **Test's guide proof reads its own build.** `tests/guides.test.ts:9` in test imports `readInventory` from `@orkestrel/test/server`, which the package's own `exports` resolves to `dist/src/server`, so the guide run needs a build first; the gate chain builds before `test`, so no gate reddens. Owner: test, with scaffold's guide-command source loading. Trigger: `npm run test:guides` in a checkout with no build output.
-- **Committed packages whose test files declare module-scope helpers.** The writer briefs of 2026-10-29 let a lifted nested function sit at a test file's module scope, which `.claude/rules/tests.md` § Shared test infrastructure refuses (test files import shared infrastructure rather than declare local fixture factories); the corrected rule moves each into the setup module its environment names. `policy/no-test-helper` (§ Scaffold release, row 5) counts them on 2026-10-29: csv 4, emitter 1, html 2, indexeddb 7, msg 6, ndjson 2, sqlite 1, pool 4, router 11, table 5, template 1, and tool 1. Owner: one relocation unit over those twelve checkouts. Trigger: before § Sequence step 4, the scaffold release.
+- **Contract changes committed before a review pass.** `.agents/orchestration.md` § Size gate owes one independent review of a public contract change, and csv, indexeddb, msg, sqlite, sse, pool, budget, process, template, tool, table, websocket, qualifier, rater, relation, and workspace (error-guard recognition), html and msg (published renames), and process (renames, `inspectProcess`, the `execute` move) were accepted on gates alone. Owner: one batched review lane over those packages. Trigger: before § Sequence step 6 publishes their layer.
 - **No catalog package carries an app face.** The trial in § Sequence step 1 covered core, browser, server, and bin; the app face is proved by scaffold's `test:templates` project alone. Owner: scaffold. Trigger: a catalog package adds an `app/` environment.
 
 ## State
@@ -130,7 +134,10 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-29: contract's checkout is prepared at `514b5e3`, and its realignment unit runs.
 - 2026-10-29: L1 and L2 are prepared on scaffold 0.0.112; § Scaffold release row 1 is fixed on scaffold's `main`.
 - 2026-10-29: L3 is prepared on scaffold 0.0.112; codec is realigned at codec `2f7540f`.
-- Next: dispatch writers as lanes free, prepare L4, and prepare L5 with the probe junction restored after probe's install.
+- 2026-10-29: L4 to L7 are prepared on scaffold 0.0.112, and every catalog package holds its realignment brief.
+- 2026-10-29: the realignment stands committed in abort, emitter, timeout, sqlite, sse, ndjson, csv, msg, indexeddb, html, codec, budget, pool, process, template, tool, router, table, websocket, qualifier, rater, relation, workspace, and test; the ledger names each commit.
+- 2026-10-29: the twelve helper relocations close the test-file helper row of § Deferred: csv `560b045`, emitter `2fb9bc6`, html `11ef9f1`, indexeddb `d2b5df1`, msg `b45cee6`, ndjson `c3c3045`, sqlite `97c635a`, pool `b72ccc7`, router `be098d3`, table `2f207c5`, template `c91e6bf`, tool `22cef5e`.
+- Next: accept contract's and reason's repairs and the markdown, database, console, and form units; rule on the guard and process reviews; dispatch L3 to L7 writers as lanes free.
 
 ## Sequence
 
