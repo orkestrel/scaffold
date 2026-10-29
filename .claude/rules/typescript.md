@@ -222,12 +222,19 @@ type Result<T, E = Error> = Success<T> | Failure<E>
     declares, checked against its declared type, under the guard law in
     `.claude/rules/patterns.md` § Validation and contracts; never require the class's `name`, which
     a subclass replaces;
+  - check a member whose type the package declares against every value that type admits, a class
+    instance and a callable object carrying the declared members included. Check a member whose type
+    `@orkestrel/contract` defines, such as a JSON value, a fault, or an array of either, through that
+    package's guard for the type, which fixes its data shape: a plain record, own array indices, and
+    the enumerable members that JSON reads. The one exception is a number, where the guard accepts
+    any number the type admits;
   - where `@orkestrel/contract` is declared, read through its `INTRINSICS` constant inside its
     `holds` function.
 - Prove the guard in `tests/distribution.test.ts` against two copies of the packed package, each
   copy's guard reading the other copy's error: the `require` entry against the `import` entry where
   the package ships both, and the installed package against a copy of its files at a second path.
-  Prove beside it that the guard accepts an instance of a subclass and refuses a look-alike error
+  Assert that the loaded copies' error constructors are pairwise distinct, so that the proof cannot
+  pass on one module instance. Prove beside it that the guard accepts an instance of a subclass and refuses a look-alike error
   with the same `code` and no brand, a transparent `Proxy` object over a branded error, and a plain
   object that only carries the brand.
 
