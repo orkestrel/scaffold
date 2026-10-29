@@ -10,7 +10,10 @@ import {
 	createPolicySurfaceGuide,
 	writePolicySurfaceHost,
 	createSkillMetadata,
+	DIST_POLICY_CONTROLS,
+	DIST_POLICY_MESSAGE,
 	inspectPolicyControl,
+	inspectPolicyDist,
 	inspectPolicyFilenamePaths,
 	inspectPolicyMirrorPaths,
 	inspectPolicyMirrors,
@@ -781,6 +784,41 @@ describe('portability policy', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('dist import policy', () => {
+	for (const control of DIST_POLICY_CONTROLS) {
+		it(`${control.label} [membership: ${control.membership}]`, () => {
+			expect(
+				inspectPolicyControl(control).filter((violation) => violation.rule === 'dist'),
+			).toEqual(control.violations)
+		})
+	}
+
+	// The valid file beside the broken one proves the sweep ran over the workspace and refused the
+	// file it could not read, rather than reporting nothing because it read nothing.
+	it('reports a file the parser refuses and still reads the files beside it', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-policy-dist-' })
+		try {
+			scratch.write('src/core/valid.ts', "import '../../dist/src/core/index.js'\n")
+			scratch.write('src/core/broken.ts', 'export const = \n')
+			const violations = inspectPolicyDist(scratch.path)
+			expect(violations).toHaveLength(2)
+			expect(violations[0]).toMatchObject({ rule: 'dist', path: 'src/core/broken.ts' })
+			expect(violations[0]?.message.startsWith('tracked TypeScript parses: ')).toBe(true)
+			expect(violations[1]).toEqual({
+				rule: 'dist',
+				path: 'src/core/valid.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../dist/src/core/index.js`,
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('holds the tracked TypeScript of this workspace clear of dist', () => {
+		expect(inspectPolicyDist(process.cwd())).toEqual([])
 	})
 })
 

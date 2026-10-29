@@ -44,6 +44,11 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
 - Assert a runtime-chosen result as the property it must have, not as the number one run produced. Compression, timing, and buffer sizing are the runtime's choice, so pin the relationship the test depends on — that the encoded form is larger, that the second call is faster — and let the assertion fail when the input drifts out of the range where that relationship holds.
 - Measure an elapsed interval with `performance.now()`, never `Date.now()`. `Date.now()` returns whole milliseconds, so an interval built from two of its readings truncates at both ends and can under-report by a millisecond — enough to fail a boundary assertion against a timer that behaved correctly. `performance.now()` is monotonic and sub-millisecond, and it does not move when the wall clock does.
 - Give a conditional skip the mechanism that makes it inapplicable, cited, not the platform name alone. A test skipped on a platform is a test nobody re-examines; a test skipped because a named API rejects a named case is one anybody can re-check.
+- A test creates every directory it writes under and assumes no git-ignored path exists.
+- A readiness wait resolves on parsed complete content, never on a file's existence.
+- A browser case restores every runner global it changes before it ends.
+- A proof that runs before `build` in the gate chain resolves no `dist/` path; a proof that deliberately consumes the built entry loads it at run time through a resolved path and refuses a stale build.
+- When data a generator renders gains a new shape, the generator's test gains that shape before the data ships.
 - The revert that proves a repair reddens exactly the test that names the defect. Keep the import and collection graph valid while reverting, and confirm the named test was collected. A revert that reddens anything beyond that test broke the harness, and its count is not evidence.
 - Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every conditional skip has a narrow verifiable applicability reason. Never commit `.only` or `.skip`; `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse both.
 - Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`.
@@ -174,6 +179,7 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 - A `distribution` proof reads `import.meta.env.MODE` and fails, rather than skips, on an unreachable
   registry under `--mode release`. The publish gate invokes it that way, so a proof that skips there
   passes the gate without ever proving the artifact installs. An ordinary local run may still skip.
+- Accept a process, race, or lock proof only under the suite load it ships in and at a repeat count the brief sets from the failure's nature and states with its reason, reported as passes over runs by a `verifier`.
 - Slow and hermetic is reason enough to isolate a proof; it need not touch an external service.
 - Where such a proof stays in a shared project, size its budget from a full contended run rather than from an isolated one. A budget that clears the isolated cost by a thin margin turns contention into a red gate reporting a timeout, which carries no diagnostic about the code and costs a full investigation to dismiss.
 
@@ -199,6 +205,9 @@ Test helpers are shared infrastructure, not local test-file clutter.
 - Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.
 - Prefer small customizable factories/stubs that seed inert data for a real scenario over repeated inline setup.
 - Helper names follow module-helper naming: `createFixtureServer`, `buildElement`, `appendItems`, `renderRows`, `waitForReady`, `extractDetail`.
+- Re-prove a change to what a setup module imports with the build output set aside.
+- A module reads no live host object at import; it reads one inside the function that needs it.
+- A fixture that stands in for another package's platform behavior copies that package's own proof of the behavior rather than re-deriving it.
 
 Place helpers by environment:
 
@@ -263,6 +272,7 @@ Use the real browser as the system under test:
 - Do not replace DOM events, storage, observers, viewports, layout methods, pointer, or drag APIs unless the browser genuinely lacks one.
 - Prefer real nodes, events, styles/layout, and observers.
 - In a file compiled by a browser or Vue scope, never load `@vitest/browser-playwright` types; read `cdp()` as `unknown`, and narrow `send` and each reply with guards.
+- A browser proof of layout, geometry, or visibility runs the tester frame unscaled at the declared viewport.
 - When a browser test moves the real pointer through CDP, move it to `(-1, -1)` in the case's `finally` block.
 - Centralize event factories: `createPointerEvent`, `createDragEvent`, `typeInput`, `fireTransitionEnd`.
 - Centralize DOM builders: `createButtonElement`, `createDropdownElements`, `createModalElement`.

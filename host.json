@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "1b6166c70763ca13faf335bff89b46b5c38a6e4051596c2017471866076945ba"
+			"digest": "843b5cf801c222acc3b004af3ba664cce7a0939f7d2b882b24e34b4f31287a94"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "cc231c2e36aa8e1a97164f1fa880de048939590224310aec25e9cd0d41e9a4cb"
+			"digest": "dc949c50dbcee30eb64b9c29ba678e3cf4b6a49a6426e2025588890c05aa376a"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -160,7 +160,7 @@
 			"storage": "agents/skills/orkestrel-dispatch/SKILL.md",
 			"destination": ".agents/skills/orkestrel-dispatch/SKILL.md",
 			"executable": false,
-			"digest": "9ec84d7caa3eec464ad9e5a6c465dd18992386f586650f34f510e5e26f801d6d"
+			"digest": "70f8e0c5e5cd902052034180abc9a4241ddfcb725a468dfeaa851f0a1887d3dd"
 		},
 		{
 			"storage": "agents/skills/orkestrel-dispatch/agents/openai.yaml",
@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-falsify/SKILL.md",
 			"destination": ".agents/skills/orkestrel-falsify/SKILL.md",
 			"executable": false,
-			"digest": "c978c16cadb0fc33ddd2c5dc7d62eb45b03a6bd5dc0ae32c2fe0dc568e3546b7"
+			"digest": "26e387c65a29d0e2cf94cccd77d5c36369752cb080e8961f5ad6fccfa984e611"
 		},
 		{
 			"storage": "agents/skills/orkestrel-falsify/agents/openai.yaml",
@@ -250,7 +250,7 @@
 			"storage": "agents/skills/orkestrel-falsify/references/reconcile.md",
 			"destination": ".agents/skills/orkestrel-falsify/references/reconcile.md",
 			"executable": false,
-			"digest": "9a7a0c2915689efb3e0218268cfa2b9bc7293e36d989696f6dc1ece03093eee7"
+			"digest": "d952a6f59a191d60de182fab68411b22b77c6091c4645bcec81f3ac17c1a5202"
 		},
 		{
 			"storage": "agents/skills/orkestrel-falsify/scripts/mutate.ts",
@@ -262,7 +262,7 @@
 			"storage": "agents/skills/orkestrel-harden/SKILL.md",
 			"destination": ".agents/skills/orkestrel-harden/SKILL.md",
 			"executable": false,
-			"digest": "27d5f841d2715883067d12c67ae4d84f783c7eb3147709599e4e2766afc94724"
+			"digest": "9c1245affb0435d38382fa127b73d64465ac7f7ad0376d707de14dcaaab2716a"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/agents/openai.yaml",
@@ -304,7 +304,7 @@
 			"storage": "agents/skills/orkestrel-harden/references/hardening.md",
 			"destination": ".agents/skills/orkestrel-harden/references/hardening.md",
 			"executable": false,
-			"digest": "8c0e4aff7e06a6ac45d88973e5f3d26dbf85f566404caebeeb1bdf22178da15c"
+			"digest": "df0e66e80193a0e7b9758b7ff59e507d4e0033b6ef69b1dd2a7d6b28a074832b"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/references/research.md",
@@ -334,7 +334,7 @@
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
 			"destination": ".agents/skills/orkestrel-journey/SKILL.md",
 			"executable": false,
-			"digest": "c79565c197848983db9e92def132f4384dd882ef4ba147008a4953449b8262e3"
+			"digest": "bfc5ae044d6c3fcb3f65bc7ea68f19b40d87a6c441ca722088cdc6f3cdb52e64"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/agents/openai.yaml",
@@ -382,7 +382,7 @@
 			"storage": "agents/skills/orkestrel-parallel/SKILL.md",
 			"destination": ".agents/skills/orkestrel-parallel/SKILL.md",
 			"executable": false,
-			"digest": "88cb1685c141a3891921d7f2965b877a0517f74510fca7d588ffb0c30af8f171"
+			"digest": "7d635dcc0cfdec7e7ee78eb9fe7b52cb5ca39519fc71b006b0e3210a3675ddaf"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/agents/openai.yaml",
@@ -395,6 +395,12 @@
 			"destination": ".agents/skills/orkestrel-parallel/references/claude.md",
 			"executable": false,
 			"digest": "57412f87a16674654d6eb1d033cf3bb2c6b02c90d5151e029c7eba6de642abcd"
+		},
+		{
+			"storage": "agents/skills/orkestrel-parallel/references/cloud.md",
+			"destination": ".agents/skills/orkestrel-parallel/references/cloud.md",
+			"executable": false,
+			"digest": "3763af574d27b2754c92766f3c270655be3d76dead0f1bc946cb42a2a4cc03a4"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/references/codex.md",
@@ -412,7 +418,7 @@
 			"storage": "agents/skills/orkestrel-parallel/references/t3.md",
 			"destination": ".agents/skills/orkestrel-parallel/references/t3.md",
 			"executable": false,
-			"digest": "4ed1ed729b3a5db5953cedf6342f471330cb8c50ac617c0ce753442cce6e1cf7"
+			"digest": "4ec51bdf1e799a0dabe904f256b63941983f61eb70f78f5ebea795d58354b687"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/scripts/cases.ts",
@@ -466,13 +472,13 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "7c42a7d0790c97c0627829bcc810b078797469d130aa8f2afaaffd8bbc088c83"
+			"digest": "aa5781e37ea8880b40af3b9b59aabb5c72fae853e37c7bc098badd50d527a949"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
 			"destination": ".agents/skills/orkestrel-publish/references/window.md",
 			"executable": false,
-			"digest": "3cd78708acf12037453eab03b5cdc24bf8c86412aa6cc96c3cdfff785d8f9070"
+			"digest": "abbcfccf05f6ec4b9a8998de1af6240f68f9d14d1e3646dae53262feb2b450c1"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/compare.ts",
@@ -526,7 +532,7 @@
 			"storage": "agents/templates/brief.md",
 			"destination": ".agents/templates/brief.md",
 			"executable": false,
-			"digest": "14ce94b268c9b5d9f8a272de78c0e8a4972bb421cf569c6ecc139cd81972856a"
+			"digest": "98708e44936e33ebecfec31a9dd86937d4481ced6ffd4042898766305d0c97f6"
 		},
 		{
 			"storage": "agents/transports/claude-cli.md",
@@ -538,7 +544,7 @@
 			"storage": "agents/transports/codex.md",
 			"destination": ".agents/transports/codex.md",
 			"executable": false,
-			"digest": "1b6521ac4beb6363cbd5da4bc112f6eaf097b63c0a2b2f849e00fc8e6a36d133"
+			"digest": "56d5bc9f5765a9a1ee49c06dee5cce3a9f71858c6b305094ba5a8e5cc2f417a4"
 		},
 		{
 			"storage": "agents/transports/cursor.md",
@@ -550,7 +556,7 @@
 			"storage": "claude/AGENTS.md",
 			"destination": ".claude/AGENTS.md",
 			"executable": false,
-			"digest": "76bcc2f4a05d6b186c002e511bce72adadd453891a2c2d385f97e469ebf12ed3"
+			"digest": "0cacc8a56e94da84f646ff1a0587f162b557b031823d08ed12b53f04a36dfbed"
 		},
 		{
 			"storage": "claude/agents/analyst.md",
@@ -562,13 +568,13 @@
 			"storage": "claude/agents/astra.md",
 			"destination": ".claude/agents/astra.md",
 			"executable": false,
-			"digest": "be56f90c4482a6b80782c6bd3fe9642f30bdee4b49689be51cb8d0137a4f78a2"
+			"digest": "3105e3d3765fbadf4024a2728f55169a01e58fd093aeb600c6673a92d0d5ccd3"
 		},
 		{
 			"storage": "claude/agents/builder.md",
 			"destination": ".claude/agents/builder.md",
 			"executable": false,
-			"digest": "492be89a3650239679140e75bc19ef2a2d1280846fb132e97320f9ad80529311"
+			"digest": "1fd0520f9ceca6477dcff0326e28ce743c9fc9f2fbff7ce1ce547879cda6009b"
 		},
 		{
 			"storage": "claude/agents/checker.md",
@@ -592,7 +598,7 @@
 			"storage": "claude/agents/opus.md",
 			"destination": ".claude/agents/opus.md",
 			"executable": false,
-			"digest": "fa67a8b459cf5f1d3c3a74b9a60a2cf34f1585c0567649bbfb0752a8ca10c750"
+			"digest": "d147dd90959968c2bf50799bd7bab6d45bd28b7c8e6cb53cba4d05356e88f2a2"
 		},
 		{
 			"storage": "claude/agents/orkestrel.md",
@@ -616,7 +622,7 @@
 			"storage": "claude/agents/reviewer.md",
 			"destination": ".claude/agents/reviewer.md",
 			"executable": false,
-			"digest": "fb6af1eb3433c4503601630c00cd97bf293633f10b2905febe45ae57a5fd3c22"
+			"digest": "2ed43743e8356e6418b1c06e7e7fc52419647967c20ac1f129749ec31ae59d67"
 		},
 		{
 			"storage": "claude/agents/scout.md",
@@ -652,7 +658,7 @@
 			"storage": "claude/rules/campaign.md",
 			"destination": ".claude/rules/campaign.md",
 			"executable": false,
-			"digest": "ee3218cb08746cc32a70826f09108e37a87b6f95a4895938c0bff657fd373ace"
+			"digest": "f628862f31c3dd9930a00aa9a3a4a21b5b97e94cc08c6a9af936b97890627625"
 		},
 		{
 			"storage": "claude/rules/documentation.md",
@@ -682,7 +688,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "1429154bc74ec0f7388164e2abb9605453175580421ca5fa4cbba249ea384819"
+			"digest": "9ee00e50c5228e2e43a5bcf7c8b64b2450ed4340d589d1c3c2b546a1014c9dc0"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -694,7 +700,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "55f6c27790e63a192e2f937ce6fe28e4a287a37ae48b3ec3930571c77144dcc0"
+			"digest": "bb2b2a0a03d8d4f8470960a670e44e1977d7c742df63316c9782693c79b33838"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -706,7 +712,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "ecbdd8f7a966ce7549866027fbb99d957cf66e49757ae7e78b9a5c63f57a6978"
+			"digest": "4ce25e33ca4d8e14d7daaf3696b6c224fe6c8cb7618242577c232f3047d5d7b8"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -802,13 +808,13 @@
 			"storage": "codex/agents/astra.toml",
 			"destination": ".codex/agents/astra.toml",
 			"executable": false,
-			"digest": "783feba0c409eb9ab15a1dc0f670c5feee35e5340f9b309045d089f7374b3fdd"
+			"digest": "8e4137ed0d4fbfdcf56ff4c8a98125a6f08290cbb6f36c657467fdd6834c0a1e"
 		},
 		{
 			"storage": "codex/agents/builder.toml",
 			"destination": ".codex/agents/builder.toml",
 			"executable": false,
-			"digest": "830880993ad2dd84837797f839c1bc16ffbe5a58fb00f3baf9dfc2df6b3c5171"
+			"digest": "40c0f253a7aad9dda1fb90bf5f1ecc1dc96be22b492b6f8eba2d349fd3446716"
 		},
 		{
 			"storage": "codex/agents/checker.toml",
@@ -832,7 +838,7 @@
 			"storage": "codex/agents/opus.toml",
 			"destination": ".codex/agents/opus.toml",
 			"executable": false,
-			"digest": "a2ae4f9f7947b92aa3e619d9747239160e94c3ea70fe3397c02c03d78dd440b8"
+			"digest": "9ebd76308745be494970f64ab620f054a4c6d839b9c4aa20bdaa9cf5fc1588e9"
 		},
 		{
 			"storage": "codex/agents/orkestrel.toml",
@@ -856,7 +862,7 @@
 			"storage": "codex/agents/reviewer.toml",
 			"destination": ".codex/agents/reviewer.toml",
 			"executable": false,
-			"digest": "1a9f1c210416092c75cb168ba870954549c3f3a37c18f063d848a869d0725fcd"
+			"digest": "09d0b9d41cac3bff82f02b0d475a6a4d8cecaec092c2108912868a1068746bc8"
 		},
 		{
 			"storage": "codex/agents/scout.toml",
@@ -874,7 +880,7 @@
 			"storage": "codex/config.toml",
 			"destination": ".codex/config.toml",
 			"executable": false,
-			"digest": "da7c3f4dd60cf5baf9bf26b9a8da8fafcd1558dde77650a55ba605761fef2a92"
+			"digest": "a70911ee974ab98df0041b8619a8dbe6ff0e4dccae04a6b4c1bd7cb9852b124b"
 		},
 		{
 			"storage": "configs/helpers.ts",
@@ -898,7 +904,7 @@
 			"storage": "cursor/rules/orchestration.mdc",
 			"destination": ".cursor/rules/orchestration.mdc",
 			"executable": false,
-			"digest": "3c1eeb1f29a4aad14335404be61f02b4eb218a5dfc4c7e8d4abd52d10b479d51"
+			"digest": "87047aecf60fcbe7140b860cda3adbc52a1659970e833b2ed1de59d7a6d3d3ef"
 		},
 		{
 			"storage": "dotfiles/editorconfig",
@@ -940,7 +946,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "625cc253ea318bfef0cd11f40ef8c01a16aec89ce928d27fea60a27408d02e27"
+			"digest": "d644dea01bc19a4ecb40e36b09a4636de21899e9bece8cc6101f3b08091bd29c"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1162,7 +1168,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "1589182bb1206ae1cf80a23ab20f6a00b75ffc508524cda9664838c9c202a7c0"
+			"digest": "e1a5a1c2e27e6d6ea06de836b90ef98b5b231d685b85a3315a31c3c71bc5465e"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1300,19 +1306,19 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "20deef265fb244971fe5ba4335294ef1051604499994f0db52c76418e0270a67"
+			"digest": "050bdbd02bd6bc85acc98274f4ee5922c5906a4b1b1b6c8d0c20e8b83f9b0d08"
 		},
 		{
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "38fddcb09e45b8244ee354bdb81a3017c1df755b643245dda55dc2d44b89b460"
+			"digest": "5144bb711810c8aa6bc4f27dbb27e7a84a5a363131aa08cfe902c1c5c7fd56e0"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "3781bc6eb3b07b0806c8045859bf5cf06b25f03b65d6fe11895aee3acd8a5595"
+			"digest": "f12141b2ebcf9284669c2ebbd6f3158a07b1135dcfae57d73a55cd197862684a"
 		}
 	],
 	"roots": [
@@ -2135,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "217965e157ba2852d56280a93f104a8a4bdfe7a8ff3d41456e70f68fdafe461f"
+	"digest": "3ff54e3837d774a5b335dbaf09f86bae1299cdd180c514b80af962ea7cf12121"
 }

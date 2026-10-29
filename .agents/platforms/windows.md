@@ -9,12 +9,16 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 - Kill a recorded tree with `taskkill /pid <pid> /T /F`. `launch.ts` kills the tree at its cap on this host.
 - Detach a run from the session's process tree with WMI: `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '<command>' }`. The run starts under `WmiPrvSE.exe`, outside the session's job and process tree (verified 2026-10-16). It receives the user's registry environment, not the caller's, so pass each value it needs on its command line. Record its journal and pid-file paths before the launch.
 - Spawn npm without a shell through its JavaScript entry: `node <node directory>/node_modules/npm/bin/npm-cli.js <arguments>`. A `.cmd` shim cannot start without a shell, and `launch.ts` reports exit `127`.
+- `cmd /c` keeps a trailing space inside `set VAR=value && …`; write `set "VAR=value"`.
+- Deliver a console Ctrl+C through `WScript.Shell` `AppActivate` then `SendKeys('^c')` after confirming activation when no computer-use tool is available.
+- A `rename` onto a freshly hard-linked file can return `EPERM` while a scanner holds it (measured 2026-10-28); retry under a budget the caller sets and pin the retry proof to `win32`.
 - A child CLI can leak orphaned `conhost.exe` processes and open console windows. Count them with `Get-Process conhost` at each launch while such a lane is live.
 
 ## PowerShell 5.1
 
 - Chain with `;` and gate with `if ($?) { ... }`; `&&` and `||` are parse errors.
 - Edit text with the harness's file tools, never `Get-Content` piped through `-replace` into `Set-Content`. `-replace` matches case-insensitively, `Set-Content` writes the ANSI code page, `Set-Content -Encoding utf8` and `Out-File` write a byte-order mark, and the round trip turns non-ASCII punctuation into mojibake.
+- Write a JSON file a tool must parse to a new path through the file tool or `[IO.File]::WriteAllText` with a BOM-free `UTF8Encoding`.
 - Write a commit message to a file with the harness's file tool and commit with `git commit -F <file>`. A here-string carrying double quotes splits into stray arguments, and a byte-order mark in the file lands in the commit subject.
 - Never pipe a command whose exit code gates the next step, a `node` probe included, into `Select-Object -First` or `-Last`. The cut pipeline kills the command early and leaves a misleading `$LASTEXITCODE`. Run it bare, read `$LASTEXITCODE`, or decide from `git status --porcelain` and `git rev-parse`.
 - PowerShell drops a bare `--` before a native command, so `npm run <script> -- <arguments>` loses the separator. Run the tool's own entry with an argument array, or call `npm.cmd`.
@@ -34,4 +38,5 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 ## Deleting untracked files
 
 - When a sweep you run by hand deletes untracked files, send them to the Recycle Bin through a shell file operation with undo, never permanent deletion, and report what went there. Leave emptying the bin to the user; hand them `Clear-RecycleBin -Force`.
+- `DeleteDirectory(..., SendToRecycleBin)` fails on an npm-installed tree; recycle each file with `DeleteFile` and remove the emptied folders.
 - Remove a worktree with `git worktree remove`. Delete a leftover `node_modules` junction without recursing into its target.

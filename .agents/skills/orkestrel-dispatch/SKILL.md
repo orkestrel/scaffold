@@ -25,11 +25,11 @@ description: >-
 ## Write the brief
 
 1. A small native unit's brief is the dispatch message: scope, law references, expected result. Otherwise run `node .agents/skills/orkestrel-dispatch/scripts/brief.ts --unit <unit> --lane <lane>` and fill every section; write `none` in an empty one. A re-run takes the `-<n>` file the script writes; never edit a launched brief.
-2. Back every fact the unit will act on with the command and output that established it. Check a fact against the tree, not against another artifact.
+2. Back every fact the unit will act on with the command and output that established it. Check a fact against the tree, not against another artifact. A cross-process or filesystem brief carries a platform-facts table (operation, host, measured code, and the probe that measured it) and marks each unmeasured assumption. An investigation brief names the failing command and state, the candidate layers, the readings that distinguish them, the test that pins the existing behavior, the fix pre-approved for each confirmed reading, and the stop for every other outcome.
 3. Scope by what the change makes false: run the `orkestrel-scout` skill's `map.ts --refs` and `--census` for an existing member of any enumerated population the unit extends, and own every file that comes back, with the tests that pin the behavior, the fixtures derived from a constant, and the materialized copy of a template.
-4. Order acceptance criteria cheap-first (regenerate, typecheck, lint, scoped test). Name a timing-sensitive or tree-wide gate as an observation, not a criterion.
+4. Order acceptance criteria cheap-first (regenerate, typecheck, lint, scoped test). Name a timing-sensitive or tree-wide gate as an observation, not a criterion. Place a run whose cost outweighs the discrimination it adds after the cheap checks and after the inputs stabilize.
 5. State that the executor performs the work itself and spawns nothing. A bridge driver carries the brief unaltered and returns the journal path and session id.
-6. Name the host conditions the unit will hit: shell, sandbox, network, files expected dirty, commands known to fail. Give absolute paths for work outside the session's root; a lane's shell can restart in another directory between calls.
+6. Name the host conditions the unit will hit: shell, sandbox, network, files expected dirty, commands known to fail. Give absolute paths for work outside the session's root; a lane's shell can restart in another directory between calls. A brief that folds prepared work onto a checkout inventories the tracked, staged, and untracked inputs, checks the chosen patch method against the destination's actual state, and names the conflict precedence and a bounded recovery.
 7. Fill each placeholder at its value sites only; a global replace also rewrites a stop clause that names the placeholder.
 8. Run `brief.ts --check <brief>` and fix every missing path before the launch.
 
@@ -61,7 +61,7 @@ An external engine widens capacity and inherits no authority; treat its output a
 
 1. Capture a native report to `tmp/units/<unit>-report.md`, or read a bench answer with `result.ts --<bench> <journal> --out <path>`.
 2. Run `cite.ts <report>` and discard every claim whose citation does not resolve before reading the rest.
-3. Verify with direct evidence: `git status --porcelain`, the diff, and the scoped validation the brief named. A writer's self-report is not evidence.
+3. Verify with direct evidence: `git status --porcelain`, the diff, and the scoped validation the brief named. A writer's self-report is not evidence. A receipt counts for every claim its input coverage proves, whatever command produced it; a passing part of an aborted run is not a receipt.
 4. Run the review the size gate names, then integrate: apply shared-file patches serially, each an edit file in the shape `patch.ts` reads, with `patch.ts EDITS.md --plan`, then `--apply`; route an added type, mechanism, or criterion to a successor unit.
 5. Write the acceptance commit message with what changed and what the unit measured; record `durationMs` when it informs a cap or a performance claim.
 6. Run `sweep.ts --unit <unit> --delete` to remove the unit's brief, report, claims, journal, errors, status, pid, and last-message files. Delete any probe the unit left in the tree. In a campaign, update `.orkestrel/<package>/plan.md` and the ledger, and delete a closed seam's verdict. `.agents/orchestration.md` § Cleanup owns the `--report` and `--tmp` runs.

@@ -36,6 +36,7 @@ A package directory holds:
 - Track every file under `.orkestrel/`. Cite a tracked file, a commit, or a published URL. Cite no git-ignored path, no agent memory, and no path outside the repository; name a sibling repository by its package name and a path inside it.
 - Name no harness, model, provider, harness tool, operating system, shell, or machine as the host or engine of the work. Name a lane by its role. A product statement about a host family follows `.claude/rules/portability.md` § Claims.
 - Write every line as a directive, a fact, or a table cell, per `.claude/rules/writing.md` § Instruction files: absolute dates, one home per fact, a tree location by symbol and file. A decision or a measurement lives in the commit that made it; cite the commit.
+- `plan.md` holds a harden campaign's claims, its release bar, and its deferral list, each deferred item with its trigger and its owner.
 - Keep live state out: engine availability, session ownership, process ids, installed versions, and another repository's state live in the roster, `package.json`, and that repository.
 - Keep unit briefs, reports, journals, and drafts under the checkout's `tmp/` (`.agents/orchestration.md` § tmp layout); that file's § Cleanup owns what a unit's files carry before they go.
 - Record a prepared, unapplied change as text in `plan.md` or as a commit, never as a pointer to scratch.

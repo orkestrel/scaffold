@@ -42,7 +42,7 @@ RETURN_SHAPE through OUTPUT_MECHANISM. No process diary.
 
 ## Deviation contract
 
-Stop and report (expected, found, evidence, done or not done, one hypothesis) on OBJECTIVE_CONFLICT. Settle ANCILLARY_CHOICES yourself and record them.
+Stop and report (expected, found, evidence, done or not done, one hypothesis) on OBJECTIVE_CONFLICT. Settle ANCILLARY_CHOICES yourself and record them. Enumerate the failure classes the unit may meet with the action each takes; anything else stops and reports.
 
 ## Acceptance criteria
 

@@ -4593,6 +4593,10 @@ createSomething({
 				["import { describe, expect, it } from 'vitest'", 'debugger'].join('\n'),
 			)
 			scratch.write(
+				'tests/setupServer.bench.ts',
+				["import { describe, expect, it } from 'vitest'", 'debugger'].join('\n'),
+			)
+			scratch.write(
 				'tests/titles.test.ts',
 				[
 					"import { expect, it } from 'vitest'",
@@ -4796,11 +4800,13 @@ createSomething({
 			// The fences replace only the restriction of the files they name: a setup module that
 			// imports a Node module or a vitest helper the law admits, a browser-enabled helper module
 			// the law admits, and a setup proof that registers tests all draw the root arrival
-			// diagnostic and no import restriction.
+			// diagnostic and no import restriction. A benchmark beside a setup module registers and
+			// asserts as a proof does, so it is admitted the same way.
 			for (const filename of [
 				'tests/setupPolicy.ts',
 				'tests/setupStyles.ts',
 				'tests/setup.test.ts',
+				'tests/setupServer.bench.ts',
 			]) {
 				const normalized = normalizePolicyFilename(comparisonRoot, filename)
 				expect(violationCodes).toContain(`eslint(no-debugger) ${normalized}`)

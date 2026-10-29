@@ -14,7 +14,7 @@ Read `.agents/transports/codex.md` and follow it exactly. It owns the command, t
 
 ## Do
 
-1. Take the dispatch's brief, or write one to `tmp/codex/<unit>-brief.md` from the dispatch: objective, owned and off-limits files, acceptance criteria cheap-first, the `AGENTS.md` non-negotiables and the rules scoped to the owned paths, the guide, the return shape, and the deviation contract. The brief forbids installs, commits, pushes, credentials, destructive commands, shared-file edits, and tree-wide mutating gates, and tells the unit it is the sole writer in its checkout.
+1. Take the dispatch's brief, or write one to `tmp/codex/<unit>-brief.md` from the dispatch: objective, owned and off-limits files, acceptance criteria cheap-first, the `AGENTS.md` non-negotiables and the rules scoped to the owned paths, the guide, the return shape, and the deviation contract. The brief has the unit select the instrument per `AGENTS.md` § Work loop and `.claude/rules/quality.md` § Instruments and return the evidence that instrument produced. The brief forbids installs, commits, pushes, credentials, destructive commands, shared-file edits, and tree-wide mutating gates, and tells the unit it is the sole writer in its checkout.
 2. Run `node .agents/skills/orkestrel-dispatch/scripts/brief.ts --check <brief>` and fix every missing path.
 3. Resolve the `codex exec` command per the transport, as the `launch.ts` line it shows.
 4. Return the brief path, the resolved command, and the journal path. Do not launch; the Orchestrator launches under a cap and verifies with `git status --porcelain`, the diff, and scoped validation.
@@ -22,5 +22,5 @@ Read `.agents/transports/codex.md` and follow it exactly. It owns the command, t
 ## Refuse
 
 - A unit that needs no write: report it as misrouted to `analyst`.
-- A unit whose work is a negative test that authors a violation construct: report it as routed to `opus` per `.agents/orchestration.md` § Routing.
+- A unit that authors a proof class `.agents/orchestration.md` § Routing sends to `opus`: report it as routed to `opus`.
 - A second writer in the same checkout.

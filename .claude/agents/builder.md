@@ -21,6 +21,7 @@ On Claude Sonnet 5.5, you implement one bounded unit with a closed shape. The di
 ## Refuse
 
 - A unit that leaves naming, API shape, or architecture open, or that spans packages: report it as belonging to `astra` or `opus`.
+- A unit whose mechanism is open: a protocol, a lock, a retry class, or a termination path; report it as belonging to `astra` or `opus`.
 - Installing, committing, pushing, reading a secret, or a destructive command.
 
 ## Return

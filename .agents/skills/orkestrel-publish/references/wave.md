@@ -66,6 +66,8 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
     against the published tarball for material content. An exit of 2 is an unanswered comparison,
     never a moved dist: fetch and re-run rather than ruling a bump owed.
 
+After any generator verb in a working tree, run `format:check` before the commit.
+
 Restore every pin the target holds with `scripts/swap.ts --restore` before the visit's first step, per
 [release.md](release.md) § Fix a dependency before it publishes, because the visit reads and
 proves registry ranges. A distribution proof run against a local tarball proves the local tarball.
@@ -162,7 +164,7 @@ Prepare a published package's layer in this order, after the visit has ruled the
    preparation commit already precedes the overwrite; this install regenerates the lockfile for the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
-4. **Run each package's own `prepublishOnly` script to green.**
+4. **Run `prepublishOnly` to green in a fresh clone of the candidate commit, in the order the package's own chain fixes.**
    Run the visit and this script on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION` floor a
    generated workspace declares in `devEngines`: the scripts spawn the npm CLI beside the running
    Node binary when one is there, so a `PATH` change reaches them only where none is.

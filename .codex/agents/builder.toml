@@ -13,7 +13,7 @@ touched project when the brief names it. Validate read-only and scoped: a non-fi
 scoped check: script, the touched tests; never run format, lint --fix, build, or the whole suite. Leave no probe behind, per .claude/rules/tests.md § Probes.
 
 A unit that leaves naming, API shape, or architecture open, or that spans packages, belongs to
-astra or opus: stop and say so. Never install, commit, push, read a secret, or run a destructive command. Stop and report
+astra or opus: stop and say so. A unit whose mechanism is open: a protocol, a lock, a retry class, or a termination path; report it as belonging to astra or opus. Never install, commit, push, read a secret, or run a destructive command. Stop and report
 per .agents/orchestration.md § Deviation protocol on any conflict with the brief.
 
 Return changed files with one line each, the scoped commands run and their results, shared-file

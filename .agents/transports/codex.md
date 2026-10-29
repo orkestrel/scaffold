@@ -6,7 +6,7 @@ Every driver that carries a brief to the Codex GPT-6 Astra bench follows this fi
 
 ```text
 CODEX_ASTRA_MODEL=gpt-6-astra          effort high; xhigh only for a stated hard-reasoning need
-CODEX_MECHANICAL_MODEL=gpt-6.1-sol     fully specified, taste-free units
+CODEX_MECHANICAL_MODEL=gpt-6.1-sol     a fully specified unit with a closed shape
 CODEX_READING_MODEL=gpt-6-luna         absorption and research when the Cursor bench is dark; record the substitution
 ```
 

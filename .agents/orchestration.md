@@ -12,48 +12,50 @@ On a harness with no bridge, orchestrate natively, record the harness in the ros
 
 Name the harness family and its access route: Claude through Claude Code or the Claude CLI; Codex through Codex native agents or the Codex CLI; Cursor through the Cursor CLI, with Grok 4.7 Extra High for the Grok bench. Classify GPT-6 Astra, GPT-6.1 Sol, and GPT-6 Luna as Codex-family engines, including when another harness hosts the Orchestrator.
 
-| Engine                  | Job                                                                             | Posture                                                                                                                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude Fable 5.1        | orchestration in Claude Code: the plan, every decision, integration, acceptance | never dispatched: never a subagent, a bench, a fork, or a Workflow node, except as the consultant the user names for a wording and coherence pass after research and technical review |
-| Cursor Grok             | context absorption, distillation, broad mapping, exploration                    | read-only; returns evidence, never decisions                                                                                                                                          |
-| Claude Opus 5.5         | subjective design, design-fit review, implementation                            | proposes, audits, implements; never accepts its own work                                                                                                                              |
-| GPT-6 Astra             | objective analysis, correctness audit, implementation                           | proposes, audits, implements; never accepts its own work                                                                                                                              |
-| Claude Sonnet 5.5       | bounded implementation of a closed shape, ecosystem reconciliation              | executes a fully specified brief                                                                                                                                                      |
-| Claude Haiku 5.5        | bench drivers, small precise tasks, exact lookups, conformance, gates           | executes a fully specified brief; edits no source                                                                                                                                     |
-| GPT-6.1 Sol, GPT-6 Luna | mechanical units, drivers, small precise tasks, gates, exact lookups            | executes a fully specified brief                                                                                                                                                      |
+| Engine            | Job                                                                             | Posture                                                                                                                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Fable 5.1  | orchestration in Claude Code: the plan, every decision, integration, acceptance | never dispatched as a writer, a bench, a fork, or a Workflow node; dispatched only as a read-only consultant, for a bounded design question at the stop the Orchestrator set for a seam, or for the wording and coherence pass the user names |
+| Cursor Grok       | context absorption, distillation, broad mapping, exploration                    | as a bench: read-only; returns evidence, never decisions                                                                                                                                                                                      |
+| Claude Opus 5.5   | subjective design, design-fit review, implementation                            | proposes, audits, implements; never accepts its own work                                                                                                                                                                                      |
+| GPT-6 Astra       | objective analysis, correctness audit, implementation                           | proposes, audits, implements; never accepts its own work                                                                                                                                                                                      |
+| Claude Sonnet 5.5 | bounded implementation of a closed shape, ecosystem reconciliation              | executes a fully specified brief                                                                                                                                                                                                              |
+| Claude Haiku 5.5  | bench drivers, small precise tasks, exact lookups, conformance, gates           | executes a fully specified brief; edits no source                                                                                                                                                                                             |
+| GPT-6.1 Sol       | a fully specified unit with a closed shape                                      | executes a fully specified brief                                                                                                                                                                                                              |
+| GPT-6 Luna        | mechanical units, drivers, small precise tasks, gates, exact lookups            | executes a fully specified brief                                                                                                                                                                                                              |
 
 The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Claude Code, GPT-6 Astra in Codex, Cursor Grok in Cursor. The Orchestrator owns the plan, every decision, integration, and acceptance. When the harness is Codex or the Orchestrator uses a Codex-family engine, use the Codex column: map Opus to GPT-6 Astra, Sonnet to GPT-6.1 Sol, and Haiku to GPT-6 Luna; execute mapped Astra roles natively without an Opus bench probe. Under this mapping, assign review to another agent in a clean context and forbid self-review, including when writer and reviewer both use Astra. For other harnesses, review runs on an engine that did not write the work.
 
 ## Roles
 
-| Role         | Job                                                        | Capability   | Claude       | Codex       |
-| ------------ | ---------------------------------------------------------- | ------------ | ------------ | ----------- |
-| `grok`       | absorption, distillation, broad mapping, exploration       | reader       | haiku driver | luna driver |
-| `analyst`    | objective design argument or correctness audit on Astra    | objective    | haiku driver | astra       |
-| `astra`      | objective, constraint-heavy implementation on Astra        | objective    | haiku driver | astra       |
-| `planner`    | subjective design                                          | subjective   | opus         | astra       |
-| `reviewer`   | design-fit or correctness review                           | subjective   | opus         | astra       |
-| `opus`       | subjective implementation (API shape, naming, guide voice) | subjective   | opus         | astra       |
-| `builder`    | one bounded unit with a closed shape, app layer included   | closed-shape | sonnet       | sol         |
-| `checker`    | mechanical conformance against criteria and rules          | mechanical   | haiku        | luna        |
-| `verifier`   | gates and evidence commands, exit-code truth               | mechanical   | haiku        | luna        |
-| `scout`      | exact bounded lookup of files, symbols, seams              | mechanical   | haiku        | luna        |
-| `distiller`  | bulk reading when the Cursor bench is dark                 | reader       | haiku        | luna        |
-| `researcher` | primary-source research when the Cursor bench is dark      | reader       | haiku        | luna        |
-| `orkestrel`  | ecosystem reconciliation over supplied evidence            | closed-shape | sonnet       | sol         |
+| Role         | Job                                                            | Capability   | Claude       | Codex       |
+| ------------ | -------------------------------------------------------------- | ------------ | ------------ | ----------- |
+| `grok`       | absorption, distillation, broad mapping, exploration           | reader       | haiku driver | luna driver |
+| `analyst`    | objective design argument or correctness audit on Astra        | objective    | haiku driver | astra       |
+| `astra`      | objective, constraint-heavy implementation on Astra            | objective    | haiku driver | astra       |
+| `planner`    | subjective design                                              | subjective   | opus         | astra       |
+| `reviewer`   | design-fit or correctness review                               | subjective   | opus         | astra       |
+| `opus`       | subjective implementation (API shape, naming, guide voice)     | subjective   | opus         | astra       |
+| `builder`    | a fully specified unit with a closed shape, app layer included | closed-shape | sonnet       | sol         |
+| `checker`    | mechanical conformance against criteria and rules              | mechanical   | haiku        | luna        |
+| `verifier`   | gates and evidence commands, exit-code truth                   | mechanical   | haiku        | luna        |
+| `scout`      | exact bounded lookup of files, symbols, seams                  | mechanical   | haiku        | luna        |
+| `distiller`  | bulk reading when the Cursor bench is dark                     | reader       | haiku        | luna        |
+| `researcher` | primary-source research when the Cursor bench is dark          | reader       | haiku        | luna        |
+| `orkestrel`  | ecosystem reconciliation over supplied evidence                | reader       | sonnet       | sol         |
 
-- Name the role and its engine in every dispatch. Reach a role by its own name.
+- Name the role and its engine in every dispatch. Reach a role by its own name. When a hosting harness offers both columns, the dispatch names the column each lane runs on.
+- The capability column names the lane a role holds by default and the one a dispatch may assign (`reviewer`: subjective by default, objective when assigned; `orkestrel`: reader).
 - On a harness with no column, map each capability to an engine in the roster and route by that map; add the harness's column here when it carries campaign work.
 - A driver launches another harness's CLI and returns the journal path and session id with the result. It never judges or implements. Refuse a bench result that carries no journal path and session id; it ran on the driver.
 - `.agents/transports/<harness>.md` owns each bench's invocation, sandbox, journal, and recovery. `.claude/agents/` and `.codex/agents/` hold one file per role.
 
 ## Routing
 
-- Route by judgment load. Objective, constraint-heavy, mechanical-precision work goes to `astra`. API shape, naming, and documentation voice go to `opus`. A bounded unit whose brief or types fix its names, API, and architecture goes to `builder`, whatever its private lines; a unit that spans packages or leaves one of those open goes to `astra` or `opus`.
+- Route by judgment load. Objective, constraint-heavy, mechanical-precision work goes to `astra`. API shape, naming, and documentation voice go to `opus`. A bounded unit whose brief or types fix its names, API, and architecture goes to `builder`; a unit that spans packages or leaves one of those open goes to `astra` or `opus`. Route a unit that creates or changes a cross-process or filesystem protocol (a lock, a marker, an atomic publish, termination handling, or a retry class) to `astra` or `opus`; a unit that leaves its mechanism open is not closed-shape, however closed its public shape looks.
 - Route all context absorption, distillation, broad mapping, and exploratory or fishing reads to `grok` on Cursor Grok 4.7 Extra High: terrain, prior art, diff sweeps, scattered sources. Keep decision-bearing reading with the decision owner. Fall back to `distiller` or `researcher` only when the Cursor bench is dark, and record the fallback; ease or cost never authorizes a fallback.
 - Keep small tedious precise tasks native: Claude Haiku in Claude, Codex Luna in Codex. Use `scout` for an exact bounded lookup; keep bench drivers, `checker`, and `verifier` on their mapped native engines. A bounded file scope does not turn context absorption or exploratory reading into a native lookup.
 - Route a unit that authors path-containment, import-resolution-boundary, unescaped-input, or credential-exposure proofs to `opus` from the start where `opus` runs on Claude, and record the Codex bench dark for that unit only. Under native Codex roles, report a harness refusal through § Deviation protocol.
-- Route gates to `verifier`. A writer's self-reported gate is not evidence.
+- Route gates to `verifier`. A writer's self-reported gate is not evidence. A writer never holds the runner lane for its own acceptance; a gate a writer runs is an observation, never acceptance.
 - Under the Codex mapping, put falsify lanes on Astra or Sol at high effort; keep Luna for gates and verifier runs, never for a lane that must resolve runtime claims.
 - Work directly on a one-file change or a one-line fix, subject to the preceding routing rules. Route standalone lookups through `scout`. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
 
@@ -64,8 +66,8 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 - Record the session identity separately from its task, turn, process, and message address. Record each session's harness, provider, model, options, workspace, responsibility, owned paths, continuation address, most recent task, and evidence paths in the roster, and preserve its prior task results. The roster is `coord/roster.md` of the live `orkestrel-parallel` round, or `tmp/units/roster.md` when no round is live.
 - Treat a live writer as an agent with an active assignment and edit authority. A retained session without an assignment holds no resource merely by existing. Preserve an explicit hold until its owner releases it.
 - Continue a unit through compaction. Before a handoff or context limit, record decisions, changed instructions, source identity, unresolved questions, failed and passing evidence, active process identities, ownership, and the next action. Compaction neither completes a task nor releases its files or processes.
-- On continuation, the Orchestrator sends the next bounded objective and the facts changed after the last turn. The continued agent reads changed or missing authority and the source regions that objective needs, and rechecks mutable facts such as source state and process liveness. Do not repeat unchanged bulk reads merely because a unit resumes.
-- Consult a suitable peer when a consequential approach remains open, evidence conflicts, or repeated attempts stop narrowing a failure. Give the peer the question, relevant evidence, attempted approaches, constraints, and requested answer. Use an existing specialist when its context helps and a fresh peer when the question needs an independent challenge.
+- On continuation, the Orchestrator sends the next bounded objective and the facts changed after the last turn. The continued agent reads changed or missing authority and the source regions that objective needs, and rechecks mutable facts such as source state and process liveness. Do not repeat unchanged bulk reads merely because a unit resumes. A continuation that changes scope or acceptance, or authorizes a fix, is written first as `<unit>-brief-<n>.md` and sent as a pointer to that file; a message alone continues only an unchanged objective.
+- Consult a suitable peer at the stop set for a seam, or earlier when a consequential approach remains open, evidence conflicts, or attempts stop narrowing a failure, without waiting for the user, and record the question, recommendation, evidence, and next check in the plan. Give the peer the question, relevant evidence, attempted approaches, constraints, and requested answer. Use an existing specialist when its context helps and a fresh peer when the question needs an independent challenge.
 - Keep consultation read-only and bounded. Ask for a recommendation, its evidence, uncertainty, and a concrete next check. The executor retains the work; the Orchestrator rules on scope and acceptance. Advice grants no authority and does not satisfy an independent review gate.
 - Resolve conflicting advice against the contract and observable evidence. Do not add consultation to routine steps or repeat it without a changed question or evidence.
 - When a requested launch channel fails, record the failure and whether a child was created. Before retrying an uncertain launch, inspect the recorded task or session. Use a permitted fallback with its actual model and options disclosed; retry a refused route only after a relevant condition changes.
@@ -116,10 +118,13 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 | medium | one opinion (`planner` or `analyst`) only when the shape is open                                | `opus`, `astra`, or `builder` by judgment load | one pass by an independent reviewer per § Engines, on numbered claims about the contract and the risky seams | `verifier` on the touched projects |
 | large  | one independent round: `planner` and `analyst`, same brief, clean contexts, blind to each other | disjoint units in parallel                     | one `orkestrel-falsify` round on the integrated result                                                       | `verifier` tree-wide, once         |
 
-- Never run a review on a small change. Never run a second design round on the same brief.
+- Never run a review on a small change. Never run a second design round on the same brief. A design question a repair round opens is its own brief, not a second design round on the campaign's brief.
 - A review judges types, tests, and implementation. It reports comment, TSDoc, or guide wording only where the text contradicts the final behavior, and no fix round opens for prose alone.
+- Before a repair is dispatched, class its remedy as a correction, a design question, or a deferral; a remedy that adds a mechanism (a file operation, a state, a protocol step, or a retry class) is a design question that goes to one `planner` or `analyst` pass carrying measured platform facts.
 - A fix round re-audits the repaired claim only. A fix that adopted the reviewer's prescription verbatim closes with a mutation probe (disable the load-bearing line, watch the test fail, restore it); `node .agents/skills/orkestrel-falsify/scripts/mutate.ts --edits EDITS.md -- COMMAND` runs the probe and proves the restore. A fix that departs from it gets one pass by an independent reviewer per § Engines.
-- When review rounds at one seam keep surfacing defects without converging on their source, follow `.agents/skills/orkestrel-falsify/SKILL.md` § End the depth search.
+- A repair closes with a mutation probe on its load-bearing line and, where it adds or changes a process proof, that proof's repeat run under suite load.
+- Before another round at the same seam, weigh whether a further repair beats a design question, set and state in the brief the stop for that seam and its reason, re-examine it at every round, and end the depth search with a design question when a round introduces as many defects as it closes, a repair adds a mechanism, findings stop converging, or the cost outgrows the goal's importance. `.agents/skills/orkestrel-falsify/SKILL.md` § End the depth search owns how the search ends.
+- A repair round at a seam carries only rows whose remedy serves that seam; a finding outside it waits for the next round or the deferral list.
 - An all-confirmed round ends the audit. A round needs an added or repaired claim to test; reviewer appetite is not a subject.
 
 ## Campaign
@@ -140,7 +145,7 @@ A large change opens with a concise goal and its exit criterion, short enough to
 - Parallelize independently owned work when useful progress can overlap. Reuse suitable sessions per § Sessions and consultation, bound each objective, and count coordination and verification costs when choosing the lanes. § Cache governs model and tool settings.
 - Judgment stays narrow: a design or review pass is at most the two lanes the size gate names, each in a clean context, blind to the other, and it runs once. Never fan judgment out further, and never run it as a loop.
 - Keep every lane, in this session and in peer sessions on the same machine, within the host budget of `.agents/skills/orkestrel-parallel/SKILL.md` § Bound the host.
-- One writer per checkout, except under `orkestrel-parallel`: there, at most three writers share one checkout, each owns disjoint files and disjoint regions of shared files, and one runner lane owns every test, check, and build process. Otherwise give parallel writers disjoint owned files, and give a writer its own worktree under `tmp/worktrees/` only when two units must write the same files at once. Commit a checkpoint before a writing dispatch.
+- One writer per checkout, except under `orkestrel-parallel`: there, as many writers share one checkout as the host budget and disjoint ownership allow, each owning disjoint files and regions, and one runner lane owns every test, check, and build process. Otherwise give parallel writers disjoint owned files, and give a writer its own worktree under `tmp/worktrees/` only when two units must write the same files at once. Commit a checkpoint before a writing dispatch.
 - Fold every branch, clone, copy, or worktree an agent creates back into the original checkout's main branch with its changes left uncommitted there, so the user sees the whole difference from that branch. Commit inside the branch, clone, copy, or worktree as its unit needs, then remove it and delete its branch.
 - In a checkout another session shares, read the branch and `git status` before a write, and stop and ask the user when another session's uncommitted work is present.
 - Shared files are report-only; a unit returns an exact patch as an edit file that `.agents/skills/orkestrel-dispatch/scripts/patch.ts` applies. Under `orkestrel-parallel`, a writer edits its owned regions of a shared file directly.
@@ -206,11 +211,11 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 
 ## Cleanup
 
-- When a unit is accepted, carry its measurements, unresolved findings, and any instrument worth keeping into the commit message, a tracked design, or a test, then delete its `tmp/units/<unit>-*` files and its bench journals.
+- When a unit is accepted, carry its measurements, unresolved findings, and any instrument worth keeping into the commit message, a tracked design, or a test, then delete its `tmp/units/<unit>-*` files and its bench journals. Before a unit's files go, carry its effective brief (objective, corrections, source identity, rulings) into the tracked plan or the acceptance commit. Delete or move no path a live lane's brief names.
 - `.claude/rules/campaign.md` owns what `.orkestrel/` holds and when each file goes; git history is the archive.
 - Delete a probe from the source tree before the unit returns; promote a probe that settled a claim into a test.
 - Run `node .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report` at acceptance; it lists leftovers under `tmp/` and `.orkestrel/` by age and deletes nothing. Run the same script with `--tmp` after the last live unit exits; it deletes files older than its threshold and refuses while a journal is changing.
-- A campaign artifact never lives in the package it is about.
+- A campaign artifact lives under `.orkestrel/<package>/`, never under the package's source, test, or distribution tree.
 
 ## Cache
 
@@ -222,9 +227,10 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 ## Acceptance
 
 - No writer's and no bench's self-assessment is authoritative. The Orchestrator accepts after the review and the gates the size gate names.
+- An accepted claim or gate row names the independent receipt (command, input identity, exit) that closed it; a writer's report states implementation status and never closure.
 - Accept when the exit criterion is met and the gates are green. Reopening an accepted criterion is the user's instruction, not a reviewer's finding.
 - Before calling work ready, try the shipped result as the user will, on the build they run, and report what did not run.
 - Substitute an engine only when the same session recorded the bench dark; name the fallback in the brief and the carrying commit.
 - In a repository whose package the registry already serves, commit on the main branch and push it only on the user's go-ahead.
-- Commit by explicit paths. Before a push, read `git log @{upstream}..` and push only commits meant to publish together; hold a push while a commit depends on an unpublished local pin.
+- Commit by explicit paths. Before a push, read `git log @{upstream}..` and push only commits meant to publish together; hold a push while a commit depends on an unpublished local pin. Push a commit only after the gate run on that commit, or record the push as ungated.
 - Publishing is the user's decision and credential; `orkestrel-publish` owns the release procedure, the bump rules, and the dependency-tarball rules.

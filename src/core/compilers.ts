@@ -931,7 +931,9 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * `accepted` carries each generated predecessor the region can replace. The
  * guides entry accepts the generated command that invoked the guides project
- * through Vitest alone. The pack hook accepts the build chain emitted before it
+ * through Vitest alone. The benchmark entry accepts the commands that ran the
+ * `probe` project in benchmark mode and without it, before the dedicated bench
+ * project existed. The pack hook accepts the build chain emitted before it
  * delegated to `build`. The publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. A workspace carrying studies also accepts the
  * chain without its study step and the chain without both its study step and
@@ -985,11 +987,13 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 				accepted:
 					name === 'test:guides'
 						? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
-						: name === 'build:src:styles' && blueprint.themes
-							? ['vite build --config configs/src/vite.styles.config.ts']
-							: sheets.some((face) => name === `test:src:${face}`)
-								? [command.slice(command.indexOf(' && ') + 4)]
-								: [],
+						: name === 'test:bench'
+							? ['vitest bench --config vite.config.ts --no-cache --project probe']
+							: name === 'build:src:styles' && blueprint.themes
+								? ['vite build --config configs/src/vite.styles.config.ts']
+								: sheets.some((face) => name === `test:src:${face}`)
+									? [command.slice(command.indexOf(' && ') + 4)]
+									: [],
 			},
 		]
 	})

@@ -525,6 +525,8 @@ export function appJourney(
 			browser: {
 				...browser.test?.browser,
 				enabled: true,
+				// The runner UI CSS-scales the tester iframe, which scales observer root bounds and margins.
+				ui: false,
 				viewport: { width: variant.width, height: variant.height },
 				instances: (browser.test?.browser?.instances ?? []).map(
 					({ name: _name, ...instance }) => instance,
@@ -3922,8 +3924,8 @@ skill itself ships with that package. Read the canonical \`SKILL.md\` completely
 
 Resolve every path the canonical skill names against the same root; under \`node_modules\` each
 segment drops its opening dot. Run a script the skill names through its built twin, as this
-repository's \`AGENTS.md\` states. This pointer carries no process of its own; \`AGENTS.md\`, the applicable
-rules, and the canonical skill remain authoritative in that order.
+repository's \`AGENTS.md\` states. This pointer carries no process of its own; the authority order is
+\`.agents/orchestration.md\` § Authority.
 `,
 		service: `#!/usr/bin/env sh
 set -eu

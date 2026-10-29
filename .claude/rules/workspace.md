@@ -168,7 +168,7 @@ one environment, so each is its own project:
 
 | Project             | Files                                                          | Proves                                                                                                                                                                                                                                                                                                                                                 | Gate                                  |
 | ------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
-| `policy`            | `tests/policy.test.ts`                                         | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, bridges, and text integrity                                                                                                                                                                                                           | `test`                                |
+| `policy`            | `tests/policy.test.ts`                                         | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, bridges, text integrity, and a tracked TypeScript specifier that resolves into `dist/`                                                                                                                                                | `test`                                |
 | `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                                                                                                                                                                                  | `test`                                |
 | `setup`             | `tests/setup*.test.ts` other than either `setup:browser` proof | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                                                                                                                                                     | `test`                                |
 | `setup:browser`     | `tests/setupBrowser.test.ts`, `tests/setupStyles.test.ts`      | Prove browser and style setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                                                                                                                                   | `test`                                |
@@ -223,18 +223,17 @@ throwaway instrument against real sources, aliases and setup. Declare no proof t
 project composed in the root configuration rather than declared as a path string. The `probe` MCP
 server arms through it — its arming specifications live under the `tmp/probes/` directory and infer
 this project — so a workspace that removes the project, or declares it as a path string, fails the
-server's arming, and an unarmed server refuses every `prove` call. The `test:bench` script runs the
-same project in benchmark mode, which collects every test file under the `tmp/probes/` directory and
-the `tests/` tree while refusing every ordinary test case. Every test script names its project and
-the `test:bench` script joins no chain, so no gate runs either mode; the project's directory is
+server's arming, and an unarmed server refuses every `prove` call. `test:bench` runs the bench
+project over `*.bench.ts` files under `tests/` and `tmp/probes/` and collects no ordinary test file.
+Every test script names its project and the `test:bench` script joins no chain, so no gate runs
+either project; the project's directory is
 ignored by git; and `.claude/rules/tests.md` governs what may live there.
 
 - Define a cross-cutting project only for a proof the package actually has.
 - Prepare the external service before invoking the `service` project. Use `tests/setupService.ts`
   to verify readiness, apply `.claude/rules/tests.md`, and name the project `service` whatever it
   drives.
-- In a publishing workspace, a project leaves the default run when it drives a live external
-  service or is hermetic but slow — it spawns processes, packs, installs, or drives a real build.
+- The proof's subject decides its project and its cost decides only its budget and isolation inside that project; `integration` stays in `test` whatever its cost.
 - Give every isolated project its own script, and place that script by the preceding paragraph.
 
 Setup assets:

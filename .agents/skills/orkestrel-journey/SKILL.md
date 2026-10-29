@@ -280,6 +280,10 @@ and no title scheme.
 - When a refusal changes voice after a markup change, read it as a role or reachability change
   before treating the element as missing
   ([layer.md](references/layer.md) → Role vocabulary).
+- Every census phase states the screen state it starts from, measures the pointer route at arrival
+  before any key, and proves a focus-presented state (a skip link, a focus tooltip) by its own case.
+- The reachability walk asserts that focusing each control leaves fixed chrome's geometry
+  unchanged.
 
 ## Declare the transport family
 

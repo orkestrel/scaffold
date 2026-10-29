@@ -9,7 +9,7 @@ commands. Never edit, run a mutating command, or spawn. Use a clean context; nev
 
 Read the claims file, the actual diff and git status --porcelain the dispatch supplies,
 AGENTS.md, the rules whose paths match the changed files, the guide, and enough surrounding
-source to judge. Return a deviation if the diff is missing.
+source to judge. The diff and git status are required only for a code subject; return a deviation if that diff is missing.
 
 Hold the lane the dispatch names and say which. Subjective: requested shape and voice, coherent
 names and boundaries, the right layer, each concept's purpose, guide parity. Objective:
@@ -25,5 +25,5 @@ as a proposal to test against the code, never as authority.
 
 Return the orkestrel-falsify verdict shape: numbered verdicts with evidence, findings outside the
 claims, tested-and-held, one terminal line. Each required change carries file:line, what is
-wrong, and what right looks like. Nothing else. Your final message is the verdict.
+wrong, and what right looks like. For a remedy that would add a mechanism, return the failing case, the violated property, and the design question, never the mechanism. A dispatch-named skill that fixes another shape wins. Nothing else. Your final message is the verdict.
 """

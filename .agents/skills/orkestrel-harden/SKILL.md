@@ -1,6 +1,6 @@
 ---
 name: orkestrel-harden
-description: Research, audit, refactor, implement, centralize, test, document, and locally verify an individual Orkestrel TypeScript package to enterprise-grade production readiness under the repository's current AGENTS.md. Use when asked to fill missing or deferred capabilities, compare upstream or legacy implementations, salvage prior art, centralize source or test declarations, eliminate nested functions or superfluous wrappers, maximize declared @orkestrel dependencies—especially @orkestrel/contract—or add rigorous real-implementation and live-service tests. Select only the phases required by a narrow request; run the full workflow for production readiness or comprehensive hardening. A guide, README, or TSDoc pass on one package runs the document phase alone.
+description: Research, audit, refactor, implement, centralize, test, document, and locally verify an individual Orkestrel TypeScript package to enterprise-grade production readiness of its own contract on its supported hosts under the repository's current AGENTS.md. Use when asked to fill missing or deferred capabilities, compare upstream or legacy implementations, salvage prior art, centralize source or test declarations, eliminate nested functions or superfluous wrappers, maximize declared @orkestrel dependencies—especially @orkestrel/contract—or add rigorous real-implementation and live-service tests. Select only the phases required by a narrow request; run the full workflow for production readiness or comprehensive hardening. A guide, README, or TSDoc pass on one package runs the document phase alone.
 ---
 
 # Harden an Orkestrel package
@@ -34,7 +34,7 @@ Load [contract.md](references/contract.md) whenever the package declares `@orkes
 
 Load [centralization.md](references/centralization.md) for every structural lane and as a mandatory cleanup pass after capability or hardening work.
 
-Load [hardening.md](references/hardening.md) for the hardening lane and for any request involving concurrency, lifecycle pressure, security boundaries, real services/models, test discovery, or package inspection.
+Load [hardening.md](references/hardening.md) for the hardening lane, for any request involving concurrency, lifecycle pressure, security boundaries, real services/models, test discovery, or package inspection, and before any repair round at a seam.
 
 Load [document.md](references/document.md) for the documentation lane and for step 10 of every other lane.
 
@@ -44,30 +44,33 @@ Load [equivalence.md](references/equivalence.md) for a structural lane whose rew
 
 ## Execute the workflow
 
-1. **Bound the campaign.** Record requested outcomes, in-scope environments/domains, explicit exclusions, supported hosts, dirty files, and evidence needed for acceptance.
+1. **Bound the campaign.** Record requested outcomes, in-scope environments and domains, explicit exclusions, supported hosts, dirty files, and the evidence acceptance needs. Draw the package's bounds: the contract its types and guide promise, the hosts it supports, and each host, runtime, or harness behavior it depends on but does not own, with what the contract promises when that behavior fails. Set the campaign's stops from the package's complexity and the goal's importance (the repair effort a seam receives before a design question, the pressure a proof applies, the cost a round may spend), state each stop with its reason in `.orkestrel/<package>/plan.md`, and re-examine every stop at each phase boundary. As soon as a candidate commit exists, run the package's release chain in a fresh clone on each reachable supported host, before any review round, and rerun only the checks a later change invalidates.
 2. **Map before editing.** Trace public types, implementations, callers, tests, guides, exports, runtime boundaries, installed Orkestrel dependencies, and applicable legacy/upstream references.
-3. **Establish the intended contract.** Build a capability/defect matrix. Separate verified fact from inference. Mark each row implement, repair, retain, or exclude with a reason. The matrix is fixed at this step and is the campaign's definition of done: every later step serves a row, and work that serves no row belongs to the next campaign. The row set is fixed; the planned work that closes it is not. Re-baseline that work at each phase boundary per `.agents/orchestration.md`, which owns the step and its boundary with rescoping.
-4. **Design types first.** Update guide/spec intent and `*/types.ts` before implementation, under the root design laws. A contract that needs a compatibility shim is the wrong contract.
+3. **Establish the intended contract.** Build a capability/defect matrix inside the bounds step 1 drew, per [hardening.md](references/hardening.md) § Build the risk and seam matrix. Separate verified fact from inference. Mark each row implement, repair, retain, or exclude with a reason. Record the matrix in the tracked `.orkestrel/<package>/plan.md` as claims, a release bar, and a deferral list before the first writer: the claims are the campaign's definition of done; the bar names the observable consequences that make a finding outside the claims blocking; the deferral list holds every other finding with its owner and an observable trigger. The row set is fixed at this step: a finding a later step raises enters a row's repair or the deferral list, never the row set, and a row the user adds is a rescoping the ledger records. Re-baseline the planned work at each phase boundary per `.agents/orchestration.md`, which owns the step and its boundary with rescoping.
+4. **Design types first.** Update `*/types.ts` and record the design decision before implementation, under the root design laws; write guide prose at the root's final pass. A contract that needs a compatibility shim is the wrong contract.
 5. **Implement completely.** Finish every in-scope branch and reuse the exact installed Orkestrel primitives whose semantics match.
 6. **Prove each defect before repairing it** per the defect rule in `AGENTS.md` § Work loop. A repair with no red-then-green record is unproven.
 7. **Consolidate.** Run the complete centralization and wrapper sweep. Update all call sites to the real symbol rather than leaving aliases or 1:1 delegates.
-8. **Challenge seams.** Add deterministic tests for invariants, boundaries, failures, lifecycle, cleanup, cancellation, concurrency, malformed or unexpected input, and resource pressure as applicable, under the test rules' real-implementation law.
+8. **Challenge seams within the bounds.** Add deterministic tests for invariants, boundaries, failures, lifecycle, cleanup, cancellation, concurrency, malformed or unexpected input, and resource pressure as applicable, under the test rules' real-implementation law and [hardening.md](references/hardening.md) § Challenge lifecycle and pressure. A seam is the package's contract meeting a boundary; prove a boundary the package does not own only as far as the contract promises about it, and treat a finding past that promise per [hardening.md](references/hardening.md) § Hold the package's bounds. Set each pressure proof's load and repeat count from the defect it must expose, state them with the reason beside the proof, and accept the proof under the suite load it ships in.
 9. **Use live services deliberately.** Put real external services/models in their dedicated project, require readiness, and make each request minimally sufficient, stable across the service's nondeterminism, and behaviorally meaningful. For a foreign-client claim, apply the seam row in [hardening.md](references/hardening.md) § Use real implementations.
 10. **Document the final behavior** per [document.md](references/document.md).
 11. **Audit completion.** Run `node .agents/skills/orkestrel-harden/scripts/discovery.ts` and rule on every flag and marker it reports, then inspect source/test helper duplication, exports, environment isolation, unexpected text corruption, and the entire diff.
-12. **Verify.** Run the repository-prescribed gates in order and inspect the generated outputs relevant to the request.
-13. **Review by the size gate, never by the author.** Run the review `.agents/orchestration.md` § Size gate names for the change, resolve every required finding, then rerun the affected scoped verification.
+12. **Verify scoped.** Run the gates of the touched projects per `.agents/orchestration.md` § Size gate, in the order the package's own chain fixes, and inspect the generated outputs relevant to the request.
+13. **Review by the size gate, never by the author.** Run the review `.agents/orchestration.md` § Size gate names on the matrix's claims. Rule every finding before any repair: a finding against a claim is repaired within that claim's row; a finding outside the claims blocks only above the release bar; every other finding enters the deferral list with its owner and trigger. Class each repair's remedy per § Size gate (a correction, a design question, or a deferral), and send a finding about a boundary the package does not own to step 14 before any writer starts. Rerun the affected scoped verification after each repair.
+14. **Hold the bounds.** Before another repair round at one seam, apply the stop step 1 set for it, re-examined against the signals [hardening.md](references/hardening.md) § Hold the package's bounds names. When the stop fires, or when the seam's findings concern a boundary the package does not own, open one design question on the package's dependence on that behavior, record the decision in `plan.md`, and route the findings that remain outside the contract to the deferral list with owner and trigger. A stop keeps every claim closed and the bar unbroken; a stop that would reopen a claim is a rescoping the user rules on.
+15. **Verify tree-wide.** After the review closes, run the tree-wide gates once per `.agents/orchestration.md` § Campaign, with the release chain in a fresh clone of the candidate on each reachable supported host, and name the independent receipt per § Acceptance.
 
 ## Accept the result
 
 Completion requires:
 
-- all requested capabilities implemented or explicitly proven out of scope;
-- red-then-green evidence for every repaired defect;
+- every matrix row closed: implemented, repaired with red-then-green evidence, retained, or excluded with its reason, and no row added since step 3 without a recorded rescoping;
+- no finding above the release bar, and every other finding in the deferral list with its owner and an observable trigger;
+- every stop step 1 set honored as stated, and each design decision step 14 made recorded in `plan.md`;
 - public contract, implementation, tests, guides, and generated outputs aligned;
-- no unresolved centralization, wrapper, dependency-reuse, test-discovery, lifecycle, security, or text-integrity finding;
-- exact command evidence for every final gate.
+- the centralization, wrapper, dependency-reuse, test-discovery, and text-integrity sweeps run, each hit repaired within a row or deferred with its owner;
+- the release chain green in a fresh clone of the accepted commit on each reachable supported host, with exact command evidence for every final gate and the independent receipt `.agents/orchestration.md` § Acceptance names.
 
-Passing tests without an adequacy review, and a builder's self-report, are not completion evidence. When every row is closed and the gates are green, stop per `AGENTS.md` § Work loop.
+Passing tests without an adequacy review, and a builder's self-report, are not completion evidence. When every row is closed, no finding stands above the bar, and the gates are green, stop per `AGENTS.md` § Work loop; a finding below the bar reopens nothing.
 
-Report what changed, what evidence proves it, exact test/gate results, and any genuine residual risk.
+Report what changed, what evidence proves it, exact test/gate results, the deferral list, and any genuine residual risk.

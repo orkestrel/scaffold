@@ -21,7 +21,7 @@ before relying on a capability those pages name. .agents/platforms/ owns the hos
 
 Hooks: .codex/hooks.json runs the orkestrel-dispatch sweep script (node
 .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report) on SessionStart and git diff --check
-on Stop. Every script an agent writes is TypeScript run by node, per AGENTS.md.
+on Stop.
 """
 
 [agents]

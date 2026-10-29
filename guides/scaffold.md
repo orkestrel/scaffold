@@ -2012,9 +2012,9 @@ question, and a person decides whether the generated toolchain supports it.
 
 `TOOLCHAIN_HOLDS` records framework-specific ranges. `blueprintToToolchainHolds` selects those
 rows from the blueprint's occupied browser framework faces. A `src/vue` or `app/vue` face selects
-TypeScript `^6.0.3`: no stable `vue-tsc` runs on TypeScript 7, `@volar/typescript@2.4.30` declares
-the peer range `typescript <7`, and the TypeScript 7.0 announcement directs Vue projects to stay
-on TypeScript 6.0. Every workspace without that extension receives TypeScript `^7.0.2`.
+TypeScript `^6.0.3`: no stable `vue-tsc` runs on TypeScript 7, `vue-tsc` resolves
+`typescript/lib/tsc`, which TypeScript 7.0.2 does not export, and the TypeScript 7.0 announcement
+directs Vue projects to stay on TypeScript 6.0. Every workspace without that extension receives TypeScript `^7.0.2`.
 For a selected hold, `audit` reports the hold and its reason in place of the newer-major question
 and reports a declaration past the hold. A non-Vue workspace on TypeScript 7 raises no hold
 question. The constants proof ties each hold to its framework's planned range and scaffold's
@@ -2935,8 +2935,8 @@ The generated guide index lists each occupied Vue face with its source, tests, a
   rendering, and the failure envelope.
 - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
 - [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
-  mirrors, the root setup mirror, suppressions, the rule map, filenames, manifest scripts, skills,
-  bridges, the prose sweep over every authored Markdown file, and the text-integrity sweep over the
+  mirrors, the root setup mirror, suppressions, imports into `dist/`, the rule map, filenames, manifest
+  scripts, skills, bridges, the prose sweep over every authored Markdown file, and the text-integrity sweep over the
   authored and source text. The syntax-shaped laws are the
   rules of the vendored oxlint plugin `configs/policy.ts`, proven in `tests/config.test.ts`.
 - [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases, projects,

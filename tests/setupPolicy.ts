@@ -39,6 +39,7 @@ import { stripPolicyCode, textToPolicyHits } from '../configs/policy.js'
 /** Names a rule the fleet sweep decides from workspace text and paths. */
 export type PolicyRule =
 	| 'bridge'
+	| 'dist'
 	| 'mirror'
 	| 'portability'
 	| 'prose'
@@ -905,6 +906,12 @@ export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
 	'*.{cjs,css,cts,js,jsx,mjs,mts,scss,ts,tsx,vue}',
 	'.agents/skills/*/scripts/*.ts',
 ])
+
+/** Matches the TypeScript files inspected for an import that resolves into the built output. */
+export const POLICY_DIST_GLOB = '{src,app,tests,configs}/**/*.{cts,mts,ts,tsx}'
+
+/** Names the workspace-relative directory the build writes and no tracked TypeScript imports. */
+export const POLICY_DIST_ROOT = 'dist'
 
 /**
  * Matches the instruction, configuration, and root text files the text sweep reads beside the
@@ -2444,6 +2451,49 @@ export function collectPolicySpecifiers(node: unknown): readonly string[] {
 }
 
 /**
+ * Inspects the tracked TypeScript for an import that resolves into the workspace's built output.
+ *
+ * @remarks
+ * `npm run check` runs before `npm run build`, so a clean clone holds no `dist/` for such an import to
+ * resolve. Each relative specifier of a static `import`, an `export … from`, and an `import()` with a
+ * literal source resolves against its file's directory. An `import()` with a computed source names
+ * no specifier and is left out. A file the parser refuses reports a violation, because its
+ * specifiers cannot be read.
+ *
+ * @param root - The workspace root to inspect.
+ * @returns One violation per import into `dist/`, and one per unparsed file, in path order.
+ */
+export function inspectPolicyDist(root: string): readonly PolicyViolation[] {
+	return globSync(POLICY_DIST_GLOB, { cwd: root })
+		.map(normalizePolicyPath)
+		.sort()
+		.flatMap((path) => {
+			const source = parseSync(path, readFileSync(join(root, path), 'utf8'))
+			const [failure] = source.errors
+			if (failure !== undefined) {
+				return [
+					createPolicyViolation('dist', path, `tracked TypeScript parses: ${failure.message}`),
+				]
+			}
+			const directory = dirname(join(root, path))
+			return collectPolicySpecifiers(source.program)
+				.filter((specifier) => specifier.startsWith('.'))
+				.flatMap((specifier) => {
+					const target = normalizePolicyPath(relativePath(root, resolve(directory, specifier)))
+					return target === POLICY_DIST_ROOT || target.startsWith(`${POLICY_DIST_ROOT}/`)
+						? [
+								createPolicyViolation(
+									'dist',
+									path,
+									`tracked TypeScript imports nothing from dist, which exists only after npm run build: ${specifier}`,
+								),
+							]
+						: []
+				})
+		})
+}
+
+/**
  * Inspects one skill script proof for an import of a skill file other than the script it proves.
  *
  * @remarks
@@ -3640,13 +3690,14 @@ export function inspectPolicySurface(root: string): readonly PolicyViolation[] {
  * Inspects every policy rule across one workspace.
  *
  * @param root - The workspace root to inspect.
- * @returns Every mirror, suppression, text, skill, bridge, portability, prose, and surface
- * violation.
+ * @returns Every mirror, suppression, dist import, text, skill, bridge, portability, prose, and
+ * surface violation.
  */
 export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[] {
 	return [
 		...inspectPolicyMirrors(root),
 		...inspectPolicySuppressions(root),
+		...inspectPolicyDist(root),
 		...inspectPolicyText(root),
 		...inspectSkillFamily(root),
 		...inspectSkillBridges(root),
@@ -5015,6 +5066,150 @@ export const PORTABILITY_POLICY_CONTROLS: readonly PolicyControl[] = Object.free
 		rule: 'portability',
 		message: 'scripts holds .sh files and nothing else',
 		files: [{ path: 'scripts/probe.ts', content: '' }],
+	},
+])
+
+/**
+ * Holds the message prefix a dist-import violation carries, written out so the controls read the
+ * production message from a second copy.
+ */
+export const DIST_POLICY_MESSAGE =
+	'tracked TypeScript imports nothing from dist, which exists only after npm run build'
+
+/**
+ * Lists the physical controls for every import into the built output the workspace route refuses
+ * and admits.
+ *
+ * @remarks
+ * Each refusal sits beside an admission drawn from outside its population, so a sweep that reports
+ * nothing because it read nothing fails a refusal. The admissions cover a specifier the rule does
+ * not read, a path that only resembles the output directory, and a directory the rule does not walk.
+ */
+export const DIST_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+	{
+		label: 'rejects a static import that resolves into dist',
+		membership: 'static import specifiers of source, app, test, and config TypeScript',
+		rule: 'dist',
+		files: [
+			{
+				path: 'tests/src/server/control.ts',
+				content:
+					"import { createServer } from '../../../dist/src/server/index.js'\nvoid createServer\n",
+			},
+		],
+		violations: [
+			{
+				rule: 'dist',
+				path: 'tests/src/server/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../../dist/src/server/index.js`,
+			},
+		],
+	},
+	{
+		label: 'rejects a type import that resolves into dist',
+		membership: 'static import specifiers of source, app, test, and config TypeScript',
+		rule: 'dist',
+		files: [
+			{
+				path: 'configs/control.ts',
+				content:
+					"import type { Sample } from '../dist/src/core/index.js'\nexport type Held = Sample\n",
+			},
+		],
+		violations: [
+			{
+				rule: 'dist',
+				path: 'configs/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../dist/src/core/index.js`,
+			},
+		],
+	},
+	{
+		label: 'rejects a re-export that resolves into dist',
+		membership: 'export-from specifiers of source, app, test, and config TypeScript',
+		rule: 'dist',
+		files: [
+			{
+				path: 'src/core/control.ts',
+				content: "export * from '../../dist/src/core/index.js'\n",
+			},
+		],
+		violations: [
+			{
+				rule: 'dist',
+				path: 'src/core/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../dist/src/core/index.js`,
+			},
+		],
+	},
+	{
+		label: 'rejects a dynamic import with a literal specifier that resolves into dist',
+		membership: 'import() expressions with a string-literal source',
+		rule: 'dist',
+		files: [
+			{
+				path: 'app/server/control.ts',
+				content: "export const load = () => import('../../dist/app/server/main.js')\n",
+			},
+		],
+		violations: [
+			{
+				rule: 'dist',
+				path: 'app/server/control.ts',
+				message: `${DIST_POLICY_MESSAGE}: ../../dist/app/server/main.js`,
+			},
+		],
+	},
+	{
+		label: 'admits a dynamic import with a computed specifier',
+		membership: 'import() expressions with a computed source',
+		rule: 'dist',
+		files: [
+			{
+				path: 'src/core/control.ts',
+				content:
+					"const entry = '../../dist/src/core/index.js'\nexport const load = () => import(entry)\nexport const select = (name: string) => import(`../../dist/${name}.js`)\n",
+			},
+		],
+		violations: [],
+	},
+	{
+		label: 'admits a package specifier and a dist path held only as text',
+		membership: 'specifiers the rule resolves, beside strings and comments it does not read',
+		rule: 'dist',
+		files: [
+			{
+				path: 'tests/control.ts',
+				content:
+					"// import '../dist/src/core/index.js'\nimport { it } from 'vitest'\nexport const path = '../dist/src/core/index.js'\nvoid it\n",
+			},
+		],
+		violations: [],
+	},
+	{
+		label: 'admits a dist directory that is not the workspace output',
+		membership: 'relative specifiers that resolve outside the root dist directory',
+		rule: 'dist',
+		files: [
+			{
+				path: 'src/core/control.ts',
+				content:
+					"import './dist/index.js'\nimport '../distribution/index.js'\nimport '../../../sibling/dist/index.js'\n",
+			},
+		],
+		violations: [],
+	},
+	{
+		label: 'admits an import into dist from a directory the rule does not walk',
+		membership: 'TypeScript outside src, app, tests, and configs',
+		rule: 'dist',
+		files: [
+			{
+				path: 'scripts/control.ts',
+				content: "import '../dist/src/core/index.js'\n",
+			},
+		],
+		violations: [],
 	},
 ])
 

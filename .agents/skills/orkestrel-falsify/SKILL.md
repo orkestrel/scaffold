@@ -42,10 +42,10 @@ Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/
 
 Every lane returns exactly this:
 
-1. Numbered verdicts in claim order, one value each: `CONFIRMED` (held against a falsification attempt, with the attempt), `BROKEN` (the failing input, state, or interleaving plus the smallest correct fix), `UNRESOLVED` (what would settle it; a claim whose only evidence is the writer's report), `NOT-EVIDENCED` (the capture that is missing).
+1. Numbered verdicts in claim order, one value each: `CONFIRMED` (held against a falsification attempt, with the attempt), `BROKEN` (the failing input, state, or interleaving), `UNRESOLVED` (what would settle it; a claim whose only evidence is the writer's report), `NOT-EVIDENCED` (the capture that is missing). `BROKEN` carries the smallest correct fix only where that fix adds no mechanism; otherwise it carries the violated property and the design question it opens.
 2. Findings outside the claims, each substantiated to the `BROKEN` standard. After them, list each cost finding that `.claude/rules/quality.md` § Performance rules advisory, marked `ADVISORY`; an advisory never enters the terminal line.
 3. Tested and held: tests no verdict line carries, and the adjacent behavior that looks like the defect and is correct.
-4. One terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>; outside the claims: <finding ids or none>`. `PASS` needs every claim `CONFIRMED` and no substantiated outside finding.
+4. One terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>; outside the claims: <finding ids or none>`. `PASS` needs every claim `CONFIRMED` and no outside finding in the terminal line. An outside finding enters the terminal line only above the bar the brief names, and no severity word moves a finding across that bar.
 
 Before confirming a claim about a proof, the lane names the mutation that would make the proof fail and states whether the assertions distinguish it. No process diary.
 
@@ -66,4 +66,4 @@ Write `.orkestrel/<package>/<unit>-audit-verdict.md` with the lanes that ran, th
 
 ## End the depth search
 
-When review rounds at one seam keep surfacing defects without converging on their source, name what the audit is for, dispatch one blind lens per station of the stream the defect moves along, locate the source, and plan from the source. A subject that reprices on every edit (a count, a census) is not a seam; drop the claim.
+Enter the depth search at the stop § Size gate set for the seam or when its signals appear, and end it with a design decision, never a repair row. Name what the audit is for, dispatch one blind lens per station of the stream the defect moves along, locate the source, and plan from the source. A subject that reprices on every edit (a count, a census) is not a seam; drop the claim.

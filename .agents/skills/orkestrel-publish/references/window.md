@@ -163,7 +163,7 @@ the same status. Rule from the evidence, never from which cause reads likelier.
 
 ## Read the verdict from the registry
 
-- Confirm a layer with `node .agents/skills/orkestrel-publish/scripts/window.ts --confirm <name@version>...`, which re-reads the registry until it serves each version or the wait ends.
+- Confirm a layer with `node .agents/skills/orkestrel-publish/scripts/window.ts --confirm <name@version>...`, which re-reads the registry until it serves each version or the wait ends. `--confirm` prints `results`; read that key.
 
 - Read `+ @orkestrel/<name>@<version>` in the upload's own journal as the accepted verdict, and
   advance the chain on it. The registry's read lags its processing by minutes, which the

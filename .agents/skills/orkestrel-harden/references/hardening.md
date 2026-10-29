@@ -1,23 +1,25 @@
 # Production hardening
 
-This reference governs the hardening lane: the risk and seam matrix, real-implementation testing, live-service tests, lifecycle pressure, security paths, the test audit, and generated outputs.
+This reference governs the hardening lane: the package's bounds, the risk and seam matrix, real-implementation testing, live-service tests, lifecycle pressure, holding the bounds, security paths, the test audit, and generated outputs.
 
 ## Build the risk and seam matrix
 
-List every boundary where assumptions can fail:
+Draw the matrix inside the package's bounds: the contract its types and guide promise and the hosts it supports. A boundary the package crosses but does not own (the host filesystem's locking and handle semantics, a runtime's scheduling, a harness's sandbox, a scanner's hold on a file) enters the matrix only as the contract's promise about it: what the package does when that boundary fails, never how the boundary behaves.
+
+List every boundary where the contract's assumptions can fail:
 
 - public inputs and option combinations;
 - empty, missing, minimum, maximum, overflow, `NaN`, infinity, and signed-zero values;
 - invalid state transitions and repeated lifecycle operations;
 - partial work, abort, timeout, retry, pause/resume, stop/destroy, and cleanup;
 - concurrency, reentrancy, ordering, idempotency, fairness, and backpressure;
-- filesystem, process, socket, protocol, browser, model, and network boundaries;
+- filesystem, process, socket, protocol, browser, model, and network boundaries, each marked owned or not owned;
 - malformed or unexpected strings, paths, headers, frames, JSON, prototypes, getters, and proxies;
 - resource ownership, leaks, teardown, and pressure;
-- environment isolation and unsupported-host behavior;
+- environment isolation, and the contract's refusal or degradation on an unsupported host;
 - serialization, restore, public exports, and consumer ergonomics.
 
-For each applicable seam, state the invariant, failure mode, observable result, and proving test. Omit irrelevant generic cases rather than creating meaningless tests.
+For each applicable seam, state the invariant, the failure mode, the observable result, the proving test, and whether the package owns the boundary. Omit irrelevant generic cases rather than creating meaningless tests.
 
 ## Use real implementations
 
@@ -69,7 +71,17 @@ Exercise:
 - cancellation propagation and bounded shutdown;
 - no busy polling, open handles, leaked processes, sessions, pages, files, or listeners.
 
-Use bounded pressure tests that expose coordination defects without making the suite gratuitously slow.
+Set each pressure proof's load, concurrency, and repeat count from the coordination defect it must expose, state them with the reason beside the proof, accept the proof under the suite load it ships in, and re-examine the figures when the proof's cost outgrows what it exposes.
+
+## Hold the package's bounds
+
+A seam's finding concerns the package when it falsifies a promise the contract makes; it concerns the host when it describes how a boundary the package does not own behaves.
+
+- When a finding falsifies a promise, repair it within its row and close the repair with the mutation probe `.agents/orchestration.md` § Size gate names.
+- When a finding describes a host behavior the contract never promised to survive, open one design question on the package's dependence on that behavior: remove the dependence, narrow the promise, or refuse on that host. Never add a mechanism around the behavior.
+- When a finding is outside the bounds and below the release bar, record it in the deferral list with an owner and an observable trigger, and reopen it only when the trigger fires.
+- Before another round at one seam, weigh a further repair against a design question and re-examine the stop set for that seam; stop when a round introduces as many defects as it closes, a repair adds a mechanism, findings move from the contract to the host, findings stop converging on a source, or the cost outgrows the goal's importance. `.agents/orchestration.md` § Size gate owns the general stop law; this list names the hardening lane's signals.
+- A seam that reprices on every edit (a count, a timing) is not a seam; drop the claim per the `orkestrel-falsify` skill § End the depth search.
 
 ## Audit security and destructive paths
 

@@ -1614,7 +1614,12 @@ describe('blueprintToWritableScripts', () => {
 			scripts.prepack,
 			scripts.prepublishOnly,
 		])
-		for (const script of region.slice(0, 6)) expect(script.accepted).toEqual([])
+		for (const script of region.slice(0, 6).filter(({ name }) => name !== 'test:bench')) {
+			expect(script.accepted).toEqual([])
+		}
+		expect(region[4]?.accepted).toEqual([
+			'vitest bench --config vite.config.ts --no-cache --project probe',
+		])
 		// The generated predecessor copied the build chain instead of delegating to
 		// it, so the region accepts that value while moving targets to the delegate.
 		expect(region[6]?.accepted).toEqual([scripts.build])
@@ -1750,6 +1755,26 @@ describe('replaceManifestScripts', () => {
 		expect(JSON.parse(replaceManifestScripts(customized, region) ?? '')).toMatchObject({
 			scripts: { prepublishOnly: `${gates} && npm test && npm run verify` },
 		})
+	})
+
+	it('upgrades the published predecessor of test:bench and retains an unknown value', () => {
+		const region = blueprintToWritableScripts(buildBlueprint({ src: ['core'] }))
+		const planned =
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark'
+		expect(blueprintToScripts(buildBlueprint({ src: ['core'] }))['test:bench']).toBe(planned)
+		const earlier = 'vitest bench --config vite.config.ts --no-cache --project probe'
+		const manifest = JSON.stringify({ scripts: { 'test:bench': earlier } }, null, '\t')
+		expect(JSON.parse(replaceManifestScripts(manifest, region) ?? '')).toMatchObject({
+			scripts: { 'test:bench': planned },
+		})
+
+		// A value the package customized is retained, so the upgrade is not a blanket overwrite.
+		const unknown =
+			'vitest bench --config vite.config.ts --no-cache --project probe --reporter=json'
+		const customized = JSON.stringify({ scripts: { 'test:bench': unknown } }, null, '\t')
+		const retained = replaceManifestScripts(customized, region)
+		expect(JSON.parse(retained ?? '')).toMatchObject({ scripts: { 'test:bench': unknown } })
+		expect(retained).not.toContain(planned.slice(planned.indexOf('--project')))
 	})
 
 	it('leaves a manifest that already carries every command exactly as it found it', () => {
@@ -2757,6 +2782,8 @@ describe('blueprintToScripts config projects', () => {
 			'\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {',
 		)
 		expect(blueprintToRootVite(enabled)).toContain('return mergeOverride(project, override)')
+		expect(blueprintToRootVite(enabled)).toContain('\t\t\t\tui: false,\n')
+		expect(blueprintToRootVite(disabled)).not.toContain('ui: false')
 		expect(blueprintToRootVite(enabled)).toContain(
 			"exclude: ['tests/app/browser/integration.test.ts']",
 		)

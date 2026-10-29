@@ -818,7 +818,7 @@
 			}
 		},
 		{
-			"files": ["tests/setup*.test.ts"],
+			"files": ["tests/setup*.test.ts", "tests/setup*.bench.ts"],
 			"rules": {
 				"no-restricted-imports": [
 					"error",

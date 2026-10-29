@@ -52,7 +52,9 @@ describe('toolchain holds', () => {
 			expect(blueprintToDevDependencies(blueprint)[name]).toBe(hold.range)
 			expect(extractRangeMajor(hold.range)).toBe(6)
 			expect(extractRangeMajor(declared[name] ?? '')).toBe(7)
-			expect(hold.reason).toContain('@volar/typescript@2.4.30')
+			expect(hold.reason).toContain('vue-tsc resolves typescript/lib/tsc')
+			expect(hold.reason).toContain('TypeScript 7.0.2 does not export')
+			expect(hold.reason).not.toContain('@volar/typescript')
 			expect(Object.isFrozen(hold)).toBe(true)
 		}
 		expect(Object.isFrozen(TOOLCHAIN_HOLDS)).toBe(true)

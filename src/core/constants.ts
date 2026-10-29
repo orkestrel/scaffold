@@ -674,7 +674,7 @@ export const TOOLCHAIN_HOLDS: Readonly<Record<string, ToolchainHold>> = Object.f
 		framework: 'vue',
 		range: '^6.0.3',
 		reason:
-			'Vue workspaces require TypeScript 6.0.3 because no stable vue-tsc runs on TypeScript 7: @volar/typescript@2.4.30 declares peer typescript <7, and the TypeScript 7.0 announcement directs Vue projects to stay on TypeScript 6.0',
+			'Vue workspaces require TypeScript 6.0.3 because no stable vue-tsc runs on TypeScript 7: vue-tsc resolves typescript/lib/tsc, which TypeScript 7.0.2 does not export, and the TypeScript 7.0 announcement directs Vue projects to stay on TypeScript 6.0',
 	}),
 })
 

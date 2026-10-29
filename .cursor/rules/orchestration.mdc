@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## Posture
 
-- Invoked through the `grok` bridge (`agent -p --mode=ask`): act as a read-only executor. Return distilled evidence with `file:line` pointers. Never edit, decide, or accept.
+- Invoked through the `grok` bridge (`agent -p --mode=ask`): act as the `grok` role per `.agents/orchestration.md` § Roles and § Engines. Return distilled evidence with `file:line` pointers.
 - Driven by the user: act as the Orchestrator per `.agents/orchestration.md`, on Grok.
 - `.agents/skills/orkestrel-parallel/references/cursor.md` owns Cursor's lane mechanics and quirks; `.agents/platforms/` owns the host shell.
 
