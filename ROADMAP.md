@@ -50,6 +50,3 @@ stays true.
 - **65.** Rule whether the one-Grok-lane limit in `.agents/orchestration.md` § Parallelism and the `max_concurrent_threads_per_session` setting in `.codex/config.toml` are bench or tool limits, which stay, or capacity choices the plan sets under `.agents/skills/orkestrel-parallel/SKILL.md` § Bound the host, which leave the instruction files.
 - **66.** Run the `CAPTURE_UPSTREAM` check for the seeded `journey` and `capture` scripts, as the capture dependency already does. Reopen when a capture command is renamed.
 - **67.** Rename `ScriptStep.running` in `src/bin/types.ts`, a flag named with a lifecycle word, under `.claude/rules/names.md`. Reopen when the fleet -ing campaign reaches scaffold.
-- **68.** Await the journey wrapper's result in `tests/config.test.ts` (`resolves showcase and journey modes for every occupied application`, the `Reflect.apply(wrapper, …)` read), as the same case already awaits each project factory.
-  - Vite's `defineConfig` accepts an async factory, and `@orkestrel/capture`'s consumer fixture uses one. A consumer that copies that fixture fails the case with `Expected a configuration record`. Veneer met it adopting capture 0.0.1, and its wrapper keeps the guide's synchronous shape.
-  - The file is vendored, so the fix ships in the next release and its `repair` visits.

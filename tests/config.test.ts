@@ -504,8 +504,9 @@ describe('selected faces', () => {
 		for (const wrapper of wrappers) {
 			if (typeof wrapper !== 'function') throw new Error('Missing journey wrapper factory')
 			for (const application of applications) {
+				// Vite accepts an async config factory, so the wrapper's result is awaited like each project's.
 				const composed = readConfigRecord(
-					Reflect.apply(wrapper, undefined, [{ command: 'serve', mode: application }]),
+					await Reflect.apply(wrapper, undefined, [{ command: 'serve', mode: application }]),
 				)
 				const projects = readConfigRecord(composed.test).projects
 				if (!Array.isArray(projects) || projects.length === 0)

@@ -1306,7 +1306,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "050bdbd02bd6bc85acc98274f4ee5922c5906a4b1b1b6c8d0c20e8b83f9b0d08"
+			"digest": "1e8e35c602078aacf2e40e1bb997af96f6b491f5acc57a804bb315f9a33d0d28"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "7aa471d4e9a94b804b61729c98dc83a48ca0e85c1f1afed1a48739f838eb6ec9"
+	"digest": "d764520ad345c57c046166547c3bcbcf00f39c75ca31b101e8d56692b450ea8b"
 }
