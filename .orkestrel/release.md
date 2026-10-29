@@ -199,6 +199,17 @@ The actual `prepublishOnly` chain passed, exit 0 uncapped in 931651 ms. Format, 
 
 Agent and Study campaign custody has left Scaffold, including the older tree recovered during main integration. After registry confirmation, Agent and Study must re-pin the Scaffold development dependency, run repair, and verify their gates against the published artifact. Those consumer visits do not authorize an Agent or Study release.
 
+## Scaffold 0.0.112, 2026-10-29
+
+The release carries two process laws, both on the user's direction:
+- `.agents/orchestration.md` § Pace reruns a check only when a change could alter what it proved, runs the narrowest check that covers the change, and names the covering receipt for each check a brief does not rerun (`f6ce8c433`).
+- `AGENTS.md` § Work loop runs the format check, lint, and type check over the changed scope before any test, build, or long run. It replaces the order that ran behavior tests first and format and lint in a final pass. The `orkestrel-dispatch` acceptance order, the brief template, and both `verifier` charters follow it (`8f4248f7a`).
+
+Release-chain notes:
+- Before the chain, format, lint, and the type check passed on the bump commit.
+- `0fa3cb06e` passed every step on a fresh clone: `npm test` 3,428 passed, templates 91, and release-mode distribution 11 passed with the npm-floor case skipped.
+- **Scaffold 0.0.112: published** 2026-10-29 from `0fa3cb06e`, with the user's one-time code. `window.ts --publish` answered accepted and unconfirmed, and `--confirm` served it within the wait.
+
 ## Scaffold 0.0.111, 2026-10-29
 
 The release carries one conformance fix:
