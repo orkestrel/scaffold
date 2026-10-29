@@ -7,6 +7,7 @@ import {
 	runSkillScript,
 	TITLES_AMBIGUITIES,
 	TITLES_EXPRESSIONS,
+	TITLES_NUMBER_DIVISIONS,
 	TITLES_POSITIONS,
 	TITLES_QUOTES,
 	TITLES_REFUSED_ARGUMENTS,
@@ -188,6 +189,26 @@ describe('titles.ts', () => {
 			scratch.destroy()
 		}
 	})
+
+	it.each(TITLES_NUMBER_DIVISIONS)(
+		'preserves division after a numeric literal: %s',
+		(expression) => {
+			const scratch = createScratch({ prefix: 'titles-number-division-' })
+			try {
+				scratch.write('tests/read.test.ts', `it('reads', () => {})\n${expression}\n`)
+				createRepository(scratch.path)
+				trackFiles(scratch.path)
+				commitFiles(scratch.path)
+				const run = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+					cwd: scratch.path,
+				})
+				expect(run.status).toBe(0)
+				expect(run.json).toMatchObject({ count: 1, missing: [], moved: [] })
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
 
 	it.each(TITLES_TERMINATORS)('accepts escaped string continuations: %j', (terminator) => {
 		const scratch = createScratch({ prefix: 'titles-continuation-' })

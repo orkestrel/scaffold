@@ -41,6 +41,7 @@ Each row is a scaffold defect the wave found, fixed on scaffold's `main` and shi
 
 1. **Vitest 5's file-system module cache breaks command-loaded source.** Vitest 5.0.5 reads a cached module's code as bytes (`readFile(result.tmp)` with no encoding in its server module runner's transport), and Vite 8.3.5's `prepareStackTrace` hook then throws `code.charCodeAt is not a function` on every stack read inside source a browser command loads through `context.project.vitest.import`, which `.claude/rules/workspace.md` § Configuration authority prescribes. The generated root configuration and scaffold's own set `fsModuleCache: false`, the rule names why, and `tests/src/core/compilers.test.ts` pins it; measured in `@orkestrel/test`'s `chooseFiles` case, red with the cache on and green with `--fsModuleCache=false`, on 2026-10-29.
 2. **The visit's re-pin collapses a disjunctive range.** `computeRanges` in `.agents/skills/orkestrel-publish/scripts/wave.ts` replaced every audited range with one caret, so the pin step narrowed `typescript: ^6.0.3 || ^7.0.2` to `^6.0.3` and `vitest: ^4.1.12 || ^5.0.5` to `^4.1.12` in the peer blocks of probe, test, and capture on 2026-10-29. Probe reads its peer range at run time, so its rebuilt server refused TypeScript 7.0.2 at its handshake. `moveRange` moves only the arm in the release's major, `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository states it, and the wave proof pins it; a mutation that restores the collapse reddened that case alone (1 failed, 58 passed). The three peer blocks are restored by hand until the re-pin runs on the release.
+3. **The title census reads division after a decimal as a regular expression.** `.agents/skills/orkestrel-harden/scripts/titles.ts` admits a slash as division only after an identifier, a closing bracket, `++`, or `--`, so a decimal literal such as `0.5` before ` / 255` opened a regex and the census refused `tests/src/browser/colors/helpers.test.ts` in test with `Unclosed regex token`. The operand pattern admits the numeric-literal token the lexer reads, and `TITLES_NUMBER_DIVISIONS` pins it; the case failed before the fix, a mutation that drops the form reddened it alone (1 failed, 90 passed), and test's census then read 1,362 baseline titles.
 
 ## Visit procedure
 
@@ -72,6 +73,14 @@ Run these steps for each package, in order, with the checkout's `main` clean apa
 - Back every behavior change with real-implementation tests.
 - Each brief states the package's stop and its reason, from its complexity and the goal; the pass ends at that stop or at an overdoing signal `.agents/orchestration.md` § Size gate names, and never holds up the layer.
 
+## Renames
+
+Each published rename a realignment made, which every consumer adopts at its re-pin.
+
+| Package | Old | New | Rule |
+| --- | --- | --- | --- |
+| html | `HTMLTag.closing` | `HTMLTag.final` | `.claude/rules/names.md` § General vocabulary |
+
 ## Lanes
 
 - One runner lane runs every install, test, build, visit, and release chain on the host, one at a time.
@@ -100,6 +109,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - **The visit resolves a bin package's own executable as scaffold.** `resolveScaffold` in `.agents/skills/orkestrel-publish/scripts/wave.ts` falls back to the target's `dist/bin/main.js` when `node_modules` holds no scaffold, so a bin package with no install runs its own executable as scaffold. § Visit procedure step 1 installs first. The regeneration proofs in `tests/agents/skills/orkestrel-publish/scripts/wave.test.ts` stage their fake scaffold at the target's own `dist/bin/main.js` so it survives the moved `node_modules`, so a fix redesigns those fixtures. Owner: scaffold. Trigger: scaffold's release after L7.
 - **The visit keeps the declared toolchain major.** The pin and the overwrite keep each declared major, so the Vitest 5 and TypeScript 7 move is § Visit procedure step 4, by hand. Owner: scaffold, as a design question on whether a visit lifts to the canon's major. Trigger: scaffold's release after L7.
 - **The vendored Codex probe entry carries a relative path and no `cwd`.** `.codex/config.toml` registers `probe` as `node_modules/@orkestrel/probe/dist/bin/main.js` with no `cwd`, so a same-named user-level entry that sets `cwd` and `required` resolves that path inside another checkout, and every session that loads both fails to start. The probe checkout's `node_modules/@orkestrel/probe` junction to the checkout itself holds the merged path until probe's visit reinstalls it. Owner: scaffold. Trigger: probe's visit at L5, or scaffold's release after L7, whichever comes first.
+- **Legacy distribution harnesses launch npm through a shell.** The package-authored `tests/distribution.test.ts` of 44 catalog packages names `npm.cmd` and spawns it with `shell: true` on Windows, which `.claude/rules/portability.md` § Processes and executables refuses; scaffold's emitted proof runs through the vendored `tests/setupDistribution.ts` harness instead. Owner: each package, by moving its proof onto that harness. Trigger: the package's next hardening campaign, or a distribution run that fails on a shell-sensitive path.
+- **Test's guide proof reads its own build.** `tests/guides.test.ts:9` in test imports `readInventory` from `@orkestrel/test/server`, which the package's own `exports` resolves to `dist/src/server`, so the guide run needs a build first; the gate chain builds before `test`, so no gate reddens. Owner: test, with scaffold's guide-command source loading. Trigger: `npm run test:guides` in a checkout with no build output.
 - **No catalog package carries an app face.** The trial in § Sequence step 1 covered core, browser, server, and bin; the app face is proved by scaffold's `test:templates` project alone. Owner: scaffold. Trigger: a catalog package adds an `app/` environment.
 
 ## State

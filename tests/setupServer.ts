@@ -5205,6 +5205,14 @@ export const TITLES_EXPRESSIONS: readonly string[] = Object.freeze([
 	'function read() { return {} / 3 / 2 }',
 ])
 
+/** Holds divisions whose left operand is a numeric literal the lexer reads as one token. */
+export const TITLES_NUMBER_DIVISIONS: readonly string[] = Object.freeze([
+	'const share = 1 - 0.5 / 255',
+	'const share = 1e3 / 2 / 5',
+	'const share = 0x10 / 4 / 2',
+	'const share = 1_000 / 10 / 2',
+])
+
 /** Supplies line terminator sequences for escaped and unescaped string boundaries. */
 export const TITLES_TERMINATORS: readonly string[] = Object.freeze([
 	'\r\n',

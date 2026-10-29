@@ -349,7 +349,7 @@ export class TokenScanner {
 					previous.prefix === true ||
 					(previous.category === 'code' &&
 						(REGEX_PREFIX.test(spelling) ||
-							!/^(?:[\p{ID_Continue}$]+|[\])}]|\+\+|--)$/u.test(spelling))))
+							!/^(?:[\p{ID_Continue}$]+|\d[\w.]*|[\])}]|\+\+|--)$/u.test(spelling))))
 			const category = rest.startsWith('//')
 				? 'line'
 				: rest.startsWith('/*')
