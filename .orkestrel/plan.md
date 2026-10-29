@@ -33,7 +33,13 @@ Each package is the repository `https://github.com/orkestrel/<name>` checked out
 
 ## Scaffold pin
 
-- The wave pins `@orkestrel/scaffold` `^0.0.112`. The trial of § Sequence step 1 found no scaffold defect that blocks a visit, so no scaffold release precedes L0; the defects it found that block nothing are rows of § Deferred.
+- The wave pins the one scaffold release that carries every row of § Scaffold release. That release publishes after every layer's realignment and before L0 publishes, on the user's ruling of 2026-10-29; until then each checkout runs on scaffold 0.0.112, and a gate the pending release changes runs with the release's fix applied as a command-line equivalent.
+
+## Scaffold release
+
+Each row is a scaffold defect the wave found, fixed on scaffold's `main` and shipped in the one release § Scaffold pin names.
+
+1. **Vitest 5's file-system module cache breaks command-loaded source.** Vitest 5.0.5 reads a cached module's code as bytes (`readFile(result.tmp)` with no encoding in its server module runner's transport), and Vite 8.3.5's `prepareStackTrace` hook then throws `code.charCodeAt is not a function` on every stack read inside source a browser command loads through `context.project.vitest.import`, which `.claude/rules/workspace.md` § Configuration authority prescribes. The generated root configuration and scaffold's own set `fsModuleCache: false`, the rule names why, and `tests/src/core/compilers.test.ts` pins it; measured in `@orkestrel/test`'s `chooseFiles` case, red with the cache on and green with `--fsModuleCache=false`, on 2026-10-29.
 
 ## Visit procedure
 
@@ -89,7 +95,7 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 ## Deferred
 
 - **The visit records a formatter rewrite as unrelated work.** The `record` step of `wave.ts` refuses a path the visit's own `format` step rewrote, so every package whose owned files the oxfmt move reformats needs the hand record of § Visit procedure step 3. Owner: scaffold. Trigger: scaffold's release after L7.
-- **The visit resolves a bin package's own executable as scaffold.** `resolveScaffold` in `.agents/skills/orkestrel-publish/scripts/wave.ts` falls back to the target's `dist/bin/main.js` when `node_modules` holds no scaffold, so a bin package with no install runs its own executable as scaffold. § Visit procedure step 1 installs first. Owner: scaffold. Trigger: scaffold's release after L7.
+- **The visit resolves a bin package's own executable as scaffold.** `resolveScaffold` in `.agents/skills/orkestrel-publish/scripts/wave.ts` falls back to the target's `dist/bin/main.js` when `node_modules` holds no scaffold, so a bin package with no install runs its own executable as scaffold. § Visit procedure step 1 installs first. The regeneration proofs in `tests/agents/skills/orkestrel-publish/scripts/wave.test.ts` stage their fake scaffold at the target's own `dist/bin/main.js` so it survives the moved `node_modules`, so a fix redesigns those fixtures. Owner: scaffold. Trigger: scaffold's release after L7.
 - **The visit keeps the declared toolchain major.** The pin and the overwrite keep each declared major, so the Vitest 5 and TypeScript 7 move is § Visit procedure step 4, by hand. Owner: scaffold, as a design question on whether a visit lifts to the canon's major. Trigger: scaffold's release after L7.
 - **The vendored Codex probe entry carries a relative path and no `cwd`.** `.codex/config.toml` registers `probe` as `node_modules/@orkestrel/probe/dist/bin/main.js` with no `cwd`, so a same-named user-level entry that sets `cwd` and `required` resolves that path inside another checkout, and every session that loads both fails to start. The probe checkout's `node_modules/@orkestrel/probe` junction to the checkout itself holds the merged path until probe's visit reinstalls it. Owner: scaffold. Trigger: probe's visit at L5, or scaffold's release after L7, whichever comes first.
 - **No catalog package carries an app face.** The trial in § Sequence step 1 covered core, browser, server, and bin; the app face is proved by scaffold's `test:templates` project alone. Owner: scaffold. Trigger: a catalog package adds an `app/` environment.
@@ -100,14 +106,16 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-29: the trial of § Sequence step 1 ran in fresh clones of timeout (core), table (browser), websocket (server), and capture (bin): after the visit and the toolchain lift, `format:check`, `check`, `build`, and `test` passed in all four and `lint:check` failed on the bindings rules alone. Each clone's difference was folded into its checkout and the clones went to the Recycle Bin.
 - 2026-10-29: the probe checkout is installed from its manifest as it stands and rebuilt, so the probe server the writer lanes require starts; probe's own visit stays at L5.
 - 2026-10-29: contract's checkout is prepared at `514b5e3`, and its realignment unit runs.
-- Next: prepare L1, and dispatch L1 writers as lanes free.
+- 2026-10-29: L1 and L2 are prepared on scaffold 0.0.112; § Scaffold release row 1 is fixed on scaffold's `main`.
+- Next: dispatch the L1 and L2 writers as lanes free, and prepare L3.
 
 ## Sequence
 
-1. **Settle scaffold.** Trial the visit in fresh clones, one package per blueprint kind the catalog holds; fix a blocking scaffold defect and release scaffold once before L0.
-2. **L0.** Visit contract as the single-lane writer trial, prepare the layer, and publish it.
-3. **L1 to L7.** Visit each layer, prepare it, publish it, refresh the registry, and sweep the self-pins before the next.
-4. **Capture.** Its visit fires the rows of capture's `.orkestrel/capture/plan.md` § Deferred whose trigger is its scaffold adoption (the duplicate test helpers; Vitest 5 coverage beyond R8) and the 0.0.2 defects (the late journal refusal; the two wrapper shapes).
-5. **Promotions.** Land `ROADMAP.md` items 44, 45, 61, 62, and 63 in their owners at their layers, before any consumer adopts them.
-6. **Scaffold.** Re-pin scaffold's own dependencies, refresh the catalog with the served versions, land the deferred scaffold rows, and release scaffold when its catalog or canon changed.
-7. **Debrief.** Run `orkestrel-debrief` on the wave and land its lessons in scaffold.
+1. **Realign every layer.** Visit and realign L0 to L7 in parallel within § Lanes, on scaffold 0.0.112; record each scaffold defect a package meets as a row of § Scaffold release, or of § Deferred when it waits for the release after L7.
+2. **Capture.** Its realignment fires the rows of capture's `.orkestrel/capture/plan.md` § Deferred whose trigger is its scaffold adoption (the duplicate test helpers; Vitest 5 coverage beyond R8) and the 0.0.2 defects (the late journal refusal; the two wrapper shapes).
+3. **Promotions.** Land `ROADMAP.md` items 44, 45, 61, 62, and 63 in their owners, before any consumer adopts them.
+4. **Scaffold release.** Release scaffold once with every row of § Scaffold release, after step 1 closes.
+5. **Re-pin.** Re-run every package's visit on that release, and rerun the gates the re-pin changes.
+6. **Publish.** For each layer from L0 to L7: re-pin to the versions npm serves, run the release chain, publish, refresh the registry, and sweep the self-pins before the next.
+7. **Scaffold after L7.** Re-pin scaffold's own dependencies, refresh the catalog with the served versions, land the rows of § Deferred that scaffold owns, and release scaffold when its catalog or canon changed.
+8. **Debrief.** Run `orkestrel-debrief` on the wave and land its lessons in scaffold.

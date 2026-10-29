@@ -2484,6 +2484,13 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('npm run docs')
 	})
 
+	it('turns off the file-system module cache in the root test configuration', () => {
+		const configuration = blueprintToRootVite(buildBlueprint({ src: ['core', 'browser'] }))
+
+		expect(configuration).toContain('\ttest: {\n\t\t// Vitest 5.0.5')
+		expect(configuration).toContain('\t\tfsModuleCache: false,\n\t\tprojects: [')
+	})
+
 	it('registers the distribution proof only in the release-mode publish gate', () => {
 		const blueprint = buildBlueprint({ src: ['core'] })
 		const configuration = blueprintToRootVite(blueprint)

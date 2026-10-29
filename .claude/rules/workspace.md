@@ -85,6 +85,10 @@ private copy of that environment into the face, so the vendored `.oxlintrc.json`
   `devDependencies` there: the root config bundles the file into every config load, builds
   included, and the bundle resolves no workspace alias. Load workspace source inside a command
   body through `context.project.vitest.import`, never through a static import.
+- Keep `fsModuleCache: false` in the root configuration's `test` block. Vitest 5.0.5 reads a cached
+  module's code as bytes, and with the cache on, every stack read inside source a command loads
+  through `context.project.vitest.import` throws (measured 2026-10-29 in `@orkestrel/test`'s
+  `chooseFiles` command). Remove the setting only after a Vitest release reads that code as text.
 - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
   vendored byte-identical to every workspace, so an import there must resolve in all of them.
   `configs/browsers.ts` exists for that reason: it imports `playwright` and
