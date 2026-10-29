@@ -1271,7 +1271,14 @@ describe('readPolicySurface', () => {
 		const scratch = createPolicySurfaceFixture()
 		try {
 			scratch.write('src/core/index.ts', 'export * from\n')
+			// Both sweeps fail closed on a file they cannot read: the surface population and the
+			// specifiers the built-output rule must resolve.
 			expect(inspectPolicyWorkspace(scratch.path)).toEqual([
+				{
+					rule: 'dist',
+					path: 'src/core/index.ts',
+					message: expect.stringMatching(/^tracked TypeScript parses: /u),
+				},
 				{
 					rule: 'surface',
 					path: 'src/core/index.ts',
