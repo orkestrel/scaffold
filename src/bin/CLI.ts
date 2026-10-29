@@ -54,6 +54,7 @@ import {
 	blueprintToScripts,
 	blueprintToSheets,
 	blueprintToTestArtifacts,
+	blueprintToToolchainHolds,
 	blueprintToWritableScripts,
 	CONFORMANCE_TEST_PATH,
 	TREE_TEST_PATH,
@@ -327,7 +328,7 @@ export class CLI implements CLIInterface {
 		const versions = await this.#versions(declared, command.offline === true, blueprint)
 		const questions = [
 			...this.#targetQuestions(target, blueprint, groups),
-			...releasesToQuestions(versions.releases),
+			...releasesToQuestions(versions.releases, undefined, blueprintToToolchainHolds(blueprint)),
 		]
 		const host = await this.#host(command.from, target, command.offline === true)
 		try {
@@ -1067,14 +1068,14 @@ export class CLI implements CLIInterface {
 	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
 		const compiler = new Compiler()
 		try {
-			const scaffolding = compiler.compile(blueprint, groups)
-			if (scaffolding.plan !== undefined && scaffolding.questions.length === 0) {
-				return scaffolding.plan
+			const result = compiler.compile(blueprint, groups)
+			if (result.plan !== undefined && result.questions.length === 0) {
+				return result.plan
 			}
 			throw new ScaffoldError(
 				'BLOCKED',
-				scaffolding.questions.map((question) => `${question.field}: ${question.message}`).join(' '),
-				{ questions: scaffolding.questions.length },
+				result.questions.map((question) => `${question.field}: ${question.message}`).join(' '),
+				{ questions: result.questions.length },
 			)
 		} finally {
 			compiler.destroy()
@@ -1102,17 +1103,14 @@ export class CLI implements CLIInterface {
 	): readonly [audit: Audit, plan: Plan | undefined] {
 		const compiler = new Compiler()
 		try {
-			const scaffolding = compiler.compile(blueprint, groups)
-			if (scaffolding.plan === undefined) return [compiler.audit(blueprint, {}, groups), undefined]
+			const result = compiler.compile(blueprint, groups)
+			if (result.plan === undefined) return [compiler.audit(blueprint, {}, groups), undefined]
 			// The materializer answers for the target and the gate answers for the
 			// blueprint, so an advisory the gate raised rides the comparison rather
 			// than being dropped between them. It is non-blocking, so it changes no
 			// exit code and never makes an aligned target drift.
-			const measured = materializer.audit(scaffolding.plan, target)
-			return [
-				{ ...measured, questions: [...measured.questions, ...scaffolding.questions] },
-				scaffolding.plan,
-			]
+			const measured = materializer.audit(result.plan, target)
+			return [{ ...measured, questions: [...measured.questions, ...result.questions] }, result.plan]
 		} finally {
 			compiler.destroy()
 		}

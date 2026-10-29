@@ -371,14 +371,15 @@ export type CatalogEntry =
 	  }
 
 /**
- * Represents one foreign tool held at a major, with the reason the next major waits.
+ * Represents one foreign tool range required by a browser framework.
  *
  * @remarks
- * `major` is the highest major the fleet runs, and `reason` names what moving past it would break or
- * leave unproved.
+ * `framework` selects the workspaces the hold applies to. `range` supplies their development
+ * floor, and `reason` names why that framework cannot use the baseline toolchain.
  */
 export interface ToolchainHold {
-	readonly major: number
+	readonly framework: Framework
+	readonly range: string
 	readonly reason: string
 }
 
@@ -685,13 +686,13 @@ export interface CompileRecord {
  *
  * @remarks
  * `plan` is present exactly when the compile completed, so it is also the
- * completeness test, and `scaffolding.plan.blueprint` carries the blueprint it
+ * completeness test, and `result.plan.blueprint` carries the blueprint it
  * was compiled from. A gated compile returns the questions that closed the gate
  * and the stage records up to it, and no plan; the caller still holds the
  * blueprint it passed in, so repeating it at this level would be one fact stored
  * twice and free to disagree with itself.
  */
-export interface Scaffolding {
+export interface CompileResult {
 	readonly plan?: Plan
 	readonly questions: readonly Question[]
 	readonly stages: readonly CompileRecord[]
@@ -699,7 +700,7 @@ export interface Scaffolding {
 
 /** Represents the compiler's observation channel. */
 export type CompilerEventMap = {
-	readonly compile: readonly [scaffolding: Scaffolding]
+	readonly compile: readonly [result: CompileResult]
 	readonly audit: readonly [audit: Audit]
 	readonly block: readonly [questions: readonly Question[]]
 	readonly error: readonly [error: unknown]
@@ -720,9 +721,9 @@ export interface CompilerInterface {
 	 *
 	 * @param blueprint - The workspace specification to compile.
 	 * @param groups - The artifact groups to cover; every group when absent.
-	 * @returns The scaffolding, carrying a plan only when the gate passed.
+	 * @returns The compile result, carrying a plan only when the gate passed.
 	 */
-	compile(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding
+	compile(blueprint: Blueprint, groups?: readonly Group[]): CompileResult
 	/**
 	 * Compiles a blueprint and compares its plan to a target's current content.
 	 *

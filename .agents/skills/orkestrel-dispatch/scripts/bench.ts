@@ -396,12 +396,12 @@ export function probeCodex(
 	cap: number,
 	root: string,
 ): Probe {
-	const [file, ...leading] = command
+	const [file, ...prefix] = command
 	const version = readVersion(command)
 	const login =
 		file === undefined
 			? undefined
-			: spawnSync(file, [...leading, 'login', 'status'], { encoding: 'utf8', windowsHide: true })
+			: spawnSync(file, [...prefix, 'login', 'status'], { encoding: 'utf8', windowsHide: true })
 	const model = readOption(argv, '--model') ?? CODEX_MODEL
 	const sandbox =
 		readOption(argv, '--sandbox') ??

@@ -11,7 +11,7 @@ here, and the control from the builder this layer publishes for it.
 import type {
 	CaptureVariant,
 	CensusFixture,
-	CensusReading,
+	CensusResult,
 	Color,
 	ContrastFixture,
 	EscapeFixture,

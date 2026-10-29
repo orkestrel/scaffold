@@ -76,12 +76,12 @@ describe('titles.ts', () => {
 			trackFiles(scratch.path)
 			commitFiles(scratch.path)
 			scratch.write('tests/read.test.ts', `// registration\n${head}\n`)
-			const working = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
+			const result = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--json'], {
 				cwd: scratch.path,
 			})
-			expect(working.status).toBe(2)
-			expect(working.stderr).toContain('tests/read.test.ts:2: Unbalanced each arguments')
-			expect(working.stdout).toBe('')
+			expect(result.status).toBe(2)
+			expect(result.stderr).toContain('tests/read.test.ts:2: Unbalanced each arguments')
+			expect(result.stdout).toBe('')
 			trackFiles(scratch.path)
 			commitFiles(scratch.path)
 			scratch.remove('tests/read.test.ts')

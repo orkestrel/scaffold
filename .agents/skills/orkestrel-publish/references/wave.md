@@ -23,8 +23,9 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
    rewrite a peer range only when its name shares an audited release reading. For example, with
    peer-only `@orkestrel/peer-only: ^0.0.1`, leave that peer unchanged; with a planned tool whose
    registry serves `8.3.4`, apply `vite: ~8.2.0 -> ^8.3.4` even though the tilde excludes `8.3.4`.
-   A wave never crosses a major. A tool `TOOLCHAIN_HOLDS` names stays at its held major; its audit
-   question names the hold and the reason, and only a round of its own lifts it.
+   Keep a wave within each declared major. For a workspace whose selected framework activates a
+   `TOOLCHAIN_HOLDS` row, keep the tool within that range's major; read the audit question for its reason. Prove
+   that framework on the later major before lifting its hold.
 2. Commit the manifest and the lockfile as the preparation commit. `scaffold overwrite` refuses a
    tree carrying uncommitted changes, and the install left both dirty.
 3. Run `scaffold overwrite`. One run repairs the `AGENTS.md` pointer and the skill pointer set and

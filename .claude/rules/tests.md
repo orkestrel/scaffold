@@ -111,22 +111,23 @@ The kinds split by which tool has to see the probe:
 - A **runtime probe** is collected by a Vitest project, so it lives in `tmp/probes/` and runs through
   the `probe` project. `tmp/` is ignored by git, so no probe enters a commit by accident, and every
   test script names its project, so no gate runs the `probe` project.
-- A **bench** is read by Vitest's benchmark mode, so it lives inside a test file as a block behind
-  the `if (import.meta.env.MODE === 'benchmark')` guard. Only the `test:bench` script collects the
-  block, test mode fails an unguarded `bench()` call loudly, and no gate runs a bench. Call `bench`
-  directly inside the guard. A `describe` inside it trips `vitest/no-conditional-tests`, and a suite
-  the guard leaves unregistered fails test mode with `No test found in suite`.
+- For a **bench**, write a `*.bench.ts` file under `tests/` or `tmp/probes/` and run `test:bench`.
+  Register a regular `test` or `it` callback with its context's `bench` fixture. With Vitest 5,
+  call `await bench(name, options, fn).run()` for one measurement or await `bench.compare(...)`
+  for a comparison. Pass options before the function. Keep benchmark files outside ordinary
+  `*.test.ts` includes and every gate. Use the script's explicit `--mode benchmark` when reading
+  `import.meta.env.MODE`; do not infer that mode from the `vitest bench` command alone.
 
 Run a probe before relying on an unverified belief about behaviour: what a function returns, what a
 configuration resolves to, whether a path is reached at all. Prefer a probe to an argument whenever
 the probe is cheap.
 
-When the question is whether the difference between methods is worth having, write a guarded bench
-block beside the probe test, run the `test:bench` script, and size its fixtures, declare its
+When the question is whether the difference between methods is worth having, write a `*.bench.ts`
+file beside the probe test, run the `test:bench` script, and size its fixtures, declare its
 threshold, and read its result per `.claude/rules/quality.md` § Performance. A settled difference
 that underwrites an implementation choice promotes with its test into the mirrored suite and keeps
-its guarded block there while that choice stands. A deterministic relationship promotes as an
-ordinary assertion, so delete the block. Never commit baseline output.
+its benchmark file there while that choice stands. A deterministic relationship promotes as an
+ordinary assertion, so delete the benchmark file. Never commit baseline output.
 
 These rules bind every probe:
 
@@ -162,6 +163,14 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
   `.claude/rules/workspace.md` fixes which gate each isolated project runs from, and that placement
   differs between a publishing and a `private: true` workspace.
 - The fixed expensive-proof projects are `distribution`, `service`, and `studies`.
+- Put in `studies` only the proofs the `@orkestrel/study` engine drives. A slow end-to-end proof of
+  the package's own features that no study engine drives, such as its built executable run against
+  a fixture workspace, is an integration test under § Cross-cutting proofs. Place it by the scope it
+  composes:
+  - Put a proof that crosses environments in `tests/integration.test.ts`, which the `integration`
+    project runs from `test`.
+  - Put a proof that stays within one environment in that environment's `integration.test.ts`.
+  - Set its budget with the suite's `timeout` option.
 - A `distribution` proof reads `import.meta.env.MODE` and fails, rather than skips, on an unreachable
   registry under `--mode release`. The publish gate invokes it that way, so a proof that skips there
   passes the gate without ever proving the artifact installs. An ordinary local run may still skip.

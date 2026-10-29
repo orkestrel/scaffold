@@ -426,14 +426,14 @@ export class TokenScanner {
 				this.#position += 1
 				return { category: 'template', start, end: this.#position, children }
 			} else if (this.#text.startsWith('${', this.#position)) {
-				const opening = this.#position
+				const offset = this.#position
 				this.#position += 2
 				this.#braces.push({ category: 'template', ambiguous: false })
 				const expression = this.#readCode(true, depth)
 				this.#braces.pop()
 				children.push({
 					category: 'code',
-					start: opening,
+					start: offset,
 					end: this.#position,
 					children: expression,
 				})
@@ -704,7 +704,7 @@ export function countDynamic(registrations: readonly Registration[]): number {
  * Lists the files that register fewer non-literal titles than the baseline did.
  *
  * @param baseline - Each baseline test file with its registrations.
- * @param working - Each working test file with its registrations.
+ * @param current - Each working test file with its registrations.
  * @returns One row per baseline file whose count of non-literal registrations dropped, with the
  * drop; a file absent from the working tree counts none.
  */
@@ -713,14 +713,14 @@ export function readLostDynamic(
 		readonly file: string
 		readonly registrations: readonly Registration[]
 	}>,
-	working: ReadonlyArray<{
+	current: ReadonlyArray<{
 		readonly file: string
 		readonly registrations: readonly Registration[]
 	}>,
 ): readonly LostDynamic[] {
 	return baseline.flatMap(({ file, registrations }) => {
 		const before = countDynamic(registrations)
-		const now = working.find((entry) => entry.file === file)
+		const now = current.find((entry) => entry.file === file)
 		const after = now === undefined ? 0 : countDynamic(now.registrations)
 		return before > after ? [{ file, deficit: before - after }] : []
 	})

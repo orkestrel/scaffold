@@ -1980,23 +1980,23 @@ describe('the inspectors consume a caller-supplied list one entry at a time', ()
 	it('separates a reader that copies the list first from one that consumes it', () => {
 		// The control: a spread reads entry 1 before it reads entry 0's hole, so the failing entry
 		// that the lazy case never reads is read and its constructor replaces the hole's.
-		const copying = createPolicyLazyCase(
+		const copyCase = createPolicyLazyCase(
 			'copying reader',
 			(list: string[]) => [...list].map((entry) => entry.length),
 			{ length: 2, entries: new Map([[1, failPolicyRead]]) },
 			{ outcome: 'throw TypeError', reads: [] },
 		)
 		const reads = createRecorder<[number]>()
-		expect(copying.observe(reads.handler)).toBe('throw RangeError')
+		expect(copyCase.observe(reads.handler)).toBe('throw RangeError')
 		expect(reads.calls).toStrictEqual([[1]])
-		const consuming = createPolicyLazyCase(
+		const consumeCase = createPolicyLazyCase(
 			'consuming reader',
 			(list: string[]) => Array.from(list, (entry) => entry.length),
 			{ length: 2, entries: new Map([[1, failPolicyRead]]) },
 			{ outcome: 'throw TypeError', reads: [] },
 		)
 		const stopped = createRecorder<[number]>()
-		expect(consuming.observe(stopped.handler)).toBe(consuming.outcome)
+		expect(consumeCase.observe(stopped.handler)).toBe(consumeCase.outcome)
 		expect(stopped.calls).toStrictEqual([])
 	})
 

@@ -634,7 +634,7 @@ export class WriteTransaction {
 	// Restore the taken files, then the promoted files, each in reverse order,
 	// and report failures without replacing the failure that started the rollback.
 	#recover(promoted: readonly string[], taken: readonly string[]): readonly unknown[] {
-		const restoring = [
+		const restoreFailures = [
 			...[...taken].reverse().flatMap((path): readonly unknown[] => {
 				const restored = attempt(() =>
 					renameSync(this.#resolve(this.#backup, path), this.#expectation(path).path),
@@ -656,16 +656,16 @@ export class WriteTransaction {
 		// The private root holds every preserved copy, so it survives whenever a
 		// restore failed: deleting it there would destroy the only remaining bytes.
 		const cleared =
-			restoring.length === 0
+			restoreFailures.length === 0
 				? attempt(() => rmSync(this.#root, { recursive: true, force: true }))
 				: undefined
-		const clearing = cleared === undefined || cleared.success ? [] : [cleared.error]
-		const removing = [...this.#created].reverse().flatMap((created): readonly unknown[] => {
+		const clearFailures = cleared === undefined || cleared.success ? [] : [cleared.error]
+		const removeFailures = [...this.#created].reverse().flatMap((created): readonly unknown[] => {
 			const path = isString(created) ? created : created.path
 			const removed = attempt(() => rmdirSync(path))
 			return !removed.success && !matchesMissingPath(removed.error) ? [removed.error] : []
 		})
-		return [...restoring, ...clearing, ...removing]
+		return [...restoreFailures, ...clearFailures, ...removeFailures]
 	}
 
 	// Establish the staged file's parents inside the private root and hand back the

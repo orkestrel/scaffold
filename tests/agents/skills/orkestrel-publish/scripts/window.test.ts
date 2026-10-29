@@ -278,7 +278,7 @@ describe('window.ts', () => {
 			expect(confirm.status).toBe(3)
 			expect(confirm.json).toEqual({
 				mode: 'confirm',
-				readings: [{ target: '@fixture/pkg@1.0.0', served: false }],
+				results: [{ target: '@fixture/pkg@1.0.0', served: false }],
 			})
 		} finally {
 			await registry.destroy()
@@ -332,7 +332,7 @@ describe('window.ts', () => {
 			expect(served.status).toBe(0)
 			expect(served.json).toEqual({
 				mode: 'confirm',
-				readings: [{ target: '@fixture/pkg@1.0.0', served: true }],
+				results: [{ target: '@fixture/pkg@1.0.0', served: true }],
 			})
 			const other = await spawnSkillScript(
 				WINDOW_SCRIPT,
@@ -342,7 +342,7 @@ describe('window.ts', () => {
 			expect(other.status).toBe(3)
 			expect(other.json).toEqual({
 				mode: 'confirm',
-				readings: [
+				results: [
 					{ target: '@fixture/pkg@1.0.0', served: true },
 					{ target: '@fixture/pkg@2.0.0', served: false },
 				],

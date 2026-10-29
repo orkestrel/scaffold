@@ -575,10 +575,10 @@ export function stepTomlState(
 	const match = text.match(/^\s*([A-Za-z0-9_.-]+|"[^"]+")\s*=\s*(.*)$/u)
 	if (match?.[1] === undefined) return state
 	const value = (match[2] ?? '').trim()
-	const opening = value.match(/^("""|''')/u)?.[1]
+	const marker = value.match(/^("""|''')/u)?.[1]
 	return {
 		table: state.table,
-		fence: opening !== undefined && value.indexOf(opening, 3) === -1 ? opening : undefined,
+		fence: marker !== undefined && value.indexOf(marker, 3) === -1 ? marker : undefined,
 		rows: [
 			...state.rows,
 			{

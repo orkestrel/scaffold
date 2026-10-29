@@ -213,11 +213,9 @@ await new GuideCommand({
 		it('executes the compile refusal example', () => {
 			const compiler = new Compiler()
 			try {
-				const scaffolding = compiler.compile(
-					createBlueprint('router', { src: ['browser', 'server'] }),
-				)
+				const result = compiler.compile(createBlueprint('router', { src: ['browser', 'server'] }))
 
-				expect(scaffolding.plan === undefined || scaffolding.questions.length > 0).toBe(true)
+				expect(result.plan === undefined || result.questions.length > 0).toBe(true)
 			} finally {
 				compiler.destroy()
 			}
@@ -248,7 +246,7 @@ await new GuideCommand({
 	return
 }
 `
-				const readings: Array<readonly Question[]> = []
+				const questions: Array<readonly Question[]> = []
 				for (const content of [
 					ARTIFACT_TEMPLATES.tests.global.module,
 					retained,
@@ -275,12 +273,14 @@ await new GuideCommand({
 					) {
 						throw new Error('The guide audit returned no question list')
 					}
-					readings.push(parsed.questions)
+					questions.push(parsed.questions)
 				}
 
-				const planned = requireValue(readings[0])
-				const skewed = requireValue(readings[1])
-				expect(requireValue(readings[2]).filter(({ field }) => field === 'setup')).toStrictEqual([])
+				const planned = requireValue(questions[0])
+				const skewed = requireValue(questions[1])
+				expect(requireValue(questions[2]).filter(({ field }) => field === 'setup')).toStrictEqual(
+					[],
+				)
 				expect(planned.filter(({ field }) => field === 'setup')).toStrictEqual([])
 				expect(skewed.filter(({ field }) => field === 'setup')).toStrictEqual([
 					{
@@ -682,7 +682,7 @@ await new GuideCommand({
 					'setup.test.ts',
 					'setupServer.test.ts',
 				]
-				const readings: Array<readonly [string, boolean]> = []
+				const outcomes: Array<readonly [string, boolean]> = []
 				for (const [index, proof] of proofs.entries()) {
 					const name = `runtime-${String(index)}`
 					const target = workspace.ensure(name)
@@ -700,9 +700,9 @@ await new GuideCommand({
 					}
 					// The refusal lists every planned development dependency the manifest lacks,
 					// and only the browser runtime plans the Playwright provider.
-					readings.push([proof, parsed.error.message.includes('"playwright"')])
+					outcomes.push([proof, parsed.error.message.includes('"playwright"')])
 				}
-				expect(readings).toStrictEqual([
+				expect(outcomes).toStrictEqual([
 					['setupStyles.test.ts', true],
 					['setupBrowser.test.ts', true],
 					['setup.test.ts', false],
@@ -763,7 +763,7 @@ await new GuideCommand({
 				const control = workspace.ensure('control')
 				workspace.write('control/package.json', manifest)
 				workspace.write('control/app/browser/main.ts', '')
-				const readings: Array<readonly [number, string, boolean]> = []
+				const outcomes: Array<readonly [number, string, boolean]> = []
 				for (const target of [guarded, control]) {
 					for (const verb of ['repair', 'overwrite']) {
 						const sink = createSink()
@@ -777,10 +777,10 @@ await new GuideCommand({
 						) {
 							throw new Error('The refused verb returned no failure envelope')
 						}
-						readings.push([code, parsed.error.code, parsed.error.message.includes(sentence)])
+						outcomes.push([code, parsed.error.code, parsed.error.message.includes(sentence)])
 					}
 				}
-				expect(readings).toStrictEqual([
+				expect(outcomes).toStrictEqual([
 					[1, 'TARGET', true],
 					[1, 'TARGET', true],
 					[1, 'TARGET', false],
@@ -855,12 +855,12 @@ await new GuideCommand({
 					extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
 				}),
 			]
-			const readings = blueprints.map((blueprint) =>
+			const outcomes = blueprints.map((blueprint) =>
 				blueprintToQuestions(blueprint)
 					.filter(({ field }) => field === 'extensions')
 					.map(({ message, blocking }) => [message, blocking]),
 			)
-			expect(readings).toStrictEqual([
+			expect(outcomes).toStrictEqual([
 				[['styles:print is declared more than once on extensions.', true]],
 				[['browser:vue occupies no axis.', false]],
 				[['browser:vue occupies app, whose selection lacks browser.', false]],
@@ -1193,14 +1193,14 @@ await new GuideCommand({
 			const tested = blueprintToTestArtifacts(blueprint)
 			const paths = tested.map(({ path }) => path)
 			const seeds = tested.filter(({ path }) => /^tests\/setup[A-Za-z]*\.ts$/u.test(path))
-			const readings = seeds.map(({ path, ownership, content }) => [
+			const artifacts = seeds.map(({ path, ownership, content }) => [
 				path,
 				ownership,
 				/^export /mu.test(content),
 				content.length > 0,
 				paths.includes(path.replace(/\.ts$/u, '.test.ts')),
 			])
-			expect(readings).toEqual(
+			expect(artifacts).toEqual(
 				expect.arrayContaining([
 					['tests/setup.ts', 'birth', false, false, false],
 					['tests/setupBrowser.ts', 'birth', false, true, false],
@@ -1237,7 +1237,7 @@ await new GuideCommand({
 				expect(await new CLI(created.options).execute([...argv, '--target', target])).toBe(0)
 				workspace.write('target/app/browser/App.vue', '<template><h1>Arrival</h1></template>\n')
 				const scopes: ReadonlyArray<readonly string[]> = [[], ['--groups', 'source']]
-				const readings: Array<readonly [number, readonly Question[]]> = []
+				const outcomes: Array<readonly [number, readonly Question[]]> = []
 				for (const scope of scopes) {
 					const sink = createSink()
 					const code = await new CLI(sink.options).execute([
@@ -1258,9 +1258,9 @@ await new GuideCommand({
 					) {
 						throw new Error('The guide audit returned no question list')
 					}
-					readings.push([code, parsed.questions.filter(({ field }) => field === 'extensions')])
+					outcomes.push([code, parsed.questions.filter(({ field }) => field === 'extensions')])
 				}
-				expect(readings).toStrictEqual([
+				expect(outcomes).toStrictEqual([
 					[0, [{ field: 'extensions', message: sentence, blocking: false }]],
 					[0, []],
 				])

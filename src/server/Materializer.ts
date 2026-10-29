@@ -34,8 +34,8 @@ import { Emitter } from '@orkestrel/emitter'
 import {
 	catalogToLayers,
 	CATALOG_AGENT_PATH,
-	CATALOG_CLOSING_MARKER,
-	CATALOG_OPENING_MARKER,
+	CATALOG_END_MARKER,
+	CATALOG_START_MARKER,
 	cloneValue,
 	computeBytes,
 	computeTotal,
@@ -1269,14 +1269,14 @@ export class Materializer implements MaterializerInterface {
 			)
 			.join('\n')
 		return (text: string) => {
-			const opening = text.indexOf(CATALOG_OPENING_MARKER)
-			const closing = text.indexOf(CATALOG_CLOSING_MARKER, opening + CATALOG_OPENING_MARKER.length)
-			if (opening < 0 || closing < 0) {
+			const start = text.indexOf(CATALOG_START_MARKER)
+			const end = text.indexOf(CATALOG_END_MARKER, start + CATALOG_START_MARKER.length)
+			if (start < 0 || end < 0) {
 				throw this.#error('TARGET', 'The catalog agent file carries no marked region.', {
 					path: CATALOG_AGENT_PATH,
 				})
 			}
-			return `${text.slice(0, opening + CATALOG_OPENING_MARKER.length)}\n\n${table}\n\n${text.slice(closing)}`
+			return `${text.slice(0, start + CATALOG_START_MARKER.length)}\n\n${table}\n\n${text.slice(end)}`
 		}
 	}
 

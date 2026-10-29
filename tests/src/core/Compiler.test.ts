@@ -120,9 +120,9 @@ describe('Compiler artifacts', () => {
 	// is what the plan gate refuses.
 	it('plans each root instruction pointer once, as content nothing vendors', () => {
 		const compiler = new Compiler()
-		const scaffolding = compiler.compile(createBlueprint('widget', { src: ['core'] }))
+		const result = compiler.compile(createBlueprint('widget', { src: ['core'] }))
 		compiler.destroy()
-		const plan = scaffolding.plan
+		const plan = result.plan
 		if (plan === undefined) throw new Error('The pointer blueprint was blocked')
 
 		for (const path of ['AGENTS.md']) {
@@ -225,14 +225,14 @@ describe('Compiler artifacts', () => {
 	it('describes an existing workspace whose published axis lacks core', () => {
 		const compiler = new Compiler()
 		const blueprint = createBlueprint('widget', { src: ['browser', 'server'] })
-		const scaffolding = compiler.compile(blueprint)
+		const result = compiler.compile(blueprint)
 		const audit = compiler.audit(blueprint, {})
 		compiler.destroy()
 
-		expect(scaffolding.questions.every(({ blocking }) => !blocking)).toBe(true)
-		expect(scaffolding.questions.map(({ field }) => field)).toStrictEqual(['src'])
-		expect(scaffolding.plan?.artifacts.length).toBeGreaterThan(20)
-		expect(audit.findings.length).toBe(scaffolding.plan?.artifacts.length)
+		expect(result.questions.every(({ blocking }) => !blocking)).toBe(true)
+		expect(result.questions.map(({ field }) => field)).toStrictEqual(['src'])
+		expect(result.plan?.artifacts.length).toBeGreaterThan(20)
+		expect(audit.findings.length).toBe(result.plan?.artifacts.length)
 		expect(audit.findings.every(({ drift }) => drift === 'missing' || drift === 'aligned')).toBe(
 			true,
 		)
@@ -246,13 +246,13 @@ describe('Compiler artifacts', () => {
 	// creating caller reads it here or writes this manifest.
 	it('plans a manifest naming a core build for a published axis that declares no core', () => {
 		const compiler = new Compiler()
-		const scaffolding = compiler.compile(createBlueprint('widget', { src: ['browser', 'server'] }))
+		const result = compiler.compile(createBlueprint('widget', { src: ['browser', 'server'] }))
 		compiler.destroy()
 
 		expect(
-			scaffolding.questions.map(({ field, blocking }) => `${field}:${String(blocking)}`),
+			result.questions.map(({ field, blocking }) => `${field}:${String(blocking)}`),
 		).toStrictEqual(['src:false'])
-		const manifest = scaffolding.plan?.artifacts.find(({ path }) => path === 'package.json')
+		const manifest = result.plan?.artifacts.find(({ path }) => path === 'package.json')
 		if (manifest?.content === undefined) throw new Error('The plan carries no manifest content')
 		const parsed: unknown = JSON.parse(manifest.content)
 		if (typeof parsed !== 'object' || parsed === null) {
@@ -272,7 +272,7 @@ describe('Compiler artifacts', () => {
 				? Object.getOwnPropertyDescriptor(imported, 'default')?.value
 				: undefined,
 		).toBe('./dist/src/core/index.js')
-		expect(scaffolding.plan?.artifacts.some(({ path }) => path === 'src/core/index.ts')).toBe(false)
+		expect(result.plan?.artifacts.some(({ path }) => path === 'src/core/index.ts')).toBe(false)
 	})
 
 	it('accepts an override outside a narrowed group selection', () => {
@@ -281,10 +281,10 @@ describe('Compiler artifacts', () => {
 			src: ['core'],
 			overrides: [{ path: 'README.md', content: '# Widget\n' }],
 		})
-		const scaffolding = compiler.compile(blueprint, ['manifest'])
+		const result = compiler.compile(blueprint, ['manifest'])
 		compiler.destroy()
 
-		expect(scaffolding.questions).toStrictEqual([])
-		expect(scaffolding.plan?.artifacts.map(({ path }) => path)).toStrictEqual(['package.json'])
+		expect(result.questions).toStrictEqual([])
+		expect(result.plan?.artifacts.map(({ path }) => path)).toStrictEqual(['package.json'])
 	})
 })

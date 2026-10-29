@@ -23,8 +23,8 @@ import {
 	blueprintToWritableScripts,
 	BROWSE_DEV_DEPENDENCIES,
 	CATALOG_AGENT_PATH,
-	CATALOG_CLOSING_MARKER,
-	CATALOG_OPENING_MARKER,
+	CATALOG_END_MARKER,
+	CATALOG_START_MARKER,
 	CONFIG_TEMPLATES,
 	createBlueprint,
 	GROUPS,
@@ -1746,7 +1746,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.29",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.30",`,
 					blocking: false,
 				},
 			])
@@ -1791,7 +1791,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^7.0.2",`,
 					blocking: false,
 				},
 			])
@@ -1825,7 +1825,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.3.5", "vitest": "^4.1.12",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.3.5", "vitest": "^5.0.5",`,
 					blocking: false,
 				},
 			])
@@ -1842,7 +1842,7 @@ describe('CLI audit', () => {
 				'target/package.json',
 				buildAlignedManifest(undefined, undefined, {
 					...TARGET_DEV_DEPENDENCIES,
-					typescript: '^6.0.3',
+					typescript: '^7.0.2',
 				}),
 			)
 			const sink = createSink()
@@ -1861,62 +1861,75 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('reports a stale foreign floor and a crossed major without rewriting', async () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		const server = await createUpstreamServer({
-			...FLEET_RELEASE_REPLIES,
-			'/typescript': {
-				status: 200,
-				body: JSON.stringify({
-					'dist-tags': { latest: '7.0.0' },
-					versions: { '6.0.3': {}, '6.0.4': {}, '7.0.0': {} },
-				}),
-			},
-		})
-		try {
-			const fleet = createFleet(workspace)
-			const manifest = buildAlignedManifest(undefined, undefined, {
-				...TARGET_DEV_DEPENDENCIES,
-				typescript: '^6.0.3',
+	it.each([false, true])(
+		'reports a stale foreign floor with the Vue hold selected %s',
+		async (vue) => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			const server = await createUpstreamServer({
+				...FLEET_RELEASE_REPLIES,
+				'/typescript': {
+					status: 200,
+					body: JSON.stringify({
+						'dist-tags': { latest: '7.0.0' },
+						versions: { '6.0.3': {}, '6.0.4': {}, '7.0.0': {} },
+					}),
+				},
 			})
-			workspace.write('target/package.json', manifest)
-			const sink = createSink()
-			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
-				'audit',
-				'--from',
-				fleet.host,
-				'--target',
-				fleet.target,
-				'--json',
-			])
-			expect(code).toBe(EXIT_DRIFT)
-			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
-			expect(result.provenance).toStrictEqual({ versions: 'live' })
-			expect(result.questions).toContainEqual({
-				field: 'dependencies',
-				message:
-					'typescript declares the floor ^6.0.3, while the registry serves 6.0.4 within major 6.',
-				blocking: false,
-			})
-			expect(result.questions).toContainEqual({
-				field: 'dependencies',
-				message: `typescript is held at major 6, while the registry serves major 7: ${TOOLCHAIN_HOLDS.typescript?.reason ?? ''}.`,
-				blocking: false,
-			})
-			expect(result.releases).toContainEqual({
-				name: 'typescript',
-				range: '^6.0.3',
-				lookup: 'found',
-				latest: '6.0.4',
-				major: 7,
-			})
-			expect(server.paths.filter((path) => path === '/typescript')).toHaveLength(1)
-			expect(workspace.read('target/package.json')).toBe(manifest)
-		} finally {
-			await server.destroy()
-			workspace.destroy()
-		}
-	})
+			try {
+				const fleet = createFleet(workspace)
+				const blueprint = createBlueprint('sample', {
+					src: vue ? ['core', 'browser'] : ['core'],
+					extensions: vue ? [{ surface: 'browser', name: 'vue', axes: ['src'] }] : [],
+				})
+				if (vue) {
+					workspace.ensure('target/src/browser')
+					workspace.ensure('target/src/vue')
+				}
+				const manifest = buildAlignedManifest(blueprint, undefined, {
+					...TARGET_DEV_DEPENDENCIES,
+					typescript: '^6.0.3',
+				})
+				workspace.write('target/package.json', manifest)
+				const sink = createSink()
+				const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				])
+				expect(code).toBe(EXIT_DRIFT)
+				const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+				expect(result.provenance).toStrictEqual({ versions: 'live' })
+				expect(result.questions).toContainEqual({
+					field: 'dependencies',
+					message:
+						'typescript declares the floor ^6.0.3, while the registry serves 6.0.4 within major 6.',
+					blocking: false,
+				})
+				expect(result.questions).toContainEqual({
+					field: 'dependencies',
+					message: vue
+						? `typescript is held at major 6, while the registry serves major 7: ${TOOLCHAIN_HOLDS.typescript?.reason ?? ''}.`
+						: 'typescript declares major 6, while the registry serves major 7.',
+					blocking: false,
+				})
+				expect(result.releases).toContainEqual({
+					name: 'typescript',
+					range: '^6.0.3',
+					lookup: 'found',
+					latest: '6.0.4',
+					major: 7,
+				})
+				expect(server.paths.filter((path) => path === '/typescript')).toHaveLength(1)
+				expect(workspace.read('target/package.json')).toBe(manifest)
+			} finally {
+				await server.destroy()
+				workspace.destroy()
+			}
+		},
+	)
 
 	it('reports a major-zero floor below the newest stable release in that major', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
@@ -1996,7 +2009,7 @@ describe('CLI audit', () => {
 				'target/package.json',
 				buildAlignedManifest(
 					undefined,
-					{ typescript: '~6.4.0' },
+					{ typescript: '~7.0.2' },
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
 				),
 			)
@@ -2144,7 +2157,7 @@ describe('CLI audit', () => {
 			expect(includedAudit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^7.0.2",`,
 					blocking: false,
 				},
 			])
@@ -2267,6 +2280,62 @@ describe('CLI audit', () => {
 				})
 				expect(workspace.read('fresh/package.json')).toBe(manifest)
 			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('repairs a missing capture script while preserving a customized journey script', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--app',
+					'browser',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			expect(generated).toContain('"journey": "capture journey"')
+			expect(generated).toContain('"capture": "capture frames"')
+			expect(generated).toContain('"@orkestrel/capture": "^0.0.1"')
+			const customized = generated
+				.replace('"journey": "capture journey"', '"journey": "capture journey pages:mail"')
+				.replaceAll(/\t\t"capture": .*\n/gu, '')
+			workspace.write('fresh/package.json', customized)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const outcome: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(outcome.audit.questions).toContainEqual(
+				expect.objectContaining({
+					field: 'scripts',
+					blocking: false,
+					message: expect.stringContaining('journey'),
+				}),
+			)
+			const repaired = requireValue(workspace.read('fresh/package.json'))
+			expect(repaired).toContain('"journey": "capture journey pages:mail"')
+			expect(repaired).toContain('"capture": "capture frames"')
+			expect(repaired).toContain('"@orkestrel/capture": "^0.0.1"')
+			expect(repaired).toContain('npm run test:app && npm run test:journey')
 		} finally {
 			workspace.destroy()
 		}
@@ -2983,7 +3052,7 @@ describe('CLI audit', () => {
 			workspace.write('target/package.json', manifest)
 			const question: Question = {
 				field: 'scripts',
-				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe", "prepack": "npm run build",`,
+				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark", "prepack": "npm run build",`,
 				blocking: false,
 			}
 
@@ -3025,7 +3094,7 @@ describe('CLI audit', () => {
 			const family = [
 				',',
 				'\t\t"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",',
-				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe"',
+				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark"',
 			].join('\n')
 			const lifecycle = ',\n\t\t"prepack": "npm run build"'
 			// Removing only the appended regions recovers every original byte. This
@@ -3103,7 +3172,7 @@ describe('CLI audit', () => {
 				'"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe"',
 			)
 			expect(written).toContain(
-				'"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe"',
+				'"test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark"',
 			)
 			expect(written).toContain('"prepack": "npm run build"')
 			expect(written).toContain(`"test:guides": ${JSON.stringify(declaredGuides)}`)
@@ -3147,7 +3216,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'scripts',
-					message: `The manifest at ${fleet.target} does not declare a planned script: test:bench. Add this exact script line to package.json: "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",`,
+					message: `The manifest at ${fleet.target} does not declare a planned script: test:bench. Add this exact script line to package.json: "test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark",`,
 					blocking: false,
 				},
 			])
@@ -3792,8 +3861,8 @@ describe('CLI audit', () => {
 				'target/tests/setupBrowser.ts',
 				augmentation + "export const SAMPLE_FIXTURE = 'sample'\n",
 			)
-			const exporting = createSink()
-			await new CLI(exporting.options).execute([
+			const exported = createSink()
+			await new CLI(exported.options).execute([
 				'audit',
 				'--target',
 				fleet.target,
@@ -3804,7 +3873,7 @@ describe('CLI audit', () => {
 				'tests',
 				'--json',
 			])
-			const control: AuditResult = JSON.parse(requireValue(exporting.output[0]))
+			const control: AuditResult = JSON.parse(requireValue(exported.output[0]))
 			expect(control.questions.filter(({ field }) => field === 'setup')).toStrictEqual([
 				buildSetupQuestion(fleet.target, 'tests/setupBrowser.ts'),
 			])
@@ -5923,7 +5992,7 @@ describe('CLI overwrite', () => {
 			commitFiles(fleet.target)
 			const names = workspace.names('target').toSorted()
 			const sources = workspace.names('target/src/core').toSorted()
-			const readings: Array<readonly [number, unknown, unknown]> = []
+			const outcomes: Array<readonly [number, unknown, unknown]> = []
 			for (const [manifest, groups] of [
 				[malformed, []],
 				[malformed, ['--groups', 'docs']],
@@ -5944,13 +6013,13 @@ describe('CLI overwrite', () => {
 				])
 				const refusal: unknown = JSON.parse(sink.output[0] ?? '')
 				const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
-				readings.push([code, error.code, error.message])
+				outcomes.push([code, error.code, error.message])
 				expect(workspace.read('target/package.json')).toBe(manifest)
 				expect(workspace.names('target').toSorted()).toStrictEqual(names)
 				expect(workspace.names('target/src/core').toSorted()).toStrictEqual(sources)
 			}
 			const entry = `The manifest at ${fleet.target} declares the devDependencies entry "legacy-plugin" as a value that is not a version string, so overwrite cannot declare the planned dependency typescript beside it. Replace it with a version range in package.json before running overwrite.`
-			expect(readings).toStrictEqual([
+			expect(outcomes).toStrictEqual([
 				[EXIT_DRIFT, 'TARGET', entry],
 				[EXIT_DRIFT, 'TARGET', entry],
 				[
@@ -6038,7 +6107,7 @@ describe('CLI overwrite', () => {
 			trackFiles(fleet.target)
 			commitFiles(fleet.target)
 			const before = workspace.names('target').toSorted()
-			const readings: Array<readonly [number, unknown, unknown]> = []
+			const outcomes: Array<readonly [number, unknown, unknown]> = []
 			for (const verb of ['overwrite', 'repair']) {
 				const sink = createSink()
 				const code = await new CLI(sink.options).execute([
@@ -6052,10 +6121,10 @@ describe('CLI overwrite', () => {
 				])
 				const refusal: unknown = JSON.parse(sink.output[0] ?? '')
 				const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
-				readings.push([code, error.code, error.message])
+				outcomes.push([code, error.code, error.message])
 			}
 			const message = `The target at ${fleet.target} is the @orkestrel/scaffold package, whose canon the vendored host is staged from. Run repair and overwrite against a workspace that consumes it.`
-			expect(readings).toStrictEqual([
+			expect(outcomes).toStrictEqual([
 				[EXIT_DRIFT, 'TARGET', message],
 				[EXIT_DRIFT, 'TARGET', message],
 			])
@@ -7056,8 +7125,8 @@ describe('CLI catalog', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			const agent = requireValue(workspace.read(`fresh/${CATALOG_AGENT_PATH}`))
-			expect(agent.split(CATALOG_OPENING_MARKER)).toHaveLength(2)
-			expect(agent.split(CATALOG_CLOSING_MARKER)).toHaveLength(2)
+			expect(agent.split(CATALOG_START_MARKER)).toHaveLength(2)
+			expect(agent.split(CATALOG_END_MARKER)).toHaveLength(2)
 			expect(workspace.read('fresh/AGENTS.md')).not.toContain('orkestrel:catalog')
 
 			const sink = createSink()

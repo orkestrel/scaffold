@@ -90,11 +90,11 @@ import {
 	captureScaffoldCode,
 	captureScaffoldMessage,
 	captureScaffoldRejection,
-	CASE_FOLDING,
+	CASE_INSENSITIVE,
 	CATALOG_AGENT_ROWS_TEXT,
 	CATALOG_AGENT_TEXT,
 	CHECKOUT_GUIDE_PATHS,
-	checkFormatting,
+	checkFormat,
 	checkTypes,
 	CITE_SCRIPT,
 	CLAIM_ABSENT,
@@ -122,7 +122,7 @@ import {
 	createSink,
 	createStagedHost,
 	createSwapRegistry,
-	createWaveRecording,
+	createWaveRecorder,
 	createWaveSession,
 	createSwapSession,
 	createUpstreamServer,
@@ -153,7 +153,7 @@ import {
 	LAUNCH_SCRIPT,
 	linkPackage,
 	listExecutablePaths,
-	locateClaimOpening,
+	locateClaimStart,
 	locatePackage,
 	lockManifest,
 	LOGIN_SCRIPT,
@@ -315,7 +315,7 @@ describe('the workspace anchors', () => {
 			workspace.write('sample.md', '# Sample\n')
 			// Probed on the host the suite is running on rather than assumed from the
 			// platform name, which is the whole reason the constant exists.
-			expect(workspace.has('SAMPLE.md')).toBe(CASE_FOLDING)
+			expect(workspace.has('SAMPLE.md')).toBe(CASE_INSENSITIVE)
 		} finally {
 			workspace.destroy()
 		}
@@ -2131,11 +2131,11 @@ describe('the example claim instrument', () => {
 	})
 
 	it('locates the first line of the statement a claim sits on, and refuses a statement', () => {
-		expect(locateClaimOpening(['foo(', '  1,', ') // 3'], 2, ')')).toBe(0)
-		expect(locateClaimOpening(['first()', 'second() // 4'], 1, 'second()')).toBe(1)
-		expect(locateClaimOpening(['if (a) b // 5'], 0, 'if (a) b')).toBe(undefined)
-		expect(locateClaimOpening(['1 + 1 // 2'], 0, '1 + 1')).toBe(undefined)
-		expect(locateClaimOpening([') // 6'], 0, ')')).toBe(undefined)
+		expect(locateClaimStart(['foo(', '  1,', ') // 3'], 2, ')')).toBe(0)
+		expect(locateClaimStart(['first()', 'second() // 4'], 1, 'second()')).toBe(1)
+		expect(locateClaimStart(['if (a) b // 5'], 0, 'if (a) b')).toBe(undefined)
+		expect(locateClaimStart(['1 + 1 // 2'], 0, '1 + 1')).toBe(undefined)
+		expect(locateClaimStart([') // 6'], 0, ')')).toBe(undefined)
 	})
 
 	it('answers each claim of a block in a child, and names the claims a block refused or threw past', () => {
@@ -2374,7 +2374,7 @@ describe('the emitted-template staging', () => {
 
 describe('the command fixtures served from a registry', () => {
 	it('O1 uses the real built scaffold executable in a generated recording workspace', async () => {
-		const fixture = await createWaveRecording('orkestrel-wave-real-cli-')
+		const fixture = await createWaveRecorder('orkestrel-wave-real-cli-')
 		try {
 			expect(
 				readFileSync(
@@ -2403,7 +2403,7 @@ describe('the command fixtures served from a registry', () => {
 		}
 	}, 30_000)
 	it('seeds the committed overwrite target and isolates its npm cache under tmp', async () => {
-		const fixture = await createWaveRecording('orkestrel-wave-recording-')
+		const fixture = await createWaveRecorder('orkestrel-wave-recording-')
 		try {
 			expect(fixture.scratch.read('node_modules/@orkestrel/scaffold/package.json')).toContain(
 				String(readInstalledRecord(WORKSPACE_ROOT).version),
@@ -2684,7 +2684,7 @@ describe('the swap fixtures', () => {
 				expect(readFileSync(manifest, 'utf8')).toBe(
 					`${JSON.stringify(readInstalledRecord(directory), null, '\t')}\n`,
 				)
-				expect([directory, checkFormatting(manifest)]).toStrictEqual([directory, 0])
+				expect([directory, checkFormat(manifest)]).toStrictEqual([directory, 0])
 				expect(existsSync(join(directory, 'dist', 'index.js'))).toBe(true)
 			}
 			expect(readInstalledRecord(fixture.alpha)).toMatchObject({
@@ -2791,8 +2791,8 @@ describe('the swap fixtures', () => {
 				'unsorted/package.json',
 				renderPackageManifest({ version: '1.0.0', name: 'x' }),
 			)
-			expect(checkFormatting(sorted)).toBe(0)
-			expect(checkFormatting(unsorted)).not.toBe(0)
+			expect(checkFormat(sorted)).toBe(0)
+			expect(checkFormat(unsorted)).not.toBe(0)
 		} finally {
 			scratch.destroy()
 		}
@@ -2842,13 +2842,13 @@ describe('the swap fixtures', () => {
 			await session.destroy()
 		}
 		expect(existsSync(session.scratch.path)).toBe(false)
-		const failing = createScratch({ prefix: SCRATCH_PREFIX })
+		const failureWorkspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			await expect(
-				createSwapRegistry(failing.path, [join(failing.path, 'absent')]),
+				createSwapRegistry(failureWorkspace.path, [join(failureWorkspace.path, 'absent')]),
 			).rejects.toThrow('The swap fixture pack in')
 		} finally {
-			failing.destroy()
+			failureWorkspace.destroy()
 		}
 	}, 60_000)
 

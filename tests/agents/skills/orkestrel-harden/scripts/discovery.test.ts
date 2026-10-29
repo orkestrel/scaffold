@@ -34,6 +34,38 @@ import {
 } from '../../../../../.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('collects runtime case titles before comparing gate identities', () => {
+		const scratch = createScratch({ prefix: 'discovery-runtime-titles-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run -t selected' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/cases.test.ts',
+				"import { it } from 'vitest'\nfor (const title of ['selected', 'outside']) it(title, () => {})\n",
+			)
+			const partial = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(partial.status).toBe(3)
+			expect(partial.json?.projects).toEqual([{ name: 'core', files: 1, tests: 2 }])
+			expect(partial.json?.ungated).toEqual(['core'])
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run' } }),
+			)
+			const complete = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(complete.status).toBe(0)
+			expect(complete.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 2 }])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('leaves the setup modules of non-selected projects unevaluated', () => {
 		const scratch = createScratch({ prefix: 'discovery-nonselected-setup-' })
 		try {
@@ -1673,13 +1705,14 @@ export default ({ mode }) => {
 			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(2)
 			expect(run.stderr).toContain('Vitest 9.9.9')
-			expect(run.stderr).toContain('--reporter, --project, --config, --filesOnly')
+			expect(run.stderr).toContain('--reporter, --project, --config, --filesOnly, --staticParse')
 			const option: Option = { name: 'reporter', argument: '<name>' }
 			expect(readMissingOptions(new Map())).toEqual([
 				'--reporter',
 				'--project',
 				'--config',
 				'--filesOnly',
+				'--staticParse',
 			])
 			expect(
 				readMissingOptions(
@@ -1688,7 +1721,7 @@ export default ({ mode }) => {
 						['--project', option],
 					]),
 				),
-			).toEqual(['--config', '--filesOnly'])
+			).toEqual(['--config', '--filesOnly', '--staticParse'])
 		} finally {
 			scratch.destroy()
 		}

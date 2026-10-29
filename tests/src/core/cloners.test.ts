@@ -8,7 +8,7 @@ import {
 	buildHostileCases,
 	buildSnapshot,
 	selectHostileCase,
-	THROWING_ACCESSOR_DESCRIPTOR,
+	ERROR_ACCESSOR_DESCRIPTOR,
 } from '../../setup.js'
 
 describe('hostile ownership', () => {
@@ -49,7 +49,7 @@ describe('accessor properties', () => {
 
 	it('refuses a nested record whose property is an accessor', () => {
 		const inner: Record<string, unknown> = {}
-		Object.defineProperty(inner, 'value', THROWING_ACCESSOR_DESCRIPTOR)
+		Object.defineProperty(inner, 'value', ERROR_ACCESSOR_DESCRIPTOR)
 		const source: Record<string, unknown> = { inner }
 		expect(cloneValue(source)).toBeUndefined()
 	})

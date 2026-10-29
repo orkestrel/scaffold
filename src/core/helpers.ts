@@ -1127,9 +1127,9 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
 export function renderSkillPointer(canonical: string, name: string): string | undefined {
 	const lines = canonical.split(/\r\n|\n/u)
 	if (lines[0] !== '---') return undefined
-	const closing = lines.indexOf('---', 1)
-	if (closing === -1) return undefined
-	const frontmatter = lines.slice(0, closing + 1).join('\n')
+	const end = lines.indexOf('---', 1)
+	if (end === -1) return undefined
+	const frontmatter = lines.slice(0, end + 1).join('\n')
 	return `${frontmatter}\n${fillTemplate(ARTIFACT_TEMPLATES.orchestration.skill, { name })}`
 }
 

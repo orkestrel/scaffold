@@ -1693,7 +1693,7 @@ export function runCompare(runner: Runner, name: string | undefined): Ruling {
  * @param sameWord - The word for an unmoved reading.
  * @returns `unanswered`, the moved word, or the same word.
  */
-export function describeReading(
+export function describeChange(
 	moved: boolean | undefined,
 	movedWord: string,
 	sameWord: string,
@@ -1793,14 +1793,14 @@ export function runVisit(argv: readonly string[]): Visit | undefined {
 			: ruling.distMoved === undefined || ruling.rangesMoved === undefined
 				? 'unanswered'
 				: 'no bump'
-	const reading = `dist ${describeReading(ruling.distMoved, 'moved', 'same')}, ranges ${describeReading(ruling.rangesMoved, 'moved', 'same')}${hits === undefined ? '' : `, ${hits} self-pin hit(s)`}`
+	const changes = `dist ${describeChange(ruling.distMoved, 'moved', 'same')}, ranges ${describeChange(ruling.rangesMoved, 'moved', 'same')}${hits === undefined ? '' : `, ${hits} self-pin hit(s)`}`
 	return {
 		target,
 		name,
 		version,
 		steps: runner.steps,
 		ruling,
-		row: `| ${name ?? target} | ${version ?? '?'} | ${bump} | ${reading} | round |`,
+		row: `| ${name ?? target} | ${version ?? '?'} | ${bump} | ${changes} | round |`,
 	}
 }
 
@@ -1873,7 +1873,7 @@ export function renderVisit(visit: Visit): string {
 			(entry) =>
 				`wave: ${entry.step.padEnd(9)} exit=${entry.exit === undefined ? 'dry' : String(entry.exit)} ${String(entry.durationMs).padStart(7)} ms  ${entry.command}${entry.note === undefined ? '' : `  (${entry.note})`}${entry.journal === undefined ? '' : `  journal=${entry.journal}`}`,
 		),
-		`wave: ruling dist ${describeReading(visit.ruling.distMoved, 'moved', 'same')}, ranges ${describeReading(visit.ruling.rangesMoved, 'moved', 'same')}${visit.ruling.hits === undefined ? '' : `, ${visit.ruling.hits} self-pin hit(s)`}`,
+		`wave: ruling dist ${describeChange(visit.ruling.distMoved, 'moved', 'same')}, ranges ${describeChange(visit.ruling.rangesMoved, 'moved', 'same')}${visit.ruling.hits === undefined ? '' : `, ${visit.ruling.hits} self-pin hit(s)`}`,
 		...(visit.ruling.ranges ?? []).map((range) => `wave: range ${range}`),
 		visit.row,
 	]

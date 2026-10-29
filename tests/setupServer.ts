@@ -23,6 +23,7 @@ import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { resolveCompiler } from '../configs/helpers.js'
 import { once } from 'node:events'
 import {
 	chmodSync,
@@ -66,13 +67,14 @@ import {
 	blueprintToManifest,
 	blueprintToTestArtifacts,
 	BROWSE_DEV_DEPENDENCIES,
+	CAPTURE_DEV_DEPENDENCIES,
 	CONFIG_TEMPLATES,
 	DECLARATION_DEV_DEPENDENCIES,
 	FRAMEWORK_MATRIX,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	CATALOG_AGENT_PATH,
-	CATALOG_CLOSING_MARKER,
-	CATALOG_OPENING_MARKER,
+	CATALOG_END_MARKER,
+	CATALOG_START_MARKER,
 	blueprintToDevDependencies,
 	contentToHex,
 	blueprintToScripts,
@@ -157,7 +159,7 @@ import {
 	BROWSER_PLUGIN_DECLARATIONS,
 	DEPENDENCY_TABLES,
 	ENTRY_OBSERVATION_PATH,
-	ENTRY_PASSING_TEST,
+	ENTRY_SUCCESS_TEST,
 	ENTRY_PATH,
 	ENTRY_VITE,
 } from './setup.js'
@@ -620,7 +622,7 @@ export function listExecutablePaths(): readonly string[] {
  * sensitive, and macOS ships either formatting. A suite proving a case verdict
  * asserts against this rather than assuming the host it was written on.
  */
-export const CASE_FOLDING: boolean = !supportsCase()
+export const CASE_INSENSITIVE: boolean = !supportsCase()
 
 /**
  * Checks whether this host reaches an IPv4-mapped IPv6 loopback address.
@@ -2475,13 +2477,13 @@ export const refuseGuideResolution: ResolveHookSync = (specifier, context, next)
 }
 
 /** Supplies Surface rows with repeated declarations and non-name references. */
-export const STAGING_SURFACE_TEXT =
+export const STAGE_SURFACE_TEXT =
 	'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `Shared` | interface | References `Mentioned`. |\n| `Shared` | interface | Repeats the same owner. |\n| `Another` | function | References `Mentioned`. |\n'
 
 /** Supplies checkout guides for inventory staging comparisons. */
-export const STAGING_SURFACE_FILES: Snapshot = Object.freeze({
-	'checkout/guides/alpha.md': STAGING_SURFACE_TEXT,
-	'checkout/guides/beta.md': STAGING_SURFACE_TEXT,
+export const STAGE_SURFACE_FILES: Snapshot = Object.freeze({
+	'checkout/guides/alpha.md': STAGE_SURFACE_TEXT,
+	'checkout/guides/beta.md': STAGE_SURFACE_TEXT,
 })
 
 /**
@@ -2748,9 +2750,9 @@ export function buildVendoredPlan(fields?: Partial<Plan>): Plan {
 export function buildCompiledPlan(): Plan {
 	const compiler = new Compiler()
 	try {
-		const scaffolding = compiler.compile(buildBlueprint())
-		if (scaffolding.plan === undefined) throw new Error('Expected the default blueprint to compile')
-		return scaffolding.plan
+		const result = compiler.compile(buildBlueprint())
+		if (result.plan === undefined) throw new Error('Expected the default blueprint to compile')
+		return result.plan
 	} finally {
 		compiler.destroy()
 	}
@@ -2807,10 +2809,10 @@ export const CATALOG_AGENT_TEXT = [
 	'',
 	'Prose a consumer wrote above the table.',
 	'',
-	CATALOG_OPENING_MARKER,
+	CATALOG_START_MARKER,
 	'| Package | Version |',
 	'| --- | --- |',
-	CATALOG_CLOSING_MARKER,
+	CATALOG_END_MARKER,
 	'',
 	'Prose a consumer wrote below the table.',
 	'',
@@ -2827,13 +2829,13 @@ export const CATALOG_AGENT_TEXT = [
 export const CATALOG_AGENT_ROWS_TEXT = [
 	'# Orkestrel',
 	'',
-	CATALOG_OPENING_MARKER,
+	CATALOG_START_MARKER,
 	'| Package | Version |',
 	'| --- | --- |',
 	'| @orkestrel/contract | 0.0.9 |',
 	'| @orkestrel/emitter | 0.0.6 |',
 	'| not a package | 0.0.1 |',
-	CATALOG_CLOSING_MARKER,
+	CATALOG_END_MARKER,
 	'',
 ].join('\n')
 
@@ -4412,7 +4414,7 @@ export function matchesBalance(text: string): boolean {
  * @remarks
  * A claim printed across several lines is driven as the one expression it is.
  */
-export function locateClaimOpening(
+export function locateClaimStart(
 	lines: readonly string[],
 	index: number,
 	expression: string,
@@ -4451,7 +4453,7 @@ export function linkPackage(scratch: ScratchInterface, name: string): void {
  */
 export function buildEntryWorkspace(
 	files: Readonly<Record<string, string>>,
-	test = ENTRY_PASSING_TEST,
+	test = ENTRY_SUCCESS_TEST,
 ): ScratchInterface {
 	const scratch = createScratch({ prefix: 'scaffold guides ' })
 	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
@@ -4576,12 +4578,7 @@ export function checkTypes(root: string): string {
 	try {
 		execFileSync(
 			process.execPath,
-			[
-				resolvePath('node_modules/typescript/bin/tsc'),
-				'--noEmit',
-				'--project',
-				join(root, 'tsconfig.json'),
-			],
+			[resolveCompiler(import.meta.url), '--noEmit', '--project', join(root, 'tsconfig.json')],
 			{ stdio: 'pipe', encoding: 'utf8' },
 		)
 		return ''
@@ -4803,6 +4800,10 @@ export function findRefusals(content: string): readonly string[] {
  * Maps each fleet package path to the packument the registry fixture serves for it.
  */
 export const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
+	'/@orkestrel%2Fcapture': {
+		status: 200,
+		body: buildPackument(CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture']?.slice(1) ?? ''),
+	},
 	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
 	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
 	[FLEET_UPSTREAM_PATHS.packages.probe]: {
@@ -4835,7 +4836,10 @@ export const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> 
 	},
 	'/typescript': {
 		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
+		body: JSON.stringify({
+			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) },
+			versions: { '6.0.3': {}, [BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {} },
+		}),
 	},
 	'/vite': {
 		status: 200,
@@ -4894,6 +4898,10 @@ export const ALIGNED_MANIFEST_TEXT = TARGET_MANIFEST_TEXT.replace('~8.2.0', '~8.
  * Maps each registry path the audit fixture answers to the packument it serves.
  */
 export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
+	'/@orkestrel%2Fcapture': {
+		status: 200,
+		body: buildPackument(CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Fbrowser': {
 		status: 200,
 		body: buildPackument(BROWSE_DEV_DEPENDENCIES['@orkestrel/browser']?.slice(1) ?? ''),
@@ -4949,7 +4957,10 @@ export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object
 	},
 	'/typescript': {
 		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
+		body: JSON.stringify({
+			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) },
+			versions: { '6.0.3': {}, [BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {} },
+		}),
 	},
 	'/vite': {
 		status: 200,
@@ -6197,7 +6208,7 @@ export function readSwapEntry(consumer: string, name: string): Readonly<Record<s
  * @param path - The file to check.
  * @returns The formatter's exit code: 0 when the file is formatted, nonzero otherwise.
  */
-export function checkFormatting(path: string): number | null {
+export function checkFormat(path: string): number | null {
 	const directory = locatePackage(WORKSPACE_ROOT, 'oxfmt')
 	const bin = readInstalledRecord(directory).bin
 	const entry = isRecord(bin) ? bin.oxfmt : undefined
@@ -6334,14 +6345,14 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 }
 
 /** Describes a generated core workspace and its isolated child environment. */
-export interface TestWaveRecording {
+export interface TestWaveFixture {
 	readonly scratch: ScratchInterface
 	readonly target: string
 	readonly environment: Readonly<Record<string, string>>
 }
 
 /** Describes a generated overwrite target and the lifetime of its upstream protocol fixture. */
-export interface TestWaveOverwrite extends TestWaveRecording {
+export interface TestWaveOverwrite extends TestWaveFixture {
 	destroy(): Promise<void>
 }
 
@@ -6352,7 +6363,7 @@ export interface TestWaveOverwrite extends TestWaveRecording {
  * @returns The generated workspace with the actual scaffold checkout linked as its installed host.
  * @throws Thrown when generation fails.
  */
-export function createWaveWorkspace(prefix: string): TestWaveRecording {
+export function createWaveWorkspace(prefix: string): TestWaveFixture {
 	const scratch = createScratch({ prefix })
 	try {
 		const environment = { ...buildSwapEnvironment(join(scratch.path, 'tmp')), ...WAVE_IDENTITY }
@@ -6382,7 +6393,7 @@ export function createWaveWorkspace(prefix: string): TestWaveRecording {
  * @returns The fixture with loopback registry and repository endpoints and an owned cleanup method.
  * @throws Thrown when generation or upstream fixture setup fails.
  */
-export async function createWaveRecording(prefix: string): Promise<TestWaveOverwrite> {
+export async function createWaveRecorder(prefix: string): Promise<TestWaveOverwrite> {
 	const fixture = createWaveWorkspace(prefix)
 	try {
 		const { scratch, target } = fixture

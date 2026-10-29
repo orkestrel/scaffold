@@ -1,9 +1,10 @@
-import type { Audit, Release } from '@src/core'
+import type { Audit, Release, ToolchainHold } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
 import { resolve } from 'node:path'
 import {
 	blueprintToDevDependencies,
+	blueprintToToolchainHolds,
 	blueprintToScripts,
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
@@ -531,6 +532,7 @@ describe('release evidence', () => {
 					{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '7.0.2' },
 					{ name: 'vite', range: '^8.2.2', lookup: 'found', latest: '8.2.2' },
 				],
+				TOOLCHAIN_HOLDS,
 			),
 		).toStrictEqual([
 			{
@@ -563,22 +565,28 @@ describe('release evidence', () => {
 		])
 	})
 
-	it('holds TypeScript at 6 and Vitest with its browser provider at 4', () => {
-		expect(
-			Object.entries(TOOLCHAIN_HOLDS).map(([name, hold]) => [name, hold.major, hold.reason !== '']),
-		).toStrictEqual([
-			['typescript', 6, true],
-			['vitest', 4, true],
-			['@vitest/browser-playwright', 4, true],
-		])
-	})
-
-	it('names the hold and its reason where a held tool meets a newer served major', () => {
-		const holds = { vitest: { major: 4, reason: 'the next major is unproved' } }
+	it('raises no toolchain question for a non-Vue workspace on the baseline releases', () => {
+		const blueprint = createBlueprint('router', { src: ['core'] })
 		expect(
 			releasesToQuestions(
 				[
-					{ name: 'vitest', range: '^4.1.12', lookup: 'found', latest: '4.1.12', major: 5 },
+					{ name: 'typescript', range: '^7.0.2', lookup: 'found', latest: '7.0.2', major: 7 },
+					{ name: 'vitest', range: '^5.0.5', lookup: 'found', latest: '5.0.5', major: 5 },
+				],
+				undefined,
+				blueprintToToolchainHolds(blueprint),
+			),
+		).toStrictEqual([])
+	})
+
+	it('names the hold and its reason where a held tool meets a newer served major', () => {
+		const holds: Readonly<Record<string, ToolchainHold>> = {
+			typescript: { framework: 'vue', range: '^6.0.3', reason: 'the framework checker requires 6' },
+		}
+		expect(
+			releasesToQuestions(
+				[
+					{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '6.0.3', major: 7 },
 					{ name: 'vite', range: '^8.3.5', lookup: 'found', latest: '8.3.5', major: 9 },
 				],
 				undefined,
@@ -588,7 +596,7 @@ describe('release evidence', () => {
 			{
 				field: 'dependencies',
 				message:
-					'vitest is held at major 4, while the registry serves major 5: the next major is unproved.',
+					'typescript is held at major 6, while the registry serves major 7: the framework checker requires 6.',
 				blocking: false,
 			},
 			{
@@ -600,7 +608,9 @@ describe('release evidence', () => {
 	})
 
 	it('reports a declaration past its hold, and none at or below it', () => {
-		const holds = { typescript: { major: 6, reason: 'the compiler API moved' } }
+		const holds: Readonly<Record<string, ToolchainHold>> = {
+			typescript: { framework: 'vue', range: '^6.0.3', reason: 'the framework checker requires 6' },
+		}
 		expect(
 			releasesToQuestions(
 				[{ name: 'typescript', range: '^7.0.2', lookup: 'found', latest: '7.0.2', major: 7 }],
@@ -610,7 +620,8 @@ describe('release evidence', () => {
 		).toStrictEqual([
 			{
 				field: 'dependencies',
-				message: 'typescript declares major 7, past its hold at major 6: the compiler API moved.',
+				message:
+					'typescript declares major 7, past its hold at major 6: the framework checker requires 6.',
 				blocking: false,
 			},
 		])

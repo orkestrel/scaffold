@@ -56,6 +56,11 @@ A spawned harness produces each artifact itself.
 - Name a spawned harness's artifacts so a verdict cites one exactly: scenario, viewport, theme,
   step. The journey run's filename law already does this.
 - Keep the artifacts of each round beside its verdicts.
+- For a journey-generated portfolio, record the capture manifest snapshot the round judges beside
+  its verdicts. Require every judged frame to be current, with its recorded source digests equal
+  to the tree's; recapture every stale judged frame before dispatch. Apply this rule to sittings
+  and checkpoints alike. Admit
+  frames assembled from several runs only when every judged frame is current.
 
 ## Preflight before spending a round
 

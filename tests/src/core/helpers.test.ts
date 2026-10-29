@@ -203,12 +203,12 @@ describe('iterateAnswers', () => {
 	})
 
 	it('surfaces a close that raises or answers a non-object after a refusal', () => {
-		const raising = createClosableList(1, new Map([[0, () => 1]]), { close: refuseClose })
-		const answering = createClosableList(1, new Map([[0, () => 1]]), { close: () => 5 })
+		const closeFailure = createClosableList(1, new Map([[0, () => 1]]), { close: refuseClose })
+		const closeValue = createClosableList(1, new Map([[0, () => 1]]), { close: () => 5 })
 
-		expect(() => Array.from(iterateAnswers(raising.list, () => undefined))).toThrow(EvalError)
-		expect(() => Array.from(iterateAnswers(answering.list, () => undefined))).toThrow(TypeError)
-		expect(raising.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
+		expect(() => Array.from(iterateAnswers(closeFailure.list, () => undefined))).toThrow(EvalError)
+		expect(() => Array.from(iterateAnswers(closeValue.list, () => undefined))).toThrow(TypeError)
+		expect(closeFailure.calls).toStrictEqual(['iter', 'next', 'get:0', 'return'])
 	})
 
 	it('keeps the error of an answer that throws over a close that raises, and closes once', () => {
@@ -1002,7 +1002,7 @@ describe('artifactToFinding producer matrix', () => {
 	// from inside it could only show the producer disagreeing with itself, and the
 	// question here is what the producer never reaches at all.
 	it('reaches every verdict shape, and the guard admits one it never reaches', () => {
-		const readings = OWNERSHIPS.flatMap((ownership) =>
+		const outcomes = OWNERSHIPS.flatMap((ownership) =>
 			(
 				[
 					['absent', undefined],
@@ -1021,8 +1021,8 @@ describe('artifactToFinding producer matrix', () => {
 				return { cell: `${ownership} ${state} -> ${verdict}`, verdict }
 			}),
 		)
-		const cells = readings.map(({ cell }) => cell)
-		const verdicts = readings.map(({ verdict }) => verdict)
+		const cells = outcomes.map(({ cell }) => cell)
+		const verdicts = outcomes.map(({ verdict }) => verdict)
 		expect(cells).toStrictEqual([
 			'content absent -> content/missing/no observed',
 			'content matching -> content/aligned/observed',

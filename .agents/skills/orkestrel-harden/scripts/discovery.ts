@@ -11,7 +11,8 @@
 // Collect an unfiltered full listing for each config/mode/root/dir, including the base config. Pass
 // gate arguments verbatim except the reporter, output-file, coverage, color, cache, silent, UI,
 // watch, run-mode, inspector, and standalone options; use filesOnly for file selection and full
-// collection for name, tag, line, and shard selection. Compare file/project/name/line/column
+// collection with --staticParse=false for name, tag, line, and shard selection, so runtime titles,
+// setup modules, and the worker sequencer participate. Compare file/project/name/line/column
 // identities without renaming projects. Preserve duplicate names within a listing and merge across
 // units. Exit 2 naming the Vitest version when the option table lacks a required option.
 // With --projects, list only the named projects: the universe, each gate listing, each project
@@ -62,6 +63,7 @@ export const REQUIRED_OPTIONS: readonly string[] = [
 	'--project',
 	'--config',
 	'--filesOnly',
+	'--staticParse',
 ]
 
 /** Lists the flags this script reads, value flags and switches alike. */
@@ -240,13 +242,13 @@ export interface Listing extends Unit {
 }
 
 /** Pairs one unit's listing with the projects that collected a test in it. */
-export interface UnitReading {
+export interface UnitResult {
 	readonly listing: Listing
 	readonly populated: readonly string[]
 }
 
 /** States whether one project collected a test and whether the report calls it empty. */
-export interface ProjectReading {
+export interface ProjectResult {
 	readonly project: string
 	readonly populated: boolean
 	readonly empty: boolean
@@ -984,7 +986,10 @@ export function listCollected(
 	full: boolean,
 	cache: Map<string, Listed>,
 ): Listed | undefined {
-	const parameters = [...(full ? ['--includeTaskLocation'] : ['--filesOnly']), ...args]
+	const parameters = [
+		...(full ? ['--includeTaskLocation', '--staticParse=false'] : ['--filesOnly']),
+		...args,
+	]
 	const key = JSON.stringify(parameters)
 	const cached = cache.get(key)
 	if (cached !== undefined) return cached
@@ -1004,7 +1009,8 @@ export function listCollected(
 		if (
 			args.includes('--project') &&
 			result.status === 1 &&
-			result.stderr.includes('No projects matched the filter "')
+			(result.stderr.includes('No projects matched the filter "') ||
+				result.stderr.includes('The filter matched no projects:'))
 		) {
 			const unmatched = { entries: [], matched: false }
 			cache.set(key, unmatched)
@@ -1347,14 +1353,14 @@ export function countMarkers(file: string): Readonly<Record<string, number>> {
  * @param read - The read for one item; undefined refuses.
  * @returns The readings in order, or undefined once any read refuses.
  */
-export function collectReadings<Item, Reading>(
+export function collectResults<Item, Value>(
 	items: readonly Item[],
-	read: (item: Item) => Reading | undefined,
-): readonly Reading[] | undefined {
-	return items.reduce<readonly Reading[] | undefined>((readings, item) => {
-		if (readings === undefined) return undefined
-		const reading = read(item)
-		return reading === undefined ? undefined : [...readings, reading]
+	read: (item: Item) => Value | undefined,
+): readonly Value[] | undefined {
+	return items.reduce<readonly Value[] | undefined>((results, item) => {
+		if (results === undefined) return undefined
+		const result = read(item)
+		return result === undefined ? undefined : [...results, result]
 	}, [])
 }
 
@@ -1403,14 +1409,14 @@ export function readUnit(
 	named: readonly string[],
 	gates: Gates,
 	cache: Map<string, Listed>,
-): UnitReading | undefined {
+): UnitResult | undefined {
 	const reached = gates.units.filter((gate) => isSameUnit(gate, unit))
 	const parameters = readUnitArguments(unit)
 	const universeArguments = [...parameters, ...named.flatMap((name) => ['--project', name])]
 	const universe = listCollected(universeArguments, true, cache)
 	if (universe === undefined) return undefined
 	const collected = universe.entries
-	const selected = collectReadings(reached, (gate) => {
+	const selected = collectResults(reached, (gate) => {
 		const selection =
 			JSON.stringify(gate.args) === JSON.stringify(universeArguments)
 				? collected
@@ -1434,9 +1440,9 @@ export function readUnit(
 	})
 	if (selected === undefined) return undefined
 	const candidates = named.length === 0 ? reached.flatMap((gate) => gate.projects) : named
-	const readings = collectReadings(
+	const projects = collectResults(
 		[...new Set(candidates)].filter(isConcreteName),
-		(project): ProjectReading | undefined => {
+		(project): ProjectResult | undefined => {
 			if (
 				selected.some(
 					({ gate, identities }) =>
@@ -1457,7 +1463,7 @@ export function readUnit(
 			}
 		},
 	)
-	if (readings === undefined) return undefined
+	if (projects === undefined) return undefined
 	return {
 		listing: {
 			...unit,
@@ -1473,9 +1479,9 @@ export function readUnit(
 					),
 				)?.gate.chain,
 			})),
-			empty: readings.filter(({ empty }) => empty).map(({ project }) => project),
+			empty: projects.filter(({ empty }) => empty).map(({ project }) => project),
 		},
-		populated: readings.filter(({ populated }) => populated).map(({ project }) => project),
+		populated: projects.filter(({ populated }) => populated).map(({ project }) => project),
 	}
 }
 
@@ -1510,12 +1516,12 @@ export function collectListings(
 	]
 	// A listing is a memo keyed by its arguments: each key is written once, on its first miss.
 	const cache = new Map<string, Listed>()
-	const readings = collectReadings(units, (unit) => readUnit(unit, named, gates, cache))
-	if (readings === undefined) return undefined
-	const listings = readings.map(({ listing }) => listing)
-	const populated = new Set(readings.flatMap((reading) => reading.populated))
+	const results = collectResults(units, (unit) => readUnit(unit, named, gates, cache))
+	if (results === undefined) return undefined
+	const listings = results.map(({ listing }) => listing)
+	const populated = new Set(results.flatMap((result) => result.populated))
 	// A project empty under one unit may still list tests under another, so each unit is asked for it.
-	const rescans = collectReadings(
+	const rescans = collectResults(
 		[...new Set(listings.flatMap((listing) => listing.empty))]
 			.filter((name) => !populated.has(name))
 			.flatMap((name) => units.map((unit) => ({ name, unit }))),
@@ -1548,11 +1554,11 @@ export function readUnmatched(
 	named: readonly string[],
 	cache: Map<string, Listed>,
 ): readonly string[] | undefined {
-	const readings = collectReadings(named, (name) => {
+	const matches = collectResults(named, (name) => {
 		const listed = listCollected([...readUnitArguments(unit), '--project', name], false, cache)
 		return listed === undefined ? undefined : { name, matched: listed.matched }
 	})
-	return readings?.filter(({ matched }) => !matched).map(({ name }) => name)
+	return matches?.filter(({ matched }) => !matched).map(({ name }) => name)
 }
 
 /**

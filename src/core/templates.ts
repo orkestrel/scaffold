@@ -823,8 +823,9 @@ export function service(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 `,
-		studies: `// Authored study proofs run installed packages through bounded subprocesses and protocol fixtures,
-// so this project is isolated in its own gate script, test:studies.
+		studies: `// The @orkestrel/study engine drives these proofs, running installed packages through bounded
+// subprocesses and protocol fixtures, so this project is isolated in its own gate script,
+// test:studies.
 export function studies(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
@@ -862,9 +863,9 @@ export function studies(override?: UserConfig): UserConfig {
 `,
 		probe: `// A workbench, not a proof. No gate selects this project. Run in test mode by the
 // \`test:probe\` script, it collects \`tmp/probes/**/*.test.ts\`. Run in benchmark mode by the
-// \`test:bench\` script, the same workbench also collects \`tests/**/*.test.ts\` for a \`bench\` block,
-// so a suite may carry a bench beside its ordinary tests without a second project. The mode
-// guard around each \`bench\` call keeps it out of test mode, so it never executes there.
+// \`test:bench\` script, it collects \`*.bench.ts\` files under \`tmp/probes\` and \`tests\`.
+// Each benchmark is a regular test that uses its context's \`bench\` fixture and awaits
+// \`bench(name, options, fn).run()\` or \`bench.compare(...)\`.
 export function probe(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
@@ -877,7 +878,7 @@ export function probe(override?: UserConfig): UserConfig {
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },
 			pool: 'threads',
-			benchmark: { include: ['tmp/probes/**/*.test.ts', 'tests/**/*.test.ts'] },
+			benchmark: { include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'] },
 		},
 	}
 	return mergeOverride(project, override)
@@ -1893,11 +1894,14 @@ export const DISTRIBUTION_NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 // process: the command and its plain-text diagnostics are the same across the
 // compiler majors this toolchain supports, and its in-process API is not. It is
 // resolved from the workspace under proof, so a consumer of the packed artifact is
-// checked by the same compiler that workspace's own \`check\` script runs.
+// checked by the same compiler that workspace's own \`check\` script runs. TypeScript 7 exports
+// \`package.json\` but not \`bin/tsc\`, so the path is joined from the manifest's directory.
+/** Names the TypeScript manifest installed by the workspace under proof. */
+export const DISTRIBUTION_TYPESCRIPT = createRequire(
+	join(DISTRIBUTION_ROOT, 'package.json'),
+).resolve('typescript/package.json')
 /** Names the compiler installed by the workspace under proof. */
-export const DISTRIBUTION_COMPILER = createRequire(join(DISTRIBUTION_ROOT, 'package.json')).resolve(
-	'typescript/bin/tsc',
-)
+export const DISTRIBUTION_COMPILER = join(dirname(DISTRIBUTION_TYPESCRIPT), 'bin', 'tsc')
 // Windows needs a shell to launch a \`.cmd\`: Node refuses one directly since the
 // batch-argument hardening, and \`spawnSync\` returns \`EINVAL\` with a null status
 // rather than an exit code a caller can read. Every following argument is a literal or

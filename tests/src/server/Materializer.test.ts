@@ -47,7 +47,7 @@ import {
 	buildTargetAudit,
 	buildVendoredManifest,
 	buildVendoredPlan,
-	CASE_FOLDING,
+	CASE_INSENSITIVE,
 	CATALOG_AGENT_TEXT,
 	createHostRoot,
 	createCheckout,
@@ -164,7 +164,7 @@ describe('Materializer construction', () => {
 			// could produce. Where it does not, that name is one the host does
 			// not store, and the verdicts coincide.
 			expect(readFileHex(host, 'agents.md')).toBe(
-				CASE_FOLDING ? readFileHex(host, 'AGENTS.md') : undefined,
+				CASE_INSENSITIVE ? readFileHex(host, 'AGENTS.md') : undefined,
 			)
 			expect(readHostManifest(host)?.digest).toBe(recased.digest)
 			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe('TARGET')
@@ -1757,7 +1757,7 @@ describe('Materializer declare scripts', () => {
 				expect(workspace.read('project/package.json')).toBe(
 					customized
 						.replace('"@orkestrel/emitter": "^0.0.5"', '"@orkestrel/emitter": "^0.0.9"')
-						.replace(/("test:bench": "[^"]+",)\n/u, `$1\n\t\t${appended},\n`),
+						.replace(/("test:bench": ".*",)\n/u, `$1\n\t\t${appended},\n`),
 				)
 				expect(workspace.read('project/package.json')).toContain('npm run verify')
 			} finally {

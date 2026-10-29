@@ -28,7 +28,7 @@ export const USAGE =
 	'usage: result.ts (--cursor JOURNAL | --claude JOURNAL | --codex JOURNAL) [--out PATH]; name one mode'
 
 /** Describes what a journal's events say: the session, the answer, and the run's duration. */
-export interface Reading {
+export interface SessionResult {
 	readonly session: string | undefined
 	readonly answer: string | undefined
 	readonly durationMs: number | undefined
@@ -176,7 +176,7 @@ export function readAnswer(text: string | undefined): string | undefined {
  * @param events - The journal's events.
  * @returns The session from the `init` event and the answer and duration from the `result` event.
  */
-export function readStream(events: ReadonlyArray<Record<string, unknown>>): Reading {
+export function readStream(events: ReadonlyArray<Record<string, unknown>>): SessionResult {
 	const init = events.find((event) => event.type === 'system' && event.subtype === 'init')
 	const result = events.find((event) => event.type === 'result')
 	return {
@@ -193,7 +193,10 @@ export function readStream(events: ReadonlyArray<Record<string, unknown>>): Read
  * @param events - The journal's events.
  * @returns The thread id from the `thread.started` event and the answer from the last-message file.
  */
-export function readCodex(path: string, events: ReadonlyArray<Record<string, unknown>>): Reading {
+export function readCodex(
+	path: string,
+	events: ReadonlyArray<Record<string, unknown>>,
+): SessionResult {
 	const started = events.find((event) => event.type === 'thread.started')
 	const last = path.replace(/\.jsonl$/u, '-last.md')
 	return {
@@ -264,28 +267,28 @@ export function main(argv: readonly string[]): number {
 		return 64
 	}
 	const events = readEvents(path)
-	const reading = mode === '--codex' ? readCodex(path, events) : readStream(events)
+	const result = mode === '--codex' ? readCodex(path, events) : readStream(events)
 	const errors = readErrors(path)
 	const stat = statSync(path)
-	if (reading.answer !== undefined && out !== undefined) {
+	if (result.answer !== undefined && out !== undefined) {
 		mkdirSync(dirname(out), { recursive: true })
-		writeFileSync(out, reading.answer)
+		writeFileSync(out, result.answer)
 	}
 	console.log(
 		JSON.stringify({
 			journal: path,
-			session: reading.session,
-			durationMs: reading.durationMs ?? errors.durationMs,
+			session: result.session,
+			durationMs: result.durationMs ?? errors.durationMs,
 			exit: errors.exit,
 			capped: errors.capped,
 			bytes: stat.size,
 			ageMs: Math.max(0, Math.round(Date.now() - stat.mtimeMs)),
 			lastEvent: describeEvent(events.at(-1)),
-			answerLength: reading.answer?.length ?? 0,
-			out: reading.answer === undefined ? undefined : out,
+			answerLength: result.answer?.length ?? 0,
+			out: result.answer === undefined ? undefined : out,
 		}),
 	)
-	return reading.session === undefined || reading.answer === undefined ? 3 : 0
+	return result.session === undefined || result.answer === undefined ? 3 : 0
 }
 
 if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {

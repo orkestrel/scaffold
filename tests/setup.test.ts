@@ -51,7 +51,7 @@ import {
 	ENTRY_AUTHORED_TEST,
 	ENTRY_AUTHORED_VITE,
 	ENTRY_BARREL,
-	ENTRY_FAILING_TEST,
+	ENTRY_FAILURE_TEST,
 	ENTRY_FILES,
 	ENTRY_FRESH_TEST,
 	ENTRY_GUIDE,
@@ -67,7 +67,7 @@ import {
 	ENTRY_OVERLAP_PARENT,
 	ENTRY_OVERLAP_SOURCE,
 	ENTRY_OVERLAP_WRITTEN,
-	ENTRY_PASSING_TEST,
+	ENTRY_SUCCESS_TEST,
 	ENTRY_PATH,
 	ENTRY_PITCH,
 	ENTRY_README,
@@ -127,10 +127,10 @@ import {
 	TAB_COLUMNS,
 	TestHolder,
 	TestSample,
-	THROWING_ACCESSOR_DESCRIPTOR,
-	THROWING_GET_TRAP,
-	THROWING_KEYS_TRAP,
-	THROWING_PROTOTYPE_TRAP,
+	ERROR_ACCESSOR_DESCRIPTOR,
+	ERROR_GET_TRAP,
+	ERROR_KEYS_TRAP,
+	ERROR_PROTOTYPE_TRAP,
 	TOOLCHAIN_RANGE_PATTERN,
 	UNDOCUMENTED_OPTIONS,
 } from './setup.js'
@@ -237,11 +237,11 @@ describe('the inert value builders', () => {
 	})
 
 	it('closes the iterator when a reader throws and not when it ends', () => {
-		const refusing = createClosableList(1, new Map([[0, refuseRead]]))
+		const readFailure = createClosableList(1, new Map([[0, refuseRead]]))
 		const ended = createClosableList(1, new Map([[0, () => 'a']]))
 
-		expect(() => Iterator.from(refusing.list).toArray()).toThrow(RangeError)
-		expect(refusing.calls).toStrictEqual(['iter', 'next', 'get:0'])
+		expect(() => Iterator.from(readFailure.list).toArray()).toThrow(RangeError)
+		expect(readFailure.calls).toStrictEqual(['iter', 'next', 'get:0'])
 		expect(Iterator.from(ended.list).toArray()).toStrictEqual(['a'])
 		expect(ended.calls).toStrictEqual(['iter', 'next', 'get:0', 'next'])
 		const thrown = createClosableList(1, new Map([[0, () => 'a']]))
@@ -254,15 +254,15 @@ describe('the inert value builders', () => {
 	})
 
 	it('lets a close answer as the case chooses and ends a reader between two passes', () => {
-		const raising = createClosableList(1, new Map([[0, () => 'a']]), { close: refuseClose })
-		const answering = createClosableList(1, new Map([[0, () => 'a']]), { close: () => 5 })
-		const serving = createClosableList(1, new Map([[0, () => 'a']]), { serves: 1 })
+		const closeFailure = createClosableList(1, new Map([[0, () => 'a']]), { close: refuseClose })
+		const closeValue = createClosableList(1, new Map([[0, () => 'a']]), { close: () => 5 })
+		const singleUse = createClosableList(1, new Map([[0, () => 'a']]), { serves: 1 })
 
-		expect(() => Iterator.from(raising.list).some(() => true)).toThrow(EvalError)
-		expect(() => Iterator.from(answering.list).some(() => true)).toThrow(TypeError)
-		expect(Iterator.from(serving.list).toArray()).toStrictEqual(['a'])
-		expect(() => Iterator.from(serving.list)).toThrow(RangeError)
-		expect(serving.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'iter'])
+		expect(() => Iterator.from(closeFailure.list).some(() => true)).toThrow(EvalError)
+		expect(() => Iterator.from(closeValue.list).some(() => true)).toThrow(TypeError)
+		expect(Iterator.from(singleUse.list).toArray()).toStrictEqual(['a'])
+		expect(() => Iterator.from(singleUse.list)).toThrow(RangeError)
+		expect(singleUse.calls).toStrictEqual(['iter', 'next', 'get:0', 'next', 'iter'])
 	})
 
 	it('serves the entries a case names, not the entries the list holds', () => {
@@ -595,14 +595,14 @@ describe('the hostile matrix', () => {
 	})
 
 	it('throws from each trap the matrix installs and answers from the benign descriptor', () => {
-		expect(() => Object.keys(new Proxy({}, THROWING_KEYS_TRAP))).toThrow(/ownKeys trap/u)
-		expect(() => Reflect.get(new Proxy({}, THROWING_GET_TRAP), 'hostile')).toThrow(/get trap/u)
-		expect(() => Object.getPrototypeOf(new Proxy({}, THROWING_PROTOTYPE_TRAP))).toThrow(
+		expect(() => Object.keys(new Proxy({}, ERROR_KEYS_TRAP))).toThrow(/ownKeys trap/u)
+		expect(() => Reflect.get(new Proxy({}, ERROR_GET_TRAP), 'hostile')).toThrow(/get trap/u)
+		expect(() => Object.getPrototypeOf(new Proxy({}, ERROR_PROTOTYPE_TRAP))).toThrow(
 			/getPrototypeOf trap/u,
 		)
-		const throwing: Record<string, unknown> = {}
-		Object.defineProperty(throwing, 'name', THROWING_ACCESSOR_DESCRIPTOR)
-		expect(() => throwing.name).toThrow(/accessor/u)
+		const fixture: Record<string, unknown> = {}
+		Object.defineProperty(fixture, 'name', ERROR_ACCESSOR_DESCRIPTOR)
+		expect(() => fixture.name).toThrow(/accessor/u)
 		const benign: Record<string, unknown> = {}
 		Object.defineProperty(benign, 'name', BENIGN_ACCESSOR_DESCRIPTOR)
 		expect(benign.name).toBe('sample')
@@ -789,9 +789,9 @@ describe('the entry workspace fixtures', () => {
 	it('registers one case in every guides project the entry runs', () => {
 		for (const project of [
 			ENTRY_AUTHORED_TEST,
-			ENTRY_PASSING_TEST,
+			ENTRY_SUCCESS_TEST,
 			ENTRY_FRESH_TEST,
-			ENTRY_FAILING_TEST,
+			ENTRY_FAILURE_TEST,
 			ENTRY_START_TEST,
 			ENTRY_UNHANDLED_TEST,
 		]) {
@@ -799,7 +799,7 @@ describe('the entry workspace fixtures', () => {
 			expect(project.endsWith('\n')).toBe(true)
 		}
 		expect(ENTRY_AUTHORED_TEST).toContain('new GuideCommand(')
-		expect(ENTRY_FAILING_TEST).toContain("toBe('passed')")
+		expect(ENTRY_FAILURE_TEST).toContain("toBe('passed')")
 		expect(ENTRY_START_TEST).toContain('vitest-started')
 		expect(ENTRY_UNHANDLED_TEST).toContain('Promise.reject')
 	})

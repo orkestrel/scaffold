@@ -41,7 +41,7 @@ import {
 	installGeneratedWorkspace,
 	GENERATED_VUE_SETUP_FILES,
 	installPackedScaffold,
-	locateClaimOpening,
+	locateClaimStart,
 	NPM_LAUNCHER,
 	NPM_REGISTRY,
 	parseClaimVerdict,
@@ -525,7 +525,7 @@ describe('installed package consumer', () => {
 		const workspace = createDistributionScratch('scaffold-e4-examples-')
 		try {
 			// Each awaited declaration appends the readings its driver run answered.
-			const readings: Array<{
+			const results: Array<{
 				readonly types: string
 				readonly printed: number
 				readonly tally: number
@@ -587,8 +587,8 @@ describe('installed package consumer', () => {
 							// ending at the claim's own line that closes every bracket it opens,
 							// so a claim printed across several lines is driven as the one
 							// expression it is.
-							const opening = locateClaimOpening(lines, index, expression)
-							return opening === undefined
+							const start = locateClaimStart(lines, index, expression)
+							return start === undefined
 								? [
 										{
 											bucket: 'undriven',
@@ -600,7 +600,7 @@ describe('installed package consumer', () => {
 										{
 											bucket: 'claim',
 											stated,
-											claim: { text: expression, encoded, start: opening, end: index },
+											claim: { text: expression, encoded, start: start, end: index },
 										},
 									]
 						},
@@ -630,10 +630,10 @@ describe('installed package consumer', () => {
 					const source = scan.lines.flatMap((line, index) => {
 						const span = spans.find((candidate) => candidate.start === index)
 						if (span !== undefined) {
-							const opening = scan.lines.slice(span.start, span.end)
+							const prefix = scan.lines.slice(span.start, span.end)
 							const expression =
 								CLAIM_LINE.exec(scan.lines[span.end]?.trim() ?? '')?.groups?.expression ?? ''
-							return [`record(${String(span.id)}, (${[...opening, expression].join('\n')}))`]
+							return [`record(${String(span.id)}, (${[...prefix, expression].join('\n')}))`]
 						}
 						if (spans.some((candidate) => index > candidate.start && index <= candidate.end))
 							return []
@@ -685,7 +685,7 @@ describe('installed package consumer', () => {
 				const answeredClaims = answers.flatMap(({ claim, encoded }) =>
 					isString(encoded) ? [{ claim, encoded }] : [],
 				)
-				readings.push({
+				results.push({
 					types: declaration.types,
 					printed,
 					tally: countClaims(bodies),
@@ -709,15 +709,13 @@ describe('installed package consumer', () => {
 						.map(({ claim, encoded }) => `${claim.text} // ${claim.encoded} answered ${encoded}`),
 				})
 			}
-			const driven = readings.flatMap((reading) => reading.driven)
-			const undriven = readings.flatMap((reading) => reading.undriven)
-			const elided = readings.flatMap((reading) => reading.elided)
-			const glossed = readings.flatMap((reading) => reading.glossed)
-			const mismatched = readings.flatMap((reading) => reading.mismatched)
-			const printing = readings
-				.filter((reading) => reading.printed > 0)
-				.map((reading) => reading.types)
-			const tallies = readings.map((reading) => reading.tally)
+			const driven = results.flatMap((result) => result.driven)
+			const undriven = results.flatMap((result) => result.undriven)
+			const elided = results.flatMap((result) => result.elided)
+			const glossed = results.flatMap((result) => result.glossed)
+			const mismatched = results.flatMap((result) => result.mismatched)
+			const printed = results.filter((result) => result.printed > 0).map((result) => result.types)
+			const tallies = results.map((result) => result.tally)
 
 			// The sets partition the population rather than sampling it, so no
 			// claim-shaped line can leave the rule without arriving in a list below.
@@ -736,7 +734,7 @@ describe('installed package consumer', () => {
 			// narrows over what a declaration prints without silencing it moves nothing in that set.
 			// The driven-count floors that follow are what catch a partial narrowing, by
 			// pinning each declaration's driven claims above a bound.
-			expect(printing).toStrictEqual(DECLARATION_CASES.map((declaration) => declaration.types))
+			expect(printed).toStrictEqual(DECLARATION_CASES.map((declaration) => declaration.types))
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
@@ -759,8 +757,8 @@ describe('installed package consumer', () => {
 				"dist/src/core/index.d.ts: ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }",
 				'dist/src/core/index.d.ts: blueprintToDevDependencies(blueprint).typescript // the shared TypeScript pin',
 				'dist/src/core/index.d.ts: layers[0] // the names that depend on nothing else in the fleet',
-				'dist/src/core/index.d.ts: scaffolding.plan?.artifacts // every planned file, in group order',
-				'dist/src/core/index.d.ts: scaffolding.stages // one CompileRecord per stage that ran',
+				'dist/src/core/index.d.ts: result.plan?.artifacts // every planned file, in group order',
+				'dist/src/core/index.d.ts: result.stages // one CompileRecord per stage that ran',
 				'dist/src/core/index.d.ts: ).length // 1 — the range is not caret-pinned',
 				"dist/src/core/index.d.ts: extractRangeMajor('^6') // the declared major",
 				"dist/src/core/index.d.ts: isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record",
@@ -1045,7 +1043,7 @@ describe('installed package consumer', () => {
 					},
 				])
 			}
-			const readings = new Map(logged)
+			const outcomes = new Map(logged)
 			// Release fails during suite setup after collection, so Vitest marks its cases skipped.
 			// The ordinary run executes the registry-independent cases and skips the rest.
 			const failed = {
@@ -1063,8 +1061,8 @@ describe('installed package consumer', () => {
 					},
 				],
 			}
-			expect(readings.get('release')).toStrictEqual(failed)
-			expect(readings.get('ordinary')).toStrictEqual({
+			expect(outcomes.get('release')).toStrictEqual(failed)
+			expect(outcomes.get('ordinary')).toStrictEqual({
 				expired: false,
 				signal: null,
 				pinged: 1,
@@ -1072,7 +1070,7 @@ describe('installed package consumer', () => {
 				files: [{ proof: true, status: 'passed', message: '', statuses: ['passed', 'skipped'] }],
 			})
 			const rivals = ['malformed', 'collection', 'assertion', 'timeout']
-			expect(rivals.map((label) => readings.get(label))).not.toContainEqual(failed)
+			expect(rivals.map((label) => outcomes.get(label))).not.toContainEqual(failed)
 		} finally {
 			await refusal.destroy()
 			workspace.destroy()

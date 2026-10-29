@@ -507,16 +507,16 @@ export async function main(argv: readonly string[]): Promise<number> {
 			console.error('usage: window.ts --confirm NAME@VERSION... [--wait SECONDS]')
 			return 64
 		}
-		const readings: Array<{ readonly target: string; readonly served: boolean }> = []
+		const results: Array<{ readonly target: string; readonly served: boolean }> = []
 		for (const target of targets) {
 			const at = target.lastIndexOf('@')
-			readings.push({
+			results.push({
 				target,
 				served: await confirmServed(target.slice(0, at), target.slice(at + 1), wait),
 			})
 		}
-		console.log(JSON.stringify({ mode: 'confirm', readings }))
-		return readings.every((reading) => reading.served) ? 0 : 3
+		console.log(JSON.stringify({ mode: 'confirm', results }))
+		return results.every((result) => result.served) ? 0 : 3
 	}
 	console.error(USAGE)
 	return 64

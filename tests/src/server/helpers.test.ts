@@ -104,7 +104,7 @@ import {
 	buildManifestEntry,
 	buildStagedManifest,
 	buildVendoredManifest,
-	CASE_FOLDING,
+	CASE_INSENSITIVE,
 	createCheckout,
 	refuseGuideResolution,
 	CATALOG_AGENT_ROWS_TEXT,
@@ -126,8 +126,8 @@ import {
 	selectManifestEntry,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
-	STAGING_SURFACE_FILES,
-	STAGING_SURFACE_TEXT,
+	STAGE_SURFACE_FILES,
+	STAGE_SURFACE_TEXT,
 	supportsMappedLoopback,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
@@ -636,7 +636,7 @@ describe('vendored imports', () => {
 		]
 		// Each import the parser reads is a line and whether its module reports it: a control
 		// reports every import it makes, and a vendored module reports only one it cannot rule on.
-		const readings = modules.flatMap((module) =>
+		const rows = modules.flatMap((module) =>
 			// The parser reads the imports the module makes. A pattern reads its text, so
 			// it reports a specifier a string literal or a comment carries as an import,
 			// and the vendored set holds both of those.
@@ -671,10 +671,10 @@ describe('vendored imports', () => {
 						]
 			}),
 		)
-		const imported = readings
+		const imported = rows
 			.filter(({ vendored, reported }) => vendored && reported)
 			.map(({ line }) => line)
-		const controlled = readings.filter(({ vendored }) => !vendored).map(({ line }) => line)
+		const controlled = rows.filter(({ vendored }) => !vendored).map(({ line }) => line)
 		expect(controlled).toStrictEqual([
 			'control/from.ts: @orkestrel/test/server declared',
 			'control/dynamic.ts: @orkestrel/test/server declared',
@@ -878,7 +878,7 @@ describe('physical shape', () => {
 			// not, that name is absent, the refusals are one condition, and
 			// the assertions above would equally hold for a guard that only called
 			// `existsSync` — the gap a case-folding host closes.
-			expect(existsSync(folded)).toBe(CASE_FOLDING)
+			expect(existsSync(folded)).toBe(CASE_INSENSITIVE)
 			expect(existsSync(absent)).toBe(false)
 		} finally {
 			workspace.destroy()
@@ -2362,11 +2362,11 @@ describe('readSurfaceCollisions', () => {
 		}
 	})
 	it('reads distinct owners from immediate guide name columns in sorted order', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
-			workspace.write('checkout/guides/README.md', STAGING_SURFACE_TEXT)
-			workspace.write('checkout/guides/nested/gamma.md', STAGING_SURFACE_TEXT)
-			workspace.write('checkout/guides/gamma.txt', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/README.md', STAGE_SURFACE_TEXT)
+			workspace.write('checkout/guides/nested/gamma.md', STAGE_SURFACE_TEXT)
+			workspace.write('checkout/guides/gamma.txt', STAGE_SURFACE_TEXT)
 			expect([...readSurfaceCollisions(join(workspace.path, 'checkout/guides'))]).toStrictEqual([
 				['Another', ['alpha', 'beta']],
 				['Shared', ['alpha', 'beta']],
@@ -2409,10 +2409,10 @@ describe('stageHost', () => {
 		}
 	})
 	it('refuses a stage whose guides add a collision the inventory lacks', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
-			workspace.write('checkout/guides/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/gamma.md', STAGE_SURFACE_TEXT)
 			workspace.write(
 				'checkout/host.json',
 				JSON.stringify(
@@ -2440,7 +2440,7 @@ describe('stageHost', () => {
 	})
 
 	it('stages when a recorded collision loses an owner', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write(
@@ -2464,7 +2464,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses when a recorded collision gains an owner', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write(
@@ -2490,11 +2490,11 @@ describe('stageHost', () => {
 	})
 
 	it('stages when the collision set matches the inventory', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
-			workspace.write('checkout/guides/README.md', STAGING_SURFACE_TEXT)
-			workspace.write('checkout/guides/nested/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/README.md', STAGE_SURFACE_TEXT)
+			workspace.write('checkout/guides/nested/gamma.md', STAGE_SURFACE_TEXT)
 			workspace.write(
 				'checkout/host.json',
 				JSON.stringify(
@@ -2519,7 +2519,7 @@ describe('stageHost', () => {
 	})
 
 	it('stages when a collision the inventory carried is gone', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.remove('checkout/guides/beta.md')
@@ -2547,7 +2547,7 @@ describe('stageHost', () => {
 	})
 
 	it('establishes the baseline when establishment is asked for', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.remove('checkout/host.json')
@@ -2567,7 +2567,7 @@ describe('stageHost', () => {
 	})
 
 	it('uses the selected checkout-relative inventory and refuses an escaping path', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write('checkout/baseline.json', JSON.stringify(buildStagedManifest()))
@@ -2586,7 +2586,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses collisions introduced over a collision-free inventory', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write('checkout/host.json', JSON.stringify(buildStagedManifest({ surface: [] })))
@@ -2600,11 +2600,11 @@ describe('stageHost', () => {
 	})
 
 	it('compares owner sets by subset rather than collision names or owner totals', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.remove('checkout/guides/beta.md')
-			workspace.write('checkout/guides/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/gamma.md', STAGE_SURFACE_TEXT)
 			workspace.write(
 				'checkout/host.json',
 				JSON.stringify(
@@ -2640,7 +2640,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses an inventory without a recorded surface', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write(
@@ -2659,7 +2659,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses an inventory whose surface is malformed', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write(
@@ -2679,7 +2679,7 @@ describe('stageHost', () => {
 	})
 
 	it('records the staged collision set in the manifest', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -3596,11 +3596,11 @@ describe('filesToHost closes the iterators of the lists it stops reading as the 
 	it.each([
 		['a row that is not found', buildMissingFile],
 		['a row that names an undeclared path', () => buildFoundFile('smuggled.md')],
-	])('closes the files once at %s and answers undefined', (_label, refusing) => {
+	])('closes the files once at %s and answers undefined', (_label, createRefusedFile) => {
 		const closable = createClosableList(
 			2,
 			new Map([
-				[0, refusing],
+				[0, createRefusedFile],
 				[1, () => buildFoundFile('guides/guide.md')],
 			]),
 		)

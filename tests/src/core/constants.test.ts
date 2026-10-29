@@ -1,7 +1,10 @@
 import {
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
+	createBlueprint,
 	BROWSE_UPSTREAM,
+	CAPTURE_DEV_DEPENDENCIES,
+	CAPTURE_UPSTREAM,
 	extractRangeMajor,
 	MAX_REGISTRY_BYTES,
 	MAX_TOTAL_REGISTRY_BYTES,
@@ -24,20 +27,34 @@ describe('browse upstream', () => {
 	})
 })
 
+describe('capture upstream', () => {
+	it('freezes the sorted fleet closure and the capture package itself', () => {
+		expect(CAPTURE_UPSTREAM).toStrictEqual([
+			'@orkestrel/capture',
+			'@orkestrel/contract',
+			'@orkestrel/emitter',
+			'@orkestrel/process',
+			'@orkestrel/timeout',
+		])
+		expect(Object.isFrozen(CAPTURE_UPSTREAM)).toBe(true)
+	})
+})
+
 describe('toolchain holds', () => {
-	// A held major moves only when a person raises scaffold's manifest, so the manifest is where the
-	// hold is enforced: raising a held tool past its hold reddens here until the row moves with it.
-	it('keeps every held tool of the manifest at its held major', () => {
+	it('ties each framework hold to its planned floor and the manifest baseline', () => {
 		const declared = readCheckoutRanges()
-		expect(
-			Object.entries(TOOLCHAIN_HOLDS).map(([name, hold]) => [
-				name,
-				extractRangeMajor(declared[name] ?? ''),
-				hold.major,
-			]),
-		).toStrictEqual(
-			Object.entries(TOOLCHAIN_HOLDS).map(([name, hold]) => [name, hold.major, hold.major]),
-		)
+		expect(Object.keys(TOOLCHAIN_HOLDS)).toStrictEqual(['typescript'])
+		for (const [name, hold] of Object.entries(TOOLCHAIN_HOLDS)) {
+			const blueprint = createBlueprint('panel', {
+				src: ['browser'],
+				extensions: [{ surface: 'browser', name: hold.framework, axes: ['src'] }],
+			})
+			expect(blueprintToDevDependencies(blueprint)[name]).toBe(hold.range)
+			expect(extractRangeMajor(hold.range)).toBe(6)
+			expect(extractRangeMajor(declared[name] ?? '')).toBe(7)
+			expect(hold.reason).toContain('@volar/typescript@2.4.30')
+			expect(Object.isFrozen(hold)).toBe(true)
+		}
 		expect(Object.isFrozen(TOOLCHAIN_HOLDS)).toBe(true)
 	})
 })
@@ -50,6 +67,11 @@ describe('seed guide paths', () => {
 })
 
 describe('shared dependency tables', () => {
+	it('keeps the capture seed frozen at its initial release floor', () => {
+		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.1' })
+		expect(Object.isFrozen(CAPTURE_DEV_DEPENDENCIES)).toBe(true)
+	})
+
 	// Scaffold installs most table rows itself, so those derive. The rest are
 	// seeds: a supported major scaffold does not run, held at the newest triple
 	// the registry served when it was written. Naming the set is what makes a row
@@ -57,6 +79,7 @@ describe('shared dependency tables', () => {
 	// being a seed, and a removed one starts.
 	it('seeds exactly the rows the manifest does not declare', () => {
 		expect(selectSeededNames()).toStrictEqual([
+			'@orkestrel/capture',
 			'@orkestrel/middleware',
 			'@orkestrel/router',
 			'@orkestrel/server',
@@ -140,15 +163,13 @@ describe('shared dependency tables', () => {
 		expect(ORKESTREL_RANGE_PATTERN.test(pinned.slice(1))).toBe(false)
 	})
 
-	// The generated TypeScript configuration and declaration pipeline are proven
-	// only below TypeScript 7, and the range a workspace actually receives is the
-	// emitted one. Read there, it must name major 6 and admit no 7.x release.
-	it('emits a TypeScript range bounded below 7', () => {
+	it('emits the manifest TypeScript 7 baseline without a Vue extension', () => {
 		const emitted = blueprintToDevDependencies(buildBlueprint()).typescript
 		if (emitted === undefined)
 			throw new Error('The emitted development dependencies carry no TypeScript')
-		expect(extractRangeMajor(emitted)).toBe(6)
-		expect(matchesRange(emitted, '7.0.2')).toBe(false)
+		expect(extractRangeMajor(emitted)).toBe(7)
+		expect(matchesRange(emitted, '7.0.2')).toBe(true)
+		expect(matchesRange(emitted, '6.0.3')).toBe(false)
 	})
 })
 

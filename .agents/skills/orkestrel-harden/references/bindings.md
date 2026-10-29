@@ -138,12 +138,12 @@ Hit fixture, `running.cell.hit.ts`:
 
 ```ts
 function readLatest(
-	readings: readonly Reading[],
-	admit: (reading: Reading) => boolean,
-): Reading | undefined {
-	const latest: Reading[] = []
-	for (const reading of readings) {
-		if (admit(reading)) latest.splice(0, latest.length, reading)
+	samples: readonly Sample[],
+	admit: (sample: Sample) => boolean,
+): Sample | undefined {
+	const latest: Sample[] = []
+	for (const sample of samples) {
+		if (admit(sample)) latest.splice(0, latest.length, sample)
 	}
 	return latest[0]
 }
@@ -152,8 +152,8 @@ function readLatest(
 Clear fixture, `running.cell.clear.ts`:
 
 ```ts
-function readLast(readings: readonly Reading[]): Reading | undefined {
-	return readings.at(-1)
+function readLast(samples: readonly Sample[]): Sample | undefined {
+	return samples.at(-1)
 }
 ```
 
@@ -1465,7 +1465,7 @@ Clear fixture, `registry.form.clear.ts`:
 class ProcessSession {
 	readonly #goals = new Set<ProcessGoal>()
 	readonly #tickets = new Map<number, ParentTicket>()
-	#closing: Promise<void> | undefined
+	#shutdown: Promise<void> | undefined
 
 	async execute(goal: Goal, context: GoalContext): Promise<Product> {
 		if (this.#goals.size !== 0) throw new Error('The process cannot execute in its current state')
@@ -1479,8 +1479,8 @@ class ProcessSession {
 	}
 
 	close(): Promise<void> {
-		this.#closing ??= this.#close()
-		return this.#closing
+		this.#shutdown ??= this.#close()
+		return this.#shutdown
 	}
 
 	async #close(): Promise<void> {

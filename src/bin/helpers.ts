@@ -67,7 +67,6 @@ import {
 	STYLES_ENTRY_PATH,
 	THEMES_BARREL_PATH,
 	THEMES_ENTRY_PATH,
-	TOOLCHAIN_HOLDS,
 } from '@src/core'
 import {
 	isExactCaseFile,
@@ -596,14 +595,14 @@ export function releasesToExit(releases: readonly Release[]): number {
  *
  * @param releases - The release verdicts to measure.
  * @param served - Alternate release verdicts used to detect a newer served major.
- * @param holds - The foreign tools held at a major; default: `TOOLCHAIN_HOLDS`.
+ * @param holds - The toolchain holds selected for this workspace; default: none.
  * @returns One non-blocking question for each stale floor, each crossed major, and each declaration
  * past its hold. A held tool's newer served major reads as its hold and the reason.
  */
 export function releasesToQuestions(
 	releases: readonly Release[],
 	served: readonly Release[] = releases,
-	holds: Readonly<Record<string, ToolchainHold>> = TOOLCHAIN_HOLDS,
+	holds: Readonly<Record<string, ToolchainHold>> = {},
 ): readonly Question[] {
 	// The iterator consumes one release at a time, and reads a hole as an `undefined` release, which
 	// the name read refuses before a later release is read.
@@ -623,6 +622,7 @@ export function releasesToQuestions(
 				release.major ??
 				(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
 			const hold = Object.hasOwn(holds, release.name) ? holds[release.name] : undefined
+			const held = hold === undefined ? undefined : extractRangeMajor(hold.range)
 			return [
 				...(declared !== undefined &&
 				current !== undefined &&
@@ -643,18 +643,18 @@ export function releasesToQuestions(
 							{
 								field: 'dependencies',
 								message:
-									hold?.major === declared
+									hold !== undefined && held === declared
 										? `${release.name} is held at major ${String(declared)}, while the registry serves major ${String(published)}: ${hold.reason}.`
 										: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
 								blocking: false,
 							},
 						]
 					: []),
-				...(declared !== undefined && hold !== undefined && declared > hold.major
+				...(declared !== undefined && hold !== undefined && held !== undefined && declared > held
 					? [
 							{
 								field: 'dependencies',
-								message: `${release.name} declares major ${String(declared)}, past its hold at major ${String(hold.major)}: ${hold.reason}.`,
+								message: `${release.name} declares major ${String(declared)}, past its hold at major ${String(held)}: ${hold.reason}.`,
 								blocking: false,
 							},
 						]

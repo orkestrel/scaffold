@@ -77,7 +77,7 @@ import {
 	buildSwapRefusals,
 	buildSwapRemoteSpecs,
 	buildSwapValidNames,
-	checkFormatting,
+	checkFormat,
 	commitFiles,
 	createRepository,
 	createSwapSession,
@@ -113,7 +113,7 @@ describe('swap.ts', () => {
 			await installSwapFixture(fixture.consumer, environment)
 			const manifestPath = join(fixture.consumer, 'package.json')
 			const original = readFileSync(manifestPath, 'utf8')
-			expect(checkFormatting(manifestPath)).toBe(0)
+			expect(checkFormat(manifestPath)).toBe(0)
 			const pin = [
 				'--pin',
 				'--consumer',
@@ -163,13 +163,13 @@ describe('swap.ts', () => {
 			)
 			const receipt = pinned.json?.receipt
 			expect(typeof receipt === 'string' && existsSync(join(scratch.path, receipt))).toBe(true)
-			expect(checkFormatting(manifestPath)).toBe(0)
+			expect(checkFormat(manifestPath)).toBe(0)
 			const { overrides, ...rest } = readInstalledRecord(fixture.consumer)
 			const appended = scratch.write(
 				'appended/package.json',
 				renderPackageManifest({ ...rest, overrides }),
 			)
-			expect(checkFormatting(appended)).not.toBe(0)
+			expect(checkFormat(appended)).not.toBe(0)
 			const status = await spawnSkillScript(
 				SWAP_SCRIPT,
 				['--status', '--consumer', fixture.consumer, '--json'],
@@ -830,7 +830,7 @@ describe('swap.ts', () => {
 			for (const [index, fields] of shapes.entries()) {
 				const consumer = writeSwapPackage(scratch.path, `shape${String(index)}`, fields)
 				const manifestPath = join(consumer, 'package.json')
-				expect([consumer, checkFormatting(manifestPath)]).toStrictEqual([consumer, 0])
+				expect([consumer, checkFormat(manifestPath)]).toStrictEqual([consumer, 0])
 				await spawnSkillScript(
 					SWAP_SCRIPT,
 					[
@@ -848,7 +848,7 @@ describe('swap.ts', () => {
 				expect(readInstalledRecord(consumer).overrides).toMatchObject({
 					'@orkestrel/swapfix-gamma': expect.stringContaining('file:'),
 				})
-				expect([consumer, checkFormatting(manifestPath)]).toStrictEqual([consumer, 0])
+				expect([consumer, checkFormat(manifestPath)]).toStrictEqual([consumer, 0])
 			}
 		} finally {
 			await session.destroy()

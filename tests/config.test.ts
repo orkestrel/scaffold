@@ -252,7 +252,7 @@ describe('selected faces', () => {
 		const sheets = collectSheets(POLICY_ROOT)
 		const frameworks = collectFrameworks(POLICY_ROOT)
 		const wrappers = collectFaceWrappers(POLICY_ROOT)
-		const readings: Array<{
+		const configurations: Array<{
 			readonly axis: string
 			readonly face: string
 			readonly wrapper: string
@@ -287,10 +287,10 @@ describe('selected faces', () => {
 			expect(
 				Object.getOwnPropertyDescriptor(tsconfig.compilerOptions.paths, `@${axis}/${face}`)?.value,
 			).toEqual([`./${axis}/${face}/index.ts`])
-			readings.push({ axis, face, wrapper, project })
+			configurations.push({ axis, face, wrapper, project })
 		}
-		for (const { face, wrapper, project } of readings.filter((reading) =>
-			sheets.includes(reading.face),
+		for (const { face, wrapper, project } of configurations.filter((faceConfiguration) =>
+			sheets.includes(faceConfiguration.face),
 		)) {
 			expect(readFileSync(resolve(POLICY_ROOT, wrapper), 'utf8')).toContain('sheetProject(')
 			expect(inspectSheetConfiguration(project)).toEqual([])
@@ -304,16 +304,18 @@ describe('selected faces', () => {
 			)
 			expect(readConfigScript(scripts, 'build:src')).toContain(`npm run build:src:${face}`)
 		}
-		for (const { project } of readings.filter((reading) =>
-			frameworks.includes(`${reading.axis}/${reading.face}`),
+		for (const { project } of configurations.filter((faceConfiguration) =>
+			frameworks.includes(`${faceConfiguration.axis}/${faceConfiguration.face}`),
 		)) {
 			expect(project.optimizeDeps?.include).toContain('vue')
 			expect(project.test?.setupFiles).toEqual(
 				expect.arrayContaining(['./tests/setup.ts', './tests/setupBrowser.ts']),
 			)
 		}
-		for (const { wrapper } of readings.filter(
-			(reading) => reading.axis === 'src' && frameworks.includes(`${reading.axis}/${reading.face}`),
+		for (const { wrapper } of configurations.filter(
+			(faceConfiguration) =>
+				faceConfiguration.axis === 'src' &&
+				frameworks.includes(`${faceConfiguration.axis}/${faceConfiguration.face}`),
 		)) {
 			const text = readFileSync(resolve(POLICY_ROOT, wrapper), 'utf8')
 			expect(text).toContain('rewriteCoreSpecifier')
@@ -812,7 +814,7 @@ describe('root configuration', () => {
 			[
 				'probe',
 				{
-					benchmark: ['tmp/probes/**/*.test.ts', 'tests/**/*.test.ts'],
+					benchmark: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'],
 					include: 'tmp/probes/**/*.test.ts',
 					parallel: false,
 					pool: 'threads',
@@ -1002,8 +1004,8 @@ describe('root configuration', () => {
 			sentinel: true,
 		}
 		const test = { name: { label: 'control' }, include: ['tests/control.test.ts'] }
-		const ignoring = Object.defineProperty(() => ({ test }), 'name', { value: 'ignoring' })
-		const spreading = Object.defineProperty((record: object) => ({ ...record, test }), 'name', {
+		const ignoreInput = Object.defineProperty(() => ({ test }), 'name', { value: 'ignoring' })
+		const spreadInput = Object.defineProperty((record: object) => ({ ...record, test }), 'name', {
 			value: 'spreading',
 		})
 		const wrappers = projects.filter((entry) => typeof entry === 'string')
@@ -1035,8 +1037,8 @@ describe('root configuration', () => {
 			).toThrow('expected')
 		}
 		const factories = projects.filter((entry) => typeof entry !== 'string')
-		const entries: readonly unknown[] = [...factories, ignoring, spreading, { test }]
-		const readings = entries.map((entry) => {
+		const entries: readonly unknown[] = [...factories, ignoreInput, spreadInput, { test }]
+		const outcomes = entries.map((entry) => {
 			if (typeof entry !== 'function') {
 				return { name: undefined, callable: false, mode: undefined, leaked: [] }
 			}
@@ -1054,13 +1056,13 @@ describe('root configuration', () => {
 			}
 		})
 		const forwarded = { callable: true, mode: 'sentinel-mode', leaked: [] }
-		expect(readings.slice(0, factories.length)).toStrictEqual(
+		expect(outcomes.slice(0, factories.length)).toStrictEqual(
 			factories.map((entry) => ({
 				name: typeof entry === 'function' ? entry.name : undefined,
 				...forwarded,
 			})),
 		)
-		expect(readings.slice(factories.length)).toStrictEqual([
+		expect(outcomes.slice(factories.length)).toStrictEqual([
 			{ name: 'ignoring', callable: true, mode: undefined, leaked: [] },
 			{
 				name: 'spreading',
@@ -1070,8 +1072,8 @@ describe('root configuration', () => {
 			},
 			{ name: undefined, callable: false, mode: undefined, leaked: [] },
 		])
-		for (const reading of readings.slice(factories.length)) {
-			expect({ ...reading, name: undefined }).not.toStrictEqual({ name: undefined, ...forwarded })
+		for (const outcome of outcomes.slice(factories.length)) {
+			expect({ ...outcome, name: undefined }).not.toStrictEqual({ name: undefined, ...forwarded })
 		}
 
 		// A record that carries no string `mode` is refused rather than forwarded as a project
@@ -1339,7 +1341,7 @@ describe('root configuration', () => {
 				"process.stdout.write('lazy\\n')\nexport function lazy(): string {\n\treturn String(process.argv.length)\n}\n",
 			)
 			const rosters: Array<readonly string[]> = []
-			for (const splitting of [false, true]) {
+			for (const chunked of [false, true]) {
 				const loaded = await loadConfigFromFile(
 					{ command: 'build', mode: 'production', isSsrBuild: false, isPreview: false },
 					wrapper,
@@ -1366,7 +1368,7 @@ describe('root configuration', () => {
 							formats: ['cjs'],
 							fileName: () => 'main.cjs',
 						},
-						rolldownOptions: splitting
+						rolldownOptions: chunked
 							? { ...rolldown, output: { codeSplitting: true } }
 							: { ...rolldown },
 					},
@@ -3373,12 +3375,12 @@ createSomething({
 			{ esmodule: false },
 		])
 		if (!Array.isArray(configured.overrides)) throw new Error('Missing lint overrides')
-		const touching = configured.overrides
+		const overrides = configured.overrides
 			.map(readConfigRecord)
 			.filter(
 				(override) => readConfigRecord(override.rules)['import/no-dynamic-require'] !== undefined,
 			)
-		expect(touching).toEqual([])
+		expect(overrides).toEqual([])
 	})
 
 	it('permits a computed import() and refuses a computed require at every module path', () => {
@@ -4072,12 +4074,12 @@ createSomething({
 				JSON.stringify({ rules: { 'no-debugger': 'error' }, overrides }),
 			)
 			const codes = readImportDiagnostics(scratch, [...expected.keys()])
-			const readings = [...expected].map(([path, refusal]) => ({
+			const verdicts = [...expected].map(([path, refusal]) => ({
 				path,
 				expected: refusal,
 				actual: codes.has('eslint(no-restricted-imports) ' + path),
 			}))
-			expect(readings.filter((reading) => reading.expected !== reading.actual)).toEqual([])
+			expect(verdicts.filter((verdict) => verdict.expected !== verdict.actual)).toEqual([])
 			writeFileSync(
 				resolve(scratch, '.oxlintrc.json'),
 				JSON.stringify({ rules: { 'no-debugger': 'error', 'no-restricted-imports': 'off' } }),
@@ -4289,14 +4291,14 @@ createSomething({
 			const [enabled, disabled] = reports
 			if (enabled === undefined || disabled === undefined)
 				throw new Error('Missing boundary readings')
-			const readings = [...expected].map(([path, refusal]) => ({
+			const verdicts = [...expected].map(([path, refusal]) => ({
 				path,
 				expected: refusal,
 				actual:
 					enabled.has('eslint(no-restricted-imports) ' + path) ||
 					enabled.has('policy(no-cross-vue-face) ' + path),
 			}))
-			expect(readings.filter((reading) => reading.actual !== reading.expected)).toEqual([])
+			expect(verdicts.filter((verdict) => verdict.actual !== verdict.expected)).toEqual([])
 			const control = [...expected].map(([path, refusal]) => ({
 				path,
 				expected: refusal,
@@ -4305,7 +4307,7 @@ createSomething({
 					disabled.has('policy(no-cross-vue-face) ' + path),
 			}))
 			expect(() =>
-				expect(control.filter((reading) => reading.actual !== reading.expected)).toEqual([]),
+				expect(control.filter((verdict) => verdict.actual !== verdict.expected)).toEqual([]),
 			).toThrow('deeply equal')
 			expect(control).toContainEqual({ path: 'src/vue/refused3.ts', expected: true, actual: false })
 			expect(control).toContainEqual({ path: 'src/vue/refused8.ts', expected: true, actual: false })
@@ -4973,6 +4975,7 @@ describe('configuration helpers', () => {
 			'readBoundedFile',
 			'readHandleBytes',
 			'readCompilerOutput',
+			'resolveCompiler',
 			'rewriteCoreSpecifier',
 			'sourceFallback',
 			'workspacePath',
@@ -5080,7 +5083,7 @@ describe('configuration helpers', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-handle-' })
 		try {
 			// Each case is a file's text, the offset already read into the buffer, and the largest total allowed.
-			const readings = [
+			const results = [
 				{ text: 'abc', offset: 0, limit: 4 },
 				{ text: 'abcd', offset: 0, limit: 4 },
 				{ text: 'abcde', offset: 0, limit: 4 },
@@ -5100,8 +5103,8 @@ describe('configuration helpers', () => {
 			})
 			// A file at or under the limit answers its length; the shifted read adds the offset to the
 			// length and fills the buffer past it; a file over the limit answers nothing.
-			expect(readings.map(({ count }) => count)).toStrictEqual([3, 4, undefined, 0, 5, undefined])
-			expect(readings.map(({ filled }) => filled)).toStrictEqual(['abc', 'abcd', '', '', 'abc', ''])
+			expect(results.map(({ count }) => count)).toStrictEqual([3, 4, undefined, 0, 5, undefined])
+			expect(results.map(({ filled }) => filled)).toStrictEqual(['abc', 'abcd', '', '', 'abc', ''])
 		} finally {
 			scratch.destroy()
 		}
@@ -5154,18 +5157,18 @@ describe('configuration helpers', () => {
 				logLevel: 'silent',
 				build: { outDir: 'out', lib: { entry, formats: ['es'] } },
 			}
-			const building = new configHelpers.BuildState()
-			building.resolve(await resolveConfig(inline, 'build'))
-			expect(building.building).toBe(true)
-			expect(building.output).toBe(resolve(scratch.path, 'out'))
-			expect(building.root).toBe(realpathSync.native(scratch.path))
-			expect(building.source).toBe(entry)
+			const buildState = new configHelpers.BuildState()
+			buildState.resolve(await resolveConfig(inline, 'build'))
+			expect(buildState.building).toBe(true)
+			expect(buildState.output).toBe(resolve(scratch.path, 'out'))
+			expect(buildState.root).toBe(realpathSync.native(scratch.path))
+			expect(buildState.source).toBe(entry)
 
 			// The control: a serve command is not a build, and a config with no library entry has no source.
-			const serving = new configHelpers.BuildState()
-			serving.resolve(await resolveConfig({ ...inline, build: { outDir: 'out' } }, 'serve'))
-			expect(serving.building).toBe(false)
-			expect(serving.source).toBe('')
+			const serveState = new configHelpers.BuildState()
+			serveState.resolve(await resolveConfig({ ...inline, build: { outDir: 'out' } }, 'serve'))
+			expect(serveState.building).toBe(false)
+			expect(serveState.source).toBe('')
 		} finally {
 			scratch.destroy()
 		}
@@ -5360,6 +5363,65 @@ describe('configuration helpers', () => {
 		}
 	})
 
+	it('resolves the installed compiler through bin.tsc when private package paths are unexported', () => {
+		const compiler = configHelpers.resolveCompiler(import.meta.url)
+		expect(configHelpers.readCompilerOutput(compiler, ['--version'])).toMatch(/^Version \d+\./u)
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-compiler-exports-' })
+		try {
+			const root = join(scratch.path, 'node_modules/typescript')
+			scratch.write('package.json', '{"type":"module"}')
+			scratch.write(
+				'node_modules/typescript/package.json',
+				JSON.stringify({
+					name: 'typescript',
+					exports: { './package.json': './package.json' },
+					bin: { tsc: relative(root, compiler) },
+				}),
+			)
+			const path = join(scratch.path, 'package.json')
+			expect(() => createRequire(path).resolve('typescript/bin/tsc')).toThrow(
+				'not defined by "exports"',
+			)
+			expect(configHelpers.resolveCompiler(path)).toBe(compiler)
+			expect(
+				configHelpers.readCompilerOutput(configHelpers.resolveCompiler(path), ['--version']),
+			).toMatch(/^Version \d+\./u)
+			scratch.write('consumer.ts', 'const value: string = 1\nconsole.log(value)\n')
+			const refused = spawnSync(
+				process.execPath,
+				[compiler, '--noEmit', '--pretty', 'false', '--skipLibCheck', 'consumer.ts'],
+				{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+			)
+			expect(refused.status).toBeGreaterThan(0)
+			expect(refused.stdout).toContain('error TS2322')
+			scratch.write('consumer.ts', "const value: string = 'accepted'\nconsole.log(value)\n")
+			const accepted = spawnSync(
+				process.execPath,
+				[compiler, '--noEmit', '--pretty', 'false', '--skipLibCheck', 'consumer.ts'],
+				{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+			)
+			expect(accepted.status, `${accepted.stdout}${accepted.stderr}`).toBe(0)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each([{}, { bin: null }, { bin: { tsc: 7 } }])(
+		'refuses a compiler manifest without a bin.tsc command: %s',
+		(declared) => {
+			const scratch = createPolicyScratch({ prefix: 'orkestrel-compiler-manifest-' })
+			try {
+				scratch.write('package.json', '{"type":"module"}')
+				scratch.write('node_modules/typescript/package.json', JSON.stringify(declared))
+				expect(() => configHelpers.resolveCompiler(join(scratch.path, 'package.json'))).toThrow(
+					'The TypeScript package declares no bin.tsc command',
+				)
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
+
 	// The scope reading applies only where the workspace publishes source from `src`, which is what
 	// `publishes` reads, and the name ends at that mechanism. An absent face project is the defect
 	// this case exists to report rather than a second reason to excuse it, so a workspace holding
@@ -5371,7 +5433,7 @@ describe('configuration helpers', () => {
 	it.skipIf(!POLICY_PUBLISHES)(
 		'reads the compiler scope a declaration roll-up requires [inapplicable where src holds no recognized environment directory]',
 		() => {
-			const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
+			const compiler = configHelpers.resolveCompiler(import.meta.url)
 			// The order mirrors ENVIRONMENTS in src/core/constants.ts; a server-only workspace vendors
 			// no core project, so this walks to the first face the workspace actually carries.
 			const faces = ['core', 'browser', 'server']
@@ -5431,7 +5493,7 @@ describe('configuration helpers', () => {
 	// reading a face project must not excuse it from the helpers behind the roll-up, which it
 	// vendors whether or not it publishes.
 	it('reads the refusals, guards, overrides, and rewrites a declaration roll-up requires from every workspace', () => {
-		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
+		const compiler = configHelpers.resolveCompiler(import.meta.url)
 		// Any project path resolves these, because each reading is refused by the text before the
 		// path is read. The root project is the one file every workspace carries.
 		const project = resolve(POLICY_ROOT, 'tsconfig.json')
@@ -5626,12 +5688,12 @@ describe('configuration helpers', () => {
 				}
 
 				const idle = join(workspace, 'idle')
-				const serving = configHelpers.declarationRollup({
+				const plugins = configHelpers.declarationRollup({
 					project,
 					rewrite: configHelpers.rewriteCoreSpecifier,
 				})
-				const configure = serving.configResolved
-				const close = serving.closeBundle
+				const configure = plugins.configResolved
+				const close = plugins.closeBundle
 				if (typeof configure !== 'function' || typeof close !== 'function') {
 					throw new Error('The declaration roll-up exposes no build hooks')
 				}
@@ -5678,7 +5740,7 @@ describe('configuration helpers', () => {
 // list reads every entry first. Each case runs a policy reader over a recorded list and pins the
 // outcome and the entries it read, as the loop the reader replaced gave them.
 describe('policy readers consume a caller-supplied list one entry at a time', () => {
-	const throwing = [
+	const failureCases = [
 		[POLICY_LAZY_SHAPES.hole, 'throw TypeError', []],
 		[POLICY_LAZY_SHAPES.holeFailure, 'throw TypeError', []],
 		[POLICY_LAZY_SHAPES.failureFirst, 'throw RangeError', [0]],
@@ -5698,7 +5760,7 @@ describe('policy readers consume a caller-supplied list one entry at a time', ()
 			[
 				[POLICY_LAZY_SHAPES.empty, 'return []', []],
 				[POLICY_LAZY_SHAPES.dense, 'return ["run"]', [0]],
-				...throwing,
+				...failureCases,
 			],
 		),
 		...createPolicyLazyCases(
@@ -5722,7 +5784,7 @@ describe('policy readers consume a caller-supplied list one entry at a time', ()
 			[
 				[POLICY_LAZY_SHAPES.empty, 'return ["module"]', []],
 				[POLICY_LAZY_SHAPES.dense, 'return []', [0]],
-				...throwing,
+				...failureCases,
 			],
 		),
 		...createPolicyLazyCases(
@@ -5739,7 +5801,7 @@ describe('policy readers consume a caller-supplied list one entry at a time', ()
 			[
 				[POLICY_LAZY_SHAPES.empty, 'return []', []],
 				[POLICY_LAZY_SHAPES.dense, 'return []', [0]],
-				...throwing,
+				...failureCases,
 			],
 		),
 		...createPolicyLazyCases(
@@ -5753,7 +5815,7 @@ describe('policy readers consume a caller-supplied list one entry at a time', ()
 			[
 				[POLICY_LAZY_SHAPES.empty, 'return []', []],
 				[POLICY_LAZY_SHAPES.dense, 'return ["run"]', [0]],
-				...throwing,
+				...failureCases,
 			],
 		),
 		...createPolicyLazyCases(

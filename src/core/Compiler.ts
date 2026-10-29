@@ -12,7 +12,7 @@ import type {
 	Plan,
 	Question,
 	ScaffoldErrorCode,
-	Scaffolding,
+	CompileResult,
 	Snapshot,
 } from './types.js'
 import { Emitter } from '@orkestrel/emitter'
@@ -49,7 +49,7 @@ import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from
  * records the coded reason beside them; the stages after a failed one never run,
  * so the records stop where the compile stopped.
  *
- * The compile fails closed on one rule: a scaffolding carries a plan exactly
+ * The compile fails closed on one rule: a compile result carries a plan exactly
  * when no question blocks. A refused blueprint is answered rather than raised,
  * so a caller reads the refusal from the value it asked for.
  *
@@ -74,10 +74,10 @@ import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from
  * import { Compiler, createBlueprint } from '@orkestrel/scaffold'
  *
  * const compiler = new Compiler()
- * const scaffolding = compiler.compile(createBlueprint('router', { src: ['core'] }))
+ * const result = compiler.compile(createBlueprint('router', { src: ['core'] }))
  *
- * scaffolding.plan?.artifacts // every planned file, in group order
- * scaffolding.stages // one CompileRecord per stage that ran
+ * result.plan?.artifacts // every planned file, in group order
+ * result.stages // one CompileRecord per stage that ran
  * compiler.destroy()
  * ```
  */
@@ -123,7 +123,7 @@ export class Compiler implements CompilerInterface {
 	 *
 	 * @param blueprint - The workspace specification to compile.
 	 * @param groups - The artifact groups to cover; every group when absent.
-	 * @returns The scaffolding, carrying a plan only when the gate passed.
+	 * @returns The compile result, carrying a plan only when the gate passed.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape, and `DESTROYED` when the compiler has been torn down.
 	 *
@@ -149,13 +149,13 @@ export class Compiler implements CompilerInterface {
 	 * new Compiler().compile(blueprint, ['manifest']).plan?.artifacts.length // 1
 	 * ```
 	 */
-	compile(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding {
+	compile(blueprint: Blueprint, groups?: readonly Group[]): CompileResult {
 		this.#assertAlive()
 		const accepted = this.#accept(blueprint, parseBlueprint, 'blueprint')
-		const scaffolding = this.#scaffold(accepted, this.#select(groups))
-		if (scaffolding.plan === undefined) this.#emitter.emit('block', scaffolding.questions)
-		this.#emitter.emit('compile', scaffolding)
-		return scaffolding
+		const result = this.#scaffold(accepted, this.#select(groups))
+		if (result.plan === undefined) this.#emitter.emit('block', result.questions)
+		this.#emitter.emit('compile', result)
+		return result
 	}
 
 	/**
@@ -192,11 +192,11 @@ export class Compiler implements CompilerInterface {
 		this.#assertAlive()
 		const accepted = this.#accept(blueprint, parseBlueprint, 'blueprint')
 		const observed = this.#accept(current, parseSnapshot, 'current')
-		const scaffolding = this.#scaffold(accepted, this.#select(groups))
-		if (scaffolding.plan === undefined) this.#emitter.emit('block', scaffolding.questions)
+		const compiled = this.#scaffold(accepted, this.#select(groups))
+		if (compiled.plan === undefined) this.#emitter.emit('block', compiled.questions)
 		const result: Audit = {
-			findings: scaffolding.plan === undefined ? [] : planToFindings(scaffolding.plan, observed),
-			questions: scaffolding.questions,
+			findings: compiled.plan === undefined ? [] : planToFindings(compiled.plan, observed),
+			questions: compiled.questions,
 		}
 		this.#emitter.emit('audit', result)
 		return result
@@ -226,7 +226,7 @@ export class Compiler implements CompilerInterface {
 	// The stages in order, recording each one and stopping at the first
 	// failure. Every public method runs this and choreographs its own events, so
 	// an audit never emits a compile's completion.
-	#scaffold(blueprint: Blueprint, groups: readonly Group[]): Scaffolding {
+	#scaffold(blueprint: Blueprint, groups: readonly Group[]): CompileResult {
 		const stages: CompileRecord[] = []
 		const draft = this.#draft(blueprint)
 		const selected = groups.flatMap((group) => draft.filter((artifact) => artifact.group === group))

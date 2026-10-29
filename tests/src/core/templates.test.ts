@@ -647,6 +647,7 @@ describe('emitted workspaces under their own gates', () => {
 					'vite.config.ts',
 					// A file keeps the listing apart from the dependency optimizer's log lines on stdout.
 					`--json=${listed}`,
+					'--staticParse=false',
 				],
 			}
 			const options = {
@@ -689,6 +690,7 @@ describe('emitted workspaces under their own gates', () => {
 						'--config',
 						'vite.config.ts',
 						'--reporter=json',
+						`--outputFile=${join(workspace.path, 'run.json')}`,
 					],
 				},
 				options,
@@ -696,7 +698,7 @@ describe('emitted workspaces under their own gates', () => {
 			if (run.failed) throw new Error(run.stdout + run.stderr)
 			expect(run.code).toBe(0)
 			expect(run.stderr).not.toContain('Unhandled Error')
-			const report: unknown = JSON.parse(run.stdout.slice(run.stdout.indexOf('{')))
+			const report: unknown = JSON.parse(readFileSync(join(workspace.path, 'run.json'), 'utf8'))
 			if (!isRecord(report)) throw new Error('Vitest returned no run report')
 			expect(report.numTotalTests).toBe(files.length)
 			expect(report.numPassedTests).toBe(files.length)
@@ -736,15 +738,15 @@ describe('emitted workspaces under their own gates', () => {
 				'--config',
 				join(workspace.path, 'vite.config.ts'),
 			]
-			const passing = spawnSync(process.execPath, command, { encoding: 'utf8', windowsHide: true })
-			if (passing.status !== 0) throw new Error(passing.stdout + passing.stderr)
-			expect(passing.status).toBe(0)
-			expect(passing.stdout).toContain('1 passed')
+			const success = spawnSync(process.execPath, command, { encoding: 'utf8', windowsHide: true })
+			if (success.status !== 0) throw new Error(success.stdout + success.stderr)
+			expect(success.status).toBe(0)
+			expect(success.stdout).toContain('1 passed')
 			workspace.write('setupGlobal.ts', "export function setup(): string { return 'teardown' }\n")
-			const failing = spawnSync(process.execPath, command, { encoding: 'utf8', windowsHide: true })
-			expect(failing.status).toBe(1)
-			expect(failing.stdout).toContain('1 failed')
-			expect(failing.stderr).toContain('runs without producing a teardown')
+			const failure = spawnSync(process.execPath, command, { encoding: 'utf8', windowsHide: true })
+			expect(failure.status).toBe(1)
+			expect(failure.stdout).toContain('1 failed')
+			expect(failure.stderr).toContain('runs without producing a teardown')
 		} finally {
 			workspace.destroy()
 		}

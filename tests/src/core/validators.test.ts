@@ -292,9 +292,9 @@ describe('isAudit', () => {
 describe('isPlan', () => {
 	it('refuses a content-owned manifest while accepting the compiler plan', () => {
 		const compiler = new Compiler()
-		const scaffolding = compiler.compile(createBlueprint('sample', { src: ['core'] }))
+		const result = compiler.compile(createBlueprint('sample', { src: ['core'] }))
 		compiler.destroy()
-		const plan = scaffolding.plan
+		const plan = result.plan
 		if (plan === undefined) throw new Error('Expected the compiler to produce a plan')
 		const claimed = {
 			...plan,

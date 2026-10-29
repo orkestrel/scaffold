@@ -78,18 +78,19 @@ start, and let it choose the capture destination, the matrix row, and the statec
   browser application is born with. Its presence is the journey axis. Rename and extend the seeded
   viewports for this application.
 - Activate the axis in a workspace born before it: write `configs/app/vite.journey.config.ts`, run
-  `scaffold repair`, then add `npm run test:journey` to the `test` script after `npm run test:app`.
-  The repair defines `appJourney` in the root configuration, emits the `test:journey` script, and
-  excludes the journey suite from the ordinary `app:browser` project. It does not rewrite the `test`
+  `scaffold audit`, and add any missing planned dependencies it names before `scaffold repair`.
+  Then add `npm run test:journey` to the `test` script after `npm run test:app`.
+  The repair defines `appJourney` in the root configuration, emits `test:journey`, `journey`, and
+  `capture`, and excludes the journey suite from the ordinary `app:browser` project. It does not rewrite the `test`
   chain, so the chain entry is yours to add. Add that entry before the repair instead where you
   prefer: `test:journey` names a configuration rather than a project, so neither order blocks the
   repair.
 - Name each variant per [captures.md](references/captures.md) → Variants.
 - Keep the provided variants as serializable `JourneyVariant` data: `name`, `width`, and `height`.
   Compose no callback merely to pass that data to a capture.
-- Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Set
-  `CAPTURE` to `1` in your own shell and run `npm run test:journey` again to write the frames; the
-  root configuration reads that variable and provides it as `capture`.
+- Keep `npm run test:journey` as the whole-suite gate in the `test` chain. Use the scoped commands
+  under Choosing what to run for iteration and stamped frames; keep the root configuration's
+  `CAPTURE === '1'` read and its `capture` provide unchanged.
 - Keep the journeys in `tests/app/browser/integration.test.ts`, and the journeys of the `vue`
   extension's application in `tests/app/vue/integration.test.ts`, which `npm run test:journey:vue`
   runs. Each variant project of a mode collects that file alone, and the application's ordinary
@@ -108,6 +109,55 @@ start, and let it choose the capture destination, the matrix row, and the statec
 `npm run test:journey` through literal `npm run` calls, so a chain reaching it through an
 intermediate script raises none. It reports the configuration question only for a `test:*` script
 whose text names `vitest`, so a script naming another runner's configuration raises none either.
+
+### Choosing what to run
+
+- Run the installed `@orkestrel/capture` package at `node_modules/@orkestrel/capture` through
+  `npm run journey -- <selector>` (`capture journey`) for owner-selected behavior with capture
+  off, and `npm run capture -- <selector>` (`capture frames`) for capture-bearing journeys with
+  `CAPTURE=1`. Keep the commands separate; never append capture work to a behavior run.
+- Before using scoped commands, wire the adopter-owned journey wrapper's discovery, selection
+  request, tags, portfolios, registry, and final-case records to the package protocol. Read the
+  `@orkestrel/capture` guide's Runner and Runner selection and process protocol sections; scaffold
+  seeds the commands and dependency, while the application supplies these declarations.
+- Select `all` or a colon-delimited owner path from the wrapper's tags: `<scope>`,
+  `<scope>:<owner>`, or further declared descendants. Use the wrapper's names, never infer them
+  from filenames. Keep behavior on the positive `owner:` filter and frames on its intersection
+  with the selected capture tags; include the final case in each selection.
+- Narrow with `--variant <name>` (repeatable) and `--case <exact-full-name>`. Use `--state <name>`
+  only with frames to resolve its declaring case from fresh evidence. Use `--config <path>` to
+  select another wrapper. Give each value-taking flag a nonempty value; use `--flag=value` when
+  the value starts with `-`. Pass no second `--` terminator to the executable.
+- Replace the selector with `--changed <ref>` to select changed owners; use `HEAD` for uncommitted
+  work. Inspect `--changed <ref> --plan` first: discovery runs, but no execution child starts.
+  Read each path's `own`, `shared`, or `outside` classification and the exact next commands.
+  Follow a shared-input refusal's explicit whole-suite command; never widen automatically.
+- Refuse a bare command, an unknown selector or variant, an unknown or command-inappropriate
+  flag, a repeated single-value flag, a selector beside `--changed`, and `--plan` without
+  `--changed`. Treat an empty workload as failure. Follow the reported refresh command when
+  state evidence or the accepted registry is missing, stale, or ambiguous.
+- Read the authenticated selection request in the wrapper. Before a behavioral body writes a
+  frame, refuse a selected case that declares a state outside the selected owner; split that
+  case instead of parking its outside states. Keep the full behavioral placement proof when
+  `--state` projects only the requested written frame.
+- Run selected journey variants together in declaration order with capture off. For frames,
+  produce the declared first variant in `narrow` before `rest`; when that variant is not
+  selected, run only `rest`. Stop after a failed stage, and add no unselected variant or owner.
+
+Climb this ladder using only declared owner, case, and variant names:
+
+1. One case on one variant: `npm run journey -- pages:mail --case 'mail shows the inbox' --variant light-390`.
+2. The changed set: inspect `npm run journey -- --changed HEAD --plan`, then run
+   `npm run journey -- --changed HEAD`. For frames, inspect `npm run capture -- --changed HEAD --plan`
+   before `npm run capture -- --changed HEAD`.
+3. A section or page: `npm run journey -- pages:mail:inbox` or `npm run journey -- pages:mail`.
+4. A group: `npm run journey -- pages`.
+5. `all` at the gate: `npm run journey -- all`, retaining `npm run test:journey` in the repository's
+   whole-suite test chain.
+
+Follow a refusal's exact next commands before widening a selection. Use the matching `capture`
+script only when the work needs frames, and apply [captures.md](references/captures.md) before
+judging their freshness or completeness.
 
 ### Prepare the capture theme
 

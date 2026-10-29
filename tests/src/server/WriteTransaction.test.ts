@@ -312,7 +312,7 @@ describe('WriteTransaction directories', () => {
 			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 			const target = workspace.ensure('project')
 			const segment = join(target, 'a')
-			const holding = join(target, 'holding')
+			const directory = join(target, 'holding')
 			const state = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT))
 			const attacker = new Worker(
 				`const { existsSync, renameSync, writeFileSync } = require('node:fs')
@@ -335,7 +335,7 @@ for (;;) {
 		} catch {}
 	}
 }`,
-				{ eval: true, workerData: { state: state.buffer, segment, holding } },
+				{ eval: true, workerData: { state: state.buffer, segment, directory } },
 			)
 			try {
 				Atomics.wait(state, 0, 0, 10_000)
@@ -351,9 +351,9 @@ for (;;) {
 						break
 					}
 					expect(lstatSync(segment).isFile()).toBe(true)
-					expect(lstatSync(holding).isDirectory()).toBe(true)
+					expect(lstatSync(directory).isDirectory()).toBe(true)
 					rmSync(segment)
-					renameSync(holding, segment)
+					renameSync(directory, segment)
 					transaction.discard()
 					expect(existsSync(segment)).toBe(false)
 					const observed = refusal !== undefined

@@ -1952,8 +1952,8 @@ export function inspectSkillTemplateTODOs(
 					? { fence: undefined, indexes: state.indexes }
 					: state
 			}
-			const opening = fenceLine.match(/^(`{3,}|~{3,})/u)?.[1]
-			if (opening !== undefined) return { fence: opening, indexes: state.indexes }
+			const fence = fenceLine.match(/^(`{3,}|~{3,})/u)?.[1]
+			if (fence !== undefined) return { fence: fence, indexes: state.indexes }
 			return { fence: undefined, indexes: [...state.indexes, index] }
 		},
 		{ fence: undefined, indexes: [] },
@@ -3441,7 +3441,7 @@ export function readPolicySurface(root: string): PolicySurfacePopulation {
 			: [createPolicyViolation('surface', path, POLICY_SURFACE_STYLES_MESSAGE, line)]
 	})
 	// Each barrel statement answers one violation, one star-export target, or neither.
-	const readings = barrels.flatMap(
+	const results = barrels.flatMap(
 		(path): ReadonlyArray<{ readonly violation?: PolicyViolation; readonly target?: string }> => {
 			const text = files[path]
 			if (text === undefined) return []
@@ -3498,7 +3498,7 @@ export function readPolicySurface(root: string): PolicySurfacePopulation {
 			})
 		},
 	)
-	const targets = new Set(readings.flatMap(({ target }) => (target === undefined ? [] : [target])))
+	const targets = new Set(results.flatMap(({ target }) => (target === undefined ? [] : [target])))
 	const reads = [...targets].flatMap((path) => {
 		const text = files[path]
 		return text === undefined ? [] : [collectPolicyDeclarations(root, path, text)]
@@ -3507,7 +3507,7 @@ export function readPolicySurface(root: string): PolicySurfacePopulation {
 		declarations: reads.flatMap((read) => read.declarations),
 		violations: [
 			...entryViolations,
-			...readings.flatMap(({ violation }) => (violation === undefined ? [] : [violation])),
+			...results.flatMap(({ violation }) => (violation === undefined ? [] : [violation])),
 			...reads.flatMap((read) => (read.violation === undefined ? [] : [read.violation])),
 		],
 	}

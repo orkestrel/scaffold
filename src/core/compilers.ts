@@ -15,6 +15,7 @@ import type {
 	Plan,
 	Question,
 	Snapshot,
+	ToolchainHold,
 	ViteMachinery,
 } from './types.js'
 import {
@@ -39,6 +40,8 @@ import {
 	BIN_OUTPUT_PATH,
 	BROWSE_DEV_DEPENDENCIES,
 	BROWSE_UPSTREAM,
+	CAPTURE_DEV_DEPENDENCIES,
+	CAPTURE_UPSTREAM,
 	CATALOG_AGENT_PATH,
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
@@ -72,6 +75,7 @@ import {
 	SRC_MATRIX,
 	STYLES_DEV_DEPENDENCIES,
 	TARGET_SKILL_NAMES,
+	TOOLCHAIN_HOLDS,
 	VERSION_PATTERN,
 	WORKSPACE_DEV_ENGINES,
 } from './constants.js'
@@ -292,8 +296,10 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * @returns The merged set, sorted by package name.
  *
  * @remarks
- * The shared toolchain is the baseline every generated workspace carries, and
- * each declared axis adds the set its host needs. A declared extra or peer is
+ * The shared toolchain is the baseline every generated workspace carries.
+ * A selected browser framework applies its toolchain hold before the host-specific sets.
+ * Vue faces on either axis select TypeScript 6.0.3; other workspaces select TypeScript 7.0.2.
+ * Each declared axis adds the set its host needs. A declared extra or peer is
  * applied after those, so a workspace that pins a range for a package the
  * conditional sets also name gets the range it declared. An extra that restates
  * a shared toolchain pin never reaches here, because the gate refuses it. A peer
@@ -307,6 +313,11 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * A browser setup runtime alone receives nothing, because it renders no surface for `browse`
  * to drive. A workspace {@link BROWSE_UPSTREAM} names receives nothing either, because
  * `@orkestrel/browser` depends on it at runtime and the declaration would close a cycle.
+ *
+ * A journey axis with a browser application receives {@link CAPTURE_DEV_DEPENDENCIES}.
+ * A workspace {@link CAPTURE_UPSTREAM} names receives no capture seed, because it is capture
+ * itself or a member of capture's runtime closure. A browser source, styles surface, or browser
+ * setup alone selects no capture dependency.
  *
  * A peer is declared here as well as under `peerDependencies`, because a peer is
  * not installed by the workspace that declares it and developing against one
@@ -334,7 +345,16 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 	const own = blueprint.src.length > 0 || sheets ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const prior: Readonly<Record<string, string>> = {
 		...BASE_DEV_DEPENDENCIES,
+		...Object.fromEntries(
+			Object.entries(blueprintToToolchainHolds(blueprint)).map(([name, hold]) => [
+				name,
+				hold.range,
+			]),
+		),
 		...(rendered && !BROWSE_UPSTREAM.includes(own) ? BROWSE_DEV_DEPENDENCIES : {}),
+		...(blueprint.journey && blueprint.app.includes('browser') && !CAPTURE_UPSTREAM.includes(own)
+			? CAPTURE_DEV_DEPENDENCIES
+			: {}),
 		...(sheets ? STYLES_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.length > 0 || blueprint.bin ? DECLARATION_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser') || sheets
@@ -377,6 +397,26 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		Object.entries(merged)
 			.filter(([name]) => name !== own && !runtime.has(name))
 			.sort(([left], [right]) => compareValues(left, right)),
+	)
+}
+
+/**
+ * Projects a blueprint into the toolchain holds its browser frameworks require.
+ * @param blueprint - The workspace specification.
+ * @returns The held tools for selected browser framework faces; empty without a framework.
+ * @example
+ * ```ts
+ * import { blueprintToToolchainHolds, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * blueprintToToolchainHolds(createBlueprint('router', { src: ['core'] })) // {}
+ * ```
+ */
+export function blueprintToToolchainHolds(
+	blueprint: Blueprint,
+): Readonly<Record<string, ToolchainHold>> {
+	const frameworks = blueprintToFaces(blueprint).map((face) => face.name)
+	return Object.fromEntries(
+		Object.entries(TOOLCHAIN_HOLDS).filter(([, hold]) => frameworks.includes(hold.framework)),
 	)
 }
 
@@ -559,6 +599,9 @@ export function replaceManifestOverride(
  * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
  * `APP_MATRIX` list as each environment's configuration files, so a rename in
  * either matrix is a rename in both places.
+ * A browser application's journey axis adds `journey` (`capture journey`) and `capture`
+ * (`capture frames`) beside `test:journey`. The scoped commands take an explicit selection;
+ * the whole-suite `test:journey` invocation remains in the test chain.
  *
  * @example
  * ```ts
@@ -736,6 +779,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.journey && blueprint.app.includes('browser')
 			? {
 					'test:journey': journey,
+					journey: 'capture journey',
+					capture: 'capture frames',
 					...Object.fromEntries(
 						application.map((name) => [`test:journey:${name}`, `${journey} --mode ${name}`]),
 					),
@@ -749,7 +794,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.tree ? { 'test:tree': `${vitest} --project tree` } : {}),
 		'test:probe':
 			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
-		'test:bench': 'vitest bench --config vite.config.ts --no-cache --project probe',
+		'test:bench':
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark',
 		...(publishes ? { 'test:distribution': `${vitest} --project distribution` } : {}),
 		...(integrates ? { 'test:integration': `${vitest} --project integration` } : {}),
 		...(blueprint.service ? { 'test:service': `${vitest} --project service` } : {}),
@@ -878,6 +924,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication lifecycle scripts.
  * Sheet and framework faces add their check and build scripts, application frameworks add dev scripts,
  * and selected showcases and journeys add their mode scripts.
+ * A browser application's journey axis also adds `journey` and `capture`. Their generated
+ * commands are writable and have no predecessor forms; customized values remain caller-owned.
  * Aggregate test scripts and
  * maintainer-owned gate chains stay outside the region.
  *
@@ -928,7 +976,8 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 			name.startsWith('showcase:') ||
 			name === 'build:showcase' ||
 			name.startsWith('build:showcase:')
-		if (!direct && !sheet && !framework && !showcase) return []
+		const capture = name === 'journey' || name === 'capture'
+		if (!direct && !sheet && !framework && !showcase && !capture) return []
 		return [
 			{
 				name,
@@ -1245,7 +1294,8 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
  * Projects a blueprint into the project labels its root Vitest configuration registers.
  *
  * @param blueprint - The workspace specification.
- * @returns Project labels in registration order, including wrapper-registered sheet faces.
+ * @returns Project labels in registration order, including wrapper-registered sheet faces and
+ * the probe benchmark variant.
  *
  * @example
  * ```ts
@@ -1283,6 +1333,7 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 		...(blueprint.src.length > 0 || styled ? ['distribution'] : []),
 		...(blueprint.integration ? ['integration'] : []),
 		'probe',
+		'probe (bench)',
 	]
 }
 
@@ -2946,9 +2997,9 @@ export function insertManifestSection(
 		// `dependencies` and `dependencies` before `devDependencies`, otherwise last.
 		// It copies the indentation of the manifest's first key, and lands on the
 		// same line when that key shares a line with the opening brace.
-		const breaking = head === undefined ? -1 : manifest.lastIndexOf('\n', head)
-		const margin = breaking < 0 ? '' : manifest.slice(breaking + 1, head)
-		const gap = breaking < 0 || /\S/u.test(margin) ? '' : `\n${margin}`
+		const lineBreak = head === undefined ? -1 : manifest.lastIndexOf('\n', head)
+		const margin = lineBreak < 0 ? '' : manifest.slice(lineBreak + 1, head)
+		const gap = lineBreak < 0 || /\S/u.test(margin) ? '' : `\n${margin}`
 		const block = `${JSON.stringify(section)}: {${lines.map((line) => `${gap === '' ? '' : `${gap}${margin}`}${line}`).join(',')}${gap}}`
 		const tail = manifest.slice(1, root).trimEnd().length
 		const [position, insertion] =
@@ -2977,11 +3028,12 @@ export function insertManifestSection(
 	const first = declarations[0]
 	const last = declarations.at(-1)
 	if (first === undefined || last === undefined) {
-		const opening = manifest.lastIndexOf('\n', open)
-		const level = opening < 0 ? '' : (/^\s*/u.exec(manifest.slice(opening + 1, open))?.[0] ?? '')
-		const separator = opening < 0 ? '' : `\n${level}${level}`
-		const ending = opening < 0 ? '' : `\n${level}`
-		return `${manifest.slice(0, open + 1)}${lines.map((line) => `${separator}${line}`).join(',')}${ending}${manifest.slice(close)}`
+		const lineBreak = manifest.lastIndexOf('\n', open)
+		const level =
+			lineBreak < 0 ? '' : (/^\s*/u.exec(manifest.slice(lineBreak + 1, open))?.[0] ?? '')
+		const separator = lineBreak < 0 ? '' : `\n${level}${level}`
+		const suffix = lineBreak < 0 ? '' : `\n${level}`
+		return `${manifest.slice(0, open + 1)}${lines.map((line) => `${separator}${line}`).join(',')}${suffix}${manifest.slice(close)}`
 	}
 	const newline = manifest.lastIndexOf('\n', first.start)
 	const indent = newline < 0 ? '' : manifest.slice(newline + 1, first.start)
@@ -3134,10 +3186,10 @@ export function replaceManifestScripts(
 	// inside the region sits at two. A manifest carrying no line break before the
 	// region is written on one line, which is what the append path does with a
 	// one-line region it finds already populated.
-	const opening = manifest.lastIndexOf('\n', start)
-	const level = opening < 0 ? '' : (/^\s*/u.exec(manifest.slice(opening + 1, start))?.[0] ?? '')
-	const emptySeparator = opening < 0 ? '' : `\n${level}${level}`
-	const emptyClosing = opening < 0 ? '' : `\n${level}`
+	const lineBreak = manifest.lastIndexOf('\n', start)
+	const level = lineBreak < 0 ? '' : (/^\s*/u.exec(manifest.slice(lineBreak + 1, start))?.[0] ?? '')
+	const emptySeparator = lineBreak < 0 ? '' : `\n${level}${level}`
+	const emptySuffix = lineBreak < 0 ? '' : `\n${level}`
 	// A qualified name joins the family its prefix names, landing after that
 	// family's last declared member so a reader finds it among its siblings
 	// rather than behind the lifecycle scripts that close the section. An
@@ -3170,7 +3222,7 @@ export function replaceManifestScripts(
 									(script) =>
 										`${emptySeparator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
 								)
-								.join(',')}${emptyClosing}`,
+								.join(',')}${emptySuffix}`,
 						},
 					]
 				: [...Map.groupBy(placements, ({ anchor }) => anchor)].map(

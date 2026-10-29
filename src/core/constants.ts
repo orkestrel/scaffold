@@ -376,20 +376,20 @@ export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
  *
  * @remarks
  * The catalog verb rewrites the region between this marker and
- * {@link CATALOG_CLOSING_MARKER} and leaves every other byte of the file alone,
+ * {@link CATALOG_END_MARKER} and leaves every other byte of the file alone,
  * so the writer and every proof that reads the rendered file read the pair from
  * here rather than repeating a literal that only agrees by inspection.
  */
-export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
+export const CATALOG_START_MARKER = '<!-- orkestrel:catalog -->'
 
 /**
  * Names the marker closing the package table inside {@link CATALOG_AGENT_PATH}.
  *
  * @remarks
- * It pairs with {@link CATALOG_OPENING_MARKER}; a file missing either marker is
+ * It pairs with {@link CATALOG_START_MARKER}; a file missing either marker is
  * refused rather than rewritten.
  */
-export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
+export const CATALOG_END_MARKER = '<!-- /orkestrel:catalog -->'
 
 /**
  * Lists the package-facing skills a target receives pointers for, frozen and alphabetical.
@@ -647,7 +647,7 @@ export const WORKSPACE_DEV_ENGINES = Object.freeze({
 	}),
 })
 
-/** Holds the tooling versions scaffold and every generated workspace share. */
+/** Holds the baseline tooling versions, before framework holds apply. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/guide': manifest.devDependencies['@orkestrel/guide'],
 	'@orkestrel/probe': manifest.devDependencies['@orkestrel/probe'],
@@ -662,29 +662,19 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 })
 
 /**
- * Holds foreign tools at the major the fleet runs, with the reason the next major waits.
+ * Holds foreign tool ranges required by selected browser frameworks, frozen.
  *
  * @remarks
- * The verbs never cross a major on their own, so a held major moves only when a person raises
- * scaffold's own manifest. `audit` names the hold where it would report a newer served major, and
- * reports a declaration past it; `tests/src/core/constants.test.ts` fails when scaffold's manifest
- * moves a held tool past its hold. Lift a hold in its own round: prove the fleet on the next major,
- * then change the row and the manifest together.
+ * A selected framework overrides the baseline floor with its held range. `audit` names the hold
+ * where it would report a newer served major and reports a declaration past that hold. The
+ * constants proof ties the held range to the baseline manifest and the framework's planned range.
  */
 export const TOOLCHAIN_HOLDS: Readonly<Record<string, ToolchainHold>> = Object.freeze({
 	typescript: Object.freeze({
-		major: 6,
+		framework: 'vue',
+		range: '^6.0.3',
 		reason:
-			'TypeScript 7 drops the typescript/bin/tsc export the generated build helper and proofs resolve, vue-tsc cannot run on it before TypeScript 7.1, and @orkestrel/probe refuses it',
-	}),
-	vitest: Object.freeze({
-		major: 4,
-		reason:
-			"Vitest 5 rewrites the benchmark API the generated probe project uses, scales the tester frame capture staging measures, joins full names with ' > ' where exact-case filters use spaces, and the fleet's own vitest peers pin 4",
-	}),
-	'@vitest/browser-playwright': Object.freeze({
-		major: 4,
-		reason: 'the browser provider moves with Vitest',
+			'Vue workspaces require TypeScript 6.0.3 because no stable vue-tsc runs on TypeScript 7: @volar/typescript@2.4.30 declares peer typescript <7, and the TypeScript 7.0 announcement directs Vue projects to stay on TypeScript 6.0',
 	}),
 })
 
@@ -717,6 +707,49 @@ export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> =
 export const BROWSE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/browser': manifest.devDependencies['@orkestrel/browser'],
 })
+
+/**
+ * Names the development dependency a browser application's journey axis adds.
+ *
+ * @remarks
+ * Scaffold does not install this package, so its range is a seed. The planner withholds it
+ * from the workspaces {@link CAPTURE_UPSTREAM} lists.
+ *
+ * @example
+ * ```ts
+ * import { CAPTURE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'
+ *
+ * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.1'
+ * ```
+ */
+export const CAPTURE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@orkestrel/capture': '^0.0.1',
+})
+
+/**
+ * Lists the capture package and its fleet runtime dependency closure, frozen.
+ *
+ * @remarks
+ * The sorted list includes `@orkestrel/capture` and its transitive `@orkestrel/*` dependencies
+ * and peers, read from capture's installed manifests, and moves with the capture pin.
+ * A listed workspace cannot receive the capture development dependency without closing a cycle.
+ * Scaffold does not install capture, so the proof checks planning against this list; the
+ * installed closure-equality proof lands when scaffold installs capture.
+ *
+ * @example
+ * ```ts
+ * import { CAPTURE_UPSTREAM } from '@orkestrel/scaffold'
+ *
+ * CAPTURE_UPSTREAM.includes('@orkestrel/process') // true
+ * ```
+ */
+export const CAPTURE_UPSTREAM: readonly string[] = Object.freeze([
+	'@orkestrel/capture',
+	'@orkestrel/contract',
+	'@orkestrel/emitter',
+	'@orkestrel/process',
+	'@orkestrel/timeout',
+])
 
 /**
  * Lists the packages `@orkestrel/browser` depends on at runtime, directly or transitively, frozen.

@@ -5,6 +5,7 @@ import { createGuide } from '@orkestrel/guide'
 import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
+import vitestManifest from 'vitest/package.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { basename, join, posix, resolve } from 'node:path'
@@ -29,8 +30,10 @@ import {
 	blueprintToSheets,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
+	blueprintToToolchainHolds,
 	blueprintToWritableScripts,
 	BROWSE_DEV_DEPENDENCIES,
+	CAPTURE_UPSTREAM,
 	CONFIG_TEMPLATES,
 	Compiler,
 	createBlueprint,
@@ -57,7 +60,7 @@ import {
 } from '@src/core'
 import { loadConfigFromFile, mergeConfig } from 'vite'
 import { createVitest } from 'vitest/node'
-import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js'
+import { environmentBoundary, outputBoundary, resolveCompiler } from '../../../configs/helpers.js'
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import {
 	buildBlueprint,
@@ -80,7 +83,7 @@ import {
 	createProducer,
 	ENTRY_AUTHORED_TEST,
 	ENTRY_AUTHORED_VITE,
-	ENTRY_FAILING_TEST,
+	ENTRY_FAILURE_TEST,
 	ENTRY_FILES,
 	ENTRY_FRESH_TEST,
 	ENTRY_GUIDE,
@@ -221,7 +224,7 @@ describe('generated defect regressions', () => {
 					const path = 'configs/' + axis + '/tsconfig.' + face + '.json'
 					const run = spawnSync(
 						process.execPath,
-						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
+						[resolveCompiler(import.meta.url), '--noEmit', '-p', path],
 						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
 					)
 					expect({ path, status: run.status, output: run.stdout + run.stderr }).toEqual({
@@ -232,7 +235,7 @@ describe('generated defect regressions', () => {
 					scratch.write(file, 'export const probeMode = process.env.MODE\n')
 					const refused = spawnSync(
 						process.execPath,
-						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
+						[resolveCompiler(import.meta.url), '--noEmit', '-p', path],
 						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
 					)
 					expect(refused.status).not.toBe(0)
@@ -269,6 +272,7 @@ describe('generated defect regressions', () => {
 					'--project',
 					'distribution',
 					'--json=listing.json',
+					'--staticParse=false',
 				],
 				{
 					cwd: scratch.path,
@@ -389,6 +393,7 @@ describe('blueprintToProjects', () => {
 			'policy',
 			'config',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects(createBlueprint('desk', { src: ['core'] }))).toStrictEqual([
 			'src:core',
@@ -396,6 +401,7 @@ describe('blueprintToProjects', () => {
 			'config',
 			'distribution',
 			'probe',
+			'probe (bench)',
 		])
 	})
 
@@ -444,6 +450,7 @@ describe('blueprintToProjects', () => {
 			'distribution',
 			'integration',
 			'probe',
+			'probe (bench)',
 		])
 		const root = blueprintToRootVite(blueprint)
 		expect(root).toContain("'./configs/src/vite.styles.config.ts'")
@@ -459,6 +466,7 @@ describe('blueprintToProjects', () => {
 			'config',
 			'distribution',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects(buildBlueprint({ studies: true }))).toStrictEqual([
 			'src:core',
@@ -467,6 +475,7 @@ describe('blueprintToProjects', () => {
 			'studies',
 			'distribution',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects(buildBlueprint({ service: true, studies: true }))).toStrictEqual([
 			'src:core',
@@ -476,6 +485,7 @@ describe('blueprintToProjects', () => {
 			'studies',
 			'distribution',
 			'probe',
+			'probe (bench)',
 		])
 		expect(
 			blueprintToProjects(buildBlueprint({ src: [], app: ['core'], studies: true })),
@@ -489,24 +499,28 @@ describe('blueprintToProjects', () => {
 			'config',
 			'distribution',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects(createBlueprint('desk', { setup: ['browser'] }))).toStrictEqual([
 			'policy',
 			'config',
 			'setup:browser',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects(createBlueprint('desk', { global: true }))).toStrictEqual([
 			'policy',
 			'config',
 			'setup',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects(createBlueprint('desk', { setup: ['node'] }))).toStrictEqual([
 			'policy',
 			'config',
 			'setup',
 			'probe',
+			'probe (bench)',
 		])
 	})
 
@@ -526,6 +540,7 @@ describe('blueprintToProjects', () => {
 			'config',
 			'distribution',
 			'probe',
+			'probe (bench)',
 		])
 		expect(blueprintToProjects({ ...blueprint, showcase: false, journey: false })).toStrictEqual(
 			blueprintToProjects(blueprint),
@@ -1508,6 +1523,36 @@ describe('replaceManifestOverride', () => {
 })
 
 describe('blueprintToWritableScripts', () => {
+	it('writes scoped journey commands and preserves customized selections', () => {
+		const blueprint = buildBlueprint({ src: [], app: ['browser'], journey: true })
+		const region = blueprintToWritableScripts(blueprint).filter(
+			({ name }) => name === 'journey' || name === 'capture',
+		)
+		expect(region).toStrictEqual([
+			{ name: 'journey', command: 'capture journey', accepted: [] },
+			{ name: 'capture', command: 'capture frames', accepted: [] },
+		])
+		const missing = '{\n\t"scripts": {}\n}\n'
+		const written = replaceManifestScripts(missing, region)
+		expect(JSON.parse(written ?? '')).toStrictEqual({
+			scripts: { journey: 'capture journey', capture: 'capture frames' },
+		})
+		expect(replaceManifestScripts(written ?? '', region)).toBe(written)
+		const customized = JSON.stringify({
+			scripts: {
+				journey: 'capture journey pages:mail --variant light-390',
+				capture: 'capture frames pages:mail --state inbox',
+			},
+		})
+		expect(replaceManifestScripts(customized, region)).toBe(customized)
+		expect(
+			blueprintToWritableScripts(buildBlueprint({ app: ['browser'], journey: false })),
+		).not.toContainEqual(expect.objectContaining({ name: 'journey' }))
+		expect(
+			blueprintToWritableScripts(buildBlueprint({ app: ['core'], journey: true })),
+		).not.toContainEqual(expect.objectContaining({ name: 'capture' }))
+	})
+
 	it('owns selected showcase and framework journey scripts while retaining authored commands', () => {
 		const blueprint = createBlueprint('desk', {
 			app: ['browser'],
@@ -1932,11 +1977,103 @@ describe('blueprintToDevDependencies browse server', () => {
 	})
 })
 
+describe('blueprintToDevDependencies capture runner', () => {
+	it('adds the capture seed to private and published browser application journeys', () => {
+		expect(
+			blueprintToDevDependencies(buildBlueprint({ src: [], app: ['browser'], journey: true })),
+		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+		expect(
+			blueprintToDevDependencies(
+				buildBlueprint({ src: ['core'], app: ['browser'], journey: true }),
+			),
+		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+	})
+
+	it('requires both the journey axis and a browser application', () => {
+		expect(
+			blueprintToDevDependencies(buildBlueprint({ src: [], app: ['browser'], journey: false })),
+		).not.toHaveProperty('@orkestrel/capture')
+		expect(
+			blueprintToDevDependencies(
+				buildBlueprint({ src: ['browser'], app: ['server'], journey: true }),
+			),
+		).not.toHaveProperty('@orkestrel/capture')
+	})
+
+	it('withholds capture from its runtime closure and from capture itself', () => {
+		for (const name of CAPTURE_UPSTREAM) {
+			const blueprint = buildBlueprint({
+				name: name.slice('@orkestrel/'.length),
+				src: ['core'],
+				app: ['browser'],
+				journey: true,
+			})
+			expect(blueprintToDevDependencies(blueprint)).not.toHaveProperty('@orkestrel/capture')
+		}
+	})
+
+	it('adds capture to a fleet journey workspace outside the runtime closure', () => {
+		expect(CAPTURE_UPSTREAM).not.toContain('@orkestrel/inbox')
+		expect(
+			blueprintToDevDependencies(
+				buildBlueprint({ name: 'inbox', src: ['core'], app: ['browser'], journey: true }),
+			),
+		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+	})
+
+	it('keeps an unscoped application distinct from a fleet runtime dependency', () => {
+		expect(
+			blueprintToDevDependencies(
+				buildBlueprint({ name: 'contract', src: [], app: ['browser'], journey: true }),
+			),
+		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+	})
+
+	it('does not duplicate a capture runtime declaration', () => {
+		expect(
+			blueprintToDevDependencies(
+				buildBlueprint({
+					app: ['browser'],
+					journey: true,
+					dependencies: [{ name: '@orkestrel/capture', range: '^0.0.1' }],
+				}),
+			),
+		).not.toHaveProperty('@orkestrel/capture')
+	})
+})
+
 describe('blueprintToDevDependencies compile tooling', () => {
+	it.each<readonly Axis[]>([['src'], ['app'], ['src', 'app']])(
+		'holds TypeScript at 6 for the Vue axes %s',
+		(...axes) => {
+			const blueprint = createBlueprint('panel', {
+				src: ['browser'],
+				app: ['browser'],
+				extensions: [{ surface: 'browser', name: 'vue', axes }],
+			})
+			expect(blueprintToDevDependencies(blueprint).typescript).toBe('^6.0.3')
+			expect(blueprintToToolchainHolds(blueprint)).toMatchObject({
+				typescript: { framework: 'vue', range: '^6.0.3' },
+			})
+		},
+	)
+
+	it('plans TypeScript 7 and no hold without a selected browser framework', () => {
+		for (const blueprint of [
+			createBlueprint('router', { src: ['core'] }),
+			createBlueprint('service', { src: [], app: ['server'] }),
+			createBlueprint('panel', { src: ['browser'], app: ['browser'] }),
+			createBlueprint('sheet', { styles: true }),
+		]) {
+			expect(blueprintToDevDependencies(blueprint).typescript).toBe('^7.0.2')
+			expect(blueprintToToolchainHolds(blueprint)).toStrictEqual({})
+		}
+	})
+
 	it('keeps library publishing tools in a source workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.59.4')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.60.0')
 	})
 
 	it('omits library publishing tools from an app-only workspace', () => {
@@ -1950,7 +2087,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in an executable workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.59.4')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.60.0')
 	})
 
 	it('keeps the Vue extension toolchain in an app-only workspace', async () => {
@@ -1973,7 +2110,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		expect(Object.keys(planned)).toEqual(
 			expect.arrayContaining(['@orkestrel/html', 'vue', '@orkestrel/test']),
 		)
-		await expect(JSON.stringify(planned, undefined, '\t')).toMatchFileSnapshot(
+		await expect(JSON.stringify(planned, undefined, '\t') + '\n').toMatchFileSnapshot(
 			'fixtures/app-only-toolchain.txt',
 		)
 	})
@@ -1983,7 +2120,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
 		)
 
-		expect(planned.typescript).toBe('^6.0.3')
+		expect(planned.typescript).toBe('^7.0.2')
 	})
 
 	it('emits a conditional toolchain pin beside a foreign peer floor', () => {
@@ -2012,7 +2149,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
 		)
 
-		expect(manifest).toContain('"typescript": "^6.0.3"')
+		expect(manifest).toContain('"typescript": "^7.0.2"')
 		expect(manifest).toContain('"peerDependencies": {\n\t\t"typescript": ">=6.0.0"\n\t}')
 	})
 
@@ -2067,7 +2204,7 @@ describe('blueprintToScripts config projects', () => {
 	it('emits the probe workbench outside every gate', () => {
 		const scripts = blueprintToScripts(buildBlueprint())
 		expect(scripts['test:bench']).toBe(
-			'vitest bench --config vite.config.ts --no-cache --project probe',
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark',
 		)
 		expect(scripts['test:probe']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
@@ -2077,6 +2214,69 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('test:bench')
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
 	})
+
+	it.skipIf(Number(vitestManifest.version.split('.')[0]) < 5)(
+		'executes a context benchmark and excludes ordinary probes [requires the Vitest 5 benchmark fixture]',
+		() => {
+			const scratch = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-bench-' })
+			try {
+				scratch.link('node_modules', resolve('node_modules'))
+				stageRootConfig(createBlueprint('measure', { src: ['core'] }), scratch, 'selected')
+				scratch.write('selected/tests/setup.ts', '')
+				scratch.write(
+					'selected/tmp/probes/workload.bench.ts',
+					[
+						"import { expect, it } from 'vitest'",
+						"it('measures JSON', async ({ bench }) => {",
+						"  expect(import.meta.env.MODE).toBe('benchmark')",
+						"  await bench('parse', {}, () => JSON.parse('{\"value\":1}')).run()",
+						'})',
+					].join('\n'),
+				)
+				scratch.write(
+					'selected/tmp/probes/control.test.ts',
+					"import { it } from 'vitest'\nit('ordinary control', () => { throw new Error('ordinary probe reached') })\n",
+				)
+				const root = join(scratch.path, 'selected')
+				const bench = spawnSync(
+					process.execPath,
+					[
+						resolve('node_modules/vitest/vitest.mjs'),
+						'bench',
+						'--run',
+						'--config',
+						'vite.config.ts',
+						'--project',
+						'probe (bench)',
+						'--reporter=verbose',
+						'--mode',
+						'benchmark',
+					],
+					{ cwd: root, encoding: 'utf8', windowsHide: true },
+				)
+				expect(bench.status, `${bench.stdout}${bench.stderr}`).toBe(0)
+				expect(bench.stdout).toContain('measures JSON')
+				expect(bench.stdout).toContain('parse')
+				const control = spawnSync(
+					process.execPath,
+					[
+						resolve('node_modules/vitest/vitest.mjs'),
+						'run',
+						'--config',
+						'vite.config.ts',
+						'--project',
+						'probe',
+					],
+					{ cwd: root, encoding: 'utf8', windowsHide: true },
+				)
+				expect(control.status).toBeGreaterThan(0)
+				expect(control.stdout + control.stderr).toContain('ordinary probe reached')
+			} finally {
+				scratch.destroy()
+			}
+		},
+		30_000,
+	)
 
 	it('rebuilds publishing workspaces before packing', () => {
 		const published = blueprintToScripts(buildBlueprint())
@@ -2453,7 +2653,7 @@ describe('blueprintToScripts config projects', () => {
 	// later meets whichever variant was written: the guard reddens on it, and the
 	// browser branch drives it. Every selection carries exactly one of them.
 	it('writes a core-only proof that reddens on a browser face it cannot drive', () => {
-		const readings = Array.from({ length: 2 ** ENVIRONMENTS.length - 1 }, (_slot, offset) => {
+		const outcomes = Array.from({ length: 2 ** ENVIRONMENTS.length - 1 }, (_slot, offset) => {
 			const mask = offset + 1
 			const src = ENVIRONMENTS.filter((_, index) => (mask & (1 << index)) !== 0)
 			const [artifact] = blueprintToTestArtifacts(buildBlueprint({ src })).filter(
@@ -2461,13 +2661,13 @@ describe('blueprintToScripts config projects', () => {
 			)
 			return { selection: src.join('+'), content: artifact?.content ?? '' }
 		})
-		const selections = readings.map(({ selection }) => selection)
-		const guarded = readings
+		const selections = outcomes.map(({ selection }) => selection)
+		const guarded = outcomes
 			.filter(({ content }) =>
 				content.includes('publishes no browser face this proof cannot drive'),
 			)
 			.map(({ selection }) => selection)
-		const driven = readings
+		const driven = outcomes
 			.filter(({ content }) => content.includes('publishes what it declares to a real browser'))
 			.map(({ selection }) => selection)
 
@@ -2564,6 +2764,10 @@ describe('blueprintToScripts config projects', () => {
 			'vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot',
 		)
 		expect(blueprintToScripts(enabled).test).toContain('npm run test:app && npm run test:journey')
+		expect(blueprintToScripts(enabled)).toMatchObject({
+			journey: 'capture journey',
+			capture: 'capture frames',
+		})
 		expect(blueprintToConfigArtifacts(disabled).map(({ path }) => path)).not.toContain(
 			wrapper?.path,
 		)
@@ -2571,6 +2775,8 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToRootVite(disabled)).not.toContain('tests/app/browser/integration.test.ts')
 		expect(blueprintToRootVite(disabled)).toContain("include: ['tests/app/browser/**/*.test.ts']")
 		expect(blueprintToScripts(disabled)).not.toHaveProperty('test:journey')
+		expect(blueprintToScripts(disabled)).not.toHaveProperty('journey')
+		expect(blueprintToScripts(disabled)).not.toHaveProperty('capture')
 		expect(blueprintToScripts(disabled).test).not.toContain('test:journey')
 	})
 
@@ -2587,6 +2793,8 @@ describe('blueprintToScripts config projects', () => {
 		)
 		expect(blueprintToRootVite(blueprint)).not.toContain('appJourney')
 		expect(blueprintToScripts(blueprint)).not.toHaveProperty('test:journey')
+		expect(blueprintToScripts(blueprint)).not.toHaveProperty('journey')
+		expect(blueprintToScripts(blueprint)).not.toHaveProperty('capture')
 	})
 
 	it('partitions root setup proofs by their required runtime', () => {
@@ -2777,7 +2985,7 @@ describe('blueprintToScripts config projects', () => {
 			buildBlueprint({ src: ['core'], app: ['browser'] }),
 		].map((blueprint) => blueprintToRootVite(blueprint))
 		const control = 'projects: [appBrowser(), policy, config, probe],'
-		const readings = [...emitted, control].map((configuration) =>
+		const outcomes = [...emitted, control].map((configuration) =>
 			(block.exec(configuration)?.[1] ?? '')
 				.split(',')
 				.map((row) => row.trim())
@@ -2787,14 +2995,14 @@ describe('blueprintToScripts config projects', () => {
 		// The population answers both ways before either answer counts: every reading
 		// carries rows, every emitted reading carries the browser row, and the control's
 		// row is the one the pattern refuses.
-		expect(readings.map((rows) => rows.length > 0)).toStrictEqual([true, true, true, true])
-		expect(readings.map((rows) => rows.includes('appBrowser'))).toStrictEqual([
+		expect(outcomes.map((rows) => rows.length > 0)).toStrictEqual([true, true, true, true])
+		expect(outcomes.map((rows) => rows.includes('appBrowser'))).toStrictEqual([
 			true,
 			true,
 			true,
 			false,
 		])
-		expect(readings.map((rows) => rows.filter((row) => !identifier.test(row)))).toStrictEqual([
+		expect(outcomes.map((rows) => rows.filter((row) => !identifier.test(row)))).toStrictEqual([
 			[],
 			[],
 			[],
@@ -3005,11 +3213,11 @@ describe('blueprint gate laws', () => {
 	// the refusal this gate was corrected to stop making.
 	it('raises no integration question after two environments are there to compose across', () => {
 		const applied = buildBlueprint({ src: [], app: ['core', 'browser'], integration: true })
-		const spanning = buildBlueprint({ src: ['core'], app: ['core'], integration: true })
+		const crossAxis = buildBlueprint({ src: ['core'], app: ['core'], integration: true })
 		const published = buildBlueprint({ src: ['core', 'server'], integration: true })
 
 		expect(blueprintToQuestions(applied)).toStrictEqual([])
-		expect(blueprintToQuestions(spanning)).toStrictEqual([])
+		expect(blueprintToQuestions(crossAxis)).toStrictEqual([])
 		expect(blueprintToQuestions(published)).toStrictEqual([])
 		expect(blueprintToRootVite(applied)).toContain("name: { label: 'integration', color: 'blue' }")
 		expect(blueprintToScripts(applied)['test:integration']).toContain('--project integration')
@@ -3022,18 +3230,29 @@ describe('blueprint gate laws', () => {
 })
 
 describe('blueprintToRootVite fixed proofs', () => {
-	it('A9.1 preserves the pre-A9 Vite and script bytes without a tree proof', () => {
+	it('A9.1 pins the Vite and script bytes without a tree proof', () => {
 		for (const row of TREE_EMISSION_CASES) {
 			const blueprint = buildBlueprint(row.fields)
 			expect(blueprint.tree).toBe(false)
-			expect(createHash('sha256').update(blueprintToRootVite(blueprint)).digest('hex')).toBe(
-				row.vite,
-			)
-			expect(
-				createHash('sha256')
-					.update(JSON.stringify(blueprintToScripts(blueprint)))
-					.digest('hex'),
-			).toBe(row.scripts)
+			expect
+				.soft(createHash('sha256').update(blueprintToRootVite(blueprint)).digest('hex'))
+				.toBe(row.vite)
+			// Scoped capture commands have separate behavior proofs and are outside this byte baseline.
+			expect
+				.soft(
+					createHash('sha256')
+						.update(
+							JSON.stringify(
+								Object.fromEntries(
+									Object.entries(blueprintToScripts(blueprint)).filter(
+										([name]) => name !== 'journey' && name !== 'capture',
+									),
+								),
+							),
+						)
+						.digest('hex'),
+				)
+				.toBe(row.scripts)
 		}
 	})
 
@@ -3251,7 +3470,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 
 		const studied = blueprintToRootVite(buildBlueprint({ studies: true }))
 		expect(studied).toContain(
-			'// Authored study proofs run installed packages through bounded subprocesses and protocol fixtures,\n// so this project is isolated in its own gate script, test:studies.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
+			'// The @orkestrel/study engine drives these proofs, running installed packages through bounded\n// subprocesses and protocol fixtures, so this project is isolated in its own gate script,\n// test:studies.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
 		)
 		expect(studied).toContain("name: { label: 'studies', color: 'red' },")
 		expect(studied).toContain("include: ['tests/studies/**/*.test.ts'],")
@@ -4125,13 +4344,13 @@ describe('emitted setup claims', () => {
 		const setups = blueprintToTestArtifacts(blueprint).filter(({ path }) =>
 			/^tests\/setup[^/.]*\.ts$/u.test(path),
 		)
-		const readings = setups.map(({ path, content }) =>
+		const outcomes = setups.map(({ path, content }) =>
 			collectPolicyDeclarations(process.cwd(), path, content),
 		)
 		expect(
-			readings.flatMap(({ violation }) => (violation === undefined ? [] : [violation])),
+			outcomes.flatMap(({ violation }) => (violation === undefined ? [] : [violation])),
 		).toEqual([])
-		const exported = readings.flatMap(({ declarations }) => declarations.map(({ name }) => name))
+		const exported = outcomes.flatMap(({ declarations }) => declarations.map(({ name }) => name))
 		const claimed = new Map(
 			readdirSync('guides')
 				.filter((file) => file.endsWith('.md') && file !== 'README.md')
@@ -4553,25 +4772,25 @@ describe('the guides entry', () => {
 	})
 
 	it('registers assertions from an authored entry in the guides worker', async () => {
-		const passing = buildEntryWorkspace(ENTRY_FILES)
-		const failing = buildEntryWorkspace(ENTRY_FILES)
+		const successWorkspace = buildEntryWorkspace(ENTRY_FILES)
+		const failureWorkspace = buildEntryWorkspace(ENTRY_FILES)
 		try {
-			passing.write(ENTRY_PATH, ENTRY_AUTHORED_TEST)
-			passing.write('vite.config.ts', ENTRY_AUTHORED_VITE)
-			failing.write(
+			successWorkspace.write(ENTRY_PATH, ENTRY_AUTHORED_TEST)
+			successWorkspace.write('vite.config.ts', ENTRY_AUTHORED_VITE)
+			failureWorkspace.write(
 				ENTRY_PATH,
 				ENTRY_AUTHORED_TEST.replace(
 					'expect(report.input).toEqual([])',
 					"expect(report.input).toEqual([{ text: 'unreachable' }])",
 				),
 			)
-			failing.write('vite.config.ts', ENTRY_AUTHORED_VITE)
+			failureWorkspace.write('vite.config.ts', ENTRY_AUTHORED_VITE)
 
-			expect(runEntry(passing, []).status).toBe(0)
-			expect(runEntry(failing, []).status).toBe(1)
+			expect(runEntry(successWorkspace, []).status).toBe(0)
+			expect(runEntry(failureWorkspace, []).status).toBe(1)
 		} finally {
-			await destroyScratch(passing, { budget: 5000 })
-			await destroyScratch(failing, { budget: 5000 })
+			await destroyScratch(successWorkspace, { budget: 5000 })
+			await destroyScratch(failureWorkspace, { budget: 5000 })
 		}
 	}, 10_000)
 
@@ -4705,7 +4924,7 @@ describe('the guides entry', () => {
 				expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE)
 				expect(again.lines).toEqual([])
 				expect(again.status).toBe(0)
-				scratch.write(ENTRY_OBSERVATION_PATH, ENTRY_FAILING_TEST)
+				scratch.write(ENTRY_OBSERVATION_PATH, ENTRY_FAILURE_TEST)
 				const failed = runEntry(scratch, [])
 				expect(failed.lines).toEqual([])
 				expect(failed.status).toBe(1)
@@ -4969,18 +5188,18 @@ describe('the generated configuration under its own hazards', () => {
 	})
 
 	it('preserves the caller plugin entries in their written order', () => {
-		const leading = { name: 'caller-plugin', enforce: 'pre' } satisfies PluginOption
-		const trailing = { name: 'caller-plugin', enforce: 'post' } satisfies PluginOption
-		const plugins = [leading, trailing]
+		const before = { name: 'caller-plugin', enforce: 'pre' } satisfies PluginOption
+		const after = { name: 'caller-plugin', enforce: 'post' } satisfies PluginOption
+		const plugins = [before, after]
 		expect(mergeOverride({}, { plugins }).plugins).toStrictEqual(plugins)
-		expect(plugins).toStrictEqual([leading, trailing])
+		expect(plugins).toStrictEqual([before, after])
 		const declared = { name: 'caller-plugin' }
 		expect(mergeOverride({ plugins: [declared] }, { plugins }).plugins).toStrictEqual(plugins)
 
 		// The control: the bare merge keeps the base entry the first caller entry
 		// replaces, so the workspace runs a third plugin under the same name.
 		const bare: UserConfig = mergeConfig({ plugins: [declared] }, { plugins })
-		expect(bare.plugins).toStrictEqual([declared, leading, trailing])
+		expect(bare.plugins).toStrictEqual([declared, before, after])
 	})
 
 	it('keeps a hole in either plugin list as an undefined entry at its position', () => {

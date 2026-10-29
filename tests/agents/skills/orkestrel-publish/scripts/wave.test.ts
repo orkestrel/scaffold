@@ -19,7 +19,7 @@ import {
 	compareRanges,
 	computeRanges,
 	describeFailure,
-	describeReading,
+	describeChange,
 	extractConflict,
 	failed,
 	isRecord as isScriptRecord,
@@ -66,7 +66,7 @@ import {
 	createFleet,
 	createSink,
 	createUpstreamServer,
-	createWaveRecording,
+	createWaveRecorder,
 	createWaveWorkspace,
 	createWaveSession,
 	readInstalledRecord,
@@ -362,7 +362,7 @@ describe('wave.ts', () => {
 	)
 
 	it('O2 completes the overwrite commit manually after an unrelated commit and resumes at gates', async () => {
-		const fixture = await createWaveRecording('orkestrel-wave-manual-recovery-')
+		const fixture = await createWaveRecorder('orkestrel-wave-manual-recovery-')
 		try {
 			fixture.scratch.write('gate.js', "process.stdout.write('recovery gate reached\\n')\n")
 			trackFiles(fixture.target)
@@ -681,7 +681,7 @@ describe('wave.ts', () => {
 	)
 
 	it('records exactly the reported overwrite paths in a clean commit', async () => {
-		const fixture = await createWaveRecording('orkestrel-wave-record-')
+		const fixture = await createWaveRecorder('orkestrel-wave-record-')
 		try {
 			const overwrite = await spawnSkillScript(
 				WAVE_SCRIPT,
@@ -736,7 +736,7 @@ describe('wave.ts', () => {
 	}, 30_000)
 
 	it('refuses an unreported dirty path and preserves HEAD', async () => {
-		const fixture = await createWaveRecording('orkestrel-wave-stray-')
+		const fixture = await createWaveRecorder('orkestrel-wave-stray-')
 		try {
 			const head = spawnSync('git', ['rev-parse', 'HEAD'], {
 				cwd: fixture.target,
@@ -765,7 +765,7 @@ describe('wave.ts', () => {
 	}, 30_000)
 
 	it('leaves an offline overwrite uncommitted', async () => {
-		const fixture = await createWaveRecording('orkestrel-wave-offline-')
+		const fixture = await createWaveRecorder('orkestrel-wave-offline-')
 		try {
 			const head = spawnSync('git', ['rev-parse', 'HEAD'], {
 				cwd: fixture.target,
@@ -1328,9 +1328,9 @@ describe('the command rendering', () => {
 			'| @fixture/pkg | 1.0.0 | bump | reading | round |',
 			'',
 		])
-		expect(describeReading(undefined, 'moved', 'same')).toBe('unanswered')
-		expect(describeReading(true, 'moved', 'same')).toBe('moved')
-		expect(describeReading(false, 'moved', 'same')).toBe('same')
+		expect(describeChange(undefined, 'moved', 'same')).toBe('unanswered')
+		expect(describeChange(true, 'moved', 'same')).toBe('moved')
+		expect(describeChange(false, 'moved', 'same')).toBe('same')
 	})
 })
 

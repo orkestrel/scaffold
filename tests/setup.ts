@@ -20,7 +20,7 @@ import type {
 	Plan,
 	Question,
 	Release,
-	Scaffolding,
+	CompileResult,
 	Snapshot,
 } from '@src/core'
 import { VERB_OPTIONS, VERBS } from '../src/bin/constants.js'
@@ -30,6 +30,7 @@ import {
 	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BROWSE_DEV_DEPENDENCIES,
+	CAPTURE_DEV_DEPENDENCIES,
 	DECLARATION_DEV_DEPENDENCIES,
 	FRAMEWORK_MATRIX,
 	SHOWCASE_DEV_DEPENDENCIES,
@@ -237,13 +238,13 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 }> = Object.freeze([
 	{
 		fields: { src: ['core'] },
-		vite: 'bcfd6d3a4b4723163df9156683f44cc1f2cc13844e14e3553cd078223fa9d616',
-		scripts: 'ce1206f9568601061d7d19fb69f8381b007118ae8ced98c139bac182ed0f9ee7',
+		vite: '58e69871c5e8d9378cd230408d9aef9bc46590fdd1fc3e87f6447597f94d3f15',
+		scripts: 'e6e0d719d0f349e3cbc49587e6843a28fe7a8e9e229ea12c542437b0e784d5c7',
 	},
 	{
 		fields: { src: [], app: ['server'] },
-		vite: 'b9a54ba26fa003fddc2ca1ba1204f7396f1dbc9de85f1cae21e62089db15bd41',
-		scripts: '4c07423deacb5eaa8ee362e1dcf7a0d180c2f22113461714bc8211894acec2f1',
+		vite: 'c7606908b27ab84bcd1d8268d32e87dfda0f14abd19df8be6a9df1f50257e8a6',
+		scripts: '4814438798adb095f63268bba8e97f1ec17520a37a9d09d78fb44a40dc387014',
 	},
 	{
 		fields: {
@@ -261,8 +262,8 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: 'aa78e22e3699276b498654b25149e5a0a49848ed9765ebb491ef8e8ae33bbe3d',
-		scripts: 'cfb282751af709e58e7e59889517bd9960a14ca212adc09379b6bc793fc25851',
+		vite: '5e533007cacbd8a4241078bb70bba172666dca22df145b779078d73e9ce808dd',
+		scripts: 'cab1dad11531066316c4f66f28893ecfb82eaa177106199229a543441b4c00ed',
 	},
 ])
 
@@ -971,7 +972,7 @@ export function buildAudit(): Audit {
  * @returns A hooks record wiring one real listener to the `compile` event.
  */
 export function buildHooks(): EmitterHooks<CompilerEventMap> {
-	return { compile: createRecorder<readonly [Scaffolding]>().handler }
+	return { compile: createRecorder<readonly [CompileResult]>().handler }
 }
 
 /**
@@ -984,28 +985,28 @@ export function buildCompilerOptions(): CompilerOptions {
 }
 
 /** Holds the trap table whose key enumeration throws. */
-export const THROWING_KEYS_TRAP: ProxyHandler<object> = {
+export const ERROR_KEYS_TRAP: ProxyHandler<object> = {
 	ownKeys() {
 		throw new Error('ownKeys trap')
 	},
 }
 
 /** Holds the trap table whose property read throws. */
-export const THROWING_GET_TRAP: ProxyHandler<object> = {
+export const ERROR_GET_TRAP: ProxyHandler<object> = {
 	get() {
 		throw new Error('get trap')
 	},
 }
 
 /** Holds the trap table whose prototype read throws. */
-export const THROWING_PROTOTYPE_TRAP: ProxyHandler<object> = {
+export const ERROR_PROTOTYPE_TRAP: ProxyHandler<object> = {
 	getPrototypeOf() {
 		throw new Error('getPrototypeOf trap')
 	},
 }
 
 /** Holds the descriptor that installs a throwing accessor over a guarded property. */
-export const THROWING_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
+export const ERROR_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
 	enumerable: true,
 	configurable: true,
 	get() {
@@ -1073,7 +1074,7 @@ export function buildHostileCases(): readonly TestHostileCase[] {
 	const revocable = Proxy.revocable({ hostile: 'x' }, {})
 	revocable.revoke()
 	const accessor: Record<string, unknown> = { ...buildBlueprint() }
-	Object.defineProperty(accessor, 'name', THROWING_ACCESSOR_DESCRIPTOR)
+	Object.defineProperty(accessor, 'name', ERROR_ACCESSOR_DESCRIPTOR)
 	const sparse: unknown[] = ['manifest']
 	sparse.length = 3
 	const oversized: readonly string[] = Array.from(
@@ -1087,17 +1088,17 @@ export function buildHostileCases(): readonly TestHostileCase[] {
 		{ label: 'revoked proxy', value: revocable.proxy, owned: false },
 		{
 			label: 'throwing ownKeys proxy',
-			value: new Proxy({ hostile: 'x' }, THROWING_KEYS_TRAP),
+			value: new Proxy({ hostile: 'x' }, ERROR_KEYS_TRAP),
 			owned: false,
 		},
 		{
 			label: 'throwing get proxy',
-			value: new Proxy({ hostile: 'x' }, THROWING_GET_TRAP),
+			value: new Proxy({ hostile: 'x' }, ERROR_GET_TRAP),
 			owned: true,
 		},
 		{
 			label: 'throwing getPrototypeOf proxy',
-			value: new Proxy({ hostile: 'x' }, THROWING_PROTOTYPE_TRAP),
+			value: new Proxy({ hostile: 'x' }, ERROR_PROTOTYPE_TRAP),
 			owned: false,
 		},
 		{ label: 'throwing accessor', value: accessor, owned: false },
@@ -1439,7 +1440,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 			label: 'hooks carrying a misspelled event',
 			guard: isCompilerHooks,
 			accepted: hooks,
-			refused: { ...hooks, compiled: createRecorder<readonly [Scaffolding]>().handler },
+			refused: { ...hooks, compiled: createRecorder<readonly [CompileResult]>().handler },
 		},
 		{
 			label: 'options carrying an unknown key',
@@ -1926,7 +1927,7 @@ export const ENTRY_AUTHORED_TEST = [
 /**
  * Holds a guides project whose one case passes.
  */
-export const ENTRY_PASSING_TEST = [
+export const ENTRY_SUCCESS_TEST = [
 	"import { expect, it } from 'vitest'",
 	'',
 	"it('runs the generated guides project', () => {",
@@ -1954,7 +1955,7 @@ export const ENTRY_FRESH_TEST = [
 /**
  * Holds a guides project whose one case fails.
  */
-export const ENTRY_FAILING_TEST = [
+export const ENTRY_FAILURE_TEST = [
 	"import { expect, it } from 'vitest'",
 	'',
 	"it('propagates a guides-project failure', () => {",
@@ -2864,6 +2865,7 @@ export const DEPENDENCY_TABLES = [
 	['base', BASE_DEV_DEPENDENCIES],
 	['declaration', DECLARATION_DEV_DEPENDENCIES],
 	['browse', BROWSE_DEV_DEPENDENCIES],
+	['capture', CAPTURE_DEV_DEPENDENCIES],
 	['source browser', SOURCE_BROWSER_DEV_DEPENDENCIES],
 	['app', APP_DEV_DEPENDENCIES],
 	['app browser', APP_BROWSER_DEV_DEPENDENCIES],
