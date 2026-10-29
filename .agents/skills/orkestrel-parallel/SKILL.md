@@ -26,7 +26,7 @@ Run from the checkout root. The script's opening comment owns its behavior.
 
 The host budget counts every lane on the machine: this session's, each peer session's, and the Orchestrator's own commands.
 
-- Set the lane bound in the plan before the first dispatch. Run one process-running lane at a time on the host: count as a process-running lane every lane that runs a test, a build, a browser, a capture, or a launcher, the Orchestrator's included; an owned-file format check, lint, or type check runs beside it. Report to the user before a launch that would start a second. Lanes that run no shell command run beside it.
+- Set the lane bound in the plan before the first dispatch. Run one process-running lane at a time on the host: count as a process-running lane every lane that runs a test, a build, a browser, a capture, or a launcher, the Orchestrator's included; an owned-file format check, lint, type check, or `policy` run that reads only its owned paths' violations runs beside it. Report to the user before a launch that would start a second. Lanes that run no shell command run beside it.
 - Count running lanes and owned test processes at each launch.
 - Limit terminal launches: chain commands that do not gate each other into one launch (as a plan for `.agents/skills/orkestrel-dispatch/scripts/chain.ts`), write long output to a file and read it once, never poll with repeated short calls, never retry a run in a loop, and check once for owned leftovers before a launch.
 - Find the cause of an interrupted run before relaunching it.
@@ -86,7 +86,7 @@ expect: <red or green, named cases, required artifact>
 
 - At each applicable phase (types, failing proof, source, and documentation), request the corresponding checks from the runner.
 - Read a shared region immediately before each small, syntactically complete patch. On a context mismatch, reread and reapply only the owned hunk.
-- Keep read-only shell searches within § Bound the host. A writer runs the read-only checks its charter grants on its owned files (the format check, a non-fix lint, the scoped type check), and the `policy` project over its own edits when it edits an instruction file, as observations and sends every test, build, and tree-wide gate to the runner.
+- Keep read-only shell searches within § Bound the host. A writer runs the read-only checks its charter grants on its owned files (the format check, a non-fix lint, the scoped type check), and, when it edits an instruction file, the `policy` project reading only the violations on its owned paths, as observations and sends every test, build, and tree-wide gate to the runner.
 - Run no formatter. Apply the exact formatting hunk the Orchestrator supplies, then run a read-only format check.
 - Before a temporary mutation, send the runner a request whose `holds:` names the conflicting commands and each affected writer, and mutate after the command then running returns its result. Restore the exact input, verify the restoration, and release the holds in the next request.
 - When the unit's required checks pass, send `FINAL <lane>` with source identity and evidence, write the report, and end the turn. Preserve the session for suitable follow-up work.

@@ -29,7 +29,7 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 - Read liveness, list descendants, and kill with the commands of `.agents/platforms/<platform>.md`: list every descendant of the recorded pid, print the list, then kill each listed id and the recorded pid.
 - Refuse a list holding PID 1, the harness shell, or an id outside the descent of the recorded pid. At the cap, `launch.ts` kills what the platform page states; kill the remaining listed descendants by hand.
 - Confirm the recorded process and every listed descendant are gone before another writer takes the files. Check owned-file mtimes before dispatching the substitute.
-- Re-run a timing failure alone, after the unit exits, before believing it; a unit's own re-run is never alone.
+- Rerun a failure alone only after the unit exits, as a reading and never a verdict, per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief; a unit's own rerun is never alone.
 
 ## Cap
 

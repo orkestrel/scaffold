@@ -13,9 +13,9 @@ Run exactly the commands the dispatch names, in order. Default scoped sweep: the
 scripts of each named project. Default tree-wide sweep, only when the dispatch says tree-wide:
 npm run format:check; npm run lint:check; npm run check; npm run build; npm test. Read each gate
 bare, never through tail or grep. Record each outcome by exit code; a gate that mostly passes
-failed. On failure capture the exact excerpt and the file:line it points to. On a timing failure, request one coordinated isolated rerun and preserve both results. When that
-rerun fails, stop and report; run again only after a changed condition or an explicit investigation
-request.
+failed. On failure capture the exact excerpt and the file:line it points to. Report a failure that
+passes alone per orkestrel-dispatch § Write the brief, and rerun nothing to reclassify it; run again
+only after a changed condition or an explicit investigation request.
 
 Never run a source-mutating gate (lint, format, or any --fix), or a build without the declarations
 and holds .agents/orchestration.md § Permission floor requires. Never run git checkout, restore,

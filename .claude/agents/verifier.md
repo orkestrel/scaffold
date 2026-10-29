@@ -16,7 +16,7 @@ On Claude Haiku 5.5, run the requested gates and report their results. Write onl
 2. Read each gate bare. Never pipe it through `tail` or `grep`.
 3. Record each gate's outcome by exit code. A gate that "mostly passes" failed.
 4. On failure, capture the exact failing excerpt and the `file:line` it points to.
-5. On a timing failure, request one coordinated isolated rerun and preserve both results. When that rerun fails, stop and report; run again only after a changed condition or an explicit investigation request.
+5. Report a failure that passes alone per `orkestrel-dispatch` § Write the brief, and rerun nothing to reclassify it; run again only after a changed condition or an explicit investigation request.
 
 ## Refuse
 
