@@ -100,7 +100,7 @@ Test ladder, narrowest first; stop at the boundary the change size names:
 3. The touched project: `npm run test:<project>`, plus the `check:` script for that project where `package.json` declares one.
 4. Tree-wide gates, once, by `verifier`: `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run build`, `npm test`.
 
-- Run types and behavior tests before format, lint, and guide checks. A format, lint, or guide failure never stops a behavior run; fix it in the final pass.
+- After every change, run the format check, lint, and type check over the changed scope before any test, build, or long run. They take seconds and catch what a slow run would report late; fix what they report, then climb the ladder. A guide check runs with the tests that prove the guide.
 - Run the mutating `npm run lint` then `npm run format` only to converge before the non-mutating gates.
 - A writing unit stops at the project boundary and reports the commands it ran. `verifier` runs the tree-wide gates when dispatched for them and edits no source.
 - Never claim a gate passed without running it and reading its output bare, with no `| tail` or `| grep` behind it.

@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "5e59e510aa7ba19802b5577e39ab8b61a6a3d415606af49cb3d664d5caa53220"
+			"digest": "3d183e5cae674592a63f5ec38deb421fab480d408d2874a3040bacf2e4d20680"
 		},
 		{
 			"storage": "LICENSE",
@@ -160,7 +160,7 @@
 			"storage": "agents/skills/orkestrel-dispatch/SKILL.md",
 			"destination": ".agents/skills/orkestrel-dispatch/SKILL.md",
 			"executable": false,
-			"digest": "bd24d537cff579965c1e42d96b6e1de86a6fc510f7badd7e91607b5b074e32a3"
+			"digest": "ec6f9888db5f24c8d07fa9516045b96ab3f38fe9fbb4ba0c827b675088235f49"
 		},
 		{
 			"storage": "agents/skills/orkestrel-dispatch/agents/openai.yaml",
@@ -532,7 +532,7 @@
 			"storage": "agents/templates/brief.md",
 			"destination": ".agents/templates/brief.md",
 			"executable": false,
-			"digest": "3f98362fbbdf3e99bcb65b8a7cb94b713babbeb7058918d5ef291a1284eb9435"
+			"digest": "7dc057870174bda3f0aee305c0e8e86b9552ddf8f4f0e84ae66aba4fae45ab95"
 		},
 		{
 			"storage": "agents/transports/claude-cli.md",
@@ -634,7 +634,7 @@
 			"storage": "claude/agents/verifier.md",
 			"destination": ".claude/agents/verifier.md",
 			"executable": false,
-			"digest": "db9464ee22580e85039f5b616ee5c296c5de23f61c643de571023bff67b7e3a9"
+			"digest": "7b242f3dbb2b0407d4520e3cf6e1a426327ddb42013aeb816249efa9311660a3"
 		},
 		{
 			"storage": "claude/rules/application.md",
@@ -874,7 +874,7 @@
 			"storage": "codex/agents/verifier.toml",
 			"destination": ".codex/agents/verifier.toml",
 			"executable": false,
-			"digest": "fa27d2132bc71a362ed3e493e8ad8c4b4086c4085d2287a8e36819d064b8a9ff"
+			"digest": "476393f285521ccd341db919f1ec5155e7630de6e1b2a9183a1f2378e09809a3"
 		},
 		{
 			"storage": "codex/config.toml",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "36f3c02280119e109486a83452a6a57de13c1fcead1bc31843297d426cbc8f84"
+	"digest": "a3c8bbe5bf6b648df8bae2b16eb53584423b05ac61c8a31a6d8af964d72929c1"
 }

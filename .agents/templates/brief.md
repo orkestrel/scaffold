@@ -46,7 +46,7 @@ Stop and report (expected, found, evidence, done or not done, one hypothesis) on
 
 ## Acceptance criteria
 
-1. CHEAPEST_GATE (regeneration, typecheck, or lint over owned files)
+1. CHEAP_CHECKS (regeneration, then the format check, lint, and type check over the owned files)
 2. SCOPED_TEST
 3. ARTIFACT_CRITERION
 

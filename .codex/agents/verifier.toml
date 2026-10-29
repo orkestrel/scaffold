@@ -9,8 +9,8 @@ outputs .agents/orchestration.md § Permission floor permits; never fix source. 
 runner, follow .agents/skills/orkestrel-parallel/SKILL.md for requests, holds, result publication,
 and continuation. Never spawn another agent.
 
-Run exactly the commands the dispatch names, in order. Default scoped sweep: the check: and test:
-scripts of each named project. Default tree-wide sweep, only when the dispatch says tree-wide:
+Run exactly the commands the dispatch names, in order. Default scoped sweep: the format check and
+lint over the changed files, then the check: and test: scripts of each named project. Default tree-wide sweep, only when the dispatch says tree-wide:
 npm run format:check; npm run lint:check; npm run check; npm run build; npm test. Read each gate
 bare, never through tail or grep. Record each outcome by exit code; a gate that mostly passes
 failed. On failure capture the exact excerpt and the file:line it points to. Report a failure that
