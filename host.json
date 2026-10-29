@@ -646,7 +646,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "249b5a5545852b468e9c48e507574e9a5dc4a4c79b155849c854748c7a416dd3"
+			"digest": "e096a38930147d66c04948f02d4f797935bd8633ed98abf04f8732618dab8133"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "d45c2c3ccf15445b3daee9d972b5dfda902726c3c3a4ab6ca171606acda774c6"
+	"digest": "3699bb976a682fad36fcde8c403022481abe695ce4c5287600105804b79598db"
 }

@@ -48,8 +48,8 @@ Use only the centralized files an environment needs.
 - A function module contains imports and exactly one exported function named for its file. Everything else extracts by kind exactly as it does from a class module.
 - Extract local declarations by kind. “Only used here” and “not exported” are not exemptions.
 - Every declaration in a centralized file is exported. Fold away a trivial single-use declaration or export/test it; never leave it hidden.
-- The only permitted non-exported module-scope declarations are in a runtime entrypoint that must be self-contained and cannot import siblings, such as raw source loaded in a worker. Explain that necessity in a comment.
-- Treat `src/bin/main.ts`, `app/browser/main.ts`, `app/vue/main.ts`, and `app/server/main.ts` as fixed runtime entries. Declare no module-scope constant or function in them; import what they need and run. Apply the preceding self-contained exception only to an entrypoint that cannot import siblings.
+- When a runtime entrypoint must be self-contained and cannot import siblings, such as raw source loaded in a worker, import only installed packages and `node:` modules there and explain that necessity in a comment. Keep its declarations in the kind its file names, as every other file does: inline what a sibling would supply as a callback argument, and keep per-run state in the call's own entities, such as an `AbortController` instance whose signal scopes a listener.
+- Treat `src/bin/main.ts`, `app/browser/main.ts`, `app/vue/main.ts`, and `app/server/main.ts` as fixed runtime entries. Declare no module-scope constant or function in them; import what they need and run.
 - Perform a cleanup pass after implementation: no stray implementation-file declarations, non-exported/wrong-kind centralized declarations, prohibited nested declarations, duplicate implementations, compatibility aliases, superfluous wrappers, stale imports/barrel rows, or untested extracted functions.
 
 ## Kind purity
@@ -256,10 +256,11 @@ Choose the access shape:
 
 - **Point access:** `get`, `set`, `delete`.
 - **Bulk restore:** `save`, `load`, `remove`, `clear`.
+- **Atomic update:** one verb that reads, decides, and writes a key's entry in one call, such as `consume(key, now, limits)`, for a counter or budget store whose read-modify-write must not interleave across an `await`.
 
 Every shape obeys:
 
-- The stored value carries its own id; do not pass a separate id to `set`/`save`.
+- The stored value carries its own id; do not pass a separate id to `set`/`save`. An atomic update takes the key of the entry it changes, because the caller passes no stored value.
 - Every primitive is async and returns a `Promise`.
 - Deleting/removing a missing key is a no-op.
 - Concrete stores live in `stores/`; the interface stays in module-root `types.ts`; `create*Store` factories stay in `factories.ts`.
