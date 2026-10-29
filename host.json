@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "8e2ccc1982e45ac65e92fe208182c46fc03967a1c0b9ec0333d5f4a8d2221433"
+			"digest": "55e6d92f02c3e69dafc516aa9c046220eb35762c1e170278635cd29b29396549"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -160,7 +160,7 @@
 			"storage": "agents/skills/orkestrel-dispatch/SKILL.md",
 			"destination": ".agents/skills/orkestrel-dispatch/SKILL.md",
 			"executable": false,
-			"digest": "70f8e0c5e5cd902052034180abc9a4241ddfcb725a468dfeaa851f0a1887d3dd"
+			"digest": "bd24d537cff579965c1e42d96b6e1de86a6fc510f7badd7e91607b5b074e32a3"
 		},
 		{
 			"storage": "agents/skills/orkestrel-dispatch/agents/openai.yaml",
@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-falsify/SKILL.md",
 			"destination": ".agents/skills/orkestrel-falsify/SKILL.md",
 			"executable": false,
-			"digest": "9e2c918435316a46186ceb0d352da13a5db2c9f72447b128868b666ad8cae84b"
+			"digest": "3730798fff4cc1d13018eb9c7dcaf0a75f533c5ca481ead3fd26c9c2665c7cd8"
 		},
 		{
 			"storage": "agents/skills/orkestrel-falsify/agents/openai.yaml",
@@ -382,7 +382,7 @@
 			"storage": "agents/skills/orkestrel-parallel/SKILL.md",
 			"destination": ".agents/skills/orkestrel-parallel/SKILL.md",
 			"executable": false,
-			"digest": "982bd224fb3dc715b6658234fc26a04878a28e89a0e2e72d8178d1e5c723ebc2"
+			"digest": "107621166be25701082622c59daa37000d47a79d6a3280388e290d007045cd02"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/agents/openai.yaml",
@@ -472,7 +472,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "aa5781e37ea8880b40af3b9b59aabb5c72fae853e37c7bc098badd50d527a949"
+			"digest": "86474895668e2e6bb0da3eaa70dc434787513cae46dfb7e0c189c884e769a131"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -532,7 +532,7 @@
 			"storage": "agents/templates/brief.md",
 			"destination": ".agents/templates/brief.md",
 			"executable": false,
-			"digest": "f3aa03e78b2b6b25640f3bd726b4c7f43768a8936feb595dad9920cf1e43863c"
+			"digest": "3f98362fbbdf3e99bcb65b8a7cb94b713babbeb7058918d5ef291a1284eb9435"
 		},
 		{
 			"storage": "agents/transports/claude-cli.md",
@@ -688,7 +688,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "822c22732aef4ffdf03951ced4fd15bec78991ccad3f4a253983cd6c1823730d"
+			"digest": "4acd3005dbf94fc12c1065c4ada52417bcdca0ca034231661bcf75a19a522608"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "1f3b6b412516088d5712f62069d1efaff471f55a3b88bb8d80c849b27dcfba52"
+	"digest": "c7018649acb611ef3704e4d5eba6f39260119c3fe117ec91e7590a0350dda951"
 }

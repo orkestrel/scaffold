@@ -47,7 +47,7 @@ Every lane returns exactly this:
 3. Tested and held: tests no verdict line carries, and the adjacent behavior that looks like the defect and is correct.
 4. One terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>; outside the claims: <finding ids or none>`. `PASS` needs every claim `CONFIRMED` and no outside finding in the terminal line. An outside finding enters the terminal line only above the bar the brief names, and no severity word moves a finding across that bar; a brief that names no bar puts every substantiated outside finding in the terminal line.
 
-Before confirming a claim about a proof, the lane names the mutation that would make the proof fail and states whether the assertions distinguish it. No process diary.
+Before confirming a claim about a proof, the lane names the mutation that would make the proof fail and states whether the assertions distinguish it. A re-audit of a repair reports, beside its re-verdicts, every defect the repair introduced and every requirement it dropped. No process diary.
 
 ## Reconcile and rule
 

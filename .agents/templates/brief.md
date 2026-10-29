@@ -52,6 +52,8 @@ Stop and report (expected, found, evidence, done or not done, one hypothesis) on
 
 **Observations, not criteria.** TIMING_SENSITIVE_OR_TREE_WIDE_GATES the unit reports and the Orchestrator re-runs.
 
+**Estimate and stop.** ESTIMATED_COST of the unit and STOP_COST, the cost at which it stops and reports; the unit's report records the observed cost beside that estimate.
+
 **Measurement.** FIXTURE_KINDS: the realistic heavy loads a cost claim is read under, named by kind; the unit sizes and reads them per `.claude/rules/quality.md` § Performance.
 
 ## Review evidence

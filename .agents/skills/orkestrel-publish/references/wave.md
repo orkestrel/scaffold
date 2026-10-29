@@ -164,7 +164,7 @@ Prepare a published package's layer in this order, after the visit has ruled the
    preparation commit already precedes the overwrite; this install regenerates the lockfile for the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
-4. **Run `prepublishOnly` to green in a fresh clone of the candidate commit, in the order the package's own chain fixes.**
+4. **Run `prepublishOnly` to green in a fresh clone of the candidate commit, in the order the package's own chain fixes.** A release run executes every step whose inputs a failed step leaves valid and reports each result, so one clean-host run surfaces every independent fault.
    Run the visit and this script on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION` floor a
    generated workspace declares in `devEngines`: the scripts spawn the npm CLI beside the running
    Node binary when one is there, so a `PATH` change reaches them only where none is.

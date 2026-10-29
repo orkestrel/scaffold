@@ -87,7 +87,7 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 
 ## Hold the plan
 
-- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, agree with the user the estimate, the spend ceiling, and the stop line: how much lane time the work can take, and the point at which work stops and reports.
+- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, agree with the user the estimate, the spend ceiling, and the stop line: how much lane time the work can take, and the point at which work stops and reports. Derive an estimate or a process cap from a measurement of the same command, execution shape, and toolchain, and state that measurement beside the figure, or state that none exists.
 - Before each unit, name the plan step it serves. Cut a unit no step needs; set an unplanned idea aside in the plan and return to the step.
 - Add a tracked file only where the request, the plan, or a rule names it.
 - After every unit return, unexpected result, or user message, compare the work with the plan: mark what is done, restate the next step, and set aside what no longer serves the goal.
