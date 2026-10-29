@@ -17,8 +17,12 @@ One row per dispatched unit and per user ruling on routing or scope, in order (`
 | 2026-10-29 | test-chooser consult: traced the crash to Vitest 5.0.5's file-system module cache handing the module runner bytes; recommended `fsModuleCache: false`, confirmed by the red-then-green reproduction | planner (consultant) | § Scaffold release row 1 |
 | 2026-10-29 | test-realign: realign test with `ROADMAP.md` items 44, 45 (the two-tier ruling), and 62 | astra | pending |
 | 2026-10-29 | l1-small-realign: realign abort, emitter, timeout, sqlite, and sse in sequence | astra | abort `f6f7243`, emitter `8a4a892`, timeout `f6152c9`, sqlite `88c3225`, sse `73c0eb1` |
-| 2026-10-29 | l1-rest-realign: realign ndjson, csv, indexeddb, and msg in sequence | astra | pending |
+| 2026-10-29 | l1-rest-realign: realign ndjson, csv, indexeddb, and msg in sequence | astra | ndjson `dd5ca1c`, csv `3319e34`, msg `010074d`, indexeddb after one runner repair |
 | 2026-10-29 | l2-small-realign: realign template, tool, router, table, and websocket in sequence | astra | pending |
 | 2026-10-29 | mix-realign-1: realign budget, process (with `ROADMAP.md` item 61), and pool in sequence | astra | pending |
 | 2026-10-29 | markdown-realign: realign markdown | astra | pending |
 | 2026-10-29 | reason-realign: realign reason | astra | pending |
+| 2026-10-29 | database-realign: realign database | astra | pending |
+| 2026-10-29 | placement-review: falsify the closed test-infrastructure set (§ Scaffold release, row 4) | analyst | claims 1 and 4 falsified, repaired per the prescription |
+| 2026-10-29 | test-review: falsify test's realignment and its promoted contract (`ROADMAP.md` items 44, 45, 62) | analyst | pending |
+| 2026-10-29 | l2-rest-realign: realign console and form in sequence | astra | pending |

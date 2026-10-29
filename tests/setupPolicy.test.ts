@@ -100,6 +100,8 @@ import {
 	SKILL_DECLARATION_REFUSALS,
 	SKILL_REFUSAL_CASES,
 	SETUP_POLICY_CONTROLS,
+	INFRASTRUCTURE_POLICY_CONTROLS,
+	inspectPolicyInfrastructure,
 	SHEET_POLICY_SELECTIONS,
 	TEXT_POLICY_MESSAGE,
 } from './setupPolicy.js'
@@ -403,7 +405,7 @@ describe('inspectPolicySetup', () => {
 					JSON.stringify({ name: '@orkestrel/sample', private: privateWorkspace }),
 				)
 				scratch.write('tests/setupDistribution.ts', 'export function readShared() {}\n')
-				scratch.write('tests/setupExtra.ts', 'export function readShared() {}\n')
+				scratch.write('tests/setupGlobal.ts', 'export function readShared() {}\n')
 				const violations = inspectPolicyWorkspace(scratch.path)
 				expect(
 					violations
@@ -411,7 +413,7 @@ describe('inspectPolicySetup', () => {
 						.map(({ rule }) => rule),
 				).toEqual(privateWorkspace ? ['mirror', 'surface'] : [])
 				expect(
-					violations.filter(({ path }) => path === 'tests/setupExtra.ts').map(({ rule }) => rule),
+					violations.filter(({ path }) => path === 'tests/setupGlobal.ts').map(({ rule }) => rule),
 				).toEqual(['mirror', 'surface'])
 			}
 		} finally {
@@ -424,20 +426,20 @@ describe('inspectPolicySetup', () => {
 		try {
 			expect(matchesScaffoldSetup('tests\\setupDistribution.ts', scratch.path)).toBe(true)
 			expect(matchesScaffoldSetup('tests/setupPolicy.ts', scratch.path)).toBe(true)
-			expect(matchesScaffoldSetup('tests/setupExtra.ts', scratch.path)).toBe(false)
+			expect(matchesScaffoldSetup('tests/setupGlobal.ts', scratch.path)).toBe(false)
 			expect(matchesScaffoldSetup('tests/setupDistribution.ts/extra.ts', scratch.path)).toBe(false)
 			scratch.write('tests/setupDistribution.ts', 'export function readShared() {}\n')
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
 			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])
-			scratch.write('tests/setupExtra.ts', 'export function readShared() {}\n')
+			scratch.write('tests/setupGlobal.ts', 'export function readShared() {}\n')
 			expect(inspectPolicySetup(scratch.path).map(({ rule, path }) => ({ rule, path }))).toEqual([
-				{ rule: 'mirror', path: 'tests/setupExtra.ts' },
+				{ rule: 'mirror', path: 'tests/setupGlobal.ts' },
 			])
 			expect(
 				inspectPolicyWorkspace(scratch.path)
 					.filter(({ rule }) => rule === 'surface')
 					.map(({ rule, path }) => ({ rule, path })),
-			).toEqual([{ rule: 'surface', path: 'tests/setupExtra.ts' }])
+			).toEqual([{ rule: 'surface', path: 'tests/setupGlobal.ts' }])
 		} finally {
 			scratch.destroy()
 		}
@@ -451,22 +453,31 @@ describe('inspectPolicySetup', () => {
 			scratch.destroy()
 		}
 	})
+	it.each(INFRASTRUCTURE_POLICY_CONTROLS)('$label through the placement inspector', (control) => {
+		const scratch = createPolicyScratch({ prefix: 'scaffold-placement-control-' })
+		try {
+			for (const file of control.files) scratch.write(file.path, file.content)
+			expect(inspectPolicyInfrastructure(scratch.path)).toEqual(control.violations)
+		} finally {
+			scratch.destroy()
+		}
+	})
 	it('reads TypeScript import declarations and excludes import-shaped strings', () => {
 		const scratch = createPolicyScratch({ prefix: 'scaffold-setup-typescript-' })
 		try {
 			scratch.write('tests/setup.ts', '')
-			scratch.write('tests/setupCanvas.ts', 'export interface Canvas { readonly width: number }\n')
+			scratch.write('tests/setupStyles.ts', 'export interface Styles { readonly width: number }\n')
 			scratch.write(
 				'tests/setup.test.ts',
-				"import type { Canvas } from './setupCanvas.js'\nconst canvas: Canvas = { width: 1 }\nvoid canvas\n",
+				"import type { Canvas } from './setupStyles.js'\nconst canvas: Canvas = { width: 1 }\nvoid canvas\n",
 			)
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
 			scratch.write(
 				'tests/setup.test.ts',
-				"const text = `\nimport { Canvas } from './setupCanvas.js'\n`\nvoid text\n",
+				"const text = `\nimport { Canvas } from './setupStyles.js'\n`\nvoid text\n",
 			)
 			expect(inspectPolicySetup(scratch.path)).toEqual([
-				expect.objectContaining({ rule: 'mirror', path: 'tests/setupCanvas.ts' }),
+				expect.objectContaining({ rule: 'mirror', path: 'tests/setupStyles.ts' }),
 			])
 		} finally {
 			scratch.destroy()
@@ -494,16 +505,16 @@ describe('inspectPolicySetup', () => {
 	it('requires proof for an exporting root module and admits its sibling proof', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-setup-mirror-' })
 		try {
-			scratch.write('tests/setupCanvas.ts', 'export const CANVAS = 1\n')
+			scratch.write('tests/setupStyles.ts', 'export const STYLES = 1\n')
 			expect(inspectPolicySetup(scratch.path)).toEqual([
 				{
 					rule: 'mirror',
-					path: 'tests/setupCanvas.ts',
+					path: 'tests/setupStyles.ts',
 					message:
 						'exporting setup module requires its sibling proof or an import from tests/setup.test.ts',
 				},
 			])
-			scratch.write('tests/setupCanvas.test.ts', '')
+			scratch.write('tests/setupStyles.test.ts', '')
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
 		} finally {
 			scratch.destroy()
@@ -513,11 +524,11 @@ describe('inspectPolicySetup', () => {
 	it('admits a non-exporting module without a proof', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-setup-mirror-' })
 		try {
-			scratch.write('tests/setupCanvas.ts', 'const canvas = 1\nvoid canvas\n')
+			scratch.write('tests/setupStyles.ts', 'const canvas = 1\nvoid canvas\n')
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
-			scratch.write('tests/setupCanvas.ts', 'export const CANVAS = 1\n')
+			scratch.write('tests/setupStyles.ts', 'export const STYLES = 1\n')
 			expect(inspectPolicySetup(scratch.path)).toEqual([
-				expect.objectContaining({ rule: 'mirror', path: 'tests/setupCanvas.ts' }),
+				expect.objectContaining({ rule: 'mirror', path: 'tests/setupStyles.ts' }),
 			])
 		} finally {
 			scratch.destroy()
@@ -527,15 +538,15 @@ describe('inspectPolicySetup', () => {
 	it('requires a module for a root setup proof', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-setup-mirror-' })
 		try {
-			scratch.write('tests/setupCanvas.test.ts', '')
+			scratch.write('tests/setupStyles.test.ts', '')
 			expect(inspectPolicySetup(scratch.path)).toEqual([
 				{
 					rule: 'mirror',
-					path: 'tests/setupCanvas.test.ts',
-					message: 'setup proof requires its module: tests/setupCanvas.ts',
+					path: 'tests/setupStyles.test.ts',
+					message: 'setup proof requires its module: tests/setupStyles.ts',
 				},
 			])
-			scratch.write('tests/setupCanvas.ts', '')
+			scratch.write('tests/setupStyles.ts', '')
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
 		} finally {
 			scratch.destroy()
@@ -546,12 +557,12 @@ describe('inspectPolicySetup', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-setup-mirror-' })
 		try {
 			scratch.write('tests/setup.ts', 'export const SHARED = 1\n')
-			scratch.write('tests/setupCanvas.ts', 'export const CANVAS = 1\n')
-			scratch.write('tests/setup.test.ts', "import { CANVAS } from './setupCanvas.js'\n")
+			scratch.write('tests/setupStyles.ts', 'export const STYLES = 1\n')
+			scratch.write('tests/setup.test.ts', "import { STYLES } from './setupStyles.js'\n")
 			expect(inspectPolicySetup(scratch.path)).toEqual([])
-			scratch.write('tests/setup.test.ts', "import { CANVAS } from './setupCanvasOther.js'\n")
+			scratch.write('tests/setup.test.ts', "import { STYLES } from './setupStylesOther.js'\n")
 			expect(inspectPolicySetup(scratch.path)).toEqual([
-				expect.objectContaining({ rule: 'mirror', path: 'tests/setupCanvas.ts' }),
+				expect.objectContaining({ rule: 'mirror', path: 'tests/setupStyles.ts' }),
 			])
 		} finally {
 			scratch.destroy()
@@ -1356,7 +1367,9 @@ describe('inspectPolicySurface evidence', () => {
 			scratch.write('tests/nested/setupServer.ts', 'export function readShared() {}\n')
 			scratch.write('tests/setupServer.ts', '')
 			scratch.write('tests/ordinary.ts', 'export function readShared() {}\n')
-			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])
+			expect(
+				inspectPolicyWorkspace(scratch.path).filter((violation) => violation.rule === 'surface'),
+			).toEqual([])
 		} finally {
 			scratch.destroy()
 		}

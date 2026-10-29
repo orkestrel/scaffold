@@ -20,7 +20,8 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
   not add `tests/configs/`.
 - Resolve a mirrored module through `.ts`, `.tsx`, `.mts`, `.cts`, `.vue`, `.scss`, or `.css`.
 - Resolve a Sass or CSS partial through the module's leading underscore.
-- Mirror root setup modules and proofs in both directions. A root `tests/setup<Name>.test.ts`
+- Mirror the root setup modules § Shared test infrastructure places, and their proofs, in both
+  directions; that section's list is the whole set of names. A root `tests/setup<Name>.test.ts`
   resolves to `tests/setup<Name>.ts`. A root `tests/setup<Name>.ts` that declares an export has
   `tests/setup<Name>.test.ts` or is imported by `tests/setup.test.ts`, which can prove several
   setup modules when their helpers serve several projects. The setup modules scaffold owns are
@@ -209,13 +210,24 @@ Test helpers are shared infrastructure, not local test-file clutter.
 - A module reads no live host object at import; it reads one inside the function that needs it.
 - A fixture that stands in for another package's platform behavior copies that package's own proof of the behavior rather than re-deriving it.
 
-Place helpers by environment:
+Declare test infrastructure only in the root modules the following list places, each in the
+environment it names, and in scaffold's vendored `tests/setupPolicy.ts`. Never create another
+`tests/setup<Name>.ts`, a nested setup module, or a helper, type, suite, or builder module anywhere
+else under `tests/`. Put a cross-cutting proof's helpers in the module of the environment the proof
+runs in: `tests/setupServer.ts` for the Node `conformance`, `tree`, and `integration` proofs. A file
+under a `fixtures/` directory is data or an entry a test runs or loads on its own, never a helper a
+test file imports. The policy sweep's `mirror` rule refuses every other TypeScript module under
+`tests/` that is not a test, a bench, or a declaration file; it reads paths, not imports, so review
+refuses a helper placed under `fixtures/`.
 
 - `tests/setup.ts`: host-independent; no `node:*`, DOM, `window`, or Vue. Lint refuses a `node:` or Vue import there.
 - `tests/setupServer.ts`: Node-only helpers and `node:fs` loaders anchored to `WORKSPACE_ROOT`.
 - `tests/setupBrowser.ts`: DOM/Vue/browser helpers and setup CSS. Lint refuses a `node:` import here and in `tests/setupStyles.ts`.
 - `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; a
   sheet-face project loads it after `tests/setupBrowser.ts` when the target has the file.
+- `tests/setupService.ts`: the `service` project's readiness setup, per § Live-service tests.
+- `tests/setupGlobal.ts`: the `globalSetup` module `.claude/rules/workspace.md` § Test project
+  matrix assigns to `src:browser`, `setup:browser`, and `integration`.
 - `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,
   its source tests too. Name it in no project's `setupFiles`; tests import it, as the policy proof
   imports `tests/setupPolicy.ts`.
