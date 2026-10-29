@@ -113,7 +113,11 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
 - Prefer short common English; avoid jargon, abbreviations, and non-universal acronyms.
 - Properties are nouns; methods are verbs.
 - Booleans read as assertions: `aborted`, `exhausted`, `expired`.
-- Name an option, a field, a result, a record, a constant, or an action for the thing or the outcome, never with an -ing word, which reads as work in progress: `final`, not `closing`; `uniform`, not `framing`; `FrameResult`, not `FrameReading`; `CAPTURE_STAGE_LIMIT`, not `CAPTURE_STAGINGS`. Three kinds of -ing word remain: a noun that carries no tense (`string`, `binding`, `finding`, `heading`, `warning`), a name that mirrors an external field under the rule below (`encoding`, `CONNECTING`), and a lifecycle state that is in progress when it is read (`pending`, `running`, `stopping`).
+- Name an option, a field, a result, a record, a constant, or an action for the thing or the outcome, never with an -ing word, which reads as work in progress: `final`, not `closing`; `uniform`, not `framing`; `FrameResult`, not `FrameReading`; `CAPTURE_STAGE_LIMIT`, not `CAPTURE_STAGINGS`. Four kinds of -ing word remain:
+  - a noun that carries no tense (`string`, `binding`, `finding`, `heading`, `warning`);
+  - a name that mirrors an external field under the rule below (`encoding`, `CONNECTING`);
+  - a lifecycle state that is in progress when it is read (`pending`, `running`, `stopping`);
+  - an adjective naming a condition that holds when it is read (`blocking`, `missing`, `remaining`).
 - Accessors use bare nouns, never `get*`/`set*`.
 - Do not alternate `count`/`length`/`size`/`total` or `abort`/`cancel`.
 - Name the axis a discriminant varies; `operation` and `via` are axis names beside those `AGENTS.md` lists.
