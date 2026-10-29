@@ -87,7 +87,9 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
     reached, such as a child directory, a dependency, an amendment, or a child process. Count as one
     step a complete iteration that removes or visits an entry of the worklist, its nested loops
     included. Treat a worklist that no step can add more than one entry to as a cursor, and return
-    what it reaches from a bounded recursion;
+    what it reaches from a bounded recursion. When only an input limit bounds the walk's depth, as
+    a linked chain's length does, walk it through an iterator created for the call instead, under
+    the **Per-call state** rule, with the cursor in that iterator's `#` field;
   - a traversal's membership set or map, which the traversal reads to avoid revisiting a node or to
     discover the nodes reachable from nodes it has recorded, whether or not it iterates that
     collection, and to which the cursor condition never applies;

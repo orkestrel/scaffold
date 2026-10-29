@@ -46,6 +46,7 @@ Each row is a scaffold defect the wave found, fixed on scaffold's `main` and shi
 5. **Nothing enforces that a test file declares no helper of its own.** `.claude/rules/tests.md` § Shared test infrastructure refuses a local fixture factory in a test file, and no instrument read it, so the fleet held 462 module-scope functions in mirrored test files (mcp 123, reason 82) and the wave's writer briefs added more. On the user's ruling of 2026-10-29, `policy/no-test-helper` in `configs/policy.ts` refuses a module-scope function, class, or function-valued binding in `tests/src/**/*.test.ts`, `tests/app/**/*.test.ts`, and `tests/setup*.test.ts` (`POLICY_TEST_GLOBS`, wired in `.oxlintrc.json`); `tests/distribution.test.ts` sits outside that population as § Deferred records. A mutation that silences the reporter reddened its five invalid cases (5 failed, 2 passed).
 6. **The store shapes name no atomic update.** `.claude/rules/architecture.md` § Stores gave a store point access and bulk restore only, so a per-key count, which § Middleware sends to a pluggable store, had no shape that keeps its read-modify-write from interleaving across an `await` (middleware's rate limiter, ruled 2026-10-29). The section adds the atomic-update shape, one verb that reads, decides, and writes a key's entry, and states that it takes the entry's key.
 7. **The self-contained entry exception was unreachable.** `.claude/rules/architecture.md` § Declaration placement permitted non-exported module-scope declarations in a self-contained runtime entry, and `reportHidden` in `configs/policy.ts` refuses every one in a kind file, so no file could use it (worker's thread entry, ruled 2026-10-29). The bullet states what such an entry does: it imports only installed packages and `node:` modules, keeps its declarations in its file's kind, and keeps per-run state in the call's own entities.
+8. **The cursor remedy names only a bounded recursion.** `.claude/rules/typescript.md` § Bindings, **Exemptions**, returns what a one-successor worklist reaches from a bounded recursion, and a walk whose depth only an input limit bounds (lsp's segment chain, up to 67,108,864 nodes, ruled 2026-10-29) has no bounded recursion. The clause adds the iterator entity that **Per-call state** already admits as the remedy for such a walk.
 
 ## Visit procedure
 
@@ -94,6 +95,8 @@ Each published rename a realignment made, which every consumer adopts at its re-
 | reason | `isChainingStrategy` | `isChainStrategy` | `.claude/rules/names.md` § General vocabulary |
 | reason | `LogicalChainingResult` | `LogicalChainResult` | `.claude/rules/names.md` § General vocabulary |
 | reason | `InferentialChainingResult` | `InferentialChainResult` | `.claude/rules/names.md` § General vocabulary |
+| lsp | `joinLSPSegments(state)` | `new LSPChain(state).join()` | `.claude/rules/typescript.md` § Bindings, **Per-call state** (an unbounded walk is an iterator entity) |
+| lsp | `takeLSPTail(state, count)` | `new LSPChain(state).tail(count)` | the same |
 
 ## Lanes
 
