@@ -43,9 +43,14 @@ One row per dispatched unit and per user ruling on routing or scope, in order (`
 | 2026-10-29 | l4-a-realign: realign program, brief, middleware, and worker in sequence | astra | program `893faf9`; brief, middleware, and worker held findings ruled and continued |
 | 2026-10-29 | mcp-realign: realign mcp | astra | pending |
 | 2026-10-29 | contract-recheck: test the repairs of contract's falsified claims 1 and 2 (`contract/tmp/units/contract-recheck-brief.md`) | analyst | claims 1 to 4 hold; no blocking finding |
-| 2026-10-29 | workflow-realign: realign workflow | astra | pending |
+| 2026-10-29 | workflow-realign: realign workflow | astra | workflow `33690a0` after the runner's guide, message, and rename repairs |
 | 2026-10-29 | l4-held consult: worker's closure registry of in-flight runs and middleware's request and cross-request state; ruled a per-run abort subscription for worker (no class, no scaffold change), and for middleware per-request derivations, a `SessionControl` entity, an atomic `MemoryLimiterStore`, a static-file helper pipeline, a `MemoryAssetStore`, and a per-part `Upload` entity; adopted | planner (consultant) | `worker/tmp/units/worker-realign-brief-2.md`, `middleware/tmp/units/middleware-realign-brief-2.md` |
-| 2026-10-29 | l4-a continuation: worker repair 2, brief repair 2, middleware repair 2 (units M1 to M5) in sequence | astra | pending |
+| 2026-10-29 | l4-a continuation: worker repair 2, brief repair 2, middleware repair 2 (units M1 to M5) in sequence | astra | worker `ee6484d`, brief `872c310`, middleware `9ed4d3f` |
 | 2026-10-29 | browser-realign: realign browser | astra | pending |
 | 2026-10-29 | lsp-held consult: lsp's unbounded segment walk, framing spine, and generation ownership; ruled the `LSPChain` and `LSPFraming` per-call iterators, the `LSPSession` bound value, and a one-entry closings registry; the orchestrator named the leaf `buildLSPSegment` and ruled the remaining tensions; adopted | planner (consultant) | `lsp/tmp/units/lsp-realign-brief-2.md` |
-| 2026-10-29 | l3-b continuation: guide and server repair 2 (finish lint), then lsp repair 2 (units U1 to U4) | astra | pending |
+| 2026-10-29 | l3-b continuation: guide and server repair 2 (finish lint), then lsp repair 2 (units U1 to U4) | astra | guide `dfe4d13`, server `d6b4005`, lsp `6d43330` |
+| 2026-10-29 | Orchestrator ruling on brief's held rank count: `validateBrief` reads each outcome's rank once and groups, because the base's two reads let a shifting getter fabricate a duplicate warning, and `.claude/rules/patterns.md` § Foreign contracts makes read count the package's decision with no result depending on it | rule | brief's realignment commit |
+| 2026-10-29 | l5-l7-realign: realign agent, ollama, toolbox, and study in sequence | astra | pending |
+| 2026-10-29 | Orchestrator ruling on workflow's `isSkipping` rename: the predicate reads three `aborted` flags, the fixed lifecycle vocabulary refuses `cancel` for `abort`, and a new `is*` name binds the total-guard form, so it is `matchesAbortedAttempt` rather than the writer's `isAttemptCancelled` | rule | workflow's realignment commit |
+| 2026-10-29 | probe-realign: realign probe | astra | pending |
+| 2026-10-29 | contracts-review-a: falsify the realignments of reason, markdown, database, console, and form (`tmp/units/contracts-review-a-brief.md`) | analyst | pending |
