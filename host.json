@@ -598,7 +598,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "4259f802db848899577c1b0a5bee127c139e4c76784ebab4c2a9794f08bd709c"
+			"digest": "2a1895d1205648961be79f6bc7d92e27fffa3f6aa6e9f2ff6ff8588992feb4d0"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -985,6 +985,12 @@
 			"digest": "d9bb1ac17b8eea3d84312f433e4695a4e73b14a82347a2c6af732f7844b96038"
 		},
 		{
+			"storage": "guides/capture.md",
+			"destination": "guides/capture.md",
+			"executable": false,
+			"digest": "de0af91a1f7f73bcf25a1b3ca290426c19440913f38f17ac110cbe8ca37f5bfa"
+		},
+		{
 			"storage": "guides/codec.md",
 			"destination": "guides/codec.md",
 			"executable": false,
@@ -1102,7 +1108,7 @@
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "6a1d3aca89e008bbb821411efa91dcf2cb085db7a6beee3a5ba73c98be4ab1a9"
+			"digest": "a54e8abba99ca3e603cc3266db3387d621d1efa31ceb097b33bb0c8009807775"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1210,7 +1216,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "b99f835d4e7dd612ad6d8245a3b39ab37de4b8c0719dc70e11527e071762162a"
+			"digest": "cef16dcdcc69697d2b35af741646dee4e6ec0ff2d96eded200db7ed1a335f0c6"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -2129,5 +2135,5 @@
 			]
 		}
 	],
-	"digest": "7d2c7a513dff1b4c85bd0fbb575c8efe1d5051e36dd9f317a6c122db8c3d87c6"
+	"digest": "bfb16ec629c4bd9307f26381e104199299ff645549dc1ea69c8dbf19549e69d6"
 }

@@ -443,6 +443,7 @@ describe('installed package consumer', () => {
 			'guides/brief.md',
 			'guides/browser.md',
 			'guides/budget.md',
+			'guides/capture.md',
 			'guides/codec.md',
 			'guides/console.md',
 			'guides/contract.md',

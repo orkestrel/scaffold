@@ -1468,6 +1468,41 @@ describe('Materializer catalog', () => {
 		}
 	})
 
+	it('escapes the pipes of an alternative range, so its row keeps five cells', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			workspace.write('project/.claude/agents/orkestrel.md', CATALOG_AGENT_TEXT)
+			const materializer = new Materializer({ host })
+			try {
+				materializer.catalog(
+					[
+						{
+							name: '@orkestrel/test',
+							lookup: 'found',
+							version: '0.0.30',
+							dependencies: [{ name: '@orkestrel/contract', range: '^0.0.18 || ^0.0.19' }],
+							peers: [{ name: 'vitest', range: '^4.1.12 || ^5.0.5' }],
+						},
+					],
+					target,
+				)
+				const row = workspace
+					.read('project/.claude/agents/orkestrel.md')
+					?.split('\n')
+					.find((line) => line.startsWith('| `@orkestrel/test`'))
+				expect(row).toContain('`@orkestrel/contract` `^0.0.18 \\|\\| ^0.0.19`')
+				expect(row).toContain('`vitest` `^4.1.12 \\|\\| ^5.0.5`')
+				expect(row?.match(/(?<!\\)\|/gu)).toHaveLength(6)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('skips a table that already matches and refuses a file with no marked region', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

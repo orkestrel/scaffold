@@ -1244,11 +1244,17 @@ export class Materializer implements MaterializerInterface {
 				return [`\`${entry.name}\``, this.#cell(entry.note), '', '', '']
 			}
 			const layer = placed.get(entry.name)
+			// A range such as `^4.1.12 || ^5.0.5` carries pipes, which a table row reads as cell
+			// boundaries even inside a code span, so each one is escaped.
 			const edges = entry.dependencies
-				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
+				.map(
+					(dependency) => `\`${dependency.name}\` \`${dependency.range.replaceAll('|', '\\|')}\``,
+				)
 				.join(', ')
 			const peers = entry.peers
-				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
+				.map(
+					(dependency) => `\`${dependency.name}\` \`${dependency.range.replaceAll('|', '\\|')}\``,
+				)
 				.join(', ')
 			return [
 				`\`${entry.name}\``,
