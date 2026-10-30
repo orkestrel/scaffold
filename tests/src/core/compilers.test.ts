@@ -4914,7 +4914,7 @@ describe('the guides entry', () => {
 			// that travel unchanged.
 			expect(guide).toBe(ENTRY_GUIDE_WRITTEN)
 			expect(guide).toContain(
-				'| `shape` | function | Shapes a widget from the parts it is given. |',
+				'| `shape` | function | `(parts: string) => string` | Shapes a widget from the parts it is given. |',
 			)
 			expect(guide).toContain('| `paint` | Paints the widget onto the frame. |')
 			expect(guide).toContain("```ts\nshape('square')\n```")

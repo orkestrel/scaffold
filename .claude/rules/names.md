@@ -130,7 +130,9 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
 
 Give every bare exported name one owning package across the `@orkestrel` fleet. A bare name is the identifier alone, case included: the same identifier in another environment, or on another kind of declaration, is the same name, and the same word in another case is a different name.
 
-Check a public name against the fleet's published guides before adding it. The `surface` policy rule reports a name another package's guide already claims, and `.claude/rules/workspace.md` § Policy instruments fixes the instrument that reports it.
+Export a bare name from one environment of its package. When two environments of one package export one name, resolve that conflict inside the package: put logic that can run in both environments once in `src/core`; where their internals differ, share what they can in `src/core` and give each environment's export a distinct name built on it; where they share nothing, give each environment's export a distinct name. No collision record holds a conflict, and the following rules resolve a collision between packages.
+
+Before adding a public name, check it against the fleet with `scaffold surface`. `.claude/rules/workspace.md` § Policy instruments owns the `surface` policy rule.
 
 The rule grandfathers a source name the target's own hosted guide claims, because that guide is the target's own claim to it. It grandfathers no root `tests/setup*.ts` export. A vendored `tests/setup*.ts` module a scaffold release stages sits outside the inspected population.
 

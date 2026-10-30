@@ -757,3 +757,129 @@ export interface SurfaceCollision {
 export interface SurfaceFinding extends SurfaceCollision {
 	readonly standing: 'error' | 'recorded' | 'closed'
 }
+
+/** Represents a bare name one owner's barrels export from two or more of its environments. */
+export interface SurfaceConflict {
+	readonly name: string
+	readonly owner: string
+	readonly environments: readonly string[]
+}
+
+/** Represents a candidate checkout's claim with each name two or more of its environments export. */
+export interface SurfaceCandidate extends SurfaceClaim {
+	readonly conflicts: readonly SurfaceConflict[]
+}
+
+/** Represents the configuration template text, grouped by the artifact each template builds. */
+export interface ConfigTemplateSet {
+	readonly root: { readonly tsconfig: string; readonly vite: string }
+	readonly factories: {
+		readonly sheet: string
+		readonly src: {
+			readonly core: string
+			readonly vue: string
+			readonly browser: string
+			readonly server: string
+			readonly bin: string
+		}
+		readonly app: {
+			readonly core: string
+			readonly browser: string
+			readonly vue: string
+			readonly journey: string
+			readonly showcase: string
+			readonly server: string
+		}
+		readonly policy: string
+		readonly config: string
+		readonly setup: string
+		readonly browser: string
+		readonly guides: string
+		readonly skills: string
+		readonly tree: string
+		readonly conformance: string
+		readonly service: string
+		readonly studies: string
+		readonly distribution: string
+		readonly probe: string
+		readonly integration: { readonly sheet: string; readonly module: string }
+	}
+	readonly tsconfigs: {
+		readonly vue: { readonly src: string; readonly app: string }
+		readonly sheet: string
+		readonly src: { readonly core: string; readonly browser: string; readonly server: string }
+		readonly app: { readonly core: string; readonly browser: string; readonly server: string }
+		readonly bin: string
+		readonly skills: string
+	}
+	readonly vites: {
+		readonly sheet: string
+		readonly src: {
+			readonly core: string
+			readonly vue: string
+			readonly browser: string
+			readonly server: string
+		}
+		readonly bin: string
+		readonly app: {
+			readonly vue: string
+			readonly browser: string
+			readonly server: string
+			readonly showcase: string
+			readonly journey: string
+		}
+	}
+	readonly browsers: string
+	readonly commands: string
+}
+
+/** Represents the source, test, document, guide, and service template text. */
+export interface ArtifactTemplateSet {
+	readonly source: {
+		readonly sheet: {
+			readonly 'index.scss': string
+			readonly '_tokens.scss': string
+			readonly '_mixins.scss': string
+			readonly 'elements/_index.scss': string
+			readonly 'components/_index.scss': string
+			readonly 'utilities/_index.scss': string
+			readonly 'sheet.ts': string
+			readonly 'index.ts': string
+		}
+		readonly themes: {
+			readonly 'index.scss': string
+			readonly '_default.scss': string
+			readonly 'sheet.ts': string
+		}
+		readonly empty: string
+		readonly barrel: string
+		readonly main: string
+		readonly vue: { readonly 'main.ts': string; readonly 'App.vue': string }
+		readonly browser: string
+	}
+	readonly tests: {
+		readonly journey: string
+		readonly browser: string
+		readonly sheet: string
+		readonly styles: { readonly module: string; readonly proof: string }
+		readonly setup: string
+		readonly global: { readonly module: string; readonly proof: string }
+		readonly entry: string
+		readonly bin: string
+		readonly distribution: {
+			readonly module: string
+			readonly proof: string
+			readonly transport: string
+			readonly types: string
+			readonly launcher: string
+			readonly import: string
+			readonly helpers: string
+			readonly drive: string
+			readonly guard: string
+		}
+		readonly integration: string
+	}
+	readonly docs: { readonly readme: string; readonly agents: string }
+	readonly guides: { readonly readme: string }
+	readonly orchestration: { readonly skill: string; readonly service: string }
+}

@@ -328,7 +328,8 @@ export class CLI implements CLIInterface {
 							guides: upstream === undefined || fell ? 'floor' : 'live',
 							record: inventory?.lookup === 'found' ? 'live' : 'floor',
 						}
-			const result: SurfaceResult = { owners: claims, collisions, provenance }
+			const conflicts = candidates.flatMap((candidate) => candidate.conflicts)
+			const result: SurfaceResult = { owners: claims, collisions, conflicts, provenance }
 			if (command.json === true) this.#report(result)
 			else {
 				if (membership?.note !== undefined) {
@@ -354,11 +355,17 @@ export class CLI implements CLIInterface {
 						`Surface collision ${JSON.stringify(collision.name.slice(0, 512))}: ${collision.owners.map((owner) => JSON.stringify(owner.slice(0, 512))).join(', ')}. Rename the declaration outside its owning package or reuse the owner's export.`,
 					)
 				}
+				for (const conflict of conflicts) {
+					this.#say(
+						`Surface conflict ${JSON.stringify(conflict.name.slice(0, 512))}: ${JSON.stringify(conflict.owner.slice(0, 512))} exports it from ${conflict.environments.map((environment) => JSON.stringify(environment.slice(0, 512))).join(', ')}. Export it once from core, or give each environment's export a distinct name.`,
+					)
+				}
 				this.#say(
 					`${String(collisions.filter(({ standing }) => standing === 'recorded').length)} recorded collisions, ${String(collisions.filter(({ standing }) => standing === 'closed').length)} closed collisions.`,
 				)
 			}
 			return collisions.some(({ standing }) => standing === 'error') ||
+				conflicts.length > 0 ||
 				claims.some(({ source }) => source === 'unread') ||
 				(upstream !== undefined &&
 					(provenance.membership === 'floor' ||

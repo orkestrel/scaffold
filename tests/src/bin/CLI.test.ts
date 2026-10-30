@@ -114,7 +114,7 @@ describe('surface command', () => {
 			for (const owner of ['alpha', 'beta']) {
 				workspace.write(
 					`host/guides/${owner}.md`,
-					`# ${owner}\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| \`Shared\` | ${owner === 'alpha' ? 'interface' : 'function'} | \`{}\` | Describes a claim. |\n`,
+					`# ${owner}\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| \`Shared\` | ${owner === 'alpha' ? 'interface | `{}`' : 'function | `() => void`'} | Describes a claim. |\n`,
 				)
 			}
 			const surface = [
@@ -145,6 +145,7 @@ describe('surface command', () => {
 						{ name: 'Closed', owners: ['alpha', 'beta'], standing: 'closed' },
 						{ name: 'Shared', owners: ['alpha', 'beta'], standing: 'recorded' },
 					],
+					conflicts: [],
 				},
 			])
 			const catalog = requireValue(workspace.read(`host/${CATALOG_AGENT_PATH}`))
@@ -288,6 +289,52 @@ describe('surface command', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			expect(target.output).toEqual(sink.output)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a name one candidate exports from two environments and passes distinct names', async () => {
+		const workspace = createScratch({
+			files: {
+				'host/host.json': JSON.stringify(
+					buildHostManifest({ entries: [], roots: ['guides'], surface: [] }),
+				),
+				'alpha/package.json': '{"name":"@orkestrel/alpha"}',
+				'alpha/src/core/index.ts': "export * from './types.js'\n",
+				'alpha/src/core/types.ts': 'export interface Session {}\n',
+				'alpha/src/server/index.ts': "export * from './types.js'\n",
+				'alpha/src/server/types.ts': 'export interface Session {}\n',
+			},
+		})
+		try {
+			workspace.ensure('host/guides')
+			const args = [
+				'surface',
+				'--from',
+				join(workspace.path, 'host'),
+				'--target',
+				join(workspace.path, 'alpha'),
+			]
+			const conflict = createSink()
+			expect(await new CLI(conflict.options).execute([...args, '--json'])).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(conflict.output[0]))).toMatchObject({
+				owners: [{ owner: 'alpha', source: 'candidate', names: ['Session'] }],
+				collisions: [],
+				conflicts: [{ name: 'Session', owner: 'alpha', environments: ['core', 'server'] }],
+			})
+			const human = createSink()
+			expect(await new CLI(human.options).execute(args)).toBe(EXIT_DRIFT)
+			expect(human.output).toContain(
+				'Surface conflict "Session": "alpha" exports it from "core", "server". Export it once from core, or give each environment\'s export a distinct name.',
+			)
+			workspace.write('alpha/src/server/types.ts', 'export interface ServerSession {}\n')
+			const distinct = createSink()
+			expect(await new CLI(distinct.options).execute([...args, '--json'])).toBe(EXIT_CLEAN)
+			expect(JSON.parse(requireValue(distinct.output[0]))).toMatchObject({
+				owners: [{ owner: 'alpha', source: 'candidate', names: ['ServerSession', 'Session'] }],
+				conflicts: [],
+			})
 		} finally {
 			workspace.destroy()
 		}
@@ -510,6 +557,7 @@ describe('surface command', () => {
 			expect(JSON.parse(requireValue(local.output[0]))).toEqual({
 				owners: [],
 				collisions: [],
+				conflicts: [],
 				provenance: {},
 			})
 			expect(server.paths).toEqual([])
@@ -735,6 +783,7 @@ describe('surface command', () => {
 						{ owner: 'ghost', source: 'unread' },
 					],
 					collisions: [],
+					conflicts: [],
 					provenance: {},
 				})
 			}

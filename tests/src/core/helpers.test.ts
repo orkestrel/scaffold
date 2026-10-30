@@ -13,6 +13,7 @@ import {
 	catalogToLayers,
 	compareVersions,
 	collectSurfaceCollisions,
+	collectSurfaceConflicts,
 	compareSurfaceCollisions,
 	computeBytes,
 	computeHash,
@@ -102,6 +103,23 @@ describe('surface claims', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+
+	it('reports a name one owner exports from two or more environments, sorted by name', () => {
+		expect(
+			collectSurfaceConflicts('alpha', {
+				server: ['Tool', 'Server', 'Session', 'Tool'],
+				core: ['Tool', 'Session'],
+				browser: ['Session', 'session'],
+			}),
+		).toEqual([
+			{ name: 'Session', owner: 'alpha', environments: ['browser', 'core', 'server'] },
+			{ name: 'Tool', owner: 'alpha', environments: ['core', 'server'] },
+		])
+		expect(
+			collectSurfaceConflicts('alpha', { core: ['Tool', 'Tool'], server: ['Server'] }),
+		).toEqual([])
+		expect(collectSurfaceConflicts('alpha', {})).toEqual([])
 	})
 })
 import {

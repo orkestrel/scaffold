@@ -86,6 +86,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | ----------------------- | --------- | ------------------------------------------------------------------------------------------------- |
 | `AppDefinition`         | interface | Describes the configuration and runtime-entry settings one private `app` environment contributes. |
 | `ArtifactBase`          | interface | Describes the fields every planned file carries.                                                  |
+| `ArtifactTemplateSet`   | interface | Represents the source, test, document, guide, and service template text.                          |
 | `Audit`                 | interface | Represents the whole comparison of a plan against a target's current content.                     |
 | `Blueprint`             | interface | Represents the closed, JSON-serializable workspace specification.                                 |
 | `BrowserExtension`      | interface | Represents a browser framework and its physically occupied axes.                                  |
@@ -93,6 +94,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CompileRecord`         | interface | Holds the input and output snapshot of one compile stage.                                         |
 | `CompilerInterface`     | interface | Describes the compilation contract: pure, synchronous, and host-independent.                      |
 | `CompilerOptions`       | interface | Represents the options for the compiler.                                                          |
+| `ConfigTemplateSet`     | interface | Represents the configuration template text, grouped by the artifact each template builds.         |
 | `ContentArtifact`       | interface | Represents a text file produced by the template or computed compilation path.                     |
 | `Dependency`            | interface | Represents one runtime `@orkestrel/*` dependency of a generated workspace.                        |
 | `DependencyPinSet`      | interface | Describes the runtime and development sections a range-writing operation may change.              |
@@ -114,11 +116,13 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `ToolchainHold`         | interface | Represents one foreign tool range required by a browser framework.                                |
 | `ViteMachinery`         | interface | Names which host-specific pipelines a generated root Vite configuration carries.                  |
 
-| Name               | Kind      | Summary                                                                           |
-| ------------------ | --------- | --------------------------------------------------------------------------------- |
-| `SurfaceClaim`     | interface | Represents one owner's bare exported names, including an empty candidate surface. |
-| `SurfaceCollision` | interface | Represents a bare name claimed by distinct package owners.                        |
-| `SurfaceFinding`   | interface | Reports a collision's standing against the recorded owner set.                    |
+| Name               | Kind      | Summary                                                                                        |
+| ------------------ | --------- | ---------------------------------------------------------------------------------------------- |
+| `SurfaceCandidate` | interface | Represents a candidate checkout's claim with each name two or more of its environments export. |
+| `SurfaceClaim`     | interface | Represents one owner's bare exported names, including an empty candidate surface.              |
+| `SurfaceCollision` | interface | Represents a bare name claimed by distinct package owners.                                     |
+| `SurfaceConflict`  | interface | Represents a bare name one owner's barrels export from two or more of its environments.        |
+| `SurfaceFinding`   | interface | Reports a collision's standing against the recorded owner set.                                 |
 
 #### Constants
 
@@ -303,6 +307,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | Name                       | Kind     | Summary                                                                                 |
 | -------------------------- | -------- | --------------------------------------------------------------------------------------- |
 | `collectSurfaceCollisions` | function | Collects bare names claimed by distinct owners in sorted order.                         |
+| `collectSurfaceConflicts`  | function | Collects the bare names one owner exports from two or more of its environments.         |
 | `compareSurfaceCollisions` | function | Compares collisions with the record and reports errors, recorded subsets, and closures. |
 
 #### Compilers
@@ -744,7 +749,10 @@ surface reflected from its immediate `src/<environment>` directories. Its packag
 the owner, with the `@orkestrel/` scope removed. The `--target` directory defaults to the working
 directory and joins the candidates when it holds `package.json`. Candidates that share an owner
 contribute their combined names, and candidate claims replace every other source for that owner,
-including when the candidate claims no names.
+including when the candidate claims no names. A name a candidate's barrels export from two or more
+of its `src/<environment>` directories is a conflict: export it once from `src/core`, or give each
+environment's export a distinct name. The record never holds a conflict, so a conflict fails every
+run that reads its owner as a candidate.
 
 A candidate refuses, naming its path, when its manifest is unreadable, when it has neither its guide
 nor `src/`, when its guide exists but is not UTF-8 text within the artifact bound, or when a
@@ -766,24 +774,29 @@ or carrying an owner absent from its recorded owner set, has `error` standing. A
 same or fewer owners has `recorded` standing. A recorded name that no longer collides has `closed`
 standing, so a release can shrink the record.
 
-The command returns `1` when a collision has `error` standing or an owner is unread. A run without
+The command returns `1` when a collision has `error` standing, a candidate carries a conflict, or
+an owner is unread. A run without
 `--offline` or `--from` also returns `1` when membership fell to the floor catalog table, any
 owner fell to the floor guide, or the record fell to the floor inventory. Every other completed run returns `0`, and malformed arguments return `2`.
 
 The human report names membership when it fell to the floor catalog table, with the failure the
 registry read reported, then each owner that fell to the floor guide, each unread owner, the record
-when it fell to the floor inventory, and each `error` collision with its owners, then prints the
-recorded and closed counts. The `--json` option emits one value with `owners`, `collisions`, and
-`provenance`. Each owner carries `owner`, `source` (`candidate`, `live`, `floor`, or `unread`), and
+when it fell to the floor inventory, each `error` collision with its owners, and each conflict
+with its owner and environments, then prints the recorded and closed counts. The `--json` option
+emits one value with `owners`, `collisions`, `conflicts`, and `provenance`. Each owner carries `owner`, `source` (`candidate`, `live`, `floor`, or `unread`), and
 `names` unless it is unread. Each collision carries `name`, `owners`, and `standing`, sorted by
-name, including closed entries with their recorded owners. `provenance.membership` names the
+name, including closed entries with their recorded owners. Each conflict carries `name`, `owner`,
+and `environments`, sorted by name within each candidate. `provenance.membership` names the
 package list's baseline, `provenance.guides` is `live` only when no owner fell to the floor, and
 `provenance.record` names the record's baseline; a `--from` run reports none of them. The command changes no files.
 
 The core `SurfaceClaim` interface carries `owner` and `names`. `SurfaceCollision` carries `name`
-and `owners`; `SurfaceFinding` adds `standing`. `collectSurfaceCollisions` deduplicates owners, and
-`compareSurfaceCollisions` applies the record. `readSurfaceClaims` reads immediate package guides,
-excluding the README index. `readSurfaceCandidate` adds live barrel names. `readSurfaceFile` reads
+and `owners`; `SurfaceFinding` adds `standing`. `SurfaceConflict` carries `name`, `owner`, and
+`environments`, and `SurfaceCandidate` adds `conflicts` to a claim. `collectSurfaceCollisions`
+deduplicates owners, `compareSurfaceCollisions` applies the record, and `collectSurfaceConflicts`
+finds the names one owner exports from more than one environment. `readSurfaceClaims` reads
+immediate package guides, excluding the README index. `readSurfaceCandidate` adds live barrel names
+and the candidate's conflicts. `readSurfaceFile` reads
 one owner's guide file under a root, and `readSurfaceGuide` parses guide text from any source.
 `readSurfaceRecord` reads a data root's record, and `resolveHostRoot` resolves the bundled root.
 `readSurfaceModule` loads `@orkestrel/guide` lazily and narrows it with `isSurfaceModule`; every

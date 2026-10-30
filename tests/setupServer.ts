@@ -2459,7 +2459,7 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
 
 /** Supplies Surface rows with repeated declarations and non-name references. */
 export const STAGE_SURFACE_TEXT =
-	'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `Shared` | interface | References `Mentioned`. |\n| `Shared` | interface | Repeats the same owner. |\n| `Another` | function | References `Mentioned`. |\n'
+	'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Shared` | interface | `{}` | References `Mentioned`. |\n| `Shared` | interface | `{}` | Repeats the same owner. |\n| `Another` | function | `() => void` | References `Mentioned`. |\n'
 
 /** Supplies checkout guides for inventory staging comparisons. */
 export const STAGE_SURFACE_FILES: Snapshot = Object.freeze({

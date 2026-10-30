@@ -1,4 +1,11 @@
-import type { Group, HostFile, Snapshot, SurfaceClaim, SurfaceCollision } from '@src/core'
+import type {
+	Group,
+	HostFile,
+	Snapshot,
+	SurfaceCandidate,
+	SurfaceClaim,
+	SurfaceCollision,
+} from '@src/core'
 import type {
 	Host,
 	HostManifest,
@@ -51,6 +58,7 @@ import {
 	CATALOG_AGENT_PATH,
 	computeTotal,
 	collectSurfaceCollisions,
+	collectSurfaceConflicts,
 	compareSurfaceCollisions,
 	DEPENDENCY_NAME_PATTERN,
 	EXECUTABLE_PATHS,
@@ -2054,7 +2062,8 @@ export function readSurfaceClaims(root: string, loader?: SurfaceLoader): readonl
  *
  * @remarks
  * Removes the @orkestrel/ scope from the manifest name. Reflects each immediate
- * src environment through @orkestrel/guide, loaded only when called.
+ * src environment through @orkestrel/guide, loaded only when called, and reports each
+ * name two or more environments export as a conflict.
  * Reads only .ts files and refuses barrel statements outside relative .js star exports.
  * A present unreadable guide refuses the candidate even when src exists.
  * `loader` selects the resolver used by the shared validated guide loader.
@@ -2068,7 +2077,7 @@ export function readSurfaceClaims(root: string, loader?: SurfaceLoader): readonl
  * readSurfaceCandidate('.') // the working checkout's owner and combined names
  * ```
  */
-export function readSurfaceCandidate(root: string, loader?: SurfaceLoader): SurfaceClaim {
+export function readSurfaceCandidate(root: string, loader?: SurfaceLoader): SurfaceCandidate {
 	const manifest = readFileText(root, 'package.json', MAX_MANIFEST_BYTES)
 	const name = manifest === undefined ? undefined : manifestToName(manifest)
 	if (name === undefined) {
@@ -2121,22 +2130,21 @@ export function readSurfaceCandidate(root: string, loader?: SurfaceLoader): Surf
 			)
 		}
 	}
-	const modules = listDirectories(source)
-		.filter((directory) => !directory.includes('/'))
-		.map((directory) => `src/${directory}`)
+	const exports = Object.fromEntries(
+		listDirectories(source)
+			.filter((directory) => !directory.includes('/'))
+			.map((directory) => [
+				directory,
+				reflection
+					.createSource({ files, module: `src/${directory}` })
+					.surface()
+					.map((symbol) => symbol.name),
+			]),
+	)
 	return {
 		owner,
-		names: [
-			...new Set([
-				...(guide?.names ?? []),
-				...modules.flatMap((module) =>
-					reflection
-						.createSource({ files, module })
-						.surface()
-						.map((symbol) => symbol.name),
-				),
-			]),
-		].sort(),
+		names: [...new Set([...(guide?.names ?? []), ...Object.values(exports).flat()])].sort(),
+		conflicts: collectSurfaceConflicts(owner, exports),
 	}
 }
 

@@ -7,6 +7,7 @@ import type {
 	Question,
 	Release,
 	SurfaceClaim,
+	SurfaceConflict,
 	SurfaceFinding,
 } from '@src/core'
 import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '@src/server'
@@ -53,10 +54,17 @@ export type SurfaceOwner =
 	| (SurfaceClaim & { readonly source: 'candidate' | 'live' | 'floor' })
 	| { readonly owner: string; readonly source: 'unread'; readonly names?: never }
 
-/** Reports each owner's claim source, the collision standings, and the baseline provenance. */
+/**
+ * Reports each owner's claim source, the collision standings, the conflicts, and the baseline
+ * provenance.
+ *
+ * @remarks
+ * `conflicts` holds each name a candidate exports from two or more of its environments.
+ */
 export interface SurfaceResult {
 	readonly owners: readonly SurfaceOwner[]
 	readonly collisions: readonly SurfaceFinding[]
+	readonly conflicts: readonly SurfaceConflict[]
 	readonly provenance: Provenance
 }
 

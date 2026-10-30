@@ -13,6 +13,7 @@ import type {
 	PlanSummary,
 	SurfaceClaim,
 	SurfaceCollision,
+	SurfaceConflict,
 	SurfaceFinding,
 } from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
@@ -102,6 +103,39 @@ export function compareSurfaceCollisions(
 				standing: 'closed',
 			})),
 	].sort((left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0))
+}
+
+/**
+ * Collects the bare names one owner exports from two or more of its environments.
+ *
+ * @param owner - The unscoped package that exports the names.
+ * @param exports - Each environment's exported bare names, keyed by environment.
+ * @returns One conflict per such name with its sorted environments, sorted by name.
+ *
+ * @example
+ * ```ts
+ * import { collectSurfaceConflicts } from '@orkestrel/scaffold'
+ *
+ * collectSurfaceConflicts('mcp', { core: ['Tool'], server: ['Tool', 'Server'] })
+ * // [{ name: 'Tool', owner: 'mcp', environments: ['core', 'server'] }]
+ * ```
+ */
+export function collectSurfaceConflicts(
+	owner: string,
+	exports: Readonly<Record<string, readonly string[]>>,
+): readonly SurfaceConflict[] {
+	const grouped = Map.groupBy(
+		Object.entries(exports).flatMap(([environment, names]) =>
+			names.map((name) => ({ name, environment })),
+		),
+		({ name }) => name,
+	)
+	return [...grouped]
+		.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+		.flatMap(([name, entries]) => {
+			const environments = [...new Set(entries.map(({ environment }) => environment))].sort()
+			return environments.length > 1 ? [{ name, owner, environments }] : []
+		})
 }
 
 /**

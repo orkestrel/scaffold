@@ -2442,12 +2442,19 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(workspace.path)).toEqual({
 				owner: 'alpha',
 				names: ['Documented', 'ServerOnly', 'Unwritten'],
+				conflicts: [],
 			})
 			expect(readSurfaceClaims(join(workspace.path, 'guides'))).toEqual([
 				{ owner: 'alpha', names: ['Documented'] },
 			])
 			workspace.remove('guides/alpha.md')
 			expect(readSurfaceCandidate(workspace.path).names).toEqual(['ServerOnly', 'Unwritten'])
+			workspace.write('src/server/types.ts', 'export interface Unwritten {}\n')
+			expect(readSurfaceCandidate(workspace.path)).toEqual({
+				owner: 'alpha',
+				names: ['Unwritten'],
+				conflicts: [{ name: 'Unwritten', owner: 'alpha', environments: ['core', 'server'] }],
+			})
 			workspace.write('guideonly/package.json', '{"name":"@orkestrel/beta"}')
 			workspace.write(
 				'guideonly/guides/beta.md',
@@ -2456,6 +2463,28 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(join(workspace.path, 'guideonly'))).toEqual({
 				owner: 'beta',
 				names: ['Documented'],
+				conflicts: [],
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads a nested module through its environment and never as an environment of its own', () => {
+		const workspace = createScratch({
+			files: {
+				'package.json': '{"name":"@orkestrel/alpha"}',
+				'src/core/index.ts': "export * from './types.js'\nexport * from './sources/index.js'\n",
+				'src/core/types.ts': 'export interface Session {}\n',
+				'src/core/sources/index.ts': "export * from './types.js'\n",
+				'src/core/sources/types.ts': 'export interface Source {}\n',
+			},
+		})
+		try {
+			expect(readSurfaceCandidate(workspace.path)).toEqual({
+				owner: 'alpha',
+				names: ['Session', 'Source'],
+				conflicts: [],
 			})
 		} finally {
 			workspace.destroy()
@@ -2472,7 +2501,11 @@ describe('readSurfaceCollisions', () => {
 				message: expect.stringContaining(JSON.stringify(workspace.path)),
 			})
 			workspace.ensure('src')
-			expect(readSurfaceCandidate(workspace.path)).toEqual({ owner: 'alpha', names: [] })
+			expect(readSurfaceCandidate(workspace.path)).toEqual({
+				owner: 'alpha',
+				names: [],
+				conflicts: [],
+			})
 		} finally {
 			workspace.destroy()
 		}
@@ -2502,7 +2535,8 @@ describe('readSurfaceCollisions', () => {
 		const workspace = createScratch({
 			files: {
 				'package.json': '{"name":"@orkestrel/alpha"}',
-				'guides/alpha.md': '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n',
+				'guides/alpha.md':
+					'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Alpha` | interface | `{}` | Describes a claim. |\n',
 				'node_modules/@orkestrel/guide/package.json': '{"main":"index.cjs"}',
 				'node_modules/@orkestrel/guide/index.cjs': [
 					'class GuideError extends Error {',

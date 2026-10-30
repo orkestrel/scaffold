@@ -1,3 +1,4 @@
+import type { ArtifactTemplateSet, ConfigTemplateSet } from './types.js'
 import {
 	BIN_ENTRY_PATH,
 	CONFORMANCE_TEST_PATH,
@@ -27,7 +28,7 @@ import {
  * CONFIG_TEMPLATES.root.tsconfig.startsWith('{') // true
  * ```
  */
-export const CONFIG_TEMPLATES = Object.freeze({
+export const CONFIG_TEMPLATES: ConfigTemplateSet = Object.freeze({
 	root: Object.freeze({
 		tsconfig: `{
 	"compilerOptions": {
@@ -1637,7 +1638,7 @@ export const commands: Readonly<NonNullable<BrowserConfigOptions['commands']>> =
  * ARTIFACT_TEMPLATES.source.empty // ''
  * ```
  */
-export const ARTIFACT_TEMPLATES = Object.freeze({
+export const ARTIFACT_TEMPLATES: ArtifactTemplateSet = Object.freeze({
 	source: Object.freeze({
 		sheet: Object.freeze({
 			'index.scss': "@use 'tokens';\n@use 'elements';\n@use 'components';\n@use 'utilities';\n",
