@@ -55,7 +55,14 @@ The wave `.orkestrel/plan.md` plans: every catalog package re-pinned to the scaf
 | L4 | program | 0.0.16 | 0.0.17 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `898725977` |
 | L4 | worker | 0.0.17 | 0.0.18 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `33db274df` |
 | L4 | workflow | 0.0.23 | 0.0.24 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `d1e76c3cb` |
+| L5 | agent | 0.0.32 | 0.0.33 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `b9d3fa86b` |
+| L5 | browser | 0.0.29 | 0.0.30 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `70fd980a6` |
+| L5 | probe | 0.0.25 | 0.0.26 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `b12ca1702` |
+| L6 | ollama | 0.0.26 | 0.0.27 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `48b97d5a3` |
+| L6 | toolbox | 0.0.21 | 0.0.22 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `3dc9dad63` |
+| L7 | study | 0.0.6 | 0.0.7 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `fc00f6720` |
 
 ## Standing readings
 
 - agent 0.0.33 published while `test:studies` failed 5 of 99 cases. These cases are `tests/studies/memory/integration.test.ts` ('loads the actual q4 native topology with two distinct captured Agent occurrences'), `tests/studies/tools/integration.test.ts` ('inspects the shipped package-root profile against the real offline artifact inventory'), and three `tests/studies/memory/StudyMemorySession.test.ts` cases that throw `Invalid context component`. Published study 0.0.6 writes `MessageMeasure.framing`, which agent's realignment renamed `uniform` (agent `d2cfb217`). It also pins the previous fleet, so npm nests the copies that study's profile roots refuse. By the user's ruling of 2026-10-30, a study is a research instrument and not a release gate, so this reading records a study harness to repair, not a failed gate. It closes when agent re-pins `@orkestrel/study` and `@orkestrel/ollama` as development dependencies after L7 and `test:studies` passes every case (`.orkestrel/plan.md` § Deferred, **Studies gate a release**).
+- browser 0.0.30 published on a Windows release host. Its release-mode distribution proof refuses 5 host-bound cases there: 4 require a `/proc` process table and 1 requires a filesystem FIFO. By the precedent of browser Release 0.0.28 and Release 0.0.29, the chain ran the default-mode distribution proof (15 passed, 9 host-bound skips) and `test:service` (257 passed, 6 skipped), as browser `70fd980` records. The reading stands until a release runs on a host with a process table and filesystem FIFOs.

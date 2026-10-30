@@ -179,7 +179,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: L4 (6 packages) is published, served, and pushed; mcp adopted item 44 and process's `ended` rename at mcp `bafe85c`, and worker's option snapshot case awaits pool's warm-up `release` at worker `a684608`.
 - 2026-10-30: L5 (agent, browser, probe) is published, served, and pushed; browser and probe adopted items 44 and 61 at browser `293ff75` and probe `54a70a2`.
 - 2026-10-30: L6 (ollama, toolbox) is published, served, and pushed; ollama adopted item 44, process's renamed members, and browser's `createBrowserContent` at ollama `5b5b0aa`.
-- Next: prepare L7 on the served L6 versions, adopt agent's `uniform` rename in study's measure parts, run its release chain, and publish it on the user's one-time code (§ Sequence step 6); then close agent's standing reading and run § Sequence step 7.
+- 2026-10-30: L7 (study 0.0.7) is published, served, and pushed; study adopted agent's `uniform` member and kept nested installed profile roots distinct at study `7e7b061`. § Sequence step 6 is closed.
+- Next: close agent's standing reading in `.orkestrel/release.md`: re-pin agent on study 0.0.7 and ollama 0.0.27 as development dependencies, run `test:studies`, and repair `tests/studies/` until every case passes; then run § Sequence step 7.
 
 ## Sequence
 
