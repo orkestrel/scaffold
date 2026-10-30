@@ -366,8 +366,8 @@ export class TokenScanner {
 						? /^\/\*[\s\S]*?\*\//u.exec(rest)
 						: category === 'string'
 							? (character === "'"
-									? /^'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n\u2028\u2029])*'/u
-									: /^"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n\u2028\u2029])*"/u
+									? /^'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n])*'/u
+									: /^"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n])*"/u
 								).exec(rest)
 							: category === 'regex'
 								? /^\/(?:\\[^\r\n]|\[(?:\\[^\r\n]|[^\]\\\r\n])*\]|[^/\\[\r\n])*\/[a-z]*/iu.exec(

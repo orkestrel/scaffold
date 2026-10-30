@@ -5222,6 +5222,9 @@ export const TITLES_TERMINATORS: readonly string[] = Object.freeze([
 	'\u2029',
 ])
 
+/** Supplies the line breaks an unescaped string literal refuses; ES2019 admits U+2028 and U+2029. */
+export const TITLES_LINE_BREAKS: readonly string[] = Object.freeze(['\r\n', '\n', '\r'])
+
 /** Supplies the quote forms whose line continuations the scanner reads. */
 export const TITLES_QUOTES: readonly string[] = Object.freeze(["'", '"'])
 

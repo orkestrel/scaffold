@@ -328,7 +328,7 @@
 			"storage": "agents/skills/orkestrel-harden/scripts/titles.ts",
 			"destination": ".agents/skills/orkestrel-harden/scripts/titles.ts",
 			"executable": false,
-			"digest": "d6bacace9ec7dae25a5d867cb8f12f7201a1226bb07ca06a9e9a107da3c2e7e5"
+			"digest": "b9eec5b1fcf2a4c3470021408e694caf9188a445c78a19c9b85f46a7f787d29d"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "ef2c6cdc520f44e1e833feefa175c89d6220a5d5b82e8aea09dfff2e9b6e72b7"
+	"digest": "7bd2e51dd3c4b00b3761e46008436322f93f0b4d14955dc357b32a9352cb0bba"
 }

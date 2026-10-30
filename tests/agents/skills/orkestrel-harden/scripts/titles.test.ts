@@ -14,6 +14,7 @@ import {
 	TITLES_SCRIPT,
 	TITLES_STATEMENTS,
 	TITLES_TABLES,
+	TITLES_LINE_BREAKS,
 	TITLES_TERMINATORS,
 	TITLES_UNBALANCED,
 	trackFiles,
@@ -228,7 +229,7 @@ describe('titles.ts', () => {
 		}
 	})
 
-	it.each(TITLES_TERMINATORS)('refuses unescaped string line terminators: %j', (terminator) => {
+	it.each(TITLES_LINE_BREAKS)('refuses unescaped string line terminators: %j', (terminator) => {
 		const scratch = createScratch({ prefix: 'titles-unescaped-line-' })
 		try {
 			scratch.write('tests/read.test.ts', "it('reads', () => {})\n")
@@ -764,6 +765,20 @@ describe('titles.ts', () => {
 			).toEqual(titles)
 		},
 	)
+
+	it('scans a string literal holding a line or paragraph separator, which ES2019 admits', () => {
+		const text = "const separators = [' ', \" \"]\nit('reads past them', () => {})\n"
+		const registrations = readRegistrations(
+			text,
+			new TokenScanner(text, 'separators.ts').scan(),
+			'separators.ts',
+		)
+		expect(
+			registrations.map(({ token }) =>
+				token === undefined ? undefined : decodeTitle(text, token),
+			),
+		).toEqual(['reads past them'])
+	})
 
 	it('spells a dynamic title from its source and refuses an unclosed call', () => {
 		const text = "it(NAME, () => {})\nit('a' +\n NAME, () => {})\nit(`x ${y}`, () => {})\n"
