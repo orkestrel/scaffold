@@ -604,7 +604,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "19b22439f9653ca068e0f217ee82de765d869b332dc655875d408e4ec8942b10"
+			"digest": "e38ce6624566e4bb00281516faf8ea67869f16e5a4ecbc96ddda7aa263d1e94b"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -964,37 +964,37 @@
 			"storage": "guides/abort.md",
 			"destination": "guides/abort.md",
 			"executable": false,
-			"digest": "f272c4a4d7818419120df7eb529f805ae31e623ffdb03556d4784c043f0a8fc5"
+			"digest": "bec8bbd8ac7ef08405abda3e4c8e450bc2279045982fb28710380ecea080002b"
 		},
 		{
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "675cafb567a893dc7bf0f296ceac7022534b2509fa34b6bbaf68fc6e68aad2dd"
+			"digest": "e4efd816f5bd77dafb2ad223d529e94806cbbeb1fe11dffe0b8b4cdc532cfcef"
 		},
 		{
 			"storage": "guides/brief.md",
 			"destination": "guides/brief.md",
 			"executable": false,
-			"digest": "55fd0d63fccf1af8329eea17179a3fdf158ed953b6d46164f8672bee2edffd3b"
+			"digest": "80788c817e14dcd5b08bcf7a4fd1a94fe3f60629e8d4a1ca6656460b80c502a9"
 		},
 		{
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "35ef0b7b4f7050de94ef7fb408bf285571d02ac1af9cace23b0ad3420bc81e2e"
+			"digest": "30260e48f94ef0c6cfdc8364b8d6c286b1107820c0ed2301a311ea8537457cf5"
 		},
 		{
 			"storage": "guides/budget.md",
 			"destination": "guides/budget.md",
 			"executable": false,
-			"digest": "748b1da40f61d6f39335253595885aae3c8faf94e324c6256c72295b4b32c260"
+			"digest": "e00376f740c0f9d78462bf4549012e4eeb154e240473afd0c10d3a831f3a7199"
 		},
 		{
 			"storage": "guides/capture.md",
 			"destination": "guides/capture.md",
 			"executable": false,
-			"digest": "14f693ead9a396ee9cb6d1554fb170e09c996c02db618852e391e8e37ccb585c"
+			"digest": "5335caf1c48db6db63ae69dada251e02d981ccce8863c760fc50cf8e27697fed"
 		},
 		{
 			"storage": "guides/codec.md",
@@ -1006,163 +1006,163 @@
 			"storage": "guides/console.md",
 			"destination": "guides/console.md",
 			"executable": false,
-			"digest": "6f487af2635e8b40555112e4826869ca938fa485f53b405bc56b0304257abf8a"
+			"digest": "3097c0c41471c31fd39a13776b7fab216af282471a959064bee7a669abd12b30"
 		},
 		{
 			"storage": "guides/contract.md",
 			"destination": "guides/contract.md",
 			"executable": false,
-			"digest": "df54f956f43a099c02a1ce06b8a1340b042ed1c0e25968535cc764328bcdee98"
+			"digest": "3bf2b7ad3ec46b08cbd94e368f5bb19493141a2ef2b1cf0abecf38f4f0b696b8"
 		},
 		{
 			"storage": "guides/csv.md",
 			"destination": "guides/csv.md",
 			"executable": false,
-			"digest": "9b0c9f7913cf89d1ec168cff811bbc90ebc993fc67e44b1401ac78cf66f3db71"
+			"digest": "6593a8d8573ab43a7ab786e42e63789cdd9ad1d5b201c6337738b70ce3b896e3"
 		},
 		{
 			"storage": "guides/database.md",
 			"destination": "guides/database.md",
 			"executable": false,
-			"digest": "8cd5338fcca2e13cebbe5c221adda35f7032bde120f3a3350fdc074acc89c42c"
+			"digest": "206f4bcb62cee4bd7630ca93df0dcfa28b4b8df1b8f593a997a4cf2a4392811c"
 		},
 		{
 			"storage": "guides/emitter.md",
 			"destination": "guides/emitter.md",
 			"executable": false,
-			"digest": "542d147733961665e33e4a8e7048b2c05c05cb930ea67f3717e7e81b0918792c"
+			"digest": "a00d3c7509419537ea9115f2b2c16670a243bb52721a7cb10b6fa2b6a370d0f4"
 		},
 		{
 			"storage": "guides/form.md",
 			"destination": "guides/form.md",
 			"executable": false,
-			"digest": "67c37642c8710110a5e7297b2a2ecc34e27e484eb10d458b155cd21c4bb428b8"
+			"digest": "cc07f605a86dc8e5ed4b09e6037021243af3421160e9f090c196431a3e3a4797"
 		},
 		{
 			"storage": "guides/guide.md",
 			"destination": "guides/guide.md",
 			"executable": false,
-			"digest": "84a4806796d520b9a396515f36f5657d2c2b086393935233130ea915995cc31a"
+			"digest": "e1e677fe395af8153c5ceeb496630784507cee05d17f6f5cdaf7f9a221033117"
 		},
 		{
 			"storage": "guides/html.md",
 			"destination": "guides/html.md",
 			"executable": false,
-			"digest": "efe0e6a980cddf9680d86a9676bec77aa9bf332d5c4adecde86f7a848c48e580"
+			"digest": "9c868beacfc7e9394af790854ae8237b994d5295fab5ffd3fe9c612894bc0cbf"
 		},
 		{
 			"storage": "guides/indexeddb.md",
 			"destination": "guides/indexeddb.md",
 			"executable": false,
-			"digest": "cb1fa6886a466f5852d694c1dffef09acc49a5e5f0656583842aba9fe60cc5b4"
+			"digest": "f1fd7a74ce2e816cf41d724320639b2ea37a4ed17ad920c29d64530cdd8a64d9"
 		},
 		{
 			"storage": "guides/interpret.md",
 			"destination": "guides/interpret.md",
 			"executable": false,
-			"digest": "496dfc8f82472c713fc13a799cbcd2e415aa6506af238374fc23fd255813f788"
+			"digest": "2096b2c52d8551ae6689aec8d4530bb87b4da34f5bec205da31e309dab7f13b5"
 		},
 		{
 			"storage": "guides/lsp.md",
 			"destination": "guides/lsp.md",
 			"executable": false,
-			"digest": "b53c987ec732d91d421640b07c53a61766da656d9dbe2c5f3a1015904dfb4da3"
+			"digest": "708423d96a9122adf8982dadb6fbdf54d81fd8ca3fb7c01cdaa85869ad76fd7e"
 		},
 		{
 			"storage": "guides/markdown.md",
 			"destination": "guides/markdown.md",
 			"executable": false,
-			"digest": "931bb821dfbbd28f805063e5a601f0113ffdfa783a670d83fb4b866a39bc1626"
+			"digest": "5d6025ba5a260d3acb17803275be49c3203bb7d41fe71410c9c722b501d34afb"
 		},
 		{
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "b50d2ccb4732ed69262959dcc3a75510c4e1981a394c4bad823b4d5664c3aeef"
+			"digest": "309fd1a40927c866cc43186ce4629c44f30d7be846d04f848bc992b3871d8a96"
 		},
 		{
 			"storage": "guides/middleware.md",
 			"destination": "guides/middleware.md",
 			"executable": false,
-			"digest": "ee41b2c21390a2a81415dc5aae18d850a5d3c27c3cd354734f2f381d58b652b7"
+			"digest": "39579242328adc69baf4d842c4bc560c83cea5c1e74ad1b09e40a7ca3ed9db55"
 		},
 		{
 			"storage": "guides/msg.md",
 			"destination": "guides/msg.md",
 			"executable": false,
-			"digest": "958b9fbd2dfb9dfa63ac394a7af87716cc965c3990a6306d8d136e3f633c4dcc"
+			"digest": "bcd26b7f041e2f0c8b34137f8132b81754071cf6a8889d3aea6f5b13cda457e9"
 		},
 		{
 			"storage": "guides/ndjson.md",
 			"destination": "guides/ndjson.md",
 			"executable": false,
-			"digest": "73df4f2c2283259fe0b12cd257ceda9302fe1bd9b0847a84024ed8c3e385ef51"
+			"digest": "5e4e2039f5b93b867b4e58d95e47d9afc9063ebe571d66e4139d9c37436ee700"
 		},
 		{
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "2dcfdbcf6df1df629f5902f394536c2fc37cbd14fe5e27e101f1ee5548a58c21"
+			"digest": "93cbdf9a45e25bebc7a18033593213b39f194f9c5514f22325e1c1a7166b23b2"
 		},
 		{
 			"storage": "guides/pool.md",
 			"destination": "guides/pool.md",
 			"executable": false,
-			"digest": "5616dfddf50f2e4a3a81847bcd1e1596ff73c78d464bb2f5c7deee26758db6a7"
+			"digest": "5fc46276e54f04aff1354b4479086aa70e609200576c2f723024c8b314b90417"
 		},
 		{
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "793e797e3bbeae2a66782db95081db31209ea0e1ee0005b6ce58ccf1a5baa6ed"
+			"digest": "4448b57b45cb2832fd34e2fd92e99b483fb93dc5483a4fe024f363341fe62dd3"
 		},
 		{
 			"storage": "guides/process.md",
 			"destination": "guides/process.md",
 			"executable": false,
-			"digest": "26b6109585bc4b8069ff3e4e948c477cd61d81e402ffdbf587fdbfaf46f3f4f9"
+			"digest": "9711caa51f35aaa5d4102f98d7a8cfd940c6308b6351a5035824a93ca05878a9"
 		},
 		{
 			"storage": "guides/program.md",
 			"destination": "guides/program.md",
 			"executable": false,
-			"digest": "99b9cbad800f29bc01d66e212ea2a91b791e449b195ccefd0eb0f6605a502b03"
+			"digest": "46ea608eb97dc77a87453bb42103a3f58769b36c208bf31e70a206e10e6e35df"
 		},
 		{
 			"storage": "guides/qualifier.md",
 			"destination": "guides/qualifier.md",
 			"executable": false,
-			"digest": "efc4b6f3dc3791cd0e4cf3c5260c651fa243133713f758dca270ef8c228c607f"
+			"digest": "b67c14f568fb03ea4014a71926d7e38d769e53eba003e870d57a124e60cc5270"
 		},
 		{
 			"storage": "guides/queue.md",
 			"destination": "guides/queue.md",
 			"executable": false,
-			"digest": "4990f36f3b06daaefafd7e41ad575da9b20a7b3613a4b848b40bd35343d28540"
+			"digest": "9290e94e6cefcedd0c1f7c1f74563dd801d4d4d749d321c46dfbefbb2940316d"
 		},
 		{
 			"storage": "guides/rater.md",
 			"destination": "guides/rater.md",
 			"executable": false,
-			"digest": "2a3b3fe8ccf8f510fc514a97f81e06b648167dbddc2157c18b1c44c87cf1f7e1"
+			"digest": "e7d5d773a3198893ad01037b40785b08d2719b5170a079feb7355cc0d849f2a8"
 		},
 		{
 			"storage": "guides/reason.md",
 			"destination": "guides/reason.md",
 			"executable": false,
-			"digest": "1673e32e8c2a09f33aaf3ba807b71e45f210a87d1233c61a6d38addb028f1c33"
+			"digest": "31e748054261734e2881a0a85ad16fdce995274fb11317d7eaf185ad3fe095a4"
 		},
 		{
 			"storage": "guides/relation.md",
 			"destination": "guides/relation.md",
 			"executable": false,
-			"digest": "ef45c6618f301e9dbaaff675cb1cf6e2da1df5cd1cf4a06fb64b34cb10754a9b"
+			"digest": "3cd02efa7e5f43997cc77da3a355c31c5ca2cd48818941d49f3ffa9036e8a17d"
 		},
 		{
 			"storage": "guides/router.md",
 			"destination": "guides/router.md",
 			"executable": false,
-			"digest": "890c46d9749875a48f5ec1981e9a8da90c93ad961b2ed092549172d83546f4e9"
+			"digest": "789de905998bf6b0719660c0f550838e7092cf7314d6f418b0e4aab531e055fc"
 		},
 		{
 			"storage": "guides/scaffold.md",
@@ -1174,97 +1174,97 @@
 			"storage": "guides/sea.md",
 			"destination": "guides/sea.md",
 			"executable": false,
-			"digest": "a138945b7ac99fa778d3d116d15760a3773c4ea85ea94c1ff12f07bdd0330de5"
+			"digest": "326a964896ccb9f590b1b9a983f3541f04d0229459def0aad085b89de6544a64"
 		},
 		{
 			"storage": "guides/server.md",
 			"destination": "guides/server.md",
 			"executable": false,
-			"digest": "4290030d156bc22f5741ad8acfedaba7eda9197cd6ffaaba06937aef0a00cd05"
+			"digest": "c7424beb8d1c38cdff10e5ea8c1362037112780ff114a72eee0dcca9f94ffd47"
 		},
 		{
 			"storage": "guides/sqlite.md",
 			"destination": "guides/sqlite.md",
 			"executable": false,
-			"digest": "d2ab5c43fbf646596fe146154ed818ca64e8434ab3c7b3e68b5a4319dc3112af"
+			"digest": "11997169616f8f5b6af58c5e25a08c7d82b1adf259fb92e87909ee63848fa8fa"
 		},
 		{
 			"storage": "guides/sse.md",
 			"destination": "guides/sse.md",
 			"executable": false,
-			"digest": "bb2c1a98674ba4eee328125173d682c68724a788f76dfd4123a00dab837b6cc8"
+			"digest": "324dbb50b4431e1f7e619b76877875b6374a53e34bb9d71c4c46c7d72e3469ba"
 		},
 		{
 			"storage": "guides/study.md",
 			"destination": "guides/study.md",
 			"executable": false,
-			"digest": "a2838d667df274296563865cf0735901c2082e7cede72fa92125103cf887dc17"
+			"digest": "f60609cd096502cb25483d271aea7ee886a6a62e6096a904abe55014d9e74555"
 		},
 		{
 			"storage": "guides/table.md",
 			"destination": "guides/table.md",
 			"executable": false,
-			"digest": "7cf56ef990816d9345e48a4b5c4fcf7a32960298066d607abab7c9a8f0bceacd"
+			"digest": "bb664b8d9a5997d61563d0610e7c6887340a9649a5a91a4c8900d9b9823f17ff"
 		},
 		{
 			"storage": "guides/template.md",
 			"destination": "guides/template.md",
 			"executable": false,
-			"digest": "4a1bab2e9cf19f124419ee14baf17b702699f2b53f1762b659c75e3baa412327"
+			"digest": "ea734629cb3083c3dcda94e853330760fd9838aa2e952d98b410f1a671584942"
 		},
 		{
 			"storage": "guides/terminal.md",
 			"destination": "guides/terminal.md",
 			"executable": false,
-			"digest": "3b66a33475881741a199b3d13050457c10bc4cc08312643d890c822211ae8ee6"
+			"digest": "a0fbdeac6ee8eb65ea4e4a0737f2f096dbf1e2f021440d586575059992f66856"
 		},
 		{
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "dbfcb7b98dfe1b8f824b661c7f15b3a4c474f8ef66f21c143f69639dc457adf2"
+			"digest": "4511b496d349e889788687e2ba293a2ebb615cd2b463299e78e847b7cc58cc44"
 		},
 		{
 			"storage": "guides/timeout.md",
 			"destination": "guides/timeout.md",
 			"executable": false,
-			"digest": "f767022f246db2db76b8e2cd568978e3e0cb3a1104b6c4dd9c516b23bfeffd19"
+			"digest": "edd80ade6308fff2a8361b76bd36be1516a7c727dba34f0553d2b87bef5c15e7"
 		},
 		{
 			"storage": "guides/tool.md",
 			"destination": "guides/tool.md",
 			"executable": false,
-			"digest": "10c8378d1fa84d45817439a7c6e3678c3afb13a6690e2579d0d3bccd4c58df1c"
+			"digest": "13bd0ba1b57b8978234f225ae67469dbd7347e3b840d56e4acba340a8d78217e"
 		},
 		{
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "b20c58d347a351b439ae1ac9a2e05488380ef1eb90c19ee5f63264c2125bf4be"
+			"digest": "536f1eb438c25770421a86c35bb42107041d90bfb28a69069b23d6dd4c04145f"
 		},
 		{
 			"storage": "guides/websocket.md",
 			"destination": "guides/websocket.md",
 			"executable": false,
-			"digest": "2db26ff03790d86cf828162db56d16a58991bdfc6444ffaa88732374bd8d2785"
+			"digest": "8b2abb42919dde94b59deebc8fc2a10e18dc04e323754b850fa4a57e782d2ac1"
 		},
 		{
 			"storage": "guides/worker.md",
 			"destination": "guides/worker.md",
 			"executable": false,
-			"digest": "441c0c0a3a5b425fb91034d953e2e6a1d05d3dcb29702c600a43e048bac24afd"
+			"digest": "39ffc2a919522d806f4bcaf0424e641c78cb2211bb6bf82ddf78188758bfe1c1"
 		},
 		{
 			"storage": "guides/workflow.md",
 			"destination": "guides/workflow.md",
 			"executable": false,
-			"digest": "2ac4e783c908f31377ce3381065150ba4c02afbcff65cbfcdc2c960692af464c"
+			"digest": "8796f9cb552112dbe50a2a65db72f1347bd4ff35d72279e4809a6d21435f87ec"
 		},
 		{
 			"storage": "guides/workspace.md",
 			"destination": "guides/workspace.md",
 			"executable": false,
-			"digest": "df7b4411caba1e409bd4a12e247c5e63136df9d3fecf3b8b91cf8ffd80b076a2"
+			"digest": "ee9d57c3438969443d4ce006810455a31128990a1311e3fe6b352ccd3f09c2e1"
 		},
 		{
 			"storage": "scripts/browsers.sh",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "8b49f6391696cde84ca7e082c395012a5c31f4e0588846b2915407830121bc24"
+	"digest": "f7b980503c2ad03619c833ea066b67d682ec26c894ea5b52a6f013c93aaa491f"
 }
