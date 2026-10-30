@@ -55,7 +55,8 @@ Give scaffold a read-only `surface` verb that reports every public name two `@or
 - 2026-10-30: scaffold `691aaa87d` carries column 3 in its own guide (18 tables, 381 cells, 321,834 bytes). guide `1697436` commits and pushes its signature, engine, repair, and collision units with its uniform guide; its policy project fails 98 cases, each an old-header fixture or mirror from scaffold 0.0.115. The catalog refresh mirrors every package's `main`, guide included, and every mirror is uniform.
 - 2026-10-30: scaffold 0.0.116 (`5ccb6400b`) and guide 0.0.27 (`41148fb`) are served and pushed. guide's policy project passes 179 after its re-pin onto scaffold 0.0.116 (`6fea922`). Sequence steps 1 and 2 close: the verb ships in scaffold 0.0.116, and `20823f4c7` lands the procedure.
 - 2026-10-30: guide 0.0.28 (`edc02c9`) compiles a nested module source through its environment and refuses one its environment emits nothing under. Scaffold's `Adopt guide 0.0.28 and relabel only a guide refusal` commit re-pins it: `readSurfaceGuide` relabels only an error the module's `isGuideError` accepts, `tests/guides.test.ts` compares every `Signature` cell, closing `ROADMAP.md` item 26, and the guides-entry fixture keeps its parent and child rows.
-- Next: release scaffold 0.0.117; then the sweep.
+- 2026-10-30: scaffold 0.0.117 (`358dd306a`) is served and pushed, carrying guide 0.0.28.
+- Next: the sweep, § Sequence step 3.
 
 ## Sequence
 
