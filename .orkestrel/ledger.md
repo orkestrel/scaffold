@@ -33,3 +33,5 @@
 | 2026-10-30 | guide nested: compile each environment a row's source equals or sits beneath once per `execute` call | opus | guide `ddcc984` |
 | 2026-10-30 | Review of guide-repin: claims 1–4 and 6 held, claim 5 on reading; the Orchestrator added the case where the module guard alone decides and corrected the module-requirement sentence | reviewer | scaffold `Adopt guide 0.0.28 and relabel only a guide refusal` commit |
 | 2026-10-30 | Review of guide nested: claims 1–3, 5, and 6 held; the Orchestrator closed the falsified whole-segment case, refused a nested module its environment emits nothing under with code `empty`, and corrected the test map and comments | reviewer | guide `ddcc984` |
+| 2026-10-30 | sweep consult: rule each recorded collision under rules 1 to 3 by owner group, place the lsp and mcp JSON-RPC set for a design round, and name the low-confidence rulings | planner | `ROADMAP.md` items 79 to 110 |
+| 2026-10-30 | User ruling: the sweep's dependencies and shared exports, the `@orkestrel/jsonrpc` package over codec, table's `Grid*` family, and the consult's replacement words | user | `.orkestrel/plan.md` § Rulings |
