@@ -110,6 +110,7 @@ import {
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
 	mergeResults,
+	pinsToLifts,
 	releasesToExit,
 	releasesToPins,
 	releasesToQuestions,
@@ -547,9 +548,10 @@ export class CLI implements CLIInterface {
 				} else this.#present(audit)
 				return EXIT_DRIFT
 			}
+			const manifest = this.#manifest(target)
 			const declared: ManifestRegionSet = {
 				overrides: blueprintToManifestOverrides(blueprint),
-				pins: manifestToWritableDependencies(this.#manifest(target), blueprint),
+				pins: manifestToWritableDependencies(manifest, blueprint, true),
 				scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
 			}
 			const additions = manifestToAdditions(this.#manifest(target), blueprint)
@@ -557,8 +559,8 @@ export class CLI implements CLIInterface {
 			// The declarations land in the offline half, beside the configuration that
 			// names them, so a catalog step that cannot complete never leaves a written
 			// configuration importing a package the manifest does not declare. They keep
-			// their planned ranges because the version read that follows measures what the
-			// manifest declared before this run.
+			// their planned ranges because the version read that follows measures the declared
+			// ranges, each lifted to the canon's major where the lift applies.
 			const policy =
 				blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}
 			const added =
@@ -601,7 +603,7 @@ export class CLI implements CLIInterface {
 				added === undefined ? repaired : mergeResults(repaired, added),
 				removed,
 			)
-			const remainder: Omit<OverwriteResult, 'audit' | 'additions'> =
+			const remainder: Omit<OverwriteResult, 'audit' | 'additions' | 'lifts'> =
 				command.offline === true
 					? await this.#declare(host.materializer, target, declared, host.baseline, blueprint)
 					: await this.#reconcile(
@@ -619,12 +621,22 @@ export class CLI implements CLIInterface {
 				...mergeResults(local, remainder),
 				audit: terminal,
 				additions,
+				lifts: pinsToLifts(
+					manifestToWritableDependencies(manifest, blueprint),
+					declared.pins,
+					manifestToWritableDependencies(this.#manifest(target), blueprint),
+				),
 			}
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(terminal)
 				this.#reportReplacements(audit, terminal)
 				this.#recount(outcome)
+				for (const { name, from, to } of outcome.lifts) {
+					this.#say(
+						`Lifted ${JSON.stringify(name)} from ${JSON.stringify(from)} to ${JSON.stringify(to)}. Run npm install to install it.`,
+					)
+				}
 				for (const { section, dependencies } of [
 					{ section: 'dependencies', dependencies: additions.runtime },
 					{ section: 'devDependencies', dependencies: additions.development },
@@ -654,7 +666,7 @@ export class CLI implements CLIInterface {
 		declared: ManifestRegionSet,
 		host: Baseline | undefined,
 		blueprint: Blueprint,
-	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
+	): Promise<Omit<OverwriteResult, 'audit' | 'additions' | 'lifts'>> {
 		const versions = await this.#versions(declared.pins, true, blueprint)
 		const refusal = versionsToRefusal(versions)
 		if (refusal !== undefined) throw refusal
@@ -683,7 +695,7 @@ export class CLI implements CLIInterface {
 		host: Baseline | undefined,
 		hostForced: boolean,
 		blueprint: Blueprint,
-	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
+	): Promise<Omit<OverwriteResult, 'audit' | 'additions' | 'lifts'>> {
 		const previous = catalogToNames(target)
 		try {
 			const versions = await this.#versions(declared.pins, false, blueprint)
@@ -709,7 +721,7 @@ export class CLI implements CLIInterface {
 		host: { readonly baseline: Baseline | undefined; readonly forced: boolean },
 		versions: VersionResolution,
 		previous: readonly string[],
-	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
+	): Promise<Omit<OverwriteResult, 'audit' | 'additions' | 'lifts'>> {
 		try {
 			const refused = versionsToRefusal(versions)
 			if (refused !== undefined) throw refused
@@ -788,7 +800,7 @@ export class CLI implements CLIInterface {
 		releases: readonly Release[],
 		provenance: Provenance,
 		error: unknown,
-	): Omit<OverwriteResult, 'audit' | 'additions'> {
+	): Omit<OverwriteResult, 'audit' | 'additions' | 'lifts'> {
 		return {
 			target,
 			written: [],

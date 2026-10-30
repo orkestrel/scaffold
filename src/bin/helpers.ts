@@ -17,6 +17,7 @@ import type {
 } from '@src/core'
 import type {
 	CLICommand,
+	DependencyLift,
 	ErrorEnvelope,
 	GitChunk,
 	ScriptChain,
@@ -57,6 +58,7 @@ import {
 	iterateAnswers,
 	manifestToDependencies,
 	MAX_PATH_LENGTH,
+	MAX_RANGE_LENGTH,
 	parseExtension,
 	RESERVED_SHEET_NAMES,
 	ScaffoldError,
@@ -349,14 +351,21 @@ export function auditToExit(audit: Audit): number {
  *
  * @param manifest - The target manifest text.
  * @param blueprint - The workspace shape that supplies the planned tool set.
+ * @param lifted - If `true`, raises a foreign development declaration whose major trails the plan's
+ * to the planned range; if `false`, keeps every declaration. Default: `false`.
  * @returns The declared fleet rows and planned foreign tools in their writable sections.
  * @remarks
  * Selected showcase tools retain every string declaration in both sections.
  * Other foreign tools retain runtime precedence when declared in both sections.
+ * A lift reaches the development section alone and uses the blueprint's framework holds. It reads
+ * a major only from `^MAJOR` or a full version, optionally under `^` or `~`, in a range no longer
+ * than `MAX_RANGE_LENGTH`; equal and later majors, and every other form, stay as declared, and a
+ * disjunction lifts only when every arm carries a readable major below the plan's.
  */
 export function manifestToWritableDependencies(
 	manifest: string,
 	blueprint: Blueprint,
+	lifted = false,
 ): DependencyPinSet {
 	const declared = manifestToDependencies(manifest)
 	const parsed = parseJSON(manifest)
@@ -368,18 +377,34 @@ export function manifestToWritableDependencies(
 	}
 	const runtimeRecord = isRecord(parsed.dependencies) ? parsed.dependencies : {}
 	const developmentRecord = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
-	const rows = Object.keys(blueprintToDevDependencies(blueprint))
+	const planned = blueprintToDevDependencies(blueprint)
+	const rows = Object.keys(planned)
 		.sort()
 		.filter((name) => !name.startsWith('@orkestrel/'))
-		.map((name) => ({
-			name,
-			runtimeRange: runtimeRecord[name],
-			developmentRange: developmentRecord[name],
-			dual:
-				blueprint.showcase &&
-				blueprint.app.includes('browser') &&
-				Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name),
-		}))
+		.map((name) => {
+			const range = planned[name]
+			const major = range === undefined ? undefined : extractRangeMajor(range)
+			const declaredRange = developmentRecord[name]
+			return {
+				name,
+				runtimeRange: runtimeRecord[name],
+				developmentRange:
+					lifted &&
+					isString(declaredRange) &&
+					declaredRange.length <= MAX_RANGE_LENGTH &&
+					major !== undefined &&
+					declaredRange.split('||').every((arm) => {
+						const declaredMajor = extractRangeMajor(arm.trim())
+						return declaredMajor !== undefined && declaredMajor < major
+					})
+						? range
+						: declaredRange,
+				dual:
+					blueprint.showcase &&
+					blueprint.app.includes('browser') &&
+					Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name),
+			}
+		})
 	return {
 		runtime: [
 			...dependenciesToFleet(declared.runtime),
@@ -398,6 +423,44 @@ export function manifestToWritableDependencies(
 			),
 		],
 	}
+}
+
+/**
+ * Reports planned range changes that reached the same writable dependency section.
+ *
+ * @param declared - The ranges before the overwrite.
+ * @param planned - The declaration projection with foreign major lifts selected.
+ * @param written - The ranges read from the manifest after the overwrite.
+ * @returns Each lifted tool's name, original range, and written range, excluding unwritten lifts.
+ *
+ * @example
+ * ```ts
+ * import { pinsToLifts } from './helpers.js'
+ *
+ * pinsToLifts(
+ * 	{ runtime: [], development: [{ name: 'vitest', range: '^4.1.12' }] },
+ * 	{ runtime: [], development: [{ name: 'vitest', range: '^5.0.5' }] },
+ * 	{ runtime: [], development: [{ name: 'vitest', range: '^5.0.6' }] },
+ * ) // [{ name: 'vitest', from: '^4.1.12', to: '^5.0.6' }]
+ * ```
+ */
+export function pinsToLifts(
+	declared: DependencyPinSet,
+	planned: DependencyPinSet,
+	written: DependencyPinSet,
+): readonly DependencyLift[] {
+	return (['runtime', 'development'] as const).flatMap((section) =>
+		declared[section].flatMap(({ name, range }) => {
+			const next = planned[section].find((dependency) => dependency.name === name)
+			const final = written[section].find((dependency) => dependency.name === name)
+			return next !== undefined &&
+				next.range !== range &&
+				final !== undefined &&
+				final.range !== range
+				? [{ name, from: range, to: final.range }]
+				: []
+		}),
+	)
 }
 
 /**

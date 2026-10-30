@@ -23,7 +23,8 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
    rewrite a peer range only when its name shares an audited release reading. For example, with
    peer-only `@orkestrel/peer-only: ^0.0.1`, leave that peer unchanged; with a planned tool whose
    registry serves `8.3.4`, apply `vite: ~8.2.0 -> ^8.3.4` even though the tilde excludes `8.3.4`.
-   Keep a wave within each declared major. A range joined by `||` names one supported major per
+   Keep this pin step within each declared major; step 5 states the overwrite's lift.
+   A range joined by `||` names one supported major per
    arm, so move only the arm in the release's major and keep every other arm: with
    `vitest: ^4.1.11 || ^5.0.5` and a registry serving `4.1.12`, apply `^4.1.12 || ^5.0.5`.
    For a workspace whose selected framework activates a
@@ -52,9 +53,13 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
      again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
 4. Force-verify the same audit population and lookup bounds against a registry sweep taken after
    the previous layer published. Do not infer verification of peer-only declarations from that audit.
-5. Run the full install. The overwrite re-declares the toolchain ranges and declares each planned
-   dependency the manifest lacks, so the lockfile the first install regenerated no longer matches the
-   manifest.
+5. Run the full install after the overwrite lifts each planned foreign tool's `devDependencies`
+   declaration whose major trails the canon's to the canon's planned range, its selected framework
+   holds included, and declares each planned dependency the manifest lacks. The lift reads a major
+   only from `^MAJOR` or a full version, optionally under `^` or `~`, and lifts a `||` range only
+   when every arm trails; it keeps an equal or later major, every other range form, and every
+   `dependencies` declaration. Read each lift's `from` and `to` ranges from the overwrite result's
+   `lifts`, and regenerate the lockfile against the resulting manifest.
 6. Sweep the self-pins, per § Sweep the self-pins: the re-pin moves the snapshot class.
 7. Run the mutating `format` script to converge generated writes.
 8. Commit the overwrite's writes as `Overwrite with scaffold <version>`: every path the overwrite

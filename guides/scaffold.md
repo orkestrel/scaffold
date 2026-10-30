@@ -837,6 +837,13 @@ reconcile the declared ranges and write the script region on every run, whatever
 names. A run scoped to `manifest` for a script write takes the reconciled `@orkestrel/*`
 ranges with it, and a run that excludes `manifest` still takes the ranges and the scripts.
 
+Before resolving overwrite's version ranges, the declaration step lifts each planned foreign tool
+whose `devDependencies` major is earlier than the canon's to the blueprint's planned range,
+including selected framework holds. An equal or later declared major stays, as does a disjunction
+with an arm at the planned major, and a `dependencies` declaration never lifts. The version lookup then searches within the selected major. Offline
+overwrite writes the planned floor; an online lookup can raise its minor or patch. Peers remain
+unchanged.
+
 A value matching neither is a script the workspace author wrote. The region writer retains that
 value byte-for-byte and reports its name, declared value, and planned value. Each other planned
 script is decided independently: an absent script appends, the planned value stands, and an accepted
@@ -962,14 +969,17 @@ standard error, so a piped value is never polluted.
 | `audit`     | `Audit` — `findings` and `questions` — plus `releases` and `provenance`; findings carry `ownership`                                                           |
 | `repair`    | `MaterializeResult` plus `audit`, the terminal audit taken after the write, `releases`, and `provenance`                                                      |
 | `catalog`   | `MaterializeResult` plus `mirrors`, `provenance`, optional `membership` with `entries`, `dropped`, and `releases`, and an explanatory `note` on a partial run |
-| `overwrite` | The `catalog` value plus `audit`, top-level `releases` from its version read, and `additions`; `note` explains a partial run                                  |
+| `overwrite` | The `catalog` value plus `audit`, top-level `releases` from its version read, `additions`, and `lifts`; `note` explains a partial run                         |
 
 The `membership` entity is present only when the catalog read completes. Its `entries` holds the
 package table, `dropped` names packages the preceding table carried that the registry no longer
 lists, and `releases` measures declared fleet ranges against the catalog read. The `overwrite`
 result also retains top-level `releases` from its separate version read, including foreign tools,
 and `additions`, the `DependencyPinSet` of planned dependencies it declared, empty when the
-manifest lacked none.
+manifest lacked none. Its `lifts` list names each tool whose major the run lifted, with the
+declared range in `from` and the written range in `to`, and is empty when no lift landed. The human
+report prints `Lifted "<name>" from "<from>" to "<to>". Run npm install to install it.` for each
+lift. The version evidence in `releases` uses the range selected for the lookup, after any lift.
 An absent `membership` identifies an incomplete catalog read; `note` explains the cause.
 
 The following JSON excerpt shows the membership evidence in a completed catalog result:
@@ -2006,8 +2016,13 @@ capture. A browser source, styles surface, or browser setup without that journey
 receives no capture seed. A runtime declaration remains in its existing section instead of
 being duplicated as a development dependency.
 
-Outside the selected showcase pair, a newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
-question, and a person decides whether the generated toolchain supports it.
+`audit` reports a later registry major as a non-blocking `dependencies` question. Outside the
+selected showcase pair, `repair` keeps the declared major. `overwrite` lifts an earlier declared
+foreign `devDependencies` major to the blueprint's planned range; it does not select an arbitrary
+later registry major, and it never lifts a `dependencies` declaration. It reads a major only from
+`^MAJOR` or a full version, optionally under `^` or `~`. A disjunction lifts only when every arm
+names a readable major earlier than the planned major. A range whose major cannot be read, or one
+longer than `MAX_RANGE_LENGTH`, stays declared.
 
 `TOOLCHAIN_HOLDS` records framework-specific ranges. `blueprintToToolchainHolds` selects those
 rows from the blueprint's occupied browser framework faces. A `src/vue` or `app/vue` face selects
@@ -2016,7 +2031,9 @@ TypeScript `^6.0.3`: no stable `vue-tsc` runs on TypeScript 7, `vue-tsc` resolve
 directs Vue projects to stay on TypeScript 6.0. Every workspace without that extension receives TypeScript `^7.0.2`.
 For a selected hold, `audit` reports the hold and its reason in place of the newer-major question
 and reports a declaration past the hold. A non-Vue workspace on TypeScript 7 raises no hold
-question. The constants proof ties each hold to its framework's planned range and scaffold's
+question. Overwrite uses the held range as its lift target: TypeScript 6 stays at that major in a
+Vue workspace, while TypeScript 6 lifts to 7 in a workspace without Vue. A declaration already
+past the hold stays declared; overwrite does not downgrade it. The constants proof ties each hold to its framework's planned range and scaffold's
 manifest baseline. Prove the framework on the later major before lifting its hold.
 
 The dependency tables select these floors:

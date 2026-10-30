@@ -5817,6 +5817,140 @@ describe('CLI repair', () => {
 })
 
 describe('CLI overwrite', () => {
+	it('lifts declared toolchain majors and reports the written ranges without changing peers', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			...FLEET_MIRROR_REPLIES,
+			[FLEET_UPSTREAM_PATHS.organization]: { status: 200, body: buildOrganization(FLEET_NAMES) },
+			'/vitest': {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '6.0.0' },
+					versions: { '4.1.12': {}, '5.0.5': {}, '5.0.6': {}, '6.0.0': {} },
+				}),
+			},
+		})
+		const unreachable = await createUpstreamServer({})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			const manifest = buildAlignedManifest(undefined, undefined, {
+				...TARGET_DEV_DEPENDENCIES,
+				vitest: '^4.1.12',
+				typescript: '^6.0.3',
+				oxlint: '^1.90.0',
+			})
+			const parsed: unknown = JSON.parse(manifest)
+			expect(isRecord(parsed)).toBe(true)
+			if (!isRecord(parsed)) throw new Error('Expected a manifest record.')
+			const peers = { vitest: '^4.1.12', typescript: '^6.0.3' }
+			const original = JSON.stringify({ ...parsed, peerDependencies: peers }, undefined, '\t')
+			workspace.write('target/package.json', original)
+			createRepository(fleet.target)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--dirty',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.lifts).toStrictEqual([
+				{ name: 'typescript', from: '^6.0.3', to: '^7.0.2' },
+				{ name: 'vitest', from: '^4.1.12', to: '^5.0.5' },
+			])
+			const written: unknown = JSON.parse(workspace.read('target/package.json') ?? '')
+			expect(written).toMatchObject({
+				devDependencies: { typescript: '^7.0.2', vitest: '^5.0.5', oxlint: '^1.90.0' },
+				peerDependencies: peers,
+			})
+			workspace.write('target/package.json', original)
+			const human = createSink()
+			await new CLI(human.options).execute([
+				'overwrite',
+				'--offline',
+				'--dirty',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			expect(human.output).toContain(
+				'Lifted "vitest" from "^4.1.12" to "^5.0.5". Run npm install to install it.',
+			)
+			workspace.write('target/package.json', original)
+			const online = createSink()
+			expect(
+				await new CLI(buildCLIOptions(online, server.base)).execute([
+					'overwrite',
+					'--dirty',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const resolved: OverwriteResult = JSON.parse(online.output[0] ?? '')
+			expect(resolved.releases).toContainEqual({
+				name: 'vitest',
+				range: '^5.0.5',
+				lookup: 'found',
+				latest: '5.0.6',
+				major: 6,
+			})
+			expect(resolved.lifts).toContainEqual({ name: 'vitest', from: '^4.1.12', to: '^5.0.6' })
+			expect(JSON.parse(workspace.read('target/package.json') ?? '')).toMatchObject({
+				devDependencies: { vitest: '^5.0.6', typescript: '^7.0.2' },
+				peerDependencies: peers,
+			})
+			workspace.write('target/package.json', original)
+			const dark = createSink()
+			expect(
+				await new CLI(buildCLIOptions(dark, unreachable.base)).execute([
+					'overwrite',
+					'--dirty',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const stopped: OverwriteResult = JSON.parse(dark.output[0] ?? '')
+			expect(stopped.note).toContain('did not complete')
+			expect(stopped.lifts).toStrictEqual([])
+			expect(JSON.parse(workspace.read('target/package.json') ?? '')).toMatchObject({
+				devDependencies: { vitest: '^4.1.12', typescript: '^6.0.3' },
+			})
+			workspace.write('target/package.json', original)
+			const repaired = createSink()
+			const code = await new CLI(buildCLIOptions(repaired, server.base)).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(code).toBe(EXIT_CLEAN)
+			expect(JSON.parse(workspace.read('target/package.json') ?? '')).toMatchObject({
+				devDependencies: { vitest: '^4.1.12', typescript: '^6.0.3' },
+				peerDependencies: peers,
+			})
+		} finally {
+			await unreachable.destroy()
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
 	// Overwrite already re-declares the dependency ranges, so it declares a planned
 	// dependency the manifest lacks beside them. Repair never edits a dependency
 	// map, so it keeps the refusal the same manifest earns.

@@ -11,6 +11,7 @@ import {
 	CATALOG_AGENT_PATH,
 	createBlueprint,
 	MAX_PATH_LENGTH,
+	MAX_RANGE_LENGTH,
 	ScaffoldError,
 	TOOLCHAIN_HOLDS,
 } from '@src/core'
@@ -53,6 +54,7 @@ import {
 	manifestToWritableScripts,
 	mergeResults,
 	optionToName,
+	pinsToLifts,
 	releasesToExit,
 	releasesToPins,
 	releasesToQuestions,
@@ -657,6 +659,87 @@ describe('release evidence', () => {
 			],
 			development: [{ name: 'typescript', range: '^6.0.3' }],
 		})
+	})
+
+	it('lifts declared toolchain majors to the plan while retaining holds and admitted majors', () => {
+		const manifest = JSON.stringify({
+			devDependencies: { vitest: '^4.1.12', typescript: '^6.0.3', oxlint: '^1.90.0' },
+			peerDependencies: { vitest: '^4.1.12', typescript: '^6.0.3' },
+		})
+		const core = createBlueprint('sample', { src: ['core'] })
+		const vue = createBlueprint('sample', {
+			src: ['core', 'browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+		})
+		expect(manifestToWritableDependencies(manifest, core, true)).toStrictEqual({
+			runtime: [],
+			development: [
+				{ name: 'oxlint', range: '^1.90.0' },
+				{ name: 'typescript', range: '^7.0.2' },
+				{ name: 'vitest', range: '^5.0.5' },
+			],
+		})
+		expect(manifestToWritableDependencies(manifest, vue, true)).toStrictEqual({
+			runtime: [],
+			development: [
+				{ name: 'oxlint', range: '^1.90.0' },
+				{ name: 'typescript', range: '^6.0.3' },
+				{ name: 'vitest', range: '^5.0.5' },
+			],
+		})
+		for (const range of [
+			'^6.0.0',
+			'~5.0.1',
+			'^4.1.12 || ^5.0.5',
+			'>=4.0.0',
+			`^4.0.0-${'a'.repeat(MAX_RANGE_LENGTH)}`,
+		]) {
+			expect(
+				manifestToWritableDependencies(
+					JSON.stringify({ devDependencies: { vitest: range } }),
+					core,
+					true,
+				),
+			).toStrictEqual({ runtime: [], development: [{ name: 'vitest', range }] })
+		}
+		expect(
+			manifestToWritableDependencies(
+				JSON.stringify({ dependencies: { vitest: '^4.1.12' } }),
+				core,
+				true,
+			),
+		).toStrictEqual({ runtime: [{ name: 'vitest', range: '^4.1.12' }], development: [] })
+		expect(manifestToWritableDependencies(manifest, core).development).toContainEqual({
+			name: 'vitest',
+			range: '^4.1.12',
+		})
+		expect(
+			manifestToWritableDependencies(
+				JSON.stringify({ devDependencies: { vitest: '^3.0.0 || ^4.1.12' } }),
+				core,
+				true,
+			),
+		).toStrictEqual({ runtime: [], development: [{ name: 'vitest', range: '^5.0.5' }] })
+	})
+
+	it('reports only planned lifts that reached the written dependency section', () => {
+		const declared = {
+			runtime: [{ name: 'vitest', range: '^4.1.12' }],
+			development: [{ name: 'typescript', range: '^6.0.3' }],
+		}
+		const planned = {
+			runtime: [{ name: 'vitest', range: '^5.0.5' }],
+			development: [{ name: 'typescript', range: '^7.0.2' }],
+		}
+		expect(pinsToLifts(declared, planned, declared)).toStrictEqual([])
+		expect(pinsToLifts(declared, planned, { runtime: [], development: [] })).toStrictEqual([])
+		expect(
+			pinsToLifts(declared, planned, {
+				runtime: [{ name: 'vitest', range: '^5.0.6' }],
+				development: declared.development,
+			}),
+		).toStrictEqual([{ name: 'vitest', from: '^4.1.12', to: '^5.0.6' }])
+		expect(pinsToLifts(declared, declared, planned)).toStrictEqual([])
 	})
 
 	it('keeps only declared fleet dependencies in source order', () => {
