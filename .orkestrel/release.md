@@ -68,6 +68,7 @@ The wave `.orkestrel/plan.md` plans: every catalog package re-pinned to the scaf
 | L4 | brief | 0.0.12 | 0.0.13 | patch: the runtime ranges `@orkestrel/reason` `^0.0.15` and `@orkestrel/interpret` `^0.0.18` moved (`compare.ts` exit 0) | `b6f1a3ab6` |
 | L4 | program | 0.0.17 | 0.0.18 | patch: the runtime ranges `@orkestrel/reason` `^0.0.15`, `@orkestrel/qualifier` `^0.0.19`, and `@orkestrel/rater` `^0.0.19` moved (`compare.ts` exit 0) | `ad10db3c1` |
 | L3 | scaffold | 0.0.113 | 0.0.114 | patch: § Sequence step 7 of `.orkestrel/plan.md`, the re-pin onto the served fleet, the catalog refresh, and the scaffold-owned rows of § Deferred | `416d329ac` |
+| L3 | scaffold | 0.0.114 | 0.0.115 | patch: the refinements of `.orkestrel/debrief.md` moved the vendored canon (scaffold `4379ff5ed`) | `12820b441` |
 
 ## Standing readings
 

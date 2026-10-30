@@ -182,7 +182,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: scaffold `58315f65b` lifts a trailing `devDependencies` toolchain major to the canon's in `overwrite`, and scaffold 0.0.114 (`416d329ac`) is published, served, and pushed after its full release chain passed. agent adopted it at agent `9b59249e`, dropped `test:studies` from `prepublishOnly` at agent `a0de2686`, and passes `test:studies` 99 of 99, closing its standing reading; its dist is unchanged, so no release follows. § Sequence step 7 is closed.
 - 2026-10-30: § Sequence step 8 is under way: `.orkestrel/debrief.md` holds the process retrospective and the ruled instruction-set audit.
 - 2026-10-30: scaffold `4379ff5ed` lands the rulings of `.orkestrel/debrief.md`, and `npm test` passes on the rebuilt tree.
-- Next: release scaffold with the refined canon on the user's one-time code, then retire the campaign folder on the user's go-ahead.
+- 2026-10-30: scaffold 0.0.115 (`12820b441`) is published, served, and pushed with the refined canon after its full release chain passed; four processes the session did not launch held oxlint's native binding, so the chain ran on the lockfile install without the clean reinstall. § Sequence step 8 is closed.
+- Next: retire the campaign folder through `.agents/skills/orkestrel-debrief/references/retention.md` on the user's go-ahead.
 
 ## Sequence
 

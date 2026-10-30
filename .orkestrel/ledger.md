@@ -104,3 +104,8 @@ One row per dispatched unit and per user ruling on routing or scope, in order (`
 | 2026-10-30 | Review of toolchain-lift: five of seven claims held; the runner confined the lift to `devDependencies` behind an opt-in, renamed the boolean and the lift's members, capped the read range, scoped the visit text to the forms the lift reads, and pinned the repair and readback seams with mutations that redden them | reviewer | scaffold `58315f65b` |
 | 2026-10-30 | Scaffold 0.0.114 published on the user's one-time code, served by the registry, and pushed | user | scaffold `416d329ac` |
 | 2026-10-30 | agent adopts scaffold 0.0.114 by the runner's visit and runs studies on demand; `test:studies` passes 99 of 99, closing its standing reading | rule | agent `9b59249e` and `a0de2686` |
+| 2026-10-30 | User ruling: the debrief runs focused, a process retrospective and an instruction-set audit over this wave's record, with fleet-wide artifact audits and field passes out of scope | user | `.orkestrel/debrief.md` |
+| 2026-10-30 | instraudit-subjective: the instruction-set audit's subjective lane, findings J1 to J29 | reviewer | `.orkestrel/debrief.md` § Rulings |
+| 2026-10-30 | instraudit-objective: the instruction-set audit's objective lane, findings O01 to O16 | analyst | `.orkestrel/debrief.md` § Rulings |
+| 2026-10-30 | debrief-land: land the debrief's canon rulings and the discovery proof's repair; the Orchestrator restored seven charter descriptions' voice, `wave.md` step 4's clone-or-checkout wording, and the campaign layout row | astra | scaffold `4379ff5ed` |
+| 2026-10-30 | Scaffold 0.0.115 published on the user's one-time code after the user renewed the npm login, served by the registry, and pushed | user | scaffold `12820b441` |
