@@ -124,7 +124,7 @@ Each published rename a realignment made, which every consumer adopts at its re-
 ## Lanes
 
 - One runner lane runs every install, test, build, visit, and release chain on the host, one at a time.
-- Writer lanes run beside it, one per package checkout, each running only the format check, lint, and type check over its owned files, at most five at once (raised from three on 2026-10-29 with 107 GB of 127.7 GB memory free and 3 Codex processes live; the T3 lane host was unusable at six concurrent children on 2026-10-21), on the user's go-ahead of 2026-10-29 to run the work in parallel.
+- Writer lanes run beside it, one per package checkout, each running only the format check, lint, and type check over its owned files, at most five at once (raised from three on 2026-10-29).
 - A layer's realignment can start before the layer under it publishes; the layer re-pins to the versions npm serves, and reruns its gates, before it publishes.
 - Scaffold is never a writer's checkout; scaffold changes are the Orchestrator's.
 
@@ -180,7 +180,9 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: agent `912293d2` re-pins study 0.0.7, ollama 0.0.27, and probe 0.0.26 as development dependencies and adopts study's assessment renames; `test:studies` passes 98 of 99, `npm test` passes, and `compare.ts` reports the dist unchanged, so no release follows.
 - 2026-10-30: § Sequence step 7 is under way. Scaffold's catalog refresh found contract and reason both exporting `iterateIndices`; reason adopted contract's at reason `fe79ae1`, and on the user's ruling the cascade republished reason, interpret, qualifier, rater, brief, and program. Scaffold `ee24cf29b` re-pins the served fleet and refreshes the catalog, `faeae7e60` closes the formatter-rewrite and own-executable rows of § Deferred, and `74c6d64df` runs studies on demand; `npm test` passes on that tree.
 - 2026-10-30: scaffold `58315f65b` lifts a trailing `devDependencies` toolchain major to the canon's in `overwrite`, and scaffold 0.0.114 (`416d329ac`) is published, served, and pushed after its full release chain passed. agent adopted it at agent `9b59249e`, dropped `test:studies` from `prepublishOnly` at agent `a0de2686`, and passes `test:studies` 99 of 99, closing its standing reading; its dist is unchanged, so no release follows. § Sequence step 7 is closed.
-- Next: run § Sequence step 8, the `orkestrel-debrief` round on the wave, with the lessons in `tmp/wave/debrief-notes.md` and the debrief rows of § Deferred.
+- 2026-10-30: § Sequence step 8 is under way: `.orkestrel/debrief.md` holds the process retrospective and the ruled instruction-set audit.
+- 2026-10-30: scaffold `4379ff5ed` lands the rulings of `.orkestrel/debrief.md`, and `npm test` passes on the rebuilt tree.
+- Next: release scaffold with the refined canon on the user's one-time code, then retire the campaign folder on the user's go-ahead.
 
 ## Sequence
 
