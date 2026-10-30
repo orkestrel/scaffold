@@ -1746,7 +1746,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.30",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.31",`,
 					blocking: false,
 				},
 			])
@@ -2719,7 +2719,7 @@ describe('CLI audit', () => {
 	)
 
 	// An Agent-shaped target holds study tests and a publishing manifest written before scaffold
-	// planned them. One repair writes the project, the script, and the gate, and the next writes
+	// planned them. One repair writes the project and the script, and the next writes
 	// nothing, so the target settles instead of oscillating between two plans.
 	it('settles an Agent-shaped target with study tests in one repair', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
@@ -2734,7 +2734,7 @@ describe('CLI audit', () => {
 			const planned = blueprintToScripts(
 				createBlueprint('sample', { src: ['core'], studies: true }),
 			)
-			expect(planned.prepublishOnly).toContain('npm test && npm run test:studies && ')
+			expect(planned.prepublishOnly).not.toContain('npm run test:studies')
 
 			const invocation = [
 				'repair',
@@ -2788,6 +2788,46 @@ describe('CLI audit', () => {
 			const quiet: RepairResult = JSON.parse(second.output[0] ?? '')
 			expect(quiet.written).toStrictEqual([])
 			expect(workspace.read('target/vite.config.ts')).toBe(bytes)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('repairs a private workspace with studies available only on demand', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.remove('target/src')
+			workspace.ensure('target/app/core')
+			workspace.write('target/tests/studies/session.test.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(createBlueprint('sample', { app: ['core'] })),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const manifest = JSON.parse(requireValue(workspace.read('target/package.json')))
+			expect(manifest.scripts['test:studies']).toBe(
+				'vitest run --config vite.config.ts --no-cache --reporter=dot --project studies',
+			)
+			expect(manifest.scripts.test).toBe(
+				'npm run test:app && npm run test:policy && npm run test:config',
+			)
+			expect(manifest.scripts).not.toHaveProperty('prepublishOnly')
+			expect(requireValue(workspace.read('target/vite.config.ts'))).toContain(
+				'projects: [appCore, policy, config, studies, probe]',
+			)
 		} finally {
 			workspace.destroy()
 		}

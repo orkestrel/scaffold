@@ -1645,23 +1645,16 @@ describe('blueprintToWritableScripts', () => {
 		}
 	})
 
-	it('accepts the publish chains a workspace held before it planned studies', () => {
+	it('accepts no study step in generated publish chain predecessors', () => {
 		const gates = 'npm run format:check && npm run lint:check && npm run check && npm run build'
 		const studied = blueprintToWritableScripts(buildBlueprint({ studies: true }))
 		const prepublish = studied.find(({ name }) => name === 'prepublishOnly')
-		expect(prepublish?.command).toBe(
-			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`,
-		)
-		expect(prepublish?.accepted).toEqual([
-			`${gates} && npm test && npm run test:studies`,
-			`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`,
-			`${gates} && npm test`,
-		])
+		expect(prepublish?.command).toBe(`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`)
+		expect(prepublish?.accepted).toEqual([`${gates} && npm test`])
 		expect(studied.find(({ name }) => name === 'test:studies')?.command).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project studies',
 		)
 
-		// Without the fact the list is the one a workspace without studies always had.
 		const plain = blueprintToWritableScripts(buildBlueprint())
 		expect(plain.find(({ name }) => name === 'prepublishOnly')?.accepted).toEqual([
 			`${gates} && npm test`,
@@ -1731,19 +1724,17 @@ describe('replaceManifestScripts', () => {
 		})
 	})
 
-	it('upgrades each publish chain a workspace held before it planned studies', () => {
+	it('retains publish chains carrying a study step for the configuration proof to refuse', () => {
 		const gates = 'npm run format:check && npm run lint:check && npm run check && npm run build'
 		const region = blueprintToWritableScripts(buildBlueprint({ studies: true }))
-		const planned = `${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`
 		const earlier = [
-			`${gates} && npm test`,
-			`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`,
+			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`,
 			`${gates} && npm test && npm run test:studies`,
 		]
 		for (const chain of earlier) {
 			const manifest = JSON.stringify({ scripts: { prepublishOnly: chain } }, null, '\t')
 			const written = replaceManifestScripts(manifest, region)
-			expect(JSON.parse(written ?? '')).toMatchObject({ scripts: { prepublishOnly: planned } })
+			expect(JSON.parse(written ?? '')).toMatchObject({ scripts: { prepublishOnly: chain } })
 		}
 
 		// A chain the package customized is retained, so the upgrade is not a blanket overwrite.
@@ -2352,43 +2343,45 @@ describe('blueprintToScripts config projects', () => {
 		expect(absent.test).not.toContain('test:conformance')
 	})
 
-	// The study proof spawns processes, so a publishing workspace isolates it in the publish gate
-	// beside the packed-package proof, and a private workspace, which has no publish gate, runs it
-	// from `test` ahead of the live-service proof.
-	it('isolates the study proof in the publish gate of a publishing workspace', () => {
+	it('emits studies on demand without a chain step in a publishing workspace', () => {
 		const gates = 'npm run format:check && npm run lint:check && npm run check && npm run build'
 		const studied = blueprintToScripts(buildBlueprint({ studies: true }))
 		expect(studied['test:studies']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project studies',
 		)
 		expect(studied.test).not.toContain('test:studies')
-		expect(studied.prepublishOnly).toBe(
-			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND}`,
-		)
+		expect(studied.prepublishOnly).toBe(`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`)
 
 		const served = blueprintToScripts(buildBlueprint({ studies: true, service: true }))
 		expect(served.prepublishOnly).toBe(
-			`${gates} && npm test && npm run test:studies && ${RELEASE_PROOF_COMMAND} && npm run test:service`,
+			`${gates} && npm test && ${RELEASE_PROOF_COMMAND} && npm run test:service`,
 		)
+		for (const command of Object.values(served)) {
+			expect(command).not.toContain('npm run test:studies')
+		}
 
 		const absent = blueprintToScripts(buildBlueprint())
 		expect(absent['test:studies']).toBeUndefined()
 		expect(absent.prepublishOnly).toBe(`${gates} && npm test && ${RELEASE_PROOF_COMMAND}`)
 	})
 
-	it('runs the study proof from the test gate of a private workspace, before the live-service proof', () => {
+	it('emits studies on demand without a chain step in a private workspace', () => {
 		const studied = blueprintToScripts(buildBlueprint({ src: [], app: ['core'], studies: true }))
-		expect(studied).not.toHaveProperty('prepublishOnly')
-		expect(studied.test).toBe(
-			'npm run test:app && npm run test:policy && npm run test:config && npm run test:studies',
+		expect(studied['test:studies']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project studies',
 		)
+		expect(studied).not.toHaveProperty('prepublishOnly')
+		expect(studied.test).toBe('npm run test:app && npm run test:policy && npm run test:config')
 
 		const served = blueprintToScripts(
 			buildBlueprint({ src: [], app: ['core'], studies: true, service: true }),
 		)
 		expect(served.test).toBe(
-			'npm run test:app && npm run test:policy && npm run test:config && npm run test:studies && npm run test:service',
+			'npm run test:app && npm run test:policy && npm run test:config && npm run test:service',
 		)
+		for (const command of Object.values(served)) {
+			expect(command).not.toContain('npm run test:studies')
+		}
 
 		const absent = blueprintToScripts(buildBlueprint({ src: [], app: ['core'] }))
 		expect(absent['test:studies']).toBeUndefined()
@@ -3504,7 +3497,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 
 		const studied = blueprintToRootVite(buildBlueprint({ studies: true }))
 		expect(studied).toContain(
-			'// The @orkestrel/study engine drives these proofs, running installed packages through bounded\n// subprocesses and protocol fixtures, so this project is isolated in its own gate script,\n// test:studies.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
+			'// Run these @orkestrel/study proofs on demand with npm run test:studies; no gate or chain runs them.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
 		)
 		expect(studied).toContain("name: { label: 'studies', color: 'red' },")
 		expect(studied).toContain("include: ['tests/studies/**/*.test.ts'],")

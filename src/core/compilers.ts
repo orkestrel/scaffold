@@ -585,12 +585,13 @@ export function replaceManifestOverride(
  * proofs every workspace can pass before it has a public API, and one build per
  * target that actually builds.
  *
- * A publishing workspace isolates its distribution, study, and live-service proofs
+ * A publishing workspace isolates its distribution and live-service proofs
  * from `test` and runs them from `prepublishOnly` instead. Publishing is what
  * selects the distribution proof: what that proof measures is the packed tarball,
  * so a workspace that packs no published source has nothing for it to read. A
- * private workspace therefore omits it and runs a study proof and a live-service
- * proof from `test`, the study proof first.
+ * private workspace therefore omits it and runs a live-service proof from `test`.
+ * Study proofs run on demand through `test:studies` in either workspace; no gate
+ * or chain runs them.
  * Integration and conformance stay in `test` because they neither pack nor
  * install the workspace and drive no external service. A conformance run may
  * start a server, but it starts its own and reaches it over loopback, so the run
@@ -705,7 +706,6 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			...(blueprint.conformance ? ['npm run test:conformance'] : []),
 			...(blueprint.tree ? ['npm run test:tree'] : []),
 			...(integrates ? ['npm run test:integration'] : []),
-			...(!publishes && blueprint.studies ? ['npm run test:studies'] : []),
 			...(!publishes && blueprint.service ? ['npm run test:service'] : []),
 		].join(' && '),
 		...(compiles
@@ -902,7 +902,6 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 								]
 							: []),
 						'npm test',
-						...(blueprint.studies ? ['npm run test:studies'] : []),
 						RELEASE_PROOF_COMMAND,
 						...(blueprint.service ? ['npm run test:service'] : []),
 					].join(' && '),
@@ -935,9 +934,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * `probe` project through `vitest bench`, before the dedicated bench project
  * existed. The pack hook accepts the build chain emitted before it
  * delegated to `build`. The publication hook accepts the same gate chain without
- * {@link RELEASE_PROOF_COMMAND}. A workspace carrying studies also accepts the
- * chain without its study step and the chain without both its study step and
- * the release proof. The value being written is always writable, so
+ * {@link RELEASE_PROOF_COMMAND}. No accepted publication chain carries a study
+ * step. The value being written is always writable, so
  * it is not repeated there. Any other value is a script the workspace author
  * customized, and {@link replaceManifestScripts} retains it while writing the
  * other named scripts independently.
@@ -1017,13 +1015,7 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 					{
 						name: 'prepublishOnly',
 						command: prepublish,
-						accepted: blueprint.studies
-							? [
-									unreleased,
-									prepublish.replace(' && npm run test:studies', ''),
-									unreleased.replace(' && npm run test:studies', ''),
-								]
-							: [unreleased],
+						accepted: [unreleased],
 					},
 				]),
 	]

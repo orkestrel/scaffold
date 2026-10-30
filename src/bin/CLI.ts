@@ -1283,7 +1283,7 @@ export class CLI implements CLIInterface {
 					(project): ReadonlyArray<readonly [string, string]> => {
 						const direct = `test:${project}`
 						const command = expected[direct]
-						return project === 'probe' || command === undefined
+						return project === 'probe' || project === 'studies' || command === undefined
 							? []
 							: [[project, `"${direct}": ${JSON.stringify(command)},`]]
 					},

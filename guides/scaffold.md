@@ -1135,13 +1135,12 @@ end-to-end proof that no study engine drives is an integration test instead. It 
 `tests/integration.test.ts` when it crosses environments.
 The project loads `tests/setup.ts` alone. The tests import
 `tests/setupStudy.ts`, a harness module the package owns, so scaffold plans no such file and no
-project loads it as a setup file. A publishing workspace invokes the project from `prepublishOnly`,
-after `npm test` and before the release proof; a `private: true` workspace invokes it from `test`,
-before the live-service project. Its longer timeouts and disabled file parallelism match the
+project loads it as a setup file. In publishing and `private: true` workspaces, run the project on
+demand with `npm run test:studies` alone; no gate or chain runs it.
+Its longer timeouts and disabled file parallelism match the
 live-service project. The root `studies/` directory holds the adapters and declarations the study
-tests run, and it selects nothing. A `prepublishOnly` chain written before the fact existed upgrades
-in place: the generated chain without its study step, and without both its study step and the release
-proof, are accepted predecessors.
+tests run, and it selects nothing. A chain that carries a study step fails the configuration proof
+until the workspace removes that step during scaffold adoption.
 
 `tree` says the workspace holds the exact-case `tests/tree.test.ts` proof, and it alone registers
 the `tree` Vitest project over that file and its `test:tree` script, which `test` invokes in a
@@ -2738,9 +2737,11 @@ projects. Scaffold also seeds proofs for its own setup modules, as Root setup mi
 
 Registration follows the same split. Scaffold registers `conformance`, `tree`, `studies`, and
 `service` when their structural facts are set, and registers `distribution` whenever the workspace
-publishes at least one `src` environment or sheet face. In a publishing workspace, `distribution`,
-`studies`, and `service` run from `prepublishOnly`, and `conformance` and `tree` stay in `test`. In a `private: true` workspace, `distribution` is absent,
-`studies` and then `service` run from `test`, and there is no `prepublishOnly` at all. The `policy` project reports an exporting root setup module that lacks its sibling proof or an import from `tests/setup.test.ts`.
+publishes at least one `src` environment or sheet face. In a publishing workspace, `distribution`
+and `service` run from `prepublishOnly`, and `conformance` and `tree` stay in `test`. In a
+`private: true` workspace, `distribution` is absent, `service` runs from `test`, and there is no
+`prepublishOnly`. In both kinds of workspace, `studies` runs on demand through `npm run test:studies`
+alone, outside every gate and chain. The `policy` project reports an exporting root setup module that lacks its sibling proof or an import from `tests/setup.test.ts`.
 Separately, a filled, exporting `tests/setup*.ts` module that no `tests/setup*.test.ts`
 proof covers raises the non-blocking `setup` question in `audit`, which names the modules and the proof to add.
 For setup modules the workspace authors, the workspace supplies the behavior proof; the setup modules scaffold seeds arrive with their sibling proofs.

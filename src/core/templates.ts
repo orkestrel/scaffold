@@ -827,9 +827,7 @@ export function service(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 `,
-		studies: `// The @orkestrel/study engine drives these proofs, running installed packages through bounded
-// subprocesses and protocol fixtures, so this project is isolated in its own gate script,
-// test:studies.
+		studies: `// Run these @orkestrel/study proofs on demand with npm run test:studies; no gate or chain runs them.
 export function studies(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,

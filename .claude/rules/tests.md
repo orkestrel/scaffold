@@ -166,12 +166,14 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 
 - Give it its own Vitest project with its own setup and timeout.
 - Keep it out of the default run where the workspace has a gate that can hold it.
-  `.claude/rules/workspace.md` fixes which gate each isolated project runs from, and that placement
+  `.claude/rules/workspace.md` fixes where each isolated project runs, and that placement
   differs between a publishing and a `private: true` workspace.
-- The fixed expensive-proof projects are `distribution`, `service`, and `studies`.
-- Put in `studies` only the proofs the `@orkestrel/study` engine drives. A slow end-to-end proof of
+- Use `distribution` and `service` as the fixed expensive-proof projects.
+- Put a study's proofs under `tests/studies/` in the `studies` project, which
+  `.claude/rules/workspace.md` § Test project matrix places.
+- Put in `studies` only the proofs the `@orkestrel/study` engine drives. Place a slow end-to-end proof of
   the package's own features that no study engine drives, such as its built executable run against
-  a fixture workspace, is an integration test under § Cross-cutting proofs. Place it by the scope it
+  a fixture workspace, as an integration test under § Cross-cutting proofs. Place it by the scope it
   composes:
   - Put a proof that crosses environments in `tests/integration.test.ts`, which the `integration`
     project runs from `test`.

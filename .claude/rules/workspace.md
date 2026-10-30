@@ -184,7 +184,7 @@ one environment, so each is its own project:
 | `distribution`      | `tests/distribution.test.ts`                                   | The packed package installs and resolves through its public exports                                                                                                                                                                                                                                                                                    | `prepublishOnly`; absent when private |
 | `integration`       | `tests/integration.test.ts`                                    | The package's features work together end to end across environments                                                                                                                                                                                                                                                                                    | `test`                                |
 | `service`           | `tests/service/**/*.test.ts`                                   | The live external services this package drives, driven for real                                                                                                                                                                                                                                                                                        | `prepublishOnly`; `test` when private |
-| `studies`           | `tests/studies/**/*.test.ts`                                   | The study proofs the `@orkestrel/study` engine drives: installed packages run through bounded subprocesses and protocol fixtures; an end-to-end proof no study engine drives is an integration test                                                                                                                                                    | `prepublishOnly`; `test` when private |
+| `studies`           | `tests/studies/**/*.test.ts`                                   | Run the study proofs the `@orkestrel/study` engine drives.                                                                                                                                                                                                                                                                                             | Run `npm run test:studies` on demand. |
 
 - Define the Node `setup` project when `global` selects its seeded proof or a root file matches
   `tests/setup*.test.ts`, exact-case, other than `tests/setupBrowser.test.ts` and
@@ -209,18 +209,18 @@ one environment, so each is its own project:
   from its application project, and run `test:journey` and one `test:journey:<framework>` per
   app-side browser extension after the application projects in `test`.
 
-`conformance`, `tree`, `integration`, `distribution`, `studies`, and `service` are separate
-subjects, not names for one.
+Keep `conformance`, `tree`, `integration`, `distribution`, `studies`, and `service` as separate
+subjects.
 Keep `conformance` in `test`: measure this package against an installed official artifact, and start
 any server the proof drives itself. Keep `tree` in `test`: read the real tree in Node and drive no
 build, install, or service. Keep `integration` in `test` whatever its cost: compose the workspace's public
 surfaces without packing, installing, or driving an external service. In a publishing workspace,
-run `distribution`, `studies`, and `service` from `prepublishOnly`: pack and install the package in
-`distribution`, run the authored study proofs in `studies` after `npm test` and before the release
-proof, and drive the real service with `tests/setupService.ts`, longer timeouts, and no file
+run `distribution` and `service` from `prepublishOnly`: pack and install the package in
+`distribution`, and drive the real service with `tests/setupService.ts`, longer timeouts, and no file
 parallelism in `service`. In a `private: true` workspace, never declare `prepublishOnly`; omit
-`distribution`, reach `studies` and then `service` from `test`, and retain each isolated project's
-configuration.
+`distribution`, reach `service` from `test`, and retain each isolated project's configuration.
+In both kinds of workspace, run `studies` on demand through `npm run test:studies` alone.
+Keep `test:studies` out of every gate and chain.
 
 One project sits on neither axis. `probe` includes `tmp/probes/**/*.test.ts` so an agent can run a
 throwaway instrument against real sources, aliases and setup. Declare no proof there. Keep the
@@ -292,26 +292,26 @@ Build/check config alignment:
 
 ## Script intent
 
-| Script                       | Contract                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| `dev`                        | Browser development entry                                                  |
-| `build`                      | Build configured library/application targets                               |
-| `serve` / `serve:build`      | Run built server / build then run                                          |
-| `showcase`                   | Showcase dev server of the base mode                                       |
-| `showcase:<framework>`       | Showcase dev server of that framework's mode                               |
-| `build:showcase`             | Build `showcase/browser.html`                                              |
-| `build:showcase:<framework>` | Build `showcase/<framework>.html`                                          |
-| `lint`                       | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck          |
-| `lint:check`                 | Non-mutating whole-tree lint gate                                          |
-| `check`                      | Comprehensive root typecheck plus configured isolation scopes              |
-| `check:<scope>`              | On-demand environment-isolation pass                                       |
-| `format`                     | Format all files                                                           |
-| `format:check`               | Non-mutating whole-tree format gate                                        |
-| `test`                       | Environment projects plus non-isolated cross-cutting proofs                |
-| `clean`                      | Remove `dist/`                                                             |
-| `copy <from> <to>`           | Copy while creating parent directories                                     |
-| `prepublishOnly`             | Publishing workspaces only: the gate chain, then isolated proofs           |
-| `prepack`                    | Publishing workspaces only: rebuild `dist/` so a pack ships current output |
+| Script                       | Contract                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `dev`                        | Browser development entry                                                    |
+| `build`                      | Build configured library/application targets                                 |
+| `serve` / `serve:build`      | Run built server / build then run                                            |
+| `showcase`                   | Showcase dev server of the base mode                                         |
+| `showcase:<framework>`       | Showcase dev server of that framework's mode                                 |
+| `build:showcase`             | Build `showcase/browser.html`                                                |
+| `build:showcase:<framework>` | Build `showcase/<framework>.html`                                            |
+| `lint`                       | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck            |
+| `lint:check`                 | Non-mutating whole-tree lint gate                                            |
+| `check`                      | Comprehensive root typecheck plus configured isolation scopes                |
+| `check:<scope>`              | On-demand environment-isolation pass                                         |
+| `format`                     | Format all files                                                             |
+| `format:check`               | Non-mutating whole-tree format gate                                          |
+| `test`                       | Environment projects plus non-isolated cross-cutting proofs                  |
+| `clean`                      | Remove `dist/`                                                               |
+| `copy <from> <to>`           | Copy while creating parent directories                                       |
+| `prepublishOnly`             | Publishing workspaces only: the gate chain, then the isolated release proofs |
+| `prepack`                    | Publishing workspaces only: rebuild `dist/` so a pack ships current output   |
 
 - In a publishing workspace, `prepublishOnly` runs `build:showcase` and every
   `build:showcase:<framework>` script after `npm run build`.
