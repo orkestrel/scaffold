@@ -1,13 +1,14 @@
 {
 	"name": "@orkestrel/scaffold",
 	"version": "0.0.115",
-	"description": "Scaffold workspaces with commands: new, audit, repair, catalog, and overwrite.",
+	"description": "Scaffold workspaces with commands: new, audit, surface, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
 		"catalog",
 		"new",
 		"overwrite",
-		"repair"
+		"repair",
+		"surface"
 	],
 	"homepage": "https://github.com/orkestrel/scaffold#readme",
 	"bugs": "https://github.com/orkestrel/scaffold/issues",

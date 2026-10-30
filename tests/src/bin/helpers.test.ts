@@ -1,7 +1,9 @@
 import type { Audit, Release, ToolchainHold } from '@src/core'
-import { describe, expect, it } from 'vitest'
+import type { CLICommand } from '../../../src/bin/types.js'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import { width } from '@orkestrel/console'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
+import { isString } from '@orkestrel/contract'
 import {
 	blueprintToDevDependencies,
 	blueprintToToolchainHolds,
@@ -15,11 +17,11 @@ import {
 	ScaffoldError,
 	TOOLCHAIN_HOLDS,
 } from '@src/core'
-import { MAX_INVENTORY_PATHS } from '@src/server'
+import { computeDigest, MAX_INVENTORY_PATHS, pathToStorage } from '@src/server'
 import { captureError, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-
 import {
+	CHECKOUT_ARGUMENT,
 	COMMAND_OPTIONS,
 	EXECUTABLE_NAME,
 	EXIT_CLEAN,
@@ -59,6 +61,7 @@ import {
 	releasesToPins,
 	releasesToQuestions,
 	renderUsage,
+	resolveFloor,
 	resultToTally,
 	sanitizeLine,
 	scanScriptTokens,
@@ -92,12 +95,83 @@ import {
 } from '../../setup.js'
 import {
 	AUDIT_EXIT_CASES,
+	buildHostManifest,
+	buildManifestEntry,
 	buildOptionArgv,
 	CATALOG_AGENT_ROWS_TEXT,
 	COMMAND_CASES,
 	SCRATCH_PREFIX,
 	USAGE_CASES,
 } from '../../setupServer.js'
+
+it('excludes checkouts from every other command branch and accepts surface offline', () => {
+	expectTypeOf<{
+		readonly verb: 'new'
+		readonly name: string
+		readonly checkouts: readonly string[]
+	}>().not.toExtend<CLICommand>()
+	expectTypeOf<{
+		readonly verb: 'audit'
+		readonly checkouts: readonly string[]
+	}>().not.toExtend<CLICommand>()
+	expectTypeOf<{
+		readonly verb: 'repair'
+		readonly checkouts: readonly string[]
+	}>().not.toExtend<CLICommand>()
+	expectTypeOf<{
+		readonly verb: 'catalog'
+		readonly checkouts: readonly string[]
+	}>().not.toExtend<CLICommand>()
+	expectTypeOf<{
+		readonly verb: 'overwrite'
+		readonly checkouts: readonly string[]
+	}>().not.toExtend<CLICommand>()
+	expect(argvToCommand(['surface', '--offline', 'candidate'])).toMatchObject({
+		verb: 'surface',
+		offline: true,
+		checkouts: ['candidate'],
+	})
+})
+
+it('writes the checkout list into the surface synopsis', () => {
+	expect(verbToSyntax('surface')).toBe(
+		`${EXECUTABLE_NAME} surface ${CHECKOUT_ARGUMENT} [--offline] [--from <path>] [--target <path>] [--json]`,
+	)
+	expect(CHECKOUT_ARGUMENT).toBe('[<checkout>...]')
+})
+
+it('resolves the bundled host, a built root, and a raw checkout as the floor', () => {
+	const workspace = createScratch()
+	try {
+		const bundled = resolveFloor()
+		expect(isString(bundled) ? undefined : Object.keys(bundled.bytes)).toContain(CATALOG_AGENT_PATH)
+		workspace.write('checkout/package.json', '{"name":"@orkestrel/alpha"}')
+		expect(resolveFloor(join(workspace.path, 'checkout'))).toBe(join(workspace.path, 'checkout'))
+		const text = '| Package |\n| --- |\n| @orkestrel/alpha |\n'
+		const storage = pathToStorage(CATALOG_AGENT_PATH)
+		workspace.write(`built/${storage}`, text)
+		workspace.write(
+			'built/manifest.json',
+			JSON.stringify(
+				buildHostManifest({
+					entries: [
+						buildManifestEntry({
+							storage,
+							destination: CATALOG_AGENT_PATH,
+							digest: computeDigest(text),
+						}),
+					],
+					roots: [],
+				}),
+			),
+		)
+		const built = resolveFloor(join(workspace.path, 'built'))
+		expect(catalogToNames(built)).toEqual(['@orkestrel/alpha'])
+		expect(catalogToNames(join(workspace.path, 'built'))).toEqual([])
+	} finally {
+		workspace.destroy()
+	}
+})
 
 describe('selected showcase declaration projection', () => {
 	it('projects both selected sections while retaining ordinary runtime precedence', () => {

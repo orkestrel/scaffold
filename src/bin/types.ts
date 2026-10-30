@@ -6,6 +6,8 @@ import type {
 	Mirror,
 	Question,
 	Release,
+	SurfaceClaim,
+	SurfaceFinding,
 } from '@src/core'
 import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '@src/server'
 
@@ -13,8 +15,8 @@ import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '
  * Names the executable's closed command vocabulary.
  *
  * @remarks
- * Authority is carried by the verb. Every verb writes when it is typed, and
- * `audit` is the only verb that never writes.
+ * Authority is carried by the verb. `audit` and `surface` read without writing;
+ * the other verbs write when typed.
  *
  * `new` scaffolds a workspace. `repair` writes each planned path according to
  * its artifact ownership. `catalog` regenerates the marker-bounded package
@@ -24,7 +26,7 @@ import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '
  * because it alone deletes the files the plan does not own and rewrites the
  * `@orkestrel/*` range set in the manifest.
  */
-export type Verb = 'new' | 'audit' | 'repair' | 'catalog' | 'overwrite'
+export type Verb = 'new' | 'audit' | 'surface' | 'repair' | 'catalog' | 'overwrite'
 
 /** Names the baseline one upstream-backed command surface used. */
 export type Baseline = 'live' | 'floor'
@@ -35,11 +37,27 @@ export type Baseline = 'live' | 'floor'
  * @remarks
  * An absent property means the command did not read that surface. A local
  * `--from` host is therefore absent rather than described as live or floor.
+ * `membership` names the package list and `record` the collision record the `surface`
+ * verb compared against.
  */
 export interface Provenance {
+	readonly membership?: Baseline
 	readonly versions?: Baseline
 	readonly guides?: Baseline
 	readonly host?: Baseline
+	readonly record?: Baseline
+}
+
+/** Reports an owner's claim source, with no names when the owner is unread. */
+export type SurfaceOwner =
+	| (SurfaceClaim & { readonly source: 'candidate' | 'live' | 'floor' })
+	| { readonly owner: string; readonly source: 'unread'; readonly names?: never }
+
+/** Reports each owner's claim source, the collision standings, and the baseline provenance. */
+export interface SurfaceResult {
+	readonly owners: readonly SurfaceOwner[]
+	readonly collisions: readonly SurfaceFinding[]
+	readonly provenance: Provenance
 }
 
 /**
@@ -59,8 +77,8 @@ export interface CommandBase {
  * Scaffolds a workspace.
  *
  * @remarks
- * `name` is the workspace name, and is the only positional argument any verb
- * takes. `src`, `app`, and `dependencies` are the comma-separated selections
+ * `name` is the workspace name and this verb's positional argument.
+ * `src`, `app`, and `dependencies` are the comma-separated selections
  * behind `--src`, `--app`, and `--deps`. `bin` adds the executable environment.
  * `styles` adds the styles surface. `themes` adds its themes target and requires
  * `styles`. `showcase` adds the showcase and requires a browser application.
@@ -68,6 +86,7 @@ export interface CommandBase {
  * `from` reads the data root from a local path instead of the bundled one.
  */
 export interface NewCommand extends CommandBase {
+	readonly checkouts?: never
 	readonly verb: 'new'
 	readonly name: string
 	readonly src?: string
@@ -92,6 +111,7 @@ export interface NewCommand extends CommandBase {
  * `groups` scopes the comparison to artifact groups.
  */
 export interface AuditCommand extends CommandBase {
+	readonly checkouts?: never
 	readonly verb: 'audit'
 	readonly groups?: string
 	readonly from?: string
@@ -105,8 +125,32 @@ export interface AuditCommand extends CommandBase {
 	readonly dirty?: never
 }
 
+/**
+ * Selects candidate checkouts for a read-only fleet name comparison.
+ *
+ * @remarks
+ * `checkouts` holds the positional paths. `target` adds the working directory
+ * by default when it carries package.json. `from` selects the published data root.
+ * `offline` reads the bundled guides and record without making a request.
+ */
+export interface SurfaceCommand extends CommandBase {
+	readonly verb: 'surface'
+	readonly checkouts: readonly string[]
+	readonly from?: string
+	readonly name?: never
+	readonly src?: never
+	readonly app?: never
+	readonly bin?: never
+	readonly dependencies?: never
+	readonly groups?: never
+	readonly all?: never
+	readonly dirty?: never
+	readonly offline?: boolean
+}
+
 /** Writes each planned path the target is missing or has let drift. */
 export interface RepairCommand extends CommandBase {
+	readonly checkouts?: never
 	readonly verb: 'repair'
 	readonly groups?: string
 	readonly from?: string
@@ -129,6 +173,7 @@ export interface RepairCommand extends CommandBase {
  * because a catalog may draw on more than one local source.
  */
 export interface CatalogCommand extends CommandBase {
+	readonly checkouts?: never
 	readonly verb: 'catalog'
 	readonly all?: boolean
 	readonly from?: readonly string[]
@@ -151,6 +196,7 @@ export interface CatalogCommand extends CommandBase {
  * already carries that.
  */
 export interface OverwriteCommand extends CommandBase {
+	readonly checkouts?: never
 	readonly verb: 'overwrite'
 	readonly groups?: string
 	readonly dirty?: boolean
@@ -179,6 +225,7 @@ export interface OverwriteCommand extends CommandBase {
 export type CLICommand =
 	| NewCommand
 	| AuditCommand
+	| SurfaceCommand
 	| RepairCommand
 	| CatalogCommand
 	| OverwriteCommand

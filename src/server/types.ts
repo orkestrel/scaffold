@@ -10,6 +10,7 @@ import type {
 	Plan,
 	Release,
 	Snapshot,
+	SurfaceCollision,
 } from '@src/core'
 
 /**
@@ -89,11 +90,28 @@ export interface HostManifest {
 	readonly digest: string
 }
 
-/** Represents a Surface name claimed by distinct package guides. */
-export interface SurfaceCollision {
-	readonly name: string
-	readonly owners: readonly string[]
+/**
+ * Describes the guide module functions required by surface reflection.
+ *
+ * @remarks
+ * Declares only the members surface reflection calls, so a consumer of these declarations needs
+ * no copy of `@orkestrel/guide`.
+ */
+export interface SurfaceModule {
+	readonly createGuide: (text: string) => {
+		readonly surface: () => ReadonlyArray<{ readonly name: string }>
+	}
+	readonly createSource: (options: {
+		readonly files: Readonly<Record<string, string>>
+		readonly module: string
+	}) => { readonly surface: () => ReadonlyArray<{ readonly name: string }> }
+	readonly extractSourceLines: (
+		text: string,
+	) => ReadonlyArray<{ readonly code: string; readonly source: string }>
 }
+
+/** Loads a module by specifier for validated surface reflection. */
+export type SurfaceLoader = (specifier: string) => unknown
 
 /**
  * Configures the committed inventory baseline and staging reports.
@@ -404,13 +422,17 @@ export interface ReadAllowanceInterface {
  * call inherits it when it is not `found`. `digests` maps a target-relative
  * destination to the exact bytes the inventory declares for it, `duplicates`
  * names every destination the inventory claims more than once, and `note` states
- * why a lookup that is not `found` produced no inventory.
+ * why a lookup that is not `found` produced no inventory. `surface` holds the
+ * verified collision record when found and an empty collection otherwise.
+ * `unreachable` is true only when the inventory request produced no HTTP response.
  */
 export interface HostInventory {
 	readonly lookup: Lookup
 	readonly digests: ReadonlyMap<string, string>
 	readonly duplicates: ReadonlySet<string>
 	readonly note: string
+	readonly surface: readonly SurfaceCollision[]
+	readonly unreachable?: boolean
 }
 
 /**
@@ -420,11 +442,13 @@ export interface HostInventory {
  * `content` carries the body only when `lookup` is `found`; otherwise it is
  * empty and `note` states what happened. A read that is not `found` is an answer
  * rather than a throw, which is what lets one dead row sit beside live ones.
+ * `unreachable` is true only when the request produced no HTTP response.
  */
 export interface TextReadResult {
 	readonly lookup: Lookup
 	readonly content: string
 	readonly note: string
+	readonly unreachable?: boolean
 }
 
 /**
@@ -435,11 +459,13 @@ export interface TextReadResult {
  * `found`; otherwise it is empty and `note` states what happened. Bytes rather
  * than text, because a vendored file is compared by digest and a decode would
  * change what is hashed.
+ * `unreachable` is true only when the request produced no HTTP response.
  */
 export interface BytesReadResult {
 	readonly lookup: Lookup
 	readonly hex: string
 	readonly note: string
+	readonly unreachable?: boolean
 }
 
 /**
@@ -487,6 +513,8 @@ export interface UpstreamInterface {
 	 * @returns One row per published package, sorted by name.
 	 */
 	catalog(): Promise<readonly CatalogEntry[]>
+	/** Reads the verified upstream inventory and its collision record. */
+	inventory(allowance?: ReadAllowanceInterface): Promise<HostInventory>
 	/**
 	 * Tears the reader down, aborting every request in flight. Teardown is idempotent.
 	 *

@@ -11,6 +11,9 @@ import type {
 	Ownership,
 	Plan,
 	PlanSummary,
+	SurfaceClaim,
+	SurfaceCollision,
+	SurfaceFinding,
 } from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
@@ -34,6 +37,72 @@ import {
 	WORKSPACE_OWNED_PATHS,
 } from './constants.js'
 import { ARTIFACT_TEMPLATES } from './templates.js'
+
+/**
+ * Collects bare names claimed by distinct owners in sorted order.
+ *
+ * @remarks
+ * Declaration keywords and environments do not enter a claim's identity.
+ * Repeated claims by one owner count once.
+ *
+ * @example
+ * ```ts
+ * import { collectSurfaceCollisions } from '@orkestrel/scaffold'
+ *
+ * collectSurfaceCollisions([{ owner: 'router', names: ['Route'] }]) // []
+ * ```
+ */
+export function collectSurfaceCollisions(
+	claims: readonly SurfaceClaim[],
+): readonly SurfaceCollision[] {
+	const grouped = Map.groupBy(
+		claims.flatMap(({ owner, names }) => names.map((name) => ({ name, owner }))),
+		({ name }) => name,
+	)
+	return [...grouped]
+		.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+		.flatMap(([name, entries]) => {
+			const owners = [...new Set(entries.map(({ owner }) => owner))].sort()
+			return owners.length > 1 ? [{ name, owners }] : []
+		})
+}
+
+/**
+ * Compares collisions with the record and reports errors, recorded subsets, and closures.
+ *
+ * @remarks
+ * A name absent from the record or carrying an additional owner is an error.
+ * A recorded name absent from the collisions is closed. Results sort by name.
+ *
+ * @example
+ * ```ts
+ * import { compareSurfaceCollisions } from '@orkestrel/scaffold'
+ *
+ * compareSurfaceCollisions([], [{ name: 'Route', owners: ['router', 'server'] }])
+ * // [{ name: 'Route', owners: ['router', 'server'], standing: 'closed' }]
+ * ```
+ */
+export function compareSurfaceCollisions(
+	collisions: readonly SurfaceCollision[],
+	record: readonly SurfaceCollision[],
+): readonly SurfaceFinding[] {
+	const baseline = new Map(record.map((entry) => [entry.name, entry.owners]))
+	const names = new Set(collisions.map(({ name }) => name))
+	return [
+		...collisions.map(({ name, owners }): SurfaceFinding => ({
+			name,
+			owners: [...owners],
+			standing: owners.every((owner) => baseline.get(name)?.includes(owner)) ? 'recorded' : 'error',
+		})),
+		...record
+			.filter(({ name }) => !names.has(name))
+			.map(({ name, owners }): SurfaceFinding => ({
+				name,
+				owners: [...owners],
+				standing: 'closed',
+			})),
+	].sort((left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0))
+}
 
 /**
  * Encodes bytes as exact lowercase hexadecimal text.

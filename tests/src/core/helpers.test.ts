@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isRecord } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
+import { createScratch } from '@orkestrel/test/server'
+import { requireValue } from '@orkestrel/test'
 import {
 	artifactToFinding,
 	artifactToHex,
@@ -10,6 +12,8 @@ import {
 	CANON_PATHS,
 	catalogToLayers,
 	compareVersions,
+	collectSurfaceCollisions,
+	compareSurfaceCollisions,
 	computeBytes,
 	computeHash,
 	computeTotal,
@@ -50,6 +54,56 @@ import {
 	TAB_WIDTH,
 	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
+
+describe('surface claims', () => {
+	it('groups bare names across owners and deduplicates one owner', () => {
+		const scratch = createScratch({
+			files: { 'alpha.txt': 'Shared\nShared\nshared', 'beta.txt': 'Shared' },
+		})
+		try {
+			const claims = ['alpha', 'beta'].map((owner) => ({
+				owner,
+				names: requireValue(scratch.read(`${owner}.txt`)).split(/\r\n|\n/u),
+			}))
+			expect(collectSurfaceCollisions(claims)).toEqual([
+				{ name: 'Shared', owners: ['alpha', 'beta'] },
+			])
+			expect(collectSurfaceCollisions(claims.filter(({ owner }) => owner === 'alpha'))).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('classifies recorded subsets, added owners, unrecorded names, and closed collisions', () => {
+		const scratch = createScratch({ files: { 'owners.txt': 'alpha\nbeta' } })
+		try {
+			const owners = requireValue(scratch.read('owners.txt')).split(/\r\n|\n/u)
+			const record = ['Recorded', 'Growth', 'Closed', 'Subset'].map((name) => ({
+				name,
+				owners: name === 'Subset' ? [...owners, 'gamma'] : owners,
+			}))
+			expect(
+				compareSurfaceCollisions(
+					[
+						{ name: 'Recorded', owners },
+						{ name: 'Growth', owners: [...owners, 'gamma'] },
+						{ name: 'Fresh', owners },
+						{ name: 'Subset', owners },
+					],
+					record,
+				),
+			).toEqual([
+				{ name: 'Closed', owners, standing: 'closed' },
+				{ name: 'Fresh', owners, standing: 'error' },
+				{ name: 'Growth', owners: [...owners, 'gamma'], standing: 'error' },
+				{ name: 'Recorded', owners, standing: 'recorded' },
+				{ name: 'Subset', owners, standing: 'recorded' },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
 import {
 	buildBlueprint,
 	buildCatalogEntry,

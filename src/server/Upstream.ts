@@ -20,6 +20,7 @@ import type {
 } from './types.js'
 import {
 	isError,
+	isObject,
 	isRecord,
 	isString,
 	parseJSON,
@@ -293,7 +294,7 @@ export class Upstream implements UpstreamInterface {
 		const observed = this.#accept(current, isSnapshot, 'current')
 		if (accepted.length === 0) return []
 		const allowance = new ReadAllowance(this.#budget)
-		const inventory = await this.#inventory(allowance)
+		const inventory = await this.inventory(allowance)
 		return this.#gather(accepted, (path) => this.#file(path, inventory, observed, allowance))
 	}
 
@@ -313,7 +314,9 @@ export class Upstream implements UpstreamInterface {
 	 * unreadable list would otherwise be written into a target's catalog table as
 	 * a fleet with no packages in it. A package whose own version lookup then
 	 * fails still keeps its row, carrying the cause instead of a version, because
-	 * the list already proved the package is published.
+	 * the list already proved the package is published. The `FETCH` failure's
+	 * context carries `unreachable: true` only when the list request produced no
+	 * HTTP response.
 	 *
 	 * @example
 	 * ```ts
@@ -329,6 +332,69 @@ export class Upstream implements UpstreamInterface {
 		const allowance = new ReadAllowance(this.#budget)
 		const names = await this.#packages(allowance)
 		return this.#gather(names, (name) => this.#entry(name, allowance))
+	}
+
+	/**
+	 * Reads the verified upstream inventory and its collision record.
+	 *
+	 * @param allowance - A shared call allowance; omitted calls open their own budget.
+	 * @returns A found inventory with its surface, or an unfound verdict with empty collections,
+	 * carrying `unreachable: true` only when the request produced no HTTP response.
+	 * @throws Thrown with DESTROYED when the reader has been torn down.
+	 * @example
+	 * ```ts
+	 * import { Upstream } from '@orkestrel/scaffold/server'
+	 * const upstream = new Upstream()
+	 * const inventory = await upstream.inventory()
+	 * inventory.surface // the verified record when lookup is found
+	 * upstream.destroy()
+	 * ```
+	 */
+	async inventory(
+		allowance: ReadAllowanceInterface = new ReadAllowance(this.#budget),
+	): Promise<HostInventory> {
+		this.#assertAlive()
+		const url = this.#vendorURL(HOST_INVENTORY_PATH)
+		const empty = { digests: new Map<string, string>(), duplicates: new Set<string>(), surface: [] }
+		const outcome = await this.#readWithRetries(url, this.#repositoryTimeout, allowance)
+		if (outcome.lookup !== 'found') {
+			return {
+				...empty,
+				lookup: outcome.lookup,
+				note:
+					outcome.lookup === 'missing'
+						? `the vendored inventory at ${url} is not published there`
+						: `the vendored inventory at ${url} produced no answer: ${outcome.note}`,
+				...(outcome.unreachable === true ? { unreachable: true } : {}),
+			}
+		}
+		const manifest = parseJSONAs(outcome.content, isHostManifest)
+		if (manifest === undefined) {
+			return {
+				...empty,
+				lookup: 'failed',
+				note: `the vendored inventory at ${url} is not a readable manifest`,
+			}
+		}
+		if (
+			manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots, manifest.surface)
+		) {
+			return {
+				...empty,
+				lookup: 'failed',
+				note: `the vendored inventory at ${url} does not match its own membership digest`,
+			}
+		}
+		// A repeated destination keeps its first position and its last digest, as a keyed write does.
+		const digests = new Map(
+			manifest.entries.map((entry): readonly [string, string] => [entry.destination, entry.digest]),
+		)
+		const duplicates = new Set(
+			manifest.entries
+				.map((entry) => entry.destination)
+				.filter((destination, index, destinations) => destinations.indexOf(destination) !== index),
+		)
+		return { lookup: 'found', digests, duplicates, surface: manifest.surface, note: '' }
 	}
 
 	/**
@@ -542,56 +608,6 @@ export class Upstream implements UpstreamInterface {
 		return { path, lookup: 'found', hex: outcome.hex, ...carried }
 	}
 
-	// The committed inventory, read once per call and projected into the lookup
-	// every row of that call is decided against. It fails softly rather than
-	// throwing, because a caller holding one whole failed answer can fall back to
-	// one whole baseline, where a mixture of live and dead rows leaves it nothing
-	// to fall back to. The membership digest is recomputed rather than trusted, so
-	// a membership edit that did not update the manifest's own claim is refused
-	// here instead of authorizing bytes downstream.
-	async #inventory(allowance: ReadAllowanceInterface): Promise<HostInventory> {
-		const url = this.#vendorURL(HOST_INVENTORY_PATH)
-		const empty = { digests: new Map<string, string>(), duplicates: new Set<string>() }
-		const outcome = await this.#readWithRetries(url, this.#repositoryTimeout, allowance)
-		if (outcome.lookup !== 'found') {
-			return {
-				...empty,
-				lookup: outcome.lookup,
-				note:
-					outcome.lookup === 'missing'
-						? `the vendored inventory at ${url} is not published there`
-						: `the vendored inventory at ${url} produced no answer: ${outcome.note}`,
-			}
-		}
-		const manifest = parseJSONAs(outcome.content, isHostManifest)
-		if (manifest === undefined) {
-			return {
-				...empty,
-				lookup: 'failed',
-				note: `the vendored inventory at ${url} is not a readable manifest`,
-			}
-		}
-		if (
-			manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots, manifest.surface)
-		) {
-			return {
-				...empty,
-				lookup: 'failed',
-				note: `the vendored inventory at ${url} does not match its own membership digest`,
-			}
-		}
-		// A repeated destination keeps its first position and its last digest, as a keyed write does.
-		const digests = new Map(
-			manifest.entries.map((entry): readonly [string, string] => [entry.destination, entry.digest]),
-		)
-		const duplicates = new Set(
-			manifest.entries
-				.map((entry) => entry.destination)
-				.filter((destination, index, destinations) => destinations.indexOf(destination) !== index),
-		)
-		return { lookup: 'found', digests, duplicates, note: '' }
-	}
-
 	// One catalog row. It publishes nothing on the observation channel: the
 	// channel carries the verdicts the writer binds to, and a catalog row is
 	// not one of them, so the whole sorted list is the answer instead.
@@ -666,6 +682,7 @@ export class Upstream implements UpstreamInterface {
 			throw this.#error('FETCH', `The organization package list at ${url} produced no answer.`, {
 				url,
 				note: outcome.note,
+				...(outcome.unreachable === true ? { unreachable: true } : {}),
 			})
 		}
 		const parsed = parseJSON(outcome.content)
@@ -826,7 +843,7 @@ export class Upstream implements UpstreamInterface {
 		}
 		const note = outcome.note
 		this.#error('FETCH', `The upstream read at ${url} produced no answer.`, { url, note })
-		return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
+		return outcome
 	}
 
 	// One request: unauthenticated, redirect-free, and bounded by both the
@@ -857,12 +874,23 @@ export class Upstream implements UpstreamInterface {
 			const note = `the call spent its ${String(this.#budget)}-byte allowance`
 			return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 		}
+		const fetched = await fetch(url, {
+			signal: AbortSignal.any([this.#controller.signal, AbortSignal.timeout(timeout)]),
+			redirect: 'manual',
+			...(accept === undefined ? {} : { headers: { accept } }),
+		}).then(
+			(response) => ({ response }),
+			(error: unknown) => ({ error }),
+		)
+		if ('error' in fetched) {
+			this.#assertAlive()
+			const note = this.#note(fetched.error)
+			return binary
+				? { lookup: 'failed', hex: '', note, unreachable: true }
+				: { lookup: 'failed', content: '', note, unreachable: true }
+		}
 		try {
-			const response = await fetch(url, {
-				signal: AbortSignal.any([this.#controller.signal, AbortSignal.timeout(timeout)]),
-				redirect: 'manual',
-				...(accept === undefined ? {} : { headers: { accept } }),
-			})
+			const response = fetched.response
 			if (response.status === 404) {
 				await response.body?.cancel()
 				return binary
@@ -974,7 +1002,7 @@ export class Upstream implements UpstreamInterface {
 	#note(error: unknown): string {
 		if (!isError(error)) return 'the request failed for an unreported reason'
 		const cause = error.cause
-		const code = isRecord(cause) && isString(cause.code) ? cause.code : undefined
+		const code = isObject(cause) && 'code' in cause && isString(cause.code) ? cause.code : undefined
 		const message = `${error.name}: ${error.message}`
 		return code === undefined ? message : `${message} (${code})`
 	}

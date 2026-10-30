@@ -75,6 +75,8 @@ import {
 	isPhysicalDirectory,
 	MAX_INVENTORY_PATHS,
 	readFileText,
+	readHostFloor,
+	readHostManifest,
 	resolveContainedPath,
 } from '@src/server'
 import { readdirSync } from 'node:fs'
@@ -89,6 +91,7 @@ import {
 	FAILED_CODE,
 	FAILED_MESSAGE,
 	NAME_ARGUMENT,
+	CHECKOUT_ARGUMENT,
 	OPTION_SUMMARY,
 	ROOT_IMPORT_PATTERN,
 	SHEET_IMPORT_PATTERN,
@@ -150,7 +153,7 @@ export function environmentToUpstream(
  * @remarks
  * The synopsis is derived from the verb's own option list rather than stored
  * beside it, so a line that documents an option the verb does not take cannot be
- * written. `new` alone carries the positional argument.
+ * written. `new` carries a workspace name; `surface` carries candidate checkouts.
  *
  * @example
  * ```ts
@@ -160,7 +163,8 @@ export function environmentToUpstream(
  * ```
  */
 export function verbToSyntax(verb: Verb): string {
-	const argument = verb === 'new' ? ` ${NAME_ARGUMENT}` : ''
+	const argument =
+		verb === 'new' ? ` ${NAME_ARGUMENT}` : verb === 'surface' ? ` ${CHECKOUT_ARGUMENT}` : ''
 	const options = VERB_OPTIONS[verb].map((option) => `[${option}]`).join(' ')
 	return `${EXECUTABLE_NAME} ${verb}${argument} ${options}`
 }
@@ -243,12 +247,12 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 		throw new UsageError(`'${verb}' does not take ${names}.`)
 	}
 	const [name] = positionals
-	if (positionals.length > 1) {
+	if (verb !== 'surface' && positionals.length > 1) {
 		throw new UsageError(
 			`'${verb}' takes at most one argument, and was given ${String(positionals.length)}.`,
 		)
 	}
-	if (verb !== 'new' && name !== undefined) {
+	if (verb !== 'new' && verb !== 'surface' && name !== undefined) {
 		throw new UsageError(`'${verb}' takes no argument, and was given '${name}'.`)
 	}
 	const paths = isArray(values.from) ? values.from.filter(isString) : []
@@ -295,6 +299,15 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 			}
 		case 'audit':
 			return { verb, json, ...location, ...source, ...selection, ...(offline ? { offline } : {}) }
+		case 'surface':
+			return {
+				verb,
+				checkouts: positionals,
+				json,
+				...location,
+				...source,
+				...(offline ? { offline } : {}),
+			}
 		case 'repair':
 			return { verb, json, ...location, ...source, ...selection, ...(offline ? { offline } : {}) }
 		case 'catalog':
@@ -1387,6 +1400,30 @@ export function selectionToExtensions(
 		if (!styles) throw new UsageError('A styles extension requires --styles.')
 		return extension
 	})
+}
+
+/**
+ * Resolves the data root a reading verb draws its floor from.
+ *
+ * @param from - The local root `--from` names. Default: the bundled host.
+ * @returns The verified host value of a built root, or the path of a raw checkout that carries
+ * no `manifest.json`.
+ * @throws As `readHostFloor` throws when the bundled host or a built root is unreadable.
+ *
+ * @remarks
+ * A built root stores each file under its storage name, so a destination such as the catalog
+ * table is read through the verified host value rather than by path.
+ *
+ * @example
+ * ```ts
+ * import { resolveFloor } from './helpers.js'
+ *
+ * resolveFloor('../scaffold') // the checkout path when it carries no manifest.json
+ * ```
+ */
+export function resolveFloor(from?: string): string | Host {
+	if (from === undefined) return readHostFloor()
+	return readHostManifest(from) === undefined ? from : readHostFloor(from)
 }
 
 /**

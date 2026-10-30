@@ -1,5 +1,5 @@
 import type { HostFile } from '@src/core'
-import { registerHooks } from 'node:module'
+import { createRequire } from 'node:module'
 import {
 	chmodSync,
 	existsSync,
@@ -15,7 +15,7 @@ import {
 import { once } from 'node:events'
 import { dirname, join, parse } from 'node:path'
 import { Worker } from 'node:worker_threads'
-import { arrayOf, isRecord, isString } from '@orkestrel/contract'
+import { arrayOf, isError, isRecord, isString } from '@orkestrel/contract'
 import { executeSync } from '@orkestrel/process/server'
 import { captureError, createRecorder, requireValue } from '@orkestrel/test'
 import {
@@ -43,6 +43,7 @@ import {
 	decodeHexText,
 	hexToDigest,
 	isHost,
+	isSurfaceModule,
 	isPhysicalDirectory,
 	isExactCaseFile,
 	isPhysicalFile,
@@ -73,6 +74,12 @@ import {
 	readSnapshot,
 	readSurfaceBaseline,
 	readSurfaceCollisions,
+	readSurfaceModule,
+	readSurfaceClaims,
+	readSurfaceCandidate,
+	readSurfaceFile,
+	readSurfaceGuide,
+	readSurfaceRecord,
 	resolveContainedPath,
 	resolveRealPath,
 	stageBytes,
@@ -102,11 +109,11 @@ import {
 	buildMissingFile,
 	buildVendoredPlan,
 	buildManifestEntry,
+	buildHostManifest,
 	buildStagedManifest,
 	buildVendoredManifest,
 	CASE_INSENSITIVE,
 	createCheckout,
-	refuseGuideResolution,
 	CATALOG_AGENT_ROWS_TEXT,
 	createHostRoot,
 	createOllamaServer,
@@ -2348,18 +2355,208 @@ describe('stageBytes', () => {
 })
 
 describe('readSurfaceCollisions', () => {
+	it('refuses an unreadable candidate guide even when its source directory exists', () => {
+		const workspace = createScratch({ files: { 'package.json': '{"name":"@orkestrel/alpha"}' } })
+		try {
+			workspace.ensure('src')
+			writeFileSync(join(workspace.ensure('guides'), 'alpha.md'), new Uint8Array([255]))
+			expect(() => readSurfaceCandidate(workspace.path)).toThrow(
+				JSON.stringify(join(workspace.path, 'guides/alpha.md')),
+			)
+			workspace.write('guides/alpha.md', 'x'.repeat(MAX_ARTIFACT_BYTES + 1))
+			expect(() => readSurfaceCandidate(workspace.path)).toThrow('alpha.md')
+		} finally {
+			workspace.destroy()
+		}
+	})
 	it('refuses a missing guide module with the scaffold failure vocabulary', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		const hooks = registerHooks({ resolve: refuseGuideResolution })
 		try {
-			expect(captureError(() => readSurfaceCollisions(workspace.path))).toMatchObject({
+			expect(isSurfaceModule(readSurfaceModule())).toBe(true)
+			expect(isSurfaceModule({})).toBe(false)
+			expect(isSurfaceModule(undefined)).toBe(false)
+			expect(isSurfaceModule(Proxy.revocable({}, {}).proxy)).toBe(false)
+			const loader = createRequire(join(workspace.path, 'loader.cjs'))
+			expect(captureError(() => readSurfaceClaims(workspace.path, loader))).toMatchObject({
 				code: 'TARGET',
 				message: expect.stringContaining('@orkestrel/guide'),
 			})
+			workspace.write('package.json', '{"name":"@orkestrel/alpha"}')
+			workspace.ensure('src')
+			expect(captureError(() => readSurfaceCandidate(workspace.path, loader))).toMatchObject({
+				code: 'TARGET',
+			})
+			workspace.write('node_modules/@orkestrel/guide/package.json', '{"main":"index.cjs"}')
+			workspace.write('node_modules/@orkestrel/guide/index.cjs', 'module.exports = {}')
+			expect(captureError(() => readSurfaceCandidate(workspace.path, loader))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining('createSource'),
+			})
 		} finally {
-			hooks.deregister()
 			workspace.destroy()
 		}
+	})
+	it('ignores binary assets and refuses unsupported barrel statements and unreadable source paths', () => {
+		const workspace = createScratch({
+			files: {
+				'package.json': '{"name":"@orkestrel/alpha"}',
+				'src/core/index.ts': "export * from './types.js'\n",
+				'src/core/types.ts': 'export interface Visible {}\n',
+			},
+		})
+		try {
+			writeFileSync(join(workspace.path, 'src/core/asset.bin'), new Uint8Array([255]))
+			expect(readSurfaceCandidate(workspace.path).names).toEqual(['Visible'])
+			for (const statement of [
+				"export { Visible } from './types.js'",
+				"export type * from './types.js'",
+				"export * as names from './types.js'",
+				'export const Missing = 1',
+			]) {
+				workspace.write('src/core/index.ts', `${statement}\n`)
+				expect(captureError(() => readSurfaceCandidate(workspace.path))).toMatchObject({
+					code: 'TARGET',
+					message: expect.stringContaining(JSON.stringify(statement)),
+				})
+			}
+			workspace.write('src/core/index.ts', "export * from './types.js'\n")
+			writeFileSync(join(workspace.path, 'src/core/types.ts'), new Uint8Array([255]))
+			expect(() => readSurfaceCandidate(workspace.path)).toThrow('"src/core/types.ts"')
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('reads candidate barrels before their guide rows and accepts either claim source', () => {
+		const workspace = createScratch({
+			files: {
+				'package.json': '{"name":"@orkestrel/alpha"}',
+				'guides/alpha.md':
+					'# Alpha\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Documented` | interface | `{}` | Describes a value. |\n',
+				'src/core/index.ts': "export * from './types.js'\n",
+				'src/core/types.ts': 'export interface Unwritten {}\n',
+				'src/server/index.ts': "export * from './types.js'\n",
+				'src/server/types.ts': 'export interface ServerOnly {}\n',
+			},
+		})
+		try {
+			expect(readSurfaceCandidate(workspace.path)).toEqual({
+				owner: 'alpha',
+				names: ['Documented', 'ServerOnly', 'Unwritten'],
+			})
+			expect(readSurfaceClaims(join(workspace.path, 'guides'))).toEqual([
+				{ owner: 'alpha', names: ['Documented'] },
+			])
+			workspace.remove('guides/alpha.md')
+			expect(readSurfaceCandidate(workspace.path).names).toEqual(['ServerOnly', 'Unwritten'])
+			workspace.write('guideonly/package.json', '{"name":"@orkestrel/beta"}')
+			workspace.write(
+				'guideonly/guides/beta.md',
+				'# Beta\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Documented` | function | `() => void` | Returns a value. |\n',
+			)
+			expect(readSurfaceCandidate(join(workspace.path, 'guideonly'))).toEqual({
+				owner: 'beta',
+				names: ['Documented'],
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses candidates without a manifest or either claim source and names their path', () => {
+		const workspace = createScratch()
+		try {
+			expect(() => readSurfaceCandidate(workspace.path)).toThrow('package.json')
+			workspace.write('package.json', '{"name":"@orkestrel/alpha"}')
+			expect(captureError(() => readSurfaceCandidate(workspace.path))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining(JSON.stringify(workspace.path)),
+			})
+			workspace.ensure('src')
+			expect(readSurfaceCandidate(workspace.path)).toEqual({ owner: 'alpha', names: [] })
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads the built record before the committed one and refuses a root with neither', () => {
+		const workspace = createScratch()
+		try {
+			const committed = [{ name: 'Committed', owners: ['alpha', 'beta'] }]
+			const built = [{ name: 'Built', owners: ['alpha', 'gamma'] }]
+			workspace.write('host.json', JSON.stringify(buildHostManifest({ surface: committed })))
+			expect(readSurfaceRecord(workspace.path)).toEqual(committed)
+			workspace.write('manifest.json', JSON.stringify(buildHostManifest({ surface: built })))
+			expect(readSurfaceRecord(workspace.path)).toEqual(built)
+			workspace.remove('manifest.json')
+			workspace.remove('host.json')
+			expect(captureError(() => readSurfaceRecord(workspace.path))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining('manifest.json or host.json'),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a guide its parser refuses with the owner, the source, and the parser message', () => {
+		const workspace = createScratch({
+			files: {
+				'package.json': '{"name":"@orkestrel/alpha"}',
+				'guides/alpha.md': '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n',
+				'node_modules/@orkestrel/guide/package.json': '{"main":"index.cjs"}',
+				'node_modules/@orkestrel/guide/index.cjs': [
+					'class GuideError extends Error {',
+					'  constructor(message) { super(message); this.name = "GuideError"; this.code = "header" }',
+					'}',
+					'exports.createGuide = () => { throw new GuideError("## Surface table 1 has header \\"Name | Kind | Summary\\"") }',
+					'exports.createSource = () => ({ surface: () => [] })',
+					'exports.extractSourceLines = () => []',
+					'',
+				].join('\n'),
+			},
+		})
+		try {
+			const loader = createRequire(join(workspace.path, 'loader.cjs'))
+			const guide = join(workspace.path, 'guides', 'alpha.md')
+			const refusals = [
+				captureError(() =>
+					readSurfaceGuide('## Surface\n', 'alpha', 'live guides/alpha.md', loader),
+				),
+				captureError(() => readSurfaceFile(workspace.path, 'alpha', 'floor', loader)),
+				captureError(() => readSurfaceCandidate(workspace.path, loader)),
+			]
+			for (const [index, source] of [
+				'live guides/alpha.md',
+				`floor ${guide}`,
+				`candidate ${guide}`,
+			].entries()) {
+				const error = refusals[index]
+				expect(error).toMatchObject({ code: 'TARGET' })
+				expect(isError(error) ? error.message : '').toContain(
+					`Surface guide for "alpha" from ${JSON.stringify(source)} was refused: ## Surface table 1 has header "Name | Kind | Summary"`,
+				)
+			}
+			expect(readSurfaceFile(workspace.path, 'absent', 'floor', loader)).toBeUndefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('reads a guide from a host value by destination and refuses bytes that are not UTF-8', () => {
+		const host = {
+			manifest: buildHostManifest({}),
+			bytes: {
+				'guides/alpha.md': contentToHex(
+					'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Alpha` | interface | `{}` | Describes a claim. |\n',
+				),
+				'guides/beta.md': 'ff',
+			},
+		}
+		expect(readSurfaceFile(host, 'alpha', 'floor')).toEqual({ owner: 'alpha', names: ['Alpha'] })
+		expect(readSurfaceFile(host, 'absent', 'floor')).toBeUndefined()
+		expect(captureError(() => readSurfaceFile(host, 'beta', 'floor'))).toMatchObject({
+			code: 'TARGET',
+			message: expect.stringContaining('"guides/beta.md"'),
+		})
 	})
 	it('reads distinct owners from immediate guide name columns in sorted order', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })

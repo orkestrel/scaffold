@@ -114,6 +114,12 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `ToolchainHold`         | interface | Represents one foreign tool range required by a browser framework.                                |
 | `ViteMachinery`         | interface | Names which host-specific pipelines a generated root Vite configuration carries.                  |
 
+| Name               | Kind      | Summary                                                                           |
+| ------------------ | --------- | --------------------------------------------------------------------------------- |
+| `SurfaceClaim`     | interface | Represents one owner's bare exported names, including an empty candidate surface. |
+| `SurfaceCollision` | interface | Represents a bare name claimed by distinct package owners.                        |
+| `SurfaceFinding`   | interface | Reports a collision's standing against the recorded owner set.                    |
+
 #### Constants
 
 | Name                              | Kind  | Summary                                                                                                                                                                                |
@@ -294,6 +300,11 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `serializeTypeScriptString` | function | Serializes one string as a single-quoted TypeScript literal.                                        |
 | `srcToRoot`                 | function | Selects the single published environment a package root points at.                                  |
 
+| Name                       | Kind     | Summary                                                                                 |
+| -------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| `collectSurfaceCollisions` | function | Collects bare names claimed by distinct owners in sorted order.                         |
+| `compareSurfaceCollisions` | function | Compares collisions with the record and reports errors, recorded subsets, and closures. |
+
 #### Compilers
 
 | Name                                | Kind     | Summary                                                                                                  |
@@ -357,10 +368,11 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 
 #### Types
 
-| Name                   | Kind | Summary                                               |
-| ---------------------- | ---- | ----------------------------------------------------- |
-| `MaterializerEventMap` | type | Represents the materializer's observation channel.    |
-| `UpstreamEventMap`     | type | Represents the upstream reader's observation channel. |
+| Name                   | Kind | Summary                                                       |
+| ---------------------- | ---- | ------------------------------------------------------------- |
+| `MaterializerEventMap` | type | Represents the materializer's observation channel.            |
+| `UpstreamEventMap`     | type | Represents the upstream reader's observation channel.         |
+| `SurfaceLoader`        | type | Loads a module by specifier for validated surface reflection. |
 
 #### Interfaces
 
@@ -376,7 +388,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `MaterializerInterface`  | interface | Describes the mutation contract: the package's only filesystem writer.                            |
 | `MaterializerOptions`    | interface | Represents the options for the materializer.                                                      |
 | `ReadAllowanceInterface` | interface | Describes the byte allowance one upstream call spends across every read it makes.                 |
-| `SurfaceCollision`       | interface | Represents a Surface name claimed by distinct package guides.                                     |
+| `SurfaceModule`          | interface | Describes the guide module functions required by surface reflection.                              |
 | `TextReadResult`         | interface | Reports the outcome of one bounded read whose body is taken as text.                              |
 | `Worktree`               | interface | Describes what git reports about a target's working tree.                                         |
 | `UpstreamInterface`      | interface | Describes the upstream contract: the package's only network reader, and it never writes.          |
@@ -390,6 +402,9 @@ The inventory contracts carry these data members.
 
 | Member                       | Contract                                                                                                                                  |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `HostInventory.surface`      | Required readonly `SurfaceCollision[]`: the verified record when `lookup` is `found`, and an empty collection otherwise.                  |
+| `HostInventory.unreachable`  | Optional boolean, `true` only when the inventory request produced no HTTP response.                                                       |
+| `TextReadResult.unreachable` | Optional boolean, `true` only when the request produced no HTTP response. The same member sits on `BytesReadResult`.                      |
 | `HostManifest.surface`       | Required readonly `SurfaceCollision[]`, sorted by name; each collision has distinct sorted owners and is included in the manifest digest. |
 | `HostStageOptions.inventory` | Optional checkout-relative inventory path. Default: `HOST_INVENTORY_PATH` (`host.json`).                                                  |
 | `HostStageOptions.establish` | Optional boolean. If `true`, an absent inventory establishes the baseline; if `false`, staging refuses it. Default: `false`.              |
@@ -444,6 +459,7 @@ The inventory contracts carry these data members.
 | `isMaterializerOptions` | const    | Narrows a value to `MaterializerOptions`.                                           |
 | `isMirrors`             | const    | Narrows a value to a bounded list of fetched guide mirrors.                         |
 | `isPaths`               | const    | Narrows a value to a bounded list of target-relative paths.                         |
+| `isSurfaceModule`       | function | Narrows a value to the callable guide functions surface reflection requires.        |
 | `isWorktree`            | const    | Narrows a value to a `Worktree`.                                                    |
 | `isTimeout`             | const    | Narrows a value to a per-request timeout in milliseconds.                           |
 | `isUpstreamHooks`       | const    | Narrows a value to the upstream reader's initial listener record.                   |
@@ -489,6 +505,13 @@ The inventory contracts carry these data members.
 | `readSnapshot`            | function | Reads a target's current bytes at the paths a plan claims.                                        |
 | `readSurfaceBaseline`     | function | Reads the Surface collision baseline from a committed inventory.                                  |
 | `readSurfaceCollisions`   | function | Reads bare Surface names claimed by distinct package guides.                                      |
+| `readSurfaceClaims`       | function | Reads each immediate package guide's bare names under its file owner.                             |
+| `readSurfaceCandidate`    | function | Reads a checkout's combined guide and barrel claims under its manifest owner.                     |
+| `readSurfaceFile`         | function | Reads one owner's `guides/<owner>.md` under a root, or from a verified host value, as a claim.    |
+| `readSurfaceGuide`        | function | Reads one guide's claims and reports parser refusals with its owner and source.                   |
+| `readSurfaceModule`       | function | Loads and validates the guide functions required by surface reflection.                           |
+| `readSurfaceRecord`       | function | Reads a data root's verified collision record.                                                    |
+| `resolveHostRoot`         | function | Resolves the bundled host root from the executing module's location.                              |
 | `resolveContainedPath`    | function | Resolves a root-relative path and refuses one that leaves its root.                               |
 | `resolveRealPath`         | function | Resolves a path through the real filesystem, keeping the part that does not exist yet.            |
 | `stageBytes`              | function | Stages the named destinations of a value host into a private root.                                |
@@ -541,13 +564,14 @@ publishes no interface and is documented directly.
 
 #### `UpstreamInterface`
 
-| Method    | Summary                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------- |
-| `lookup`  | Looks up the highest release each declared range admits.                                    |
-| `fetch`   | Fetches each named package's guide, beside the local mirror it answers for.                 |
-| `read`    | Reads each named vendored file from the repository, beside the target bytes it answers for. |
-| `catalog` | Catalogs the published fleet from the registry's organization package list.                 |
-| `destroy` | Tears the reader down, aborting every request in flight. Teardown is idempotent.            |
+| Method      | Summary                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| `lookup`    | Looks up the highest release each declared range admits.                                    |
+| `fetch`     | Fetches each named package's guide, beside the local mirror it answers for.                 |
+| `read`      | Reads each named vendored file from the repository, beside the target bytes it answers for. |
+| `catalog`   | Catalogs the published fleet from the registry's organization package list.                 |
+| `inventory` | Reads the verified upstream inventory and its collision record.                             |
+| `destroy`   | Tears the reader down, aborting every request in flight. Teardown is idempotent.            |
 
 #### `WriteTransaction`
 
@@ -562,13 +586,14 @@ publishes no interface and is documented directly.
 
 ## Command line
 
-Authority is the verb's: every verb except `audit` writes when it is typed, and no
+Authority is the verb's: `audit` and `surface` read without writing, and no
 option grants a write.
 
 | Verb        | Writes                                                                                     |
 | ----------- | ------------------------------------------------------------------------------------------ |
 | `new`       | A whole workspace, into a target that holds nothing the plan would collide with            |
 | `audit`     | Nothing                                                                                    |
+| `surface`   | Nothing                                                                                    |
 | `repair`    | Each planned path the target is missing or has let drift, and the range and script regions |
 | `catalog`   | The package table, the guide mirrors, and the range region                                 |
 | `overwrite` | Everything `repair` and `catalog` write, deletions, and missing planned dependencies       |
@@ -603,7 +628,7 @@ A value `Host` can carry live host-owned bytes beside installed floor bytes for 
 catalog paths. Each surface still contributes one baseline. Deferred paths are presence-only, and
 repair never writes their floor bytes.
 
-Every verb's machine-readable result carries `provenance`. The record names only the remote
+Every verb that reads upstream carries `provenance` in its machine-readable result. The record names only the remote
 surfaces that the verb read. A host supplied by the `--from` option is absent because it comes from
 a local path.
 
@@ -616,6 +641,8 @@ scaffold <verb> [options]
       scaffold a workspace
   scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
       report how the target compares to its plan, writing nothing
+  scaffold surface [<checkout>...] [--offline] [--from <path>] [--target <path>] [--json]
+      report fleet name collisions against the recorded baseline, writing nothing
   scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
       write each planned path the target is missing or has let drift
   scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
@@ -652,8 +679,8 @@ An option a verb does not list is refused by name rather than parsed and ignored
 one exception, because it replaces the run rather than modifying it: a command line carrying
 `--help` anywhere prints the whole reference and exits `0` before the line is read as a command, so
 no verb has to list it. Without the `--offline` option, every verb reaches the registry, and none of
-them invents a range when the read produces no answer. Dependency floors states what each verb reads
-and what it does then.
+them invents a range when the read produces no answer. `surface` given `--from` reads that root
+alone. Dependency floors states what each verb reads and what it does then.
 
 At their defaults, online runs contact `registry.npmjs.org` for scoped package packuments and the
 `/-/org/orkestrel/package` membership path. They contact `raw.githubusercontent.com` for guide
@@ -685,6 +712,100 @@ script on that basis.
 `distribution` is not on that list. Publishing at least one `src` environment or one sheet face is
 its whole condition, and scaffold writes `tests/distribution.test.ts` itself rather than waiting for
 you to. Limits states what makes that one proof generable when the others are not.
+
+### Check fleet names
+
+Run `scaffold surface` before publishing a candidate checkout. The command reads every owner's
+`## Surface` claims, groups the bare names that distinct owners claim into collisions, and compares
+them with the collision record. It reads each source the way `catalog` does, from the freshest one
+down to the bundled floor, and stops at the first that answers:
+
+| Reading    | Sources, freshest first                                                                                                                       |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Membership | Every candidate, then the registry's organization list through `Upstream.catalog`, or the data root's catalog table when that read fails      |
+| Claims     | The candidate's working tree, then the owner's guide on `main` through `Upstream.fetch`, then the data root's `guides/<owner>.md`             |
+| Record     | A `--from` root's `manifest.json` or `host.json`, then scaffold's `host.json` on `main` through `Upstream.inventory`, then the bundled record |
+
+An owner that no claim source answers for is `unread`, never an owner claiming nothing. The
+registry's published package copy is in no order. `--offline` reads the bundled guides, catalog
+table, and record without a request. `--from <path>` reads that root alone, without a request. A
+missing or malformed record refuses the run. The bundled root and a built root, one carrying
+`manifest.json`, are read through their verified inventory: a floor guide the inventory does not
+declare is unread, and a declared file whose bytes do not match its digest refuses the run. A
+checkout root without `manifest.json` is read by path.
+
+The membership read is the first registry request, and the record read through
+`Upstream.inventory` is the first repository request. When either produces no HTTP response, the
+command reads nothing further and refuses with `FETCH`. A request produces no HTTP response when
+`fetch` rejects before the response headers arrive: the host name does not resolve, the connection
+is refused, the TLS handshake fails, the connection is reset or closed, or the timeout expires.
+`URL` is the request's address and `CAUSE` the transport note, such as
+`TypeError: fetch failed (ECONNREFUSED)`:
+
+```text
+Surface registry is unreachable from this host: the organization package list at URL produced no answer: CAUSE. Use --offline to check against the bundled guides.
+Surface repository is unreachable from this host: the vendored inventory at URL produced no answer: CAUSE. Use --offline to check against the bundled guides.
+```
+
+A response that arrives is an answer rather than an outage, whatever follows it: an HTTP failure, a
+malformed body, and a reset or timeout after the response headers arrive each leave that reading to
+its floor source, and the run continues. The command gives each upstream read one attempt.
+
+Each positional checkout contributes its `guides/<owner>.md` names together with every barrel
+surface reflected from its immediate `src/<environment>` directories. Its package manifest names
+the owner, with the `@orkestrel/` scope removed. The `--target` directory defaults to the working
+directory and joins the candidates when it holds `package.json`. Candidates that share an owner
+contribute their combined names, and candidate claims replace every other source for that owner,
+including when the candidate claims no names.
+
+A candidate refuses, naming its path, when its manifest is unreadable, when it has neither its guide
+nor `src/`, when its guide exists but is not UTF-8 text within the artifact bound, or when a
+TypeScript source under `src/` cannot be read. Only `.ts` files under `src/` are read, so a binary
+asset there is ignored. A barrel holding a statement other than `export * from './module.js'`
+refuses with the statement named, because the reflection follows nothing else and an incomplete
+reading never reports clean. When `@orkestrel/guide` refuses a guide from any source, the command
+refuses with `TARGET`, naming the owner and the source and carrying the parser's message.
+
+Compare unpublished candidates together with this command:
+
+```sh
+scaffold surface ../router ../server --from . --json
+```
+
+The comparison uses the bare identifier, case included, across declaration keywords and
+environments. A name claimed by distinct owners is a collision. A collision absent from the record,
+or carrying an owner absent from its recorded owner set, has `error` standing. A collision with the
+same or fewer owners has `recorded` standing. A recorded name that no longer collides has `closed`
+standing, so a release can shrink the record.
+
+The command returns `1` when a collision has `error` standing or an owner is unread. A run without
+`--offline` or `--from` also returns `1` when membership fell to the floor catalog table, any
+owner fell to the floor guide, or the record fell to the floor inventory. Every other completed run returns `0`, and malformed arguments return `2`.
+
+The human report names membership when it fell to the floor catalog table, with the failure the
+registry read reported, then each owner that fell to the floor guide, each unread owner, the record
+when it fell to the floor inventory, and each `error` collision with its owners, then prints the
+recorded and closed counts. The `--json` option emits one value with `owners`, `collisions`, and
+`provenance`. Each owner carries `owner`, `source` (`candidate`, `live`, `floor`, or `unread`), and
+`names` unless it is unread. Each collision carries `name`, `owners`, and `standing`, sorted by
+name, including closed entries with their recorded owners. `provenance.membership` names the
+package list's baseline, `provenance.guides` is `live` only when no owner fell to the floor, and
+`provenance.record` names the record's baseline; a `--from` run reports none of them. The command changes no files.
+
+The core `SurfaceClaim` interface carries `owner` and `names`. `SurfaceCollision` carries `name`
+and `owners`; `SurfaceFinding` adds `standing`. `collectSurfaceCollisions` deduplicates owners, and
+`compareSurfaceCollisions` applies the record. `readSurfaceClaims` reads immediate package guides,
+excluding the README index. `readSurfaceCandidate` adds live barrel names. `readSurfaceFile` reads
+one owner's guide file under a root, and `readSurfaceGuide` parses guide text from any source.
+`readSurfaceRecord` reads a data root's record, and `resolveHostRoot` resolves the bundled root.
+`readSurfaceModule` loads `@orkestrel/guide` lazily and narrows it with `isSurfaceModule`; every
+reader takes an optional `SurfaceLoader` that resolves the module, and requires the package in
+scaffold's resolution path when none is supplied. Importing the server entry alone does not load
+it.
+
+The executable's `SurfaceCommand` interface carries `verb: 'surface'`, positional `checkouts`,
+and the optional `offline`, `from`, `target`, and `json` members. The parser refuses other verbs'
+options.
 
 ### Reading a target
 
@@ -963,13 +1084,14 @@ deletion.
 `--json` replaces the report with one JSON value on standard output. Warnings and refusals go to
 standard error, so a piped value is never polluted.
 
-| Verb        | Value                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `new`       | `MaterializeResult` — `target`, `written`, `skipped`, `removed` — plus `provenance`                                                                           |
-| `audit`     | `Audit` — `findings` and `questions` — plus `releases` and `provenance`; findings carry `ownership`                                                           |
-| `repair`    | `MaterializeResult` plus `audit`, the terminal audit taken after the write, `releases`, and `provenance`                                                      |
-| `catalog`   | `MaterializeResult` plus `mirrors`, `provenance`, optional `membership` with `entries`, `dropped`, and `releases`, and an explanatory `note` on a partial run |
-| `overwrite` | The `catalog` value plus `audit`, top-level `releases` from its version read, `additions`, and `lifts`; `note` explains a partial run                         |
+| Verb        | Value                                                                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `new`       | `MaterializeResult` — `target`, `written`, `skipped`, `removed` — plus `provenance`                                                                            |
+| `audit`     | `Audit` — `findings` and `questions` — plus `releases` and `provenance`; findings carry `ownership`                                                            |
+| `surface`   | `owners` with each owner's `source`, `collisions` with each entry's `standing` (`error`, `recorded`, or `closed`), and `provenance` with `guides` and `record` |
+| `repair`    | `MaterializeResult` plus `audit`, the terminal audit taken after the write, `releases`, and `provenance`                                                       |
+| `catalog`   | `MaterializeResult` plus `mirrors`, `provenance`, optional `membership` with `entries`, `dropped`, and `releases`, and an explanatory `note` on a partial run  |
+| `overwrite` | The `catalog` value plus `audit`, top-level `releases` from its version read, `additions`, and `lifts`; `note` explains a partial run                          |
 
 The `membership` entity is present only when the catalog read completes. Its `entries` holds the
 package table, `dropped` names packages the preceding table carried that the registry no longer

@@ -12,6 +12,7 @@ import {
 	isInventory,
 	isManifestRegionSet,
 	isMirrors,
+	isSurfaceModule,
 	isWorktree,
 	MAX_INVENTORY_PATHS,
 } from '@src/server'
@@ -154,6 +155,24 @@ describe('isDigest', () => {
 		expect(isDigest(`${digest}0`)).toBe(false)
 		expect(isDigest('')).toBe(false)
 		expect(isDigest('g'.repeat(64))).toBe(false)
+	})
+})
+
+describe('isSurfaceModule', () => {
+	it('refuses a module that lacks exactly one of the guide functions', () => {
+		const names = ['createGuide', 'createSource', 'extractSourceLines']
+		expect(isSurfaceModule(Object.fromEntries(names.map((name) => [name, Math.max])))).toBe(true)
+		for (const missing of names) {
+			const present = names.filter((name) => name !== missing)
+			expect(isSurfaceModule(Object.fromEntries(present.map((name) => [name, Math.max])))).toBe(
+				false,
+			)
+			expect(
+				isSurfaceModule(
+					Object.fromEntries(names.map((name) => [name, name === missing ? 'text' : Math.max])),
+				),
+			).toBe(false)
+		}
 	})
 })
 

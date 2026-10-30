@@ -14,6 +14,7 @@ import { createRecorder } from '@orkestrel/test'
 import { buildDependency } from '../../setup.js'
 import {
 	buildInventory,
+	buildHostManifest,
 	buildManifestEntry,
 	buildOrganization,
 	buildPackument,
@@ -74,6 +75,78 @@ describe('Upstream construction', () => {
 		expect(await captureScaffoldRejection(() => upstream.lookup([]))).toBe('DESTROYED')
 		expect(await captureScaffoldRejection(() => upstream.fetch([], {}))).toBe('DESTROYED')
 		expect(await captureScaffoldRejection(() => upstream.catalog())).toBe('DESTROYED')
+		expect(await captureScaffoldRejection(() => upstream.inventory())).toBe('DESTROYED')
+	})
+})
+
+describe('Upstream inventory', () => {
+	it('returns the verified surface with digests and an empty surface for an unfound read', async () => {
+		const surface = [{ name: 'Shared', owners: ['alpha', 'beta'] }]
+		const server = await createUpstreamServer({
+			'/orkestrel/scaffold/refs/heads/main/host.json': {
+				status: 200,
+				body: JSON.stringify(buildHostManifest({ entries: [], roots: [], surface })),
+			},
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			expect(await upstream.inventory()).toEqual({
+				lookup: 'found',
+				surface,
+				digests: new Map(),
+				duplicates: new Set(),
+				note: '',
+			})
+			await server.destroy()
+			expect(await upstream.inventory()).toMatchObject({ lookup: 'failed', surface: [] })
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('marks a membership failure unreachable only when no HTTP response arrived', async () => {
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': { status: 500, body: 'unavailable' },
+		})
+		const upstream = new Upstream({ registry: { base: server.base }, retries: 0 })
+		try {
+			const answered = await upstream.catalog().catch((error: unknown) => error)
+			expect(answered).toMatchObject({ code: 'FETCH', context: { note: 'HTTP 500' } })
+			expect(answered).not.toMatchObject({ context: { unreachable: true } })
+			await server.destroy()
+			expect(await upstream.catalog().catch((error: unknown) => error)).toMatchObject({
+				code: 'FETCH',
+				context: { unreachable: true, note: expect.stringContaining('ECONNREFUSED') },
+			})
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('marks an inventory failure unreachable only when no HTTP response arrived', async () => {
+		const server = await createUpstreamServer({
+			'/orkestrel/scaffold/refs/heads/main/host.json': { status: 500, body: 'unavailable' },
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, retries: 0 })
+		try {
+			const answered = await upstream.inventory()
+			expect(answered).toMatchObject({
+				lookup: 'failed',
+				note: expect.stringContaining('HTTP 500'),
+			})
+			expect(answered).not.toHaveProperty('unreachable')
+			await server.destroy()
+			expect(await upstream.inventory()).toMatchObject({
+				lookup: 'failed',
+				unreachable: true,
+				note: expect.stringContaining('ECONNREFUSED'),
+			})
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
 	})
 })
 

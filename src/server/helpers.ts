@@ -1,11 +1,11 @@
-import type { Group, HostFile, Snapshot } from '@src/core'
-import type * as Guide from '@orkestrel/guide'
+import type { Group, HostFile, Snapshot, SurfaceClaim, SurfaceCollision } from '@src/core'
 import type {
 	Host,
 	HostManifest,
 	HostStageOptions,
 	ManifestEntry,
-	SurfaceCollision,
+	SurfaceLoader,
+	SurfaceModule,
 	WriteAnchor,
 	WriteExpectation,
 	WritePrecondition,
@@ -41,6 +41,7 @@ import {
 	isDefined,
 	isError,
 	isNumber,
+	isString,
 	parseJSONAs,
 } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
@@ -49,6 +50,8 @@ import {
 	CANON_PATHS,
 	CATALOG_AGENT_PATH,
 	computeTotal,
+	collectSurfaceCollisions,
+	compareSurfaceCollisions,
 	DEPENDENCY_NAME_PATTERN,
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
@@ -63,11 +66,12 @@ import {
 	MAX_COLLECTION_ITEMS,
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
+	manifestToName,
 	nameToGuide,
 	REFERENCE_PATHS,
 	ScaffoldError,
 } from '@src/core'
-import { isFilesystemPath, isHostManifest } from './validators.js'
+import { isFilesystemPath, isHostManifest, isSurfaceModule } from './validators.js'
 import { MANIFEST_NAME, MAX_INVENTORY_PATHS, MAX_PATH_DEPTH } from './constants.js'
 
 /**
@@ -1349,9 +1353,8 @@ export function readHostManifest(
  */
 export function readHostFloor(root?: string): Host {
 	const location = fileURLToPath(import.meta.url)
-	const module = dirname(location)
 	const source = root === undefined && extname(location) === '.ts'
-	const host = root ?? resolve(module, source ? '../..' : '../../host')
+	const host = root ?? resolveHostRoot()
 	if (!isPhysicalDirectory(host)) {
 		throw new ScaffoldError('TARGET', `The vendored host root is not readable at ${host}`, {
 			host,
@@ -1864,15 +1867,15 @@ export function stageHost(
 	const growth =
 		published === undefined
 			? []
-			: [...collisions].flatMap(([name, owners]): readonly string[] => {
-					const record = published.get(name)
-					const isSubset = record !== undefined && owners.every((owner) => record.includes(owner))
-					return isSubset
-						? []
-						: [
-								`${name} staged (${owners.join(', ')}), recorded (${record?.join(', ') ?? 'absent'})`,
-							]
-				})
+			: compareSurfaceCollisions(
+					[...collisions].map(([name, owners]) => ({ name, owners })),
+					[...published].map(([name, owners]) => ({ name, owners })),
+				)
+					.filter(({ standing }) => standing === 'error')
+					.map(
+						({ name, owners }) =>
+							`${name} staged (${owners.join(', ')}), recorded (${published.get(name)?.join(', ') ?? 'absent'})`,
+					)
 	if (growth.length > 0) {
 		throw new ScaffoldError(
 			'TARGET',
@@ -1934,42 +1937,288 @@ export function stageHost(
  * ```
  */
 export function readSurfaceCollisions(root: string): ReadonlyMap<string, readonly string[]> {
+	return new Map(
+		collectSurfaceCollisions(readSurfaceClaims(root)).map(({ name, owners }) => [name, owners]),
+	)
+}
+
+/**
+ * Resolves the bundled host root from the executing module's location.
+ *
+ * @example
+ * ```ts
+ * import { resolveHostRoot } from '@orkestrel/scaffold/server'
+ * resolveHostRoot() // the checkout in source, or the installed dist/host directory
+ * ```
+ */
+export function resolveHostRoot(): string {
+	const location = fileURLToPath(import.meta.url)
+	return resolve(dirname(location), extname(location) === '.ts' ? '../..' : '../../host')
+}
+
+/**
+ * Loads and validates the guide functions required by surface reflection.
+ *
+ * @param loader - The module resolver. Default: Node resolution from this module.
+ * @throws Thrown with TARGET when the module is absent or lacks a required function.
+ * @example
+ * ```ts
+ * import { readSurfaceModule } from '@orkestrel/scaffold/server'
+ * readSurfaceModule().createGuide('# Sample').surface() // []
+ * ```
+ */
+export function readSurfaceModule(
+	loader: SurfaceLoader = createRequire(import.meta.url),
+): SurfaceModule {
+	const loaded = attempt(() => loader('@orkestrel/guide'))
+	if (!loaded.success || !isSurfaceModule(loaded.value)) {
+		throw new ScaffoldError(
+			'TARGET',
+			"Surface reflection requires @orkestrel/guide with createGuide, createSource, and extractSourceLines. Supply that module in scaffold's resolution path.",
+			{
+				...(!loaded.success ? { error: loaded.error } : {}),
+			},
+		)
+	}
+	return loaded.value
+}
+
+/**
+ * Reads one guide's claims and reports parser refusals with its owner and source.
+ *
+ * @param source - The source label or path to name in a refusal.
+ * @throws Thrown with TARGET when the module or the guide parser refuses the reading.
+ * @example
+ * ```ts
+ * import { readSurfaceGuide } from '@orkestrel/scaffold/server'
+ * readSurfaceGuide('# Sample', 'sample', 'live guides/sample.md') // { owner: 'sample', names: [] }
+ * ```
+ */
+export function readSurfaceGuide(
+	text: string,
+	owner: string,
+	source: string,
+	loader?: SurfaceLoader,
+): SurfaceClaim {
+	const guide = readSurfaceModule(loader)
+	const parsed = attempt(() =>
+		guide
+			.createGuide(text)
+			.surface()
+			.map(({ name }) => name),
+	)
+	if (!parsed.success) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface guide for ${JSON.stringify(owner.slice(0, 512))} from ${JSON.stringify(source.slice(0, 512))} was refused: ${isError(parsed.error) ? parsed.error.message : String(parsed.error)}`,
+			{ owner, source },
+		)
+	}
+	return { owner, names: parsed.value }
+}
+
+/**
+ * Reads each immediate package guide's bare names under its file owner.
+ *
+ * @param root - The directory containing the package guides; README.md is excluded.
+ * @param loader - The module resolver used by the shared validated guide loader.
+ * @throws Thrown when the directory, a guide, or the lazily loaded @orkestrel/guide module is unreadable.
+ *
+ * @example
+ * ```ts
+ * import { readSurfaceClaims } from '@orkestrel/scaffold/server'
+ *
+ * readSurfaceClaims('./guides') // owners and the names their guides claim
+ * ```
+ */
+export function readSurfaceClaims(root: string, loader?: SurfaceLoader): readonly SurfaceClaim[] {
 	if (!isPhysicalDirectory(root)) {
 		throw new ScaffoldError('TARGET', `Surface guide directory is not readable at ${root}`, {
 			root,
 		})
 	}
-	const loaded = attempt<Pick<typeof Guide, 'createGuide'>>(() =>
-		createRequire(import.meta.url)('@orkestrel/guide'),
-	)
-	if (!loaded.success) {
-		throw new ScaffoldError('TARGET', 'Surface reflection requires the module @orkestrel/guide', {
-			root,
-			error: loaded.error,
-		})
-	}
-	const guide = loaded.value
-	const claims = listFiles(root)
+	readSurfaceModule(loader)
+	return listFiles(root)
 		.filter((path) => !path.includes('/') && extname(path) === '.md' && path !== 'README.md')
-		.flatMap((path) => {
+		.map((path) => {
 			const text = readFileText(root, path)
 			if (text === undefined) {
 				throw new ScaffoldError('TARGET', `Surface guide cannot be read at ${path}`, { root, path })
 			}
-			return guide
-				.createGuide(text)
-				.surface()
-				.map((symbol): readonly [string, string] => [symbol.name, basename(path, '.md')])
+			return readSurfaceGuide(text, basename(path, '.md'), join(root, path), loader)
 		})
-	const grouped = Map.groupBy(claims, ([name]) => name)
-	return new Map(
-		[...grouped.keys()]
-			.sort()
-			.flatMap((name): ReadonlyArray<readonly [string, readonly string[]]> => {
-				const owners = [...new Set((grouped.get(name) ?? []).map(([, owner]) => owner))]
-				return owners.length > 1 ? [[name, owners.sort()]] : []
+}
+
+/**
+ * Reads a checkout's combined guide and barrel claims under its manifest owner.
+ *
+ * @remarks
+ * Removes the @orkestrel/ scope from the manifest name. Reflects each immediate
+ * src environment through @orkestrel/guide, loaded only when called.
+ * Reads only .ts files and refuses barrel statements outside relative .js star exports.
+ * A present unreadable guide refuses the candidate even when src exists.
+ * `loader` selects the resolver used by the shared validated guide loader.
+ * @throws Thrown when the manifest is unreadable, both claim sources are absent,
+ * a source cannot be read, or @orkestrel/guide cannot be loaded.
+ *
+ * @example
+ * ```ts
+ * import { readSurfaceCandidate } from '@orkestrel/scaffold/server'
+ *
+ * readSurfaceCandidate('.') // the working checkout's owner and combined names
+ * ```
+ */
+export function readSurfaceCandidate(root: string, loader?: SurfaceLoader): SurfaceClaim {
+	const manifest = readFileText(root, 'package.json', MAX_MANIFEST_BYTES)
+	const name = manifest === undefined ? undefined : manifestToName(manifest)
+	if (name === undefined) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface candidate ${JSON.stringify(root.slice(0, 512))} needs package.json with a valid name.`,
+			{ root },
+		)
+	}
+	const owner = name.replace(/^@orkestrel\//u, '')
+	const guide = readSurfaceFile(root, owner, 'candidate', loader)
+	const source = join(root, 'src')
+	if (guide === undefined && !isPhysicalDirectory(source)) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface candidate ${JSON.stringify(root.slice(0, 512))} has neither ${JSON.stringify(`guides/${owner}.md`)} nor src/. Add its guide or source directory before checking its claims.`,
+			{ root },
+		)
+	}
+	const reflection = readSurfaceModule(loader)
+	const files = Object.fromEntries(
+		listFiles(source)
+			.filter((file) => file.endsWith('.ts'))
+			.map((file) => {
+				const text = readFileText(source, file)
+				if (text === undefined) {
+					throw new ScaffoldError(
+						'TARGET',
+						`Surface candidate ${JSON.stringify(root.slice(0, 512))} cannot read ${JSON.stringify(`src/${file}`.slice(0, 512))}. Restore a readable source file before checking its claims.`,
+						{ root, path: file },
+					)
+				}
+				return [`src/${file}`, text]
 			}),
 	)
+	for (const [file, text] of Object.entries(files)) {
+		if (!file.endsWith('/index.ts')) continue
+		for (const line of reflection.extractSourceLines(text)) {
+			if (
+				line.code.trim() === '' ||
+				/^\s*export\s+\*\s+from\s+(?:'(\.\.?\/[^']+\.js)'|"(\.\.?\/[^"]+\.js)")\s*;?\s*$/u.test(
+					line.code,
+				)
+			)
+				continue
+			throw new ScaffoldError(
+				'TARGET',
+				`Surface candidate barrel ${JSON.stringify(join(root, file).slice(0, 512))} refuses statement ${JSON.stringify(line.source.trim().slice(0, 512))}; use only export * from './module.js' declarations.`,
+				{ root, path: file },
+			)
+		}
+	}
+	const modules = listDirectories(source)
+		.filter((directory) => !directory.includes('/'))
+		.map((directory) => `src/${directory}`)
+	return {
+		owner,
+		names: [
+			...new Set([
+				...(guide?.names ?? []),
+				...modules.flatMap((module) =>
+					reflection
+						.createSource({ files, module })
+						.surface()
+						.map((symbol) => symbol.name),
+				),
+			]),
+		].sort(),
+	}
+}
+
+/**
+ * Reads one owner's `guides/<owner>.md` under a root, or from a verified host value, as a claim.
+ *
+ * @param root - The checkout or data root holding the guide, or a verified host whose bytes
+ * carry it at that destination.
+ * @param owner - The unscoped package name the guide file is named for.
+ * @param label - The source word a refusal names beside the path, such as `candidate` or `floor`.
+ * @param loader - The module resolver used by the shared validated guide loader.
+ * @returns The claim, or `undefined` when no file sits at the path or the host declares none.
+ * @throws Thrown with TARGET when the file or the declared bytes are not UTF-8 text, when the
+ * file exceeds the artifact bound, or when the guide module or its parser refuses the guide.
+ *
+ * @example
+ * ```ts
+ * import { readSurfaceFile } from '@orkestrel/scaffold/server'
+ *
+ * readSurfaceFile('.', 'scaffold', 'candidate')?.names // the names the checkout's guide claims
+ * ```
+ */
+export function readSurfaceFile(
+	root: string | Host,
+	owner: string,
+	label: string,
+	loader?: SurfaceLoader,
+): SurfaceClaim | undefined {
+	const destination = `guides/${owner}.md`
+	if (!isString(root)) {
+		const hex = root.bytes[destination]
+		const declared = hex === undefined ? undefined : decodeHexText(hex)
+		if (hex !== undefined && declared === undefined) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Surface guide cannot be read at ${JSON.stringify(destination)}`,
+				{ path: destination },
+			)
+		}
+		return declared === undefined
+			? undefined
+			: readSurfaceGuide(declared, owner, `${label} ${destination}`, loader)
+	}
+	const path = join(root, 'guides', `${owner}.md`)
+	const text = readFileText(root, destination)
+	if (text === undefined && isExactCaseFile(path)) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface guide cannot be read at ${JSON.stringify(path.slice(0, 512))}`,
+			{ root, path: `guides/${owner}.md` },
+		)
+	}
+	return text === undefined ? undefined : readSurfaceGuide(text, owner, `${label} ${path}`, loader)
+}
+
+/**
+ * Reads a data root's verified collision record.
+ *
+ * @param root - The data root holding `manifest.json` or `host.json`.
+ * @remarks
+ * Reads `manifest.json` first, then `host.json` when no built manifest exists.
+ * Reads only local files and never contacts upstream or writes an inventory.
+ * @throws Thrown with TARGET when neither inventory exists, and as `readHostManifest`
+ * throws when one is unreadable, malformed, or inconsistent with its digest.
+ *
+ * @example
+ * ```ts
+ * import { readSurfaceRecord, resolveHostRoot } from '@orkestrel/scaffold/server'
+ *
+ * readSurfaceRecord(resolveHostRoot()) // the bundled collision record
+ * ```
+ */
+export function readSurfaceRecord(root: string): readonly SurfaceCollision[] {
+	const record = readSurfaceBaseline(root, MANIFEST_NAME) ?? readSurfaceBaseline(root)
+	if (record === undefined) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface data root ${JSON.stringify(root.slice(0, 512))} needs manifest.json or host.json with a surface record. Supply an inventoried root with --from.`,
+			{ root },
+		)
+	}
+	return record
 }
 
 /**

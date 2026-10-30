@@ -740,3 +740,20 @@ export interface CompilerInterface {
 	 */
 	destroy(): void
 }
+
+/** Represents one owner's bare exported names, including an empty candidate surface. */
+export interface SurfaceClaim {
+	readonly owner: string
+	readonly names: readonly string[]
+}
+
+/** Represents a bare name claimed by distinct package owners. */
+export interface SurfaceCollision {
+	readonly name: string
+	readonly owners: readonly string[]
+}
+
+/** Reports a collision's standing against the recorded owner set. */
+export interface SurfaceFinding extends SurfaceCollision {
+	readonly standing: 'error' | 'recorded' | 'closed'
+}

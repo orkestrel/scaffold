@@ -11,7 +11,7 @@ import type {
 import { afterAll, describe, expect, it } from 'vitest'
 import { configDefaults } from 'vitest/config'
 import { globSync } from 'node:fs'
-import { matchesGlob } from 'node:path'
+import { join, matchesGlob } from 'node:path'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
 	APP_DEV_DEPENDENCIES,
@@ -37,7 +37,15 @@ import {
 	TARGET_SKILL_NAMES,
 	TOOLCHAIN_HOLDS,
 } from '@src/core'
-import { readFileHex, readHostFloor, stageHost } from '@src/server'
+import {
+	computeDigest,
+	pathToStorage,
+	readFileHex,
+	readHostFloor,
+	readSurfaceBaseline,
+	resolveHostRoot,
+	stageHost,
+} from '@src/server'
 import { isRecord } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import {
@@ -48,7 +56,7 @@ import {
 	USAGE_CODE,
 	VERBS,
 } from '../../../src/bin/constants.js'
-import { renderUsage } from '../../../src/bin/helpers.js'
+import { catalogToNames, renderUsage } from '../../../src/bin/helpers.js'
 import { CLI } from '../../../src/bin/CLI.js'
 import {
 	buildSetupQuestion,
@@ -65,6 +73,7 @@ import {
 	buildFleetManifest,
 	buildHostManifest,
 	buildInstalledHostReplies,
+	buildManifestEntry,
 	buildOrganization,
 	buildPackument,
 	commitFiles,
@@ -93,6 +102,731 @@ import {
 	USAGE_CASES,
 } from '../../setupServer.js'
 import { createScratch } from '@orkestrel/test/server'
+
+describe('surface command', () => {
+	it('reports recorded and closed collisions from checkout and built inventories without drift', async () => {
+		const workspace = createScratch()
+		try {
+			workspace.write(
+				`host/${CATALOG_AGENT_PATH}`,
+				'| Package |\n| --- |\n| @orkestrel/alpha |\n| @orkestrel/beta |\n',
+			)
+			for (const owner of ['alpha', 'beta']) {
+				workspace.write(
+					`host/guides/${owner}.md`,
+					`# ${owner}\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| \`Shared\` | ${owner === 'alpha' ? 'interface' : 'function'} | \`{}\` | Describes a claim. |\n`,
+				)
+			}
+			const surface = [
+				{ name: 'Closed', owners: ['alpha', 'beta'] },
+				{ name: 'Shared', owners: ['alpha', 'beta'] },
+			]
+			workspace.write(
+				'host/host.json',
+				JSON.stringify(buildHostManifest({ entries: [], roots: ['guides'], surface })),
+			)
+			const args = [
+				'surface',
+				'--from',
+				join(workspace.path, 'host'),
+				'--target',
+				workspace.ensure('empty'),
+			]
+			const sink = createSink()
+			expect(await new CLI(sink.options).execute([...args, '--json'])).toBe(EXIT_CLEAN)
+			expect(sink.output.map((line) => JSON.parse(line))).toEqual([
+				{
+					owners: [
+						{ owner: 'alpha', names: ['Shared'], source: 'floor' },
+						{ owner: 'beta', names: ['Shared'], source: 'floor' },
+					],
+					provenance: {},
+					collisions: [
+						{ name: 'Closed', owners: ['alpha', 'beta'], standing: 'closed' },
+						{ name: 'Shared', owners: ['alpha', 'beta'], standing: 'recorded' },
+					],
+				},
+			])
+			const catalog = requireValue(workspace.read(`host/${CATALOG_AGENT_PATH}`))
+			const storage = pathToStorage(CATALOG_AGENT_PATH)
+			workspace.write(`host/${storage}`, catalog)
+			workspace.remove(`host/${CATALOG_AGENT_PATH}`)
+			workspace.write(
+				'host/manifest.json',
+				JSON.stringify(
+					buildHostManifest({
+						entries: [
+							buildManifestEntry({
+								storage,
+								destination: CATALOG_AGENT_PATH,
+								digest: computeDigest(catalog),
+							}),
+							...['alpha', 'beta'].map((owner) =>
+								buildManifestEntry({
+									storage: pathToStorage(`guides/${owner}.md`),
+									destination: `guides/${owner}.md`,
+									digest: computeDigest(requireValue(workspace.read(`host/guides/${owner}.md`))),
+								}),
+							),
+						],
+						roots: ['guides'],
+						surface,
+					}),
+				),
+			)
+			workspace.remove('host/host.json')
+			const human = createSink()
+			expect(await new CLI(human.options).execute(args)).toBe(EXIT_CLEAN)
+			expect(human.output).toContain('1 recorded collisions, 1 closed collisions.')
+			expect(human.diagnostic).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('returns drift for an unrecorded name and for a recorded name with another owner', async () => {
+		const workspace = createScratch()
+		try {
+			workspace.write(
+				`host/${CATALOG_AGENT_PATH}`,
+				'| Package |\n| --- |\n| @orkestrel/alpha |\n| @orkestrel/beta |\n| @orkestrel/gamma |\n',
+			)
+			for (const owner of ['alpha', 'beta', 'gamma']) {
+				workspace.write(
+					`host/guides/${owner}.md`,
+					`# ${owner}\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| \`Shared\` | interface | \`{}\` | Describes a claim. |\n`,
+				)
+			}
+			const args = [
+				'surface',
+				'--from',
+				join(workspace.path, 'host'),
+				'--target',
+				workspace.ensure('empty'),
+			]
+			workspace.write(
+				'host/host.json',
+				JSON.stringify(buildHostManifest({ entries: [], roots: ['guides'], surface: [] })),
+			)
+			const fresh = createSink()
+			expect(await new CLI(fresh.options).execute(args)).toBe(EXIT_DRIFT)
+			expect(fresh.output.join('\n')).toContain('"Shared": "alpha", "beta", "gamma"')
+			expect(fresh.output.at(-1)).toBe('0 recorded collisions, 0 closed collisions.')
+			workspace.write(
+				'host/host.json',
+				JSON.stringify(
+					buildHostManifest({
+						entries: [],
+						roots: ['guides'],
+						surface: [{ name: 'Shared', owners: ['alpha', 'beta'] }],
+					}),
+				),
+			)
+			const growth = createSink()
+			expect(await new CLI(growth.options).execute([...args, '--json'])).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(growth.output[0]))).toMatchObject({
+				collisions: [{ name: 'Shared', owners: ['alpha', 'beta', 'gamma'], standing: 'error' }],
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('detects iterateIndices added by candidate barrels and replaces their published claims', async () => {
+		const workspace = createScratch()
+		try {
+			for (const owner of ['alpha', 'beta']) {
+				workspace.write(
+					`host/guides/${owner}.md`,
+					`# ${owner}\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| \`Dropped\` | interface | \`{}\` | Describes a claim. |\n`,
+				)
+				workspace.write(`${owner}/package.json`, JSON.stringify({ name: `@orkestrel/${owner}` }))
+				workspace.write(`${owner}/src/core/index.ts`, "export * from './helpers.js'\n")
+				workspace.write(
+					`${owner}/src/core/helpers.ts`,
+					'export function iterateIndices(): readonly number[] { return [] }\n',
+				)
+			}
+			workspace.write(
+				'host/host.json',
+				JSON.stringify(
+					buildHostManifest({
+						entries: [],
+						roots: ['guides'],
+						surface: [{ name: 'Dropped', owners: ['alpha', 'beta'] }],
+					}),
+				),
+			)
+			const sink = createSink()
+			const args = [
+				'surface',
+				join(workspace.path, 'alpha'),
+				join(workspace.path, 'beta'),
+				'--from',
+				join(workspace.path, 'host'),
+				'--target',
+				join(workspace.path, 'alpha'),
+				'--json',
+			]
+			expect(await new CLI(sink.options).execute(args)).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				collisions: [
+					{ name: 'Dropped', owners: ['alpha', 'beta'], standing: 'closed' },
+					{ name: 'iterateIndices', owners: ['alpha', 'beta'], standing: 'error' },
+				],
+			})
+			const target = createSink()
+			expect(
+				await new CLI(target.options).execute([
+					'surface',
+					join(workspace.path, 'beta'),
+					'--from',
+					join(workspace.path, 'host'),
+					'--target',
+					join(workspace.path, 'alpha'),
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(target.output).toEqual(sink.output)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an unknown surface flag with the usage exit code', async () => {
+		const workspace = createScratch()
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute(['surface', '--target', workspace.path, '--unknown']),
+			).toBe(EXIT_USAGE)
+			expect(sink.diagnostic.join('\n')).toContain('--unknown')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads a live guide and inventory after membership and reports candidate and live sources', async () => {
+		const workspace = createScratch({
+			files: {
+				'alpha/package.json': '{"name":"@orkestrel/alpha"}',
+				'alpha/src/core/index.ts': "export * from './types.js'\n",
+				'alpha/src/core/types.ts': 'export interface LiveName {}\n',
+			},
+		})
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/beta': 'write' }),
+			},
+			'/orkestrel/beta/refs/heads/main/guides/beta.md': {
+				status: 200,
+				body: '## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `LiveName` | interface | `{}` | Describes a value. |\n',
+			},
+			'/orkestrel/scaffold/refs/heads/main/host.json': {
+				status: 200,
+				body: JSON.stringify(buildHostManifest({ entries: [], roots: [], surface: [] })),
+			},
+		})
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--target', join(workspace.path, 'alpha'), '--json']),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				owners: [
+					{ owner: 'alpha', source: 'candidate', names: ['LiveName'] },
+					{ owner: 'beta', source: 'live', names: ['LiveName'] },
+				],
+				provenance: { guides: 'live', record: 'live' },
+				collisions: [{ name: 'LiveName', standing: 'error', owners: ['alpha', 'beta'] }],
+			})
+			expect(server.paths[0]).toBe('/-/org/orkestrel/package')
+			expect(server.paths).not.toContain('/orkestrel/alpha/refs/heads/main/guides/alpha.md')
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('refuses an unreachable membership endpoint before guide or inventory requests', async () => {
+		const registry = await createUpstreamServer({})
+		const repository = await createUpstreamServer({})
+		await registry.destroy()
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: registry.base }, repository: { base: repository.base } },
+				}).execute(['surface', '--json']),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				error: {
+					code: 'FETCH',
+					message: expect.stringContaining('Surface registry is unreachable from this host:'),
+				},
+			})
+			expect(sink.output[0]).toContain('ECONNREFUSED')
+			expect(sink.output[0]).toContain('--offline to check against the bundled guides')
+			expect(repository.paths).toEqual([])
+			expect(registry.paths).toEqual([])
+		} finally {
+			await repository.destroy()
+		}
+	})
+
+	it('falls back after an HTTP or malformed membership answer and a missing guide without calling it offline', async () => {
+		const workspace = createScratch()
+		const record = {
+			status: 200,
+			body: JSON.stringify(
+				buildHostManifest({
+					entries: [],
+					roots: [],
+					surface: readSurfaceBaseline(resolveHostRoot()) ?? [],
+				}),
+			),
+		}
+		try {
+			for (const membership of [
+				{ status: 500, body: 'unavailable' },
+				{ status: 200, body: 'not a record' },
+			]) {
+				const server = await createUpstreamServer({
+					'/-/org/orkestrel/package': membership,
+					'/orkestrel/scaffold/refs/heads/main/host.json': record,
+				})
+				try {
+					const sink = createSink()
+					expect(
+						await new CLI({
+							...sink.options,
+							upstream: { registry: { base: server.base }, repository: { base: server.base } },
+						}).execute(['surface', '--target', workspace.path, '--json']),
+					).toBe(EXIT_DRIFT)
+					expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+						owners: expect.arrayContaining([
+							{ owner: 'emitter', names: expect.any(Array), source: 'floor' },
+						]),
+						provenance: { guides: 'floor', record: 'live' },
+					})
+					expect(server.paths).toContain('/orkestrel/emitter/refs/heads/main/guides/emitter.md')
+					expect(server.paths).toContain('/orkestrel/scaffold/refs/heads/main/host.json')
+					expect(sink.output[0]).not.toContain('unreachable')
+				} finally {
+					await server.destroy()
+				}
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads one owner from the floor when its live guide is missing and exits with drift', async () => {
+		const workspace = createScratch()
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/emitter': 'write', '@orkestrel/beta': 'write' }),
+			},
+			'/orkestrel/beta/refs/heads/main/guides/beta.md': {
+				status: 200,
+				body: '## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `BetaOnly` | interface | `{}` | Describes a value. |\n',
+			},
+			'/orkestrel/scaffold/refs/heads/main/host.json': {
+				status: 200,
+				body: JSON.stringify(buildHostManifest({ entries: [], roots: [], surface: [] })),
+			},
+		})
+		try {
+			const sink = createSink()
+			const options = {
+				...sink.options,
+				upstream: { registry: { base: server.base }, repository: { base: server.base } },
+			}
+			expect(
+				await new CLI(options).execute(['surface', '--target', workspace.path, '--json']),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				owners: [
+					{ owner: 'beta', names: ['BetaOnly'], source: 'live' },
+					{ owner: 'emitter', names: expect.any(Array), source: 'floor' },
+				],
+				collisions: [],
+				provenance: { guides: 'floor', record: 'live' },
+			})
+			expect(server.paths).toContain('/orkestrel/emitter/refs/heads/main/guides/emitter.md')
+			const human = createSink()
+			expect(
+				await new CLI({ ...options, ...human.options }).execute([
+					'surface',
+					'--target',
+					workspace.path,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(human.output).toContain(
+				'Surface owner "emitter" fell to the floor guide: no candidate or live guide answered.',
+			)
+			expect(human.output.join('\n')).not.toContain('"beta" fell')
+			expect(human.output.at(-1)).toBe('0 recorded collisions, 0 closed collisions.')
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('uses the bundled floor offline and reads only a supplied root with from', async () => {
+		const workspace = createScratch()
+		const server = await createUpstreamServer({})
+		try {
+			const offline = createSink()
+			expect(
+				await new CLI({
+					...offline.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--offline', '--target', workspace.path, '--json']),
+			).toBe(EXIT_CLEAN)
+			expect(JSON.parse(requireValue(offline.output[0]))).toMatchObject({
+				provenance: { guides: 'floor', record: 'floor' },
+				owners: expect.arrayContaining([
+					{ owner: 'emitter', source: 'floor', names: expect.any(Array) },
+				]),
+			})
+			workspace.write(
+				'host.json',
+				JSON.stringify(buildHostManifest({ entries: [], roots: [], surface: [] })),
+			)
+			const local = createSink()
+			expect(
+				await new CLI({
+					...local.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--from', workspace.path, '--target', workspace.path, '--json']),
+			).toBe(EXIT_CLEAN)
+			expect(JSON.parse(requireValue(local.output[0]))).toEqual({
+				owners: [],
+				collisions: [],
+				provenance: {},
+			})
+			expect(server.paths).toEqual([])
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('refuses a candidate under json with the drift exit code', async () => {
+		const workspace = createScratch()
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'surface',
+					workspace.path,
+					'--from',
+					workspace.path,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				error: { code: 'TARGET', message: expect.stringContaining('package.json') },
+			})
+			expect(sink.diagnostic).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a membership closed before its headers or timed out without requesting a guide or record', async () => {
+		const registry = await createUpstreamServer({
+			'/-/org/orkestrel/package': { status: 200, body: '{}', held: true },
+		})
+		const repository = await createUpstreamServer({})
+		try {
+			const closed = createSink()
+			const run = new CLI({
+				...closed.options,
+				upstream: { registry: { base: registry.base }, repository: { base: repository.base } },
+			}).execute(['surface', '--json'])
+			await registry.arrival('/-/org/orkestrel/package')
+			await registry.destroy()
+			expect(await run).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(closed.output[0]))).toMatchObject({
+				error: {
+					code: 'FETCH',
+					message: expect.stringContaining(
+						`Surface registry is unreachable from this host: the organization package list at ${registry.base}/-/org/orkestrel/package produced no answer:`,
+					),
+				},
+			})
+			expect(registry.paths).toEqual(['/-/org/orkestrel/package'])
+			const held = await createUpstreamServer({
+				'/-/org/orkestrel/package': { status: 200, body: '{}', held: true },
+			})
+			try {
+				const timed = createSink()
+				expect(
+					await new CLI({
+						...timed.options,
+						upstream: {
+							registry: { base: held.base, timeout: 25 },
+							repository: { base: repository.base },
+							retries: 2,
+						},
+					}).execute(['surface', '--json']),
+				).toBe(EXIT_DRIFT)
+				expect(timed.output[0]).toContain('produced no answer: TimeoutError')
+			} finally {
+				await held.destroy()
+			}
+			expect(repository.paths).toEqual([])
+		} finally {
+			await registry.destroy()
+			await repository.destroy()
+		}
+	})
+
+	it('reports record fallback and unread owners without inventing an empty claim', async () => {
+		const workspace = createScratch()
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/unpublished': 'write', '@orkestrel/alpha': 'write' }),
+			},
+			'/orkestrel/alpha/refs/heads/main/guides/alpha.md': { status: 200, body: '# Alpha\n' },
+		})
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--target', workspace.path, '--json']),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				owners: [
+					{ owner: 'alpha', names: [], source: 'live' },
+					{ owner: 'unpublished', source: 'unread' },
+				],
+				provenance: { guides: 'floor', record: 'floor' },
+			})
+			expect(JSON.parse(requireValue(sink.output[0])).owners[1]).not.toHaveProperty('names')
+			const human = createSink()
+			expect(
+				await new CLI({
+					...human.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--target', workspace.path]),
+			).toBe(EXIT_DRIFT)
+			expect(human.output.join('\n')).toContain('"unpublished" is unread')
+			expect(human.output.join('\n')).toContain(
+				'Surface record fell to the floor inventory: the vendored inventory at',
+			)
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('exits with drift and names the fallback when only membership fell to the floor', async () => {
+		const workspace = createScratch()
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': { status: 500, body: 'unavailable' },
+			'/orkestrel/scaffold/refs/heads/main/host.json': {
+				status: 200,
+				body: JSON.stringify(buildHostManifest({ entries: [], roots: [], surface: [] })),
+			},
+			...Object.fromEntries(
+				catalogToNames(readHostFloor()).map((name) => {
+					const owner = name.replace('@orkestrel/', '')
+					return [
+						`/orkestrel/${owner}/refs/heads/main/guides/${owner}.md`,
+						{ status: 200, body: `# ${owner}\n` },
+					] as const
+				}),
+			),
+		})
+		try {
+			const options = {
+				upstream: { registry: { base: server.base }, repository: { base: server.base } },
+			}
+			const sink = createSink()
+			expect(
+				await new CLI({ ...sink.options, ...options }).execute([
+					'surface',
+					'--target',
+					workspace.path,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result = JSON.parse(requireValue(sink.output[0]))
+			expect(result.provenance).toEqual({ membership: 'floor', guides: 'live', record: 'live' })
+			expect(result.owners.length).toBeGreaterThan(0)
+			expect(result.owners.every(({ source }: { source: string }) => source === 'live')).toBe(true)
+			const human = createSink()
+			expect(
+				await new CLI({ ...human.options, ...options }).execute([
+					'surface',
+					'--target',
+					workspace.path,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(human.output[0]).toBe(
+				`Surface membership fell to the floor catalog table: The organization package list at ${server.base}/-/org/orkestrel/package produced no answer.`,
+			)
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('exits with drift when every guide is live and only the record fell to the floor', async () => {
+		const workspace = createScratch()
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/alpha': 'write' }),
+			},
+			'/orkestrel/alpha/refs/heads/main/guides/alpha.md': { status: 200, body: '# Alpha\n' },
+		})
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--target', workspace.path, '--json']),
+			).toBe(EXIT_DRIFT)
+			const result = JSON.parse(requireValue(sink.output[0]))
+			expect(result.owners).toEqual([{ owner: 'alpha', names: [], source: 'live' }])
+			expect(result.provenance).toEqual({ membership: 'live', guides: 'live', record: 'floor' })
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reports an unread owner with drift under offline and under from', async () => {
+		const workspace = createScratch({
+			files: {
+				[`host/${CATALOG_AGENT_PATH}`]:
+					'| Package |\n| --- |\n| @orkestrel/alpha |\n| @orkestrel/ghost |\n',
+				'host/guides/alpha.md': '# Alpha\n',
+				'host/host.json': JSON.stringify(
+					buildHostManifest({ entries: [], roots: [], surface: [] }),
+				),
+			},
+		})
+		try {
+			const from = ['--from', join(workspace.path, 'host'), '--target', workspace.ensure('empty')]
+			for (const args of [
+				['surface', ...from, '--json'],
+				['surface', '--offline', ...from, '--json'],
+			]) {
+				const sink = createSink()
+				expect(await new CLI(sink.options).execute(args)).toBe(EXIT_DRIFT)
+				expect(JSON.parse(requireValue(sink.output[0]))).toEqual({
+					owners: [
+						{ owner: 'alpha', names: [], source: 'floor' },
+						{ owner: 'ghost', source: 'unread' },
+					],
+					collisions: [],
+					provenance: {},
+				})
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an unreachable repository before any guide request', async () => {
+		const registry = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/alpha': 'write' }),
+			},
+		})
+		const repository = await createUpstreamServer({})
+		await repository.destroy()
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: registry.base }, repository: { base: repository.base } },
+				}).execute(['surface', '--json']),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				error: {
+					code: 'FETCH',
+					message: expect.stringContaining(
+						`Surface repository is unreachable from this host: the vendored inventory at ${repository.base}/orkestrel/scaffold/refs/heads/main/host.json produced no answer:`,
+					),
+				},
+			})
+			expect(sink.output[0]).toContain('--offline to check against the bundled guides')
+			expect(registry.paths[0]).toBe('/-/org/orkestrel/package')
+		} finally {
+			await registry.destroy()
+		}
+	})
+
+	it('reads floor guides through the verified host of a built root', async () => {
+		const workspace = createScratch({
+			files: {
+				'host/guides/alpha.md': '# Alpha\n',
+				'host/guides/beta.md':
+					'# Beta\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Undeclared` | interface | `{}` | Describes a claim. |\n',
+			},
+		})
+		try {
+			const catalog = '| Package |\n| --- |\n| @orkestrel/alpha |\n| @orkestrel/beta |\n'
+			workspace.write(`host/${pathToStorage(CATALOG_AGENT_PATH)}`, catalog)
+			workspace.write(
+				'host/manifest.json',
+				JSON.stringify(
+					buildHostManifest({
+						entries: [
+							buildManifestEntry({
+								storage: pathToStorage(CATALOG_AGENT_PATH),
+								destination: CATALOG_AGENT_PATH,
+								digest: computeDigest(catalog),
+							}),
+							buildManifestEntry({
+								storage: pathToStorage('guides/alpha.md'),
+								destination: 'guides/alpha.md',
+								digest: computeDigest('# Alpha\n'),
+							}),
+						],
+						roots: ['guides'],
+						surface: [],
+					}),
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'surface',
+					'--from',
+					join(workspace.path, 'host'),
+					'--target',
+					workspace.ensure('empty'),
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0])).owners).toEqual([
+				{ owner: 'alpha', names: [], source: 'floor' },
+				{ owner: 'beta', source: 'unread' },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
 
 describe('surface creation and migration', () => {
 	it('repairs every selected showcase declaration in both sections and audits secondary drift', async () => {

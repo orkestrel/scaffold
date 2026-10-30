@@ -27,12 +27,13 @@ export const PACKAGE_NAME = manifest.name
  *
  * @remarks
  * The order the type declares them in, which is also the order usage lists them:
- * the verb that creates a workspace, then the one that only reads it, then the
+ * the verb that creates a workspace, then the verbs that only read, then the
  * ones that write to one that already exists, widest last.
  */
 export const VERBS: readonly Verb[] = Object.freeze([
 	'new',
 	'audit',
+	'surface',
 	'repair',
 	'catalog',
 	'overwrite',
@@ -78,13 +79,15 @@ export const FAILED_CODE = 'FAILED'
 export const FAILED_MESSAGE = 'The command failed for an unrecognized reason'
 
 /**
- * Names the positional argument `new` alone takes, as usage writes it.
+ * Names the workspace argument the creation verb takes, as usage writes it.
  *
  * @remarks
- * The workspace name is the only positional argument any verb takes, so it is
- * one value rather than a per-verb table with holes in it.
+ * The surface verb's positional arguments name candidate checkouts instead.
  */
 export const NAME_ARGUMENT = '<name>'
+
+/** Names the surface command's optional positional checkout list. */
+export const CHECKOUT_ARGUMENT = '[<checkout>...]'
 
 /**
  * Declares every option the executable accepts, as `node:util` parses them, frozen.
@@ -178,6 +181,7 @@ export const VERB_OPTIONS: Readonly<Record<Verb, readonly string[]>> = Object.fr
 		'--target <path>',
 		'--json',
 	]),
+	surface: Object.freeze(['--offline', '--from <path>', '--target <path>', '--json']),
 	repair: Object.freeze([
 		'--groups <list>',
 		'--offline',
@@ -206,6 +210,7 @@ export const VERB_OPTIONS: Readonly<Record<Verb, readonly string[]>> = Object.fr
 export const VERB_SUMMARY: Readonly<Record<Verb, string>> = Object.freeze({
 	new: 'scaffold a workspace',
 	audit: 'report how the target compares to its plan, writing nothing',
+	surface: 'report fleet name collisions against the recorded baseline, writing nothing',
 	repair: 'write each planned path the target is missing or has let drift',
 	catalog: 'regenerate the package table and refresh the guide mirrors',
 	overwrite:

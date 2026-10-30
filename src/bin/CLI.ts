@@ -15,6 +15,7 @@ import type {
 import type {
 	MaterializeResult,
 	Host,
+	HostInventory,
 	MaterializerInterface,
 	Worktree,
 	UpstreamOptions,
@@ -38,6 +39,9 @@ import type {
 	Provenance,
 	RepairCommand,
 	RepairResult,
+	SurfaceCommand,
+	SurfaceOwner,
+	SurfaceResult,
 	TargetQuestion,
 	VersionResolution,
 } from './types.js'
@@ -60,6 +64,8 @@ import {
 	TREE_TEST_PATH,
 	createBlueprint,
 	Compiler,
+	collectSurfaceCollisions,
+	compareSurfaceCollisions,
 	extractRangeMajor,
 	GLOBAL_SETUP_PATH,
 	GUIDES_TEST_PATH,
@@ -67,6 +73,7 @@ import {
 	INTEGRATION_TEST_PATH,
 	JOURNEY_CONFIG_PATH,
 	isFloorPath,
+	isScaffoldError,
 	manifestToDependencies,
 	manifestToName,
 	MAX_MANIFEST_BYTES,
@@ -88,10 +95,14 @@ import {
 	listFiles,
 	readFileText,
 	readHostFloor,
-	readHostManifest,
 	readSnapshot,
+	readSurfaceCandidate,
+	readSurfaceFile,
+	readSurfaceRecord,
+	readSurfaceGuide,
 	resolveContainedPath,
 } from '@src/server'
+import { join, resolve } from 'node:path'
 import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE, PACKAGE_NAME } from './constants.js'
 import { isUsageError, UsageError } from './errors.js'
 import { GitQuery } from './GitQuery.js'
@@ -115,6 +126,7 @@ import {
 	releasesToPins,
 	releasesToQuestions,
 	renderUsage,
+	resolveFloor,
 	resultToTally,
 	sanitizeLine,
 	scriptToInvocations,
@@ -233,6 +245,8 @@ export class CLI implements CLIInterface {
 				return this.#create(command)
 			case 'audit':
 				return this.#inspect(command)
+			case 'surface':
+				return this.#compare(command)
 			case 'repair':
 				return this.#restore(command)
 			case 'catalog':
@@ -240,6 +254,159 @@ export class CLI implements CLIInterface {
 			case 'overwrite':
 				return this.#replace(command)
 		}
+	}
+
+	// `surface` — read each owner's claims from the freshest source that answers,
+	// compare the collisions they form with the record, and write nothing.
+	async #compare(command: SurfaceCommand): Promise<number> {
+		const floor = resolveFloor(command.from)
+		const upstream =
+			command.from === undefined && command.offline !== true
+				? new Upstream({ ...this.#upstream, retries: 0 })
+				: undefined
+		try {
+			const membership = upstream === undefined ? undefined : await this.#readMembership(upstream)
+			const inventory = upstream === undefined ? undefined : await this.#readRecord(upstream)
+			const target = resolve(command.target ?? process.cwd())
+			const paths = [
+				...new Set([
+					...command.checkouts.map((path) => resolve(path)),
+					...(isExactCaseFile(join(target, 'package.json')) ? [target] : []),
+				]),
+			]
+			const candidates = paths.map((path) => readSurfaceCandidate(path))
+			const names = membership?.entries?.map(({ name }) => name) ?? catalogToNames(floor)
+			const owners = [
+				...new Set([
+					...candidates.map(({ owner }) => owner),
+					...names.map((name) => name.replace(/^@orkestrel\//u, '')),
+				]),
+			].sort()
+			const pending = owners.filter(
+				(owner) => !candidates.some((candidate) => candidate.owner === owner),
+			)
+			const mirrors =
+				upstream === undefined
+					? []
+					: await upstream.fetch(
+							pending.map((owner) => `@orkestrel/${owner}`),
+							{},
+						)
+			const claims = owners.map((owner): SurfaceOwner => {
+				const own = candidates.filter((candidate) => candidate.owner === owner)
+				if (own.length > 0) {
+					const merged = [...new Set(own.flatMap((candidate) => candidate.names))].sort()
+					return { owner, names: merged, source: 'candidate' }
+				}
+				const live = mirrors.find((mirror) => mirror.name === `@orkestrel/${owner}`)
+				if (live?.lookup === 'found') {
+					return { ...readSurfaceGuide(live.content, owner, `live ${live.path}`), source: 'live' }
+				}
+				const fallback = readSurfaceFile(floor, owner, 'floor')
+				return fallback === undefined
+					? { owner, source: 'unread' }
+					: { ...fallback, source: 'floor' }
+			})
+			const record =
+				inventory?.lookup === 'found'
+					? inventory.surface
+					: isString(floor)
+						? readSurfaceRecord(floor)
+						: floor.manifest.surface
+			const collisions = compareSurfaceCollisions(
+				collectSurfaceCollisions(
+					claims.flatMap((claim) => (claim.source === 'unread' ? [] : [claim])),
+				),
+				record,
+			)
+			const fell = claims.some(({ source }) => source === 'floor' || source === 'unread')
+			const provenance: Provenance =
+				command.from !== undefined
+					? {}
+					: {
+							membership: membership?.entries === undefined ? 'floor' : 'live',
+							guides: upstream === undefined || fell ? 'floor' : 'live',
+							record: inventory?.lookup === 'found' ? 'live' : 'floor',
+						}
+			const result: SurfaceResult = { owners: claims, collisions, provenance }
+			if (command.json === true) this.#report(result)
+			else {
+				if (membership?.note !== undefined) {
+					this.#say(`Surface membership fell to the floor catalog table: ${membership.note}`)
+				}
+				for (const claim of claims) {
+					if (upstream !== undefined && claim.source === 'floor') {
+						this.#say(
+							`Surface owner ${JSON.stringify(claim.owner)} fell to the floor guide: no candidate or live guide answered.`,
+						)
+					}
+					if (claim.source === 'unread') {
+						this.#say(
+							`Surface owner ${JSON.stringify(claim.owner)} is unread: no candidate, live guide, or floor guide answered.`,
+						)
+					}
+				}
+				if (inventory !== undefined && inventory.lookup !== 'found') {
+					this.#say(`Surface record fell to the floor inventory: ${inventory.note}.`)
+				}
+				for (const collision of collisions.filter(({ standing }) => standing === 'error')) {
+					this.#say(
+						`Surface collision ${JSON.stringify(collision.name.slice(0, 512))}: ${collision.owners.map((owner) => JSON.stringify(owner.slice(0, 512))).join(', ')}. Rename the declaration outside its owning package or reuse the owner's export.`,
+					)
+				}
+				this.#say(
+					`${String(collisions.filter(({ standing }) => standing === 'recorded').length)} recorded collisions, ${String(collisions.filter(({ standing }) => standing === 'closed').length)} closed collisions.`,
+				)
+			}
+			return collisions.some(({ standing }) => standing === 'error') ||
+				claims.some(({ source }) => source === 'unread') ||
+				(upstream !== undefined &&
+					(provenance.membership === 'floor' ||
+						provenance.guides === 'floor' ||
+						provenance.record === 'floor'))
+				? EXIT_DRIFT
+				: EXIT_CLEAN
+		} finally {
+			upstream?.destroy()
+		}
+	}
+
+	// The membership read is the `surface` verb's first request, so a host that
+	// cannot reach the registry stops here, before any repository read. An HTTP
+	// failure or a malformed list is an answer: the run continues from the data
+	// root's catalog table and carries the failure as the note it reports.
+	async #readMembership(
+		upstream: Upstream,
+	): Promise<{ readonly entries?: readonly CatalogEntry[]; readonly note?: string }> {
+		return upstream.catalog().then(
+			(entries) => ({ entries }),
+			(error: unknown) => {
+				const context = isScaffoldError(error) && isRecord(error.context) ? error.context : {}
+				if (context.unreachable === true) {
+					throw new ScaffoldError(
+						'FETCH',
+						`Surface registry is unreachable from this host: the organization package list at ${isString(context.url) ? context.url : 'the registry'} produced no answer: ${isString(context.note) ? context.note : 'no cause was reported'}. Use --offline to check against the bundled guides.`,
+						context,
+					)
+				}
+				return { note: errorToEnvelope(error).error.message }
+			},
+		)
+	}
+
+	// The record read is the `surface` verb's first repository request, so a host
+	// that cannot reach the repository stops here, before any guide read. Any
+	// other failure is an answer, and the data root's record replaces it.
+	async #readRecord(upstream: Upstream): Promise<HostInventory> {
+		const inventory = await upstream.inventory()
+		if (inventory.unreachable === true) {
+			throw new ScaffoldError(
+				'FETCH',
+				`Surface repository is unreachable from this host: ${inventory.note}. Use --offline to check against the bundled guides.`,
+				{ note: inventory.note },
+			)
+		}
+		return inventory
 	}
 
 	// `new` — resolve the declared dependencies against the registry, compile the
@@ -442,12 +609,7 @@ export class CLI implements CLIInterface {
 			)
 		}
 		const previous = catalogToNames(target)
-		const floor =
-			host === undefined
-				? readHostFloor()
-				: readHostManifest(host) === undefined
-					? host
-					: readHostFloor(host)
+		const floor = resolveFloor(host)
 		const materializer = new Materializer({ host: floor })
 		const outcome = await this.#assemble(command, target, floor, materializer, previous)
 		if (command.json === true) this.#report(outcome)

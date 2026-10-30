@@ -10,6 +10,7 @@ import type {
 	Worktree,
 	UpstreamEventMap,
 	UpstreamOptions,
+	SurfaceModule,
 } from './types.js'
 import {
 	andOf,
@@ -21,6 +22,7 @@ import {
 	isBoolean,
 	isFunction,
 	isInteger,
+	isObject,
 	isString,
 	recordOf,
 	recordShape,
@@ -60,6 +62,28 @@ import {
 	RESERVED_SEGMENT_PATTERN,
 } from './constants.js'
 import { computeManifestDigest } from './helpers.js'
+
+/**
+ * Narrows a value to the callable guide functions surface reflection requires.
+ *
+ * @example
+ * ```ts
+ * import { isSurfaceModule } from '@orkestrel/scaffold/server'
+ * isSurfaceModule({}) // false
+ * ```
+ */
+export function isSurfaceModule(value: unknown): value is SurfaceModule {
+	return holds(
+		() =>
+			isObject(value) &&
+			'createGuide' in value &&
+			isFunction(value.createGuide) &&
+			'createSource' in value &&
+			isFunction(value.createSource) &&
+			'extractSourceLines' in value &&
+			isFunction(value.extractSourceLines),
+	)
+}
 
 /**
  * Narrows a value to a path naming a location on this host.

@@ -18,7 +18,6 @@ import type {
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { ResolveHookSync } from 'node:module'
 import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
@@ -2456,24 +2455,6 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
 		),
 	)
 	return root
-}
-
-/**
- * Refuses Guide resolution while preserving the host resolver for every other module.
- *
- * @param specifier - The requested module name.
- * @param context - The host resolution context.
- * @param next - The real resolver for the remaining hook chain.
- * @returns The host's resolution for modules outside the controlled prerequisite.
- * @throws An error carrying `MODULE_NOT_FOUND` for `@orkestrel/guide`.
- */
-export const refuseGuideResolution: ResolveHookSync = (specifier, context, next) => {
-	if (specifier === '@orkestrel/guide') {
-		throw Object.assign(new Error('Cannot find module @orkestrel/guide'), {
-			code: 'MODULE_NOT_FOUND',
-		})
-	}
-	return next(specifier, context)
 }
 
 /** Supplies Surface rows with repeated declarations and non-name references. */
