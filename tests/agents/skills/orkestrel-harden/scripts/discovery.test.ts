@@ -1621,9 +1621,9 @@ export default ({ mode }) => {
 		expect(gates.get('policy')).toBe('test > test:policy')
 		expect(gates.get('skills')).toBe('test > test:skills')
 		expect(gates.get('distribution')).toBe('prepublishOnly > test:distribution')
+		expect(gates.get('probe')).toBe('test:probe')
 		expect(run.json?.ungated).toEqual([])
 		expect(run.json?.empty).toEqual([])
-		expect(run.json?.workbenches).toEqual(['probe'])
 		expect(run.json?.undiscovered).toEqual([])
 		const census = run.json?.census
 		if (!isArray(census)) throw new Error('The census carries no file rows')
@@ -1634,8 +1634,8 @@ export default ({ mode }) => {
 		expect(skipIf).toBeGreaterThan(0)
 		const text = runSkillScript(DISCOVERY_SCRIPT, [], { cwd: WORKSPACE_ROOT })
 		expect(text.status).toBe(0)
-		expect(text.stdout).toContain(
-			'discovery: probe is an empty workbench; no chain containing " > " names it',
+		expect(text.stdout).toMatch(
+			/^discovery: probe\s+\d+ file\(s\)\s+\d+ test\(s\) gate=test:probe$/mu,
 		)
 	}, 180_000)
 

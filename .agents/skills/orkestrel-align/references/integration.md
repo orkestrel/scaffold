@@ -24,7 +24,7 @@ Read the concrete consumer flow first-hand:
 
 When moving behavior:
 
-- define the destination contract and guide first;
+- define the destination type contract before implementation, and document it in the final prose pass under `AGENTS.md` § Work loop;
 - keep storage/transport integrations pluggable where consumers choose them;
 - move the real implementation, tests, and guide together;
 - delete the source duplicate and update every consumer;

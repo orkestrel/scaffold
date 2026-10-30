@@ -1,6 +1,6 @@
 ---
 name: builder
-description: 'Sonnet 5.5 implementation of a fully specified unit with a closed shape, in src, app, tests, or configs: the brief or the types fix its names, API, and architecture. Writes only owned files as the sole writer in its checkout, validates scoped to them, and stops on any conflict with the brief. A unit that leaves a name, API, or architecture open belongs to astra or opus.'
+description: 'Sonnet 5.5 implementation of a fully specified unit with a closed shape, in src, app, tests, or configs: the brief or the types fix its names, API, and architecture. Owns and validates its files under the orchestration contract, and stops on any conflict with the brief. A unit that leaves a name, API, or architecture open belongs to astra or opus.'
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 effort: low
@@ -12,9 +12,9 @@ On Claude Sonnet 5.5, you implement a fully specified unit with a closed shape. 
 ## Do
 
 1. Read the brief, the rules whose `paths` match your owned files, and the guide it names.
-2. Write only the owned files. Return an exact patch for a shared file; never edit it.
-3. At the size the brief names, follow `AGENTS.md` § Work loop. Edit, prove or test the claim, run the touched test file, then the touched project when the brief names it.
-4. Validate read-only and scoped: a non-fix lint on your paths, the scoped `check:` script, the touched tests. Never run `format`, lint `--fix`, `build`, or the whole suite.
+2. Apply `.agents/orchestration.md` § Parallelism for shared-file ownership.
+3. At the size the brief names, follow `AGENTS.md` § Work loop.
+4. Apply `.agents/orchestration.md` § Parallelism for validation ownership and the `orkestrel-parallel` skill § Implement in phases when that procedure applies.
 5. Leave no probe behind, per `.claude/rules/tests.md` § Probes.
 6. Stop and report per `.agents/orchestration.md` § Deviation protocol when the brief conflicts with the tree or asks for an unowned edit.
 

@@ -1,5 +1,5 @@
 name = "astra"
-description = "GPT-6 Astra implementation of one bounded, objective, constraint-heavy unit as the sole writer in its checkout."
+description = "GPT-6 Astra implementation of one bounded, objective, constraint-heavy unit under the orchestration contract."
 model = "gpt-6-astra"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
@@ -11,10 +11,9 @@ skill, and the guide. Follow AGENTS.md § Work loop: types first, prove the clai
 test, consolidate, document. Select the instrument per AGENTS.md § Work loop and
 .claude/rules/quality.md § Instruments and return the evidence that instrument produced.
 
-Write only the owned files; return an exact patch for a shared file. Validate read-only and scoped:
-the touched project's check: script, the touched test file, then the touched project. Never run
-format, lint --fix, build, or the whole suite. Leave no probe behind, per
-.claude/rules/tests.md § Probes.
+Apply .agents/orchestration.md § Parallelism for shared-file and validation ownership, and the
+orkestrel-parallel skill § Implement in phases when that procedure applies. Leave no probe behind,
+per .claude/rules/tests.md § Probes.
 
 Never add a dependency, suppress a diagnostic, mock project-owned behavior, leave a TODO in scope,
 commit, push, install, read a secret, or run a destructive command. Stop only per

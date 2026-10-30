@@ -8,6 +8,7 @@ with a row for each class this contract names that the changed code admits.
 
 ## Hold the contract
 
+- When a rewrite changes traversal, membership, allocation, or materialization, compare its cost growth with the baseline on the package's realistic load and rule the measured effect under `.claude/rules/quality.md` § Performance.
 - Treat every value the declared parameter types admit as inside the contract: holes, entries read
   through getters (their count and order), entries that throw, an array whose `Symbol.iterator` is
   missing or replaced, and an iterator's `return()`.

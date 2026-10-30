@@ -21,7 +21,9 @@ Run from the checkout root. The script's opening comment owns its behavior.
 
 ## Write the claims
 
-Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/brief.md` for the claim form.
+For a one-lane review, carry the claims inline in its brief or write `tmp/units/<unit>-claims.md`.
+For a review with separate lanes, write that claims file and point every lane at it.
+Read `references/brief.md` for the claim form.
 
 - State the subject as numbered falsifiable claims: properties a concrete input, state, or interleaving could show false. Never "review this diff".
 - Derive claims from adverse conditions: cancellation, restart, concurrency, partial failure, malformed or unexpected input, resource exhaustion, orderings the happy path never reaches.
@@ -62,7 +64,11 @@ Read `references/reconcile.md`.
 
 ## Write the verdict
 
-Write `.orkestrel/<package>/<unit>-audit-verdict.md` with the lanes that ran, their engines, the per-claim rulings, the findings carried into fix units, and any lane the round did not run with the reason. Delete the claims file and the verdict when the seam closes.
+For a one-lane review, record its per-claim rulings and findings in the ledger row or write
+`.orkestrel/<package>/<unit>-audit-verdict.md`. For a review with separate lanes, write that verdict
+file with the lanes that ran, their engines, the per-claim rulings, the findings carried into fix
+units, and any lane the round did not run with the reason. Delete any separate claims file and
+verdict when the seam closes.
 
 ## End the depth search
 

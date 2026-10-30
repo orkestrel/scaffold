@@ -20,6 +20,7 @@ Native Codex agents, and Codex lanes another harness hosts. `.codex/config.toml`
 
 ## Quirks
 
+- Before a Codex lane that requires a tool server, verify the entry's resolution and handshake from that lane's checkout under the effective configuration. On "required MCP servers failed to initialize", read the user-level configuration for a same-named entry.
 - When a Codex lane runs a long command, brief the yield fallback before launch: the longest yield interval, output to a file, process-list reads until the tracked command exits, and no kill. The lane cannot set a timeout; brief it to proceed without asking for one.
 - When the shell yields before the command exits, start nothing else, and confirm no owned leftover remains before the next lane; a lane that started the next test file broke the one-runner bound (2026-10-22).
 - When a brief launches a long command, name its terminal record, such as the launcher's `exit=` line; a lane read a finished step as running and polled it for six minutes (2026-10-22).

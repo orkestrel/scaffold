@@ -55,6 +55,7 @@
 - State the finding as the rule. Never record how it was found, which session found it, or what was tried first; that belongs in the commit message.
 - Cut every clause that persuades, reassures, or explains to a person.
 - Give a rule one home. Point at it from elsewhere; never restate it.
+- When a rule requires a check against a declared type or shape, state the standard at which the check stops.
 - Keep an example only when it disambiguates the rule.
 - When an instruction file or a brief governs a quantity, state the property the quantity must serve and leave the figure to the case: never fix a fixture size, a sample count, a percentage, or a threshold, and describe a fixture by its kind and the load it represents. Keep a figure only where it is a contract: a limit a protocol, format, standard, or external tool fixes, an exit code, a measurement with its run, a version, a date, or a cardinality a design law fixes (one word per name, one writer per checkout).
 - Keep `AGENTS.md` to the laws every task needs and the always-loaded set small: move a procedure into a skill and scope a rule with `paths`.

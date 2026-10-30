@@ -31,6 +31,7 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
   module.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
 - Tests are deterministic: identical inputs produce identical results.
+- When a proof runs a command, assert its exit code.
 - Keep default suites fast: give each timer the shortest real duration that still separates the orderings the test asserts on a loaded host, and make no network calls.
 - Use real implementations and small scenarios. Never use mocks, behavioral fakes, module replacement, or framework spies for project-owned or integrated behavior.
 - Use recorders for calls/events, temporary resources for stateful boundaries, protocol-faithful fixture servers for deterministic network peers, and the real external service when its behavior is the claim.
@@ -45,7 +46,7 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
 - Assert a runtime-chosen result as the property it must have, not as the number one run produced. Compression, timing, and buffer sizing are the runtime's choice, so pin the relationship the test depends on — that the encoded form is larger, that the second call is faster — and let the assertion fail when the input drifts out of the range where that relationship holds.
 - Measure an elapsed interval with `performance.now()`, never `Date.now()`. `Date.now()` returns whole milliseconds, so an interval built from two of its readings truncates at both ends and can under-report by a millisecond — enough to fail a boundary assertion against a timer that behaved correctly. `performance.now()` is monotonic and sub-millisecond, and it does not move when the wall clock does.
 - Give a conditional skip the mechanism that makes it inapplicable, cited, not the platform name alone. A test skipped on a platform is a test nobody re-examines; a test skipped because a named API rejects a named case is one anybody can re-check.
-- A test creates every directory it writes under and assumes no git-ignored path exists.
+- Create every directory a test writes under. Make the test independent of the presence, contents, and absence of git-ignored paths it does not own.
 - A readiness wait resolves on parsed complete content, never on a file's existence.
 - A browser case restores every runner global it changes before it ends.
 - A proof that runs before `build` in the gate chain resolves no `dist/` path; a proof that deliberately consumes the built entry loads it at run time through a resolved path and refuses a stale build.
@@ -220,10 +221,12 @@ environment it names, and in scaffold's vendored `tests/setupPolicy.ts`. Never c
 `tests/setup<Name>.ts`, a nested setup module, or a helper, type, suite, or builder module anywhere
 else under `tests/`. Put a cross-cutting proof's helpers in the module of the environment the proof
 runs in: `tests/setupServer.ts` for the Node `conformance`, `tree`, and `integration` proofs. A file
-under a `fixtures/` directory is data or an entry a test runs or loads on its own, never a helper a
-test file imports. The policy sweep's `mirror` rule refuses every other TypeScript module under
+under a `fixtures/` directory is data, an entry a test runs or loads on its own, or a raw-runtime
+support module beside the entries that alone import it. Permit that support module only when its
+runtime requires the placement and it substitutes for no project-owned implementation. Never import
+a fixture helper from a test file. The policy sweep's `mirror` rule refuses every other TypeScript module under
 `tests/` that is not a test, a bench, or a declaration file; it reads paths, not imports, so review
-refuses a helper placed under `fixtures/`.
+refuses a helper placed under `fixtures/` outside the permitted raw-runtime support modules.
 
 - `tests/setup.ts`: host-independent; no `node:*`, DOM, `window`, or Vue. Lint refuses a `node:` or Vue import there.
 - `tests/setupServer.ts`: Node-only helpers and `node:fs` loaders anchored to `WORKSPACE_ROOT`.

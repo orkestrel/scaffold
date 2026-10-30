@@ -44,6 +44,7 @@ Documentation is an enforced contract. These rules govern guides, parity, exampl
   assertions. Use
   `npm run test:guides -- --to guide` or `npm run test:guides -- --to source` only when choosing
   an explicit rewrite direction. The package authors `tests/guides.test.ts`.
+- In `tests/guides.test.ts`, import a setup module only inside the callback passed to `execute`. Prove the guide command with build output absent.
 - The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
   paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
   phrases, and each is the blockquote under its file's H1.

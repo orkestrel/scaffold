@@ -99,7 +99,7 @@ For every fetch, write, delete, extraction, path, protocol, or authentication bo
 Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states (step 11 of the hardening lane): which project collects each file, which gate reaches each project, and where a file carries `.todo`, a conditional skip (`.skipIf`, `.runIf`), `.fails`, a retry, or a timeout. `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse `.only` and `.skip`. Then verify:
 
 - every intended test file is collected by the correct project, and the test counts and environments match the intent;
-- every project that collects tests has a gate: the census flags one no chain reaches as ungated, and a chained project that collects nothing as empty. A declared project that collects nothing and that no chain names is a workbench, reported without a flag; read the chain behind every workbench and rule it by its purpose, not by the exit code;
+- judge each discovered project's invocation and gate membership by `.claude/rules/workspace.md` § Test project matrix; read each reported chain and rule each workbench by its purpose;
 - every flag the census reports is closed or ruled with a reason;
 - every marker it reports is justified;
 - no current-scope requirement is represented only by a todo or a placeholder;

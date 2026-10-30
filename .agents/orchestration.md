@@ -56,6 +56,7 @@ The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Cl
 - Keep small tedious precise tasks native: Claude Haiku in Claude, Codex Luna in Codex. Use `scout` for an exact bounded lookup; keep bench drivers, `checker`, and `verifier` on their mapped native engines. A bounded file scope does not turn context absorption or exploratory reading into a native lookup.
 - Route a unit that authors path-containment, import-resolution-boundary, unescaped-input, or credential-exposure proofs to `opus` from the start where `opus` runs on Claude, and record the Codex bench dark for that unit only. Under native Codex roles, report a harness refusal through § Deviation protocol.
 - Route gates to `verifier`. A writer's self-reported gate is not evidence. A writer never holds the runner lane for its own acceptance; a gate a writer runs is an observation, never acceptance.
+- Record mechanical source adoption as Orchestrator integration or a writer unit. Reserve the runner name for a verifier that made no source repair.
 - Under the Codex mapping, put falsify lanes on Astra or Sol at high effort; keep Luna for gates and verifier runs, never for a lane that must resolve runtime claims.
 - Work directly on a one-file change or a one-line fix, subject to the preceding routing rules. Route standalone lookups through `scout`. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
 
@@ -159,8 +160,8 @@ A large change opens with a concise goal and its exit criterion, short enough to
 - Permit a verifier to write its assigned evidence artifacts and the generated outputs its dispatch declares; never permit source repairs. A declaration names the command and each path the command writes or replaces. Declare a path only when the command regenerates it and no lane authors it, such as a build directory or a generated inventory file; an authored path is source, whichever command rewrites it. Declare no path for a command that only deletes. Keep each declared output outside every other lane's owned files and recorded fixtures, and hold it with the command's inputs for the run. Under this floor, the declared command can remove and rewrite its declared outputs, and that replacement is neither a destructive command nor a deletion.
 - Record `git status --porcelain` before and after a declared command. Report each declared output that git tracks and the run changed; never revert it. When the run changed a path outside its declarations, stop and report the path.
 - No role commits, pushes, tags, publishes, installs, or runs a destructive command.
-- No role runs `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Undo an edit by rewriting the text.
-- No role reads, prints, copies, uploads, or packages a secret: `.env*`, `.npmrc`, `auth.json`, keys, tokens, `CURSOR_API_KEY`.
+- No role, the Orchestrator included, runs `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Undo an edit by rewriting the text. Supply an untracked review input by its path; never stage it for review.
+- No role, the Orchestrator included, reads, prints, copies, uploads, or packages a secret: `.env*`, `.npmrc`, `auth.json`, keys, tokens, `CURSOR_API_KEY`.
 - A unit writes only under its owned files, its checkout's `tmp/`, and the declared outputs the preceding bullets permit. The Orchestrator's own briefs, probes, drafts, and records live in the checkout's `tmp/` too, never in a directory outside the repository; the user follows the work through the tree.
 - When a sandbox rejects a write, the unit stops and reports the rejection. It never tries another write mechanism.
 - Apart from a declared command replacing its declared outputs, a unit deletes only the fixture directory it created, by its recorded path. It never removes a `tmp/<lane>` directory, another unit's files, or anything through `sweep.ts --tmp` or `--unit … --delete`; those are the Orchestrator's, after the last live unit exits.
@@ -211,7 +212,7 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 
 ## Cleanup
 
-- When a unit is accepted, carry its measurements, unresolved findings, and any instrument worth keeping into the commit message, a tracked design, or a test, then delete its `tmp/units/<unit>-*` files and its bench journals. Before a unit's files go, carry its effective brief (objective, corrections, source identity, rulings) into the tracked plan or the acceptance commit. Delete or move no path a live lane's brief names.
+- When a unit is accepted, carry its measurements, unresolved findings, and any instrument worth keeping into the commit message, a tracked design, or a test, then delete its `tmp/units/<unit>-*` files and its bench journals. Before a unit's files go, carry its effective brief (objective, corrections, source identity, rulings), each reported deviation, and the recovery that closed it into the tracked plan or the acceptance commit. Quote each deviation and its closing recovery verbatim. Delete or move no path a live lane's brief names.
 - `.claude/rules/campaign.md` owns what `.orkestrel/` holds and when each file goes; git history is the archive.
 - Delete a probe from the source tree before the unit returns; promote a probe that settled a claim into a test.
 - Run `node .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report` at acceptance; it lists leftovers under `tmp/` and `.orkestrel/` by age and deletes nothing. Run the same script with `--tmp` after the last live unit exits; it deletes files older than its threshold and refuses while a journal is changing.
@@ -227,6 +228,7 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 ## Acceptance
 
 - No writer's and no bench's self-assessment is authoritative. The Orchestrator accepts after the review and the gates the size gate names.
+- Close each review the size gate requires before acceptance; never put that review in a deferral list.
 - An accepted claim or gate row names the independent receipt (command, input identity, exit) that closed it; a writer's report states implementation status and never closure.
 - Accept when the exit criterion is met and the gates are green. Reopening an accepted criterion is the user's instruction, not a reviewer's finding.
 - Before calling work ready, try the shipped result as the user will, on the build they run, and report what did not run.

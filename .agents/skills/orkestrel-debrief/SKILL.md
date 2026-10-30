@@ -25,10 +25,10 @@ as a refinement.
   package, an app, an agent-facing surface — drive it with representative real consumers
   before writing findings about it. For agent-facing surfaces, follow
   [field-testing.md](references/field-testing.md).
-- **Every finding ends in exactly one bucket**: fix now; agent refinement; rule
-  refinement; skill refinement or creation; process refinement (orchestration contract);
-  package promotion; guide truth; roadmap; stays as-is with the reason; or dropped on the
-  record with the refuting evidence. A finding with no bucket is an unfinished debrief.
+- Assign every finding a bucket: fix now; a refinement class named in
+  [instruction-audit.md](references/instruction-audit.md) § Refinement classes; package promotion;
+  guide truth; roadmap; stays as-is with the reason; or dropped on the record with the refuting
+  evidence. For a refinement, use the class name verbatim.
 - **Fixes are re-proven by the evidence class that found them.** A defect found in live
   use closes with live use; a process failure closes when the next campaign round runs
   the corrected process.

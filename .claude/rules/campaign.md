@@ -15,6 +15,7 @@ paths:
 | `.orkestrel/plan.md`    | the fleet campaign's plan: goal, exit criterion, packages, layer order, and the units each package owes                                  |
 | `.orkestrel/ledger.md`  | the fleet campaign's ledger                                                                                                              |
 | `.orkestrel/release.md` | the live release wave: its layers, each package's bump ruling with its evidence, the round each package landed in, and standing readings |
+| `.orkestrel/debrief.md` | the debrief round's record: the process retrospective, the instruction-set audit, and each finding's bucket and carrier                  |
 
 A package directory holds:
 
@@ -29,7 +30,7 @@ A package directory holds:
 | a verdict file          | the verdict of an open seam                                                                                                                                                 | until the seam closes                                     |
 
 - Write a file about one package under that package's directory, and a file about two or more packages at the top level.
-- Name a ledger row's lane by its role in `.agents/orchestration.md` § Roles. Write no row for the Orchestrator's own commit.
+- Fill a ledger row's role cell with a name from `.agents/orchestration.md` § Roles, `user`, or `Orchestrator`. Write no row for the Orchestrator's own commit.
 
 ## Content
 

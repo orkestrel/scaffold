@@ -109,6 +109,9 @@ When the target is the `@orkestrel/scaffold` package, expect the runner to recor
 as skipped and to read the verify audit's foreign-path findings as expected; never run the `scaffold repair` or `scaffold overwrite` command
 against that checkout.
 
+When a refused build leaves no `dist/host` for `scaffold catalog`, run a verified published scaffold
+executable from owned scratch to refresh the catalog, then rerun the build.
+
 Run visits in parallel slices of disjoint repositories, each slice strictly serial inside itself,
 reporting per target. Refuse a failed target, name it, repair it, and re-run it alone.
 
@@ -164,6 +167,10 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 
 ## Prepare a layer
 
+- Before upload, compare the wave's candidate exported names with each other and the served fleet under `.claude/rules/names.md` § Fleet name ownership, and resolve every collision.
+- Begin each release chain plan with the clean reinstall and the clean, whether it runs in a clone or the checkout.
+- When a writer owns a script the preparation needs, run its installed built twin and record the executable's identity.
+- Derive each release row's ruling from the measured distribution comparison and final runtime-range result under § Rule on the bump.
 - When the manifest's `engines.node` names a floor below the `DEFAULT_ENGINES` a generated workspace declares, raise it to that floor.
 - When a package still carries `.github/workflows/ci.yml`, delete it in that visit; the ecosystem runs no hosted CI.
 - Before the release, rule the package's guide and source comments against `.claude/rules/writing.md` § Substitutions and reword each hit its rows name; identifiers stay.
@@ -181,12 +188,11 @@ Prepare a published package's layer in this order, after the visit has ruled the
    preparation commit already precedes the overwrite; this install regenerates the lockfile for the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
-4. **Run `prepublishOnly` to green in a fresh clone of the candidate commit, in the order the package's own chain fixes.** A release run executes every step whose inputs a failed step leaves valid and reports each result, so one clean-host run surfaces every independent fault.
+4. **Run `prepublishOnly` to green on the candidate commit, in a fresh clone or, where the user rules clones out, in the checkout, in the order the package's own chain fixes.** Run every release step whose inputs remain valid after a failure and report each result. Before using a serial chain that stops on failure, split aggregate commands into their component steps and record each step's prerequisites. After a failure, run the independent steps in separate chains, mark dependent steps blocked, and keep the release result failed while a required step fails or remains blocked.
    Run the visit and this script on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION` floor a
    generated workspace declares in `devEngines`: the scripts spawn the npm CLI beside the running
    Node binary when one is there, so a `PATH` change reaches them only where none is.
-5. **Write the release commit and push before the window opens.** The preparation commit inside
-   the visit is a different commit at a different moment.
+5. **Write the release commit before the window opens. Push it only after the registry serves its version.**
 
 Where an inventory taken before the round already ruled every dist moved, apply the bump before
 the visit, pass the replaced version through `--prior` so the self-pin sweep finds it, and complete

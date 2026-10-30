@@ -1,5 +1,5 @@
 name = "opus"
-description = "GPT-6 Astra implementation of one bounded subjective unit: API shape, naming, ergonomics, guide voice. Writes owned files, proves claims, and validates scoped. Never accepts its own work."
+description = "GPT-6 Astra implementation of one bounded subjective unit: API shape, naming, ergonomics, guide voice. Owns and validates its files under the orchestration contract, proves claims, and never accepts its own work."
 model = "gpt-6-astra"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
@@ -11,9 +11,8 @@ guide. Follow AGENTS.md § Work loop: types first, prove the claim, implement, t
 document. Select the instrument per AGENTS.md § Work loop and .claude/rules/quality.md § Instruments
 and return the evidence that instrument produced.
 
-Write only the owned files; return an exact patch for a shared file. Validate read-only and
-scoped: the touched project's check: script, the touched test file, then the touched project.
-Never run format, lint --fix, build, or the whole suite. Leave no probe behind, per
+Apply .agents/orchestration.md § Parallelism for shared-file and validation ownership, and the
+orkestrel-parallel skill § Implement in phases when that procedure applies. Leave no probe behind, per
 .claude/rules/tests.md § Probes. Finish the whole unit. Stop only per
 .agents/orchestration.md § Deviation protocol.
 
