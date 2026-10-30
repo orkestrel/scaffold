@@ -165,7 +165,7 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-29: the twelve helper relocations close the test-file helper row of § Deferred: csv `560b045`, emitter `2fb9bc6`, html `11ef9f1`, indexeddb `d2b5df1`, msg `b45cee6`, ndjson `c3c3045`, sqlite `97c635a`, pool `b72ccc7`, router `be098d3`, table `2f207c5`, template `c91e6bf`, tool `22cef5e`.
 - 2026-10-29: contract `76083b8`, reason, markdown, database, console, and form are realigned and committed; the three guard reviews' findings are repaired in eighteen packages and accepted with every gate green.
 - 2026-10-29: L0 to L3 and L4 but mcp are realigned and committed (43 of 50); mcp, browser, probe, agent, ollama, toolbox, and study are in writer lanes.
-- Next: accept the remaining lanes; run the owed contract reviews (`tmp/units/contracts-review-a-brief.md` running, `contracts-review-b-brief.md` drafted), the guard-repair re-check, and the cost-class review; then the scaffold release.
+- Next: accept the remaining lanes; run the owed contract reviews, the guard-repair re-check, and the cost-class review; then the scaffold release.
 
 ## Sequence
 
