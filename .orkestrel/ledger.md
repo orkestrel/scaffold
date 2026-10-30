@@ -35,3 +35,5 @@
 | 2026-10-30 | Review of guide nested: claims 1–3, 5, and 6 held; the Orchestrator closed the falsified whole-segment case, refused a nested module its environment emits nothing under with code `empty`, and corrected the test map and comments | reviewer | guide `ddcc984` |
 | 2026-10-30 | sweep consult: rule each recorded collision under rules 1 to 3 by owner group, place the lsp and mcp JSON-RPC set for a design round, and name the low-confidence rulings | planner | `ROADMAP.md` items 79 to 110 |
 | 2026-10-30 | User ruling: the sweep's dependencies and shared exports, the `@orkestrel/jsonrpc` package over codec, table's `Grid*` family, and the consult's replacement words | user | `.orkestrel/plan.md` § Rulings |
+| 2026-10-30 | User ruling: the advisory section in the surface verb, and contract taking msg's `isSuccess` and `isFailure` guards | user | `.orkestrel/plan.md` § Rulings |
+| 2026-10-30 | advisory: the surface verb's advisory section over a candidate's added names | opus | in flight |

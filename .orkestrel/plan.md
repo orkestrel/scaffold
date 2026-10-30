@@ -38,12 +38,8 @@ Give scaffold a read-only `surface` verb that reports every public name two `@or
 - 2026-10-30, the user: the same name exported from two environments is a conflict even within one package. Logic that can live in both environments belongs once in `src/core`; environments whose internals differ share what they can in `src/core` and each export a distinctly named version built on it; environments with nothing in common still take distinct names. A probe of 2026-10-30 found five such names, four in mcp and one in middleware (`ROADMAP.md` items 77 and 78); `@orkestrel/guide` refuses them, and scaffold's rule and verb follow.
 - 2026-10-30, the user: `@orkestrel/guide` compiles a nested module source, such as `src/core/panels` beside `src/core`, through its environment's project before scaffold re-pins it; scaffold restores its parent-and-child guides-entry fixture on that release.
 - 2026-10-30, the user, on the sweep consult: `@orkestrel/contract` gains `escapeRegExp`, `errorToMessage`, `success`, `failure`, and the five shared `*_LIMIT` constants; `@orkestrel/codec` gains `BOM`, and csv and sse declare codec; msg declares codec for `decodeLatin1`; the JSON-RPC wire contract moves into an added `@orkestrel/jsonrpc` package at layer 1 that lsp and mcp declare, never into codec, whose subject is byte-to-text codings; table renames its family to `Grid*` and database keeps `Table*`; and the consult's replacement words stand. `ROADMAP.md` items 79 to 110 carry every ruling.
+- 2026-10-30, the user, on the overlap and warning probes: `scaffold surface` prints an advisory section for the names each candidate adds, its case-fold, singular or plural, and one-edit neighbours and any other owner's name with an equal structured `Signature` cell, and an advisory never changes the exit code; `@orkestrel/contract` also takes msg's `isSuccess` and `isFailure` guards (`ROADMAP.md` items 79 and 95). The overlap probe's confirmed duplicates are items 111 and 112.
 - 2026-10-30, the step-1 consult: fuzzy similarity is refused as a warning class (276 pairs at a 0.8 Dice score, mostly convention affixes); naming conventions stay with the `policy` lint.
-
-## Deferred
-
-- **Warning classes.** Case folding (5 fleet pairs), singular and plural words (13), and one edit apart for names of six characters or more (20) report only the names a candidate adds, with a role affix `.claude/rules/names.md` fixes exempt within one owner. Owner: scaffold. Trigger: § Sequence step 5.
-- **Overlap classes.** The same name with an equal `Signature` cell, different names with an equal cell, and one entity stem two packages build on. Owner: scaffold, after guide. Trigger: § Sequence step 4.
 
 ## State
 
@@ -58,9 +54,9 @@ Give scaffold a read-only `surface` verb that reports every public name two `@or
 - 2026-10-30: guide 0.0.28 (`edc02c9`) compiles a nested module source through its environment and refuses one its environment emits nothing under. Scaffold's `Adopt guide 0.0.28 and relabel only a guide refusal` commit re-pins it: `readSurfaceGuide` relabels only an error the module's `isGuideError` accepts, `tests/guides.test.ts` compares every `Signature` cell, closing `ROADMAP.md` item 26, and the guides-entry fixture keeps its parent and child rows.
 - 2026-10-30: scaffold 0.0.117 (`358dd306a`) is served and pushed, carrying guide 0.0.28.
 - 2026-10-30: the sweep rules all 107 recorded collisions in `ROADMAP.md` items 79 to 110, one item per package that gives names up or gains a shared export, and item 81 adds `@orkestrel/jsonrpc`. Each closes at its package's next visit, in layer order after the contract and codec items.
-- Next: § Sequence step 4, the overlap probe.
+- 2026-10-30: the overlap probe over the hosted guides finds different names sharing a structured `Signature` cell, of which worker's `WorkerInterface` and `WorkerEventMap` and program's `ProgramValidationResult` repeat a dependency's contract member for member (items 111 and 112); the warning probe finds no warning among the names scaffold and guide added this campaign, and a control fires each class.
+- Next: § Sequence step 6, the advisory section.
 
 ## Sequence
 
-4. **The overlap probe.** Run the overlap classes over the fleet's `Signature` cells, which guide 0.0.27 projects on `SurfaceSymbol`, and rule them.
-5. **The warning probe.** Run the warning classes over one candidate's added names and rule them.
+6. **The advisory section.** The `surface` verb reports a candidate's added names in the advisory classes, an independent review, and a scaffold release.
