@@ -172,7 +172,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: every catalog package is realigned and committed (browser `feac6c3`, the last); the contract, cost-class, and guard reviews and their repairs are closed; § Scaffold release rows 1 to 10 are committed, and scaffold `5bfa036cf` is `Release 0.0.113` with its full release chain green.
 - 2026-10-30: scaffold 0.0.113 is published and pushed; every package's re-pin visit on it passed every gate, and every dist moved.
 - 2026-10-30: L0 (contract 0.0.20) and L1 (13 packages) are published, served, and pushed; the ledger names each release commit.
-- Next: prepare L2 on the served L1 versions, run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
+- 2026-10-30: L2 (12 packages) is published, served, and pushed; the ledger names each release commit.
+- Next: prepare L3 on the served L2 versions, adopt the process and reason renames of § Renames where its gates surface them, run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
 
 ## Sequence
 
