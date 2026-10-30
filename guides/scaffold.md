@@ -398,18 +398,6 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `WriteExpectation`       | interface | Represents one destination snapshot captured before a write and required to survive it.           |
 | `WritePrecondition`      | interface | Describes the narrower caller-observed destination state a write transaction must still match.    |
 
-The inventory contracts carry these data members.
-
-| Member                       | Contract                                                                                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `HostInventory.surface`      | Required readonly `SurfaceCollision[]`: the verified record when `lookup` is `found`, and an empty collection otherwise.                  |
-| `HostInventory.unreachable`  | Optional boolean, `true` only when the inventory request produced no HTTP response.                                                       |
-| `TextReadResult.unreachable` | Optional boolean, `true` only when the request produced no HTTP response. The same member sits on `BytesReadResult`.                      |
-| `HostManifest.surface`       | Required readonly `SurfaceCollision[]`, sorted by name; each collision has distinct sorted owners and is included in the manifest digest. |
-| `HostStageOptions.inventory` | Optional checkout-relative inventory path. Default: `HOST_INVENTORY_PATH` (`host.json`).                                                  |
-| `HostStageOptions.establish` | Optional boolean. If `true`, an absent inventory establishes the baseline; if `false`, staging refuses it. Default: `false`.              |
-| `HostStageOptions.report`    | Optional callback receiving the baseline location or its absence. Default: no reporting.                                                  |
-
 #### Constants
 
 | Name                                | Kind  | Summary                                                                                               |
@@ -2223,6 +2211,18 @@ That cycle is what keeps every release shipping the registry floor read for that
 generating a workspace with no network receives.
 
 ## Vendored data root
+
+The inventory contracts carry these data members.
+
+| Member                       | Contract                                                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `HostInventory.surface`      | Required readonly `SurfaceCollision[]`: the verified record when `lookup` is `found`, and an empty collection otherwise.                  |
+| `HostInventory.unreachable`  | Optional boolean, `true` only when the inventory request produced no HTTP response.                                                       |
+| `TextReadResult.unreachable` | Optional boolean, `true` only when the request produced no HTTP response. The same member sits on `BytesReadResult`.                      |
+| `HostManifest.surface`       | Required readonly `SurfaceCollision[]`, sorted by name; each collision has distinct sorted owners and is included in the manifest digest. |
+| `HostStageOptions.inventory` | Optional checkout-relative inventory path. Default: `HOST_INVENTORY_PATH` (`host.json`).                                                  |
+| `HostStageOptions.establish` | Optional boolean. If `true`, an absent inventory establishes the baseline; if `false`, staging refuses it. Default: `false`.              |
+| `HostStageOptions.report`    | Optional callback receiving the baseline location or its absence. Default: no reporting.                                                  |
 
 The vendored data root is the shared file set, staged into the published package as plain data.
 Staging walks `HOST_PATHS`, `CANON_PATHS`, and `REFERENCE_PATHS`, and a release ships what those
