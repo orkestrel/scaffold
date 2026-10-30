@@ -81,7 +81,9 @@ export function isSurfaceModule(value: unknown): value is SurfaceModule {
 			'createSource' in value &&
 			isFunction(value.createSource) &&
 			'extractSourceLines' in value &&
-			isFunction(value.extractSourceLines),
+			isFunction(value.extractSourceLines) &&
+			'isGuideError' in value &&
+			isFunction(value.isGuideError),
 	)
 }
 

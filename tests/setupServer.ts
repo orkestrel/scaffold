@@ -160,6 +160,8 @@ import {
 	ENTRY_OBSERVATION_PATH,
 	ENTRY_SUCCESS_TEST,
 	ENTRY_PATH,
+	ENTRY_PROJECT,
+	ENTRY_PROJECT_PATH,
 	ENTRY_VITE,
 } from './setup.js'
 
@@ -4440,10 +4442,12 @@ export function buildEntryWorkspace(
 	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
 	scratch.write(ENTRY_PATH, readFileSync(resolvePath(ENTRY_PATH), 'utf8'))
 	scratch.write('vite.config.ts', ENTRY_VITE)
+	scratch.write(ENTRY_PROJECT_PATH, ENTRY_PROJECT)
 	scratch.write(ENTRY_OBSERVATION_PATH, test)
 	linkPackage(scratch, '@orkestrel/contract')
 	linkPackage(scratch, '@orkestrel/guide')
 	linkPackage(scratch, '@orkestrel/test')
+	linkPackage(scratch, 'typescript')
 	linkPackage(scratch, 'vite')
 	linkPackage(scratch, 'vitest')
 	return scratch

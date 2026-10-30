@@ -1,7 +1,7 @@
 {
 	"@orkestrel/browser": "^0.0.30",
 	"@orkestrel/contract": "^0.0.20",
-	"@orkestrel/guide": "^0.0.26",
+	"@orkestrel/guide": "^0.0.28",
 	"@orkestrel/html": "^0.0.13",
 	"@orkestrel/probe": "^0.0.26",
 	"@orkestrel/scaffold": "^0.0.116",

@@ -393,7 +393,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `MaterializerInterface`  | interface | `{ emitter, audit(), materialize(), repair(), mirror(), catalog(), declare(), remove(), destroy() }` | Describes the mutation contract: the package's only filesystem writer.                            |
 | `MaterializerOptions`    | interface | `{ host?, on?, error? }`                                                                             | Represents the options for the materializer.                                                      |
 | `ReadAllowanceInterface` | interface | `{ remaining, spend() }`                                                                             | Describes the byte allowance one upstream call spends across every read it makes.                 |
-| `SurfaceModule`          | interface | `{ createGuide, createSource, extractSourceLines }`                                                  | Describes the guide module functions required by surface reflection.                              |
+| `SurfaceModule`          | interface | `{ createGuide, createSource, extractSourceLines, isGuideError }`                                    | Describes the guide module functions required by surface reflection.                              |
 | `TextReadResult`         | interface | `{ lookup, content, note, unreachable? }`                                                            | Reports the outcome of one bounded read whose body is taken as text.                              |
 | `Worktree`               | interface | `{ tracked, dirty }`                                                                                 | Describes what git reports about a target's working tree.                                         |
 | `UpstreamInterface`      | interface | `{ emitter, lookup(), fetch(), read(), catalog(), inventory(), destroy() }`                          | Describes the upstream contract: the package's only network reader, and it never writes.          |
@@ -759,8 +759,11 @@ nor `src/`, when its guide exists but is not UTF-8 text within the artifact boun
 TypeScript source under `src/` cannot be read. Only `.ts` files under `src/` are read, so a binary
 asset there is ignored. A barrel holding a statement other than `export * from './module.js'`
 refuses with the statement named, because the reflection follows nothing else and an incomplete
-reading never reports clean. When `@orkestrel/guide` refuses a guide from any source, the command
-refuses with `TARGET`, naming the owner and the source and carrying the parser's message.
+reading never reports clean. When `@orkestrel/guide` refuses a guide from any source with an error
+its `isGuideError` guard accepts, such as a `## Surface` header other than
+`Name | Kind | Signature | Summary`, the command refuses with `TARGET`, naming the owner and the
+source, carrying the parser's message, and holding the guide error's `code` in the refusal's
+context. Any other error the parser raises propagates unchanged.
 
 Compare unpublished candidates together with this command:
 
@@ -799,8 +802,9 @@ immediate package guides, excluding the README index. `readSurfaceCandidate` add
 and the candidate's conflicts. `readSurfaceFile` reads
 one owner's guide file under a root, and `readSurfaceGuide` parses guide text from any source.
 `readSurfaceRecord` reads a data root's record, and `resolveHostRoot` resolves the bundled root.
-`readSurfaceModule` loads `@orkestrel/guide` lazily and narrows it with `isSurfaceModule`; every
-reader takes an optional `SurfaceLoader` that resolves the module, and requires the package in
+`readSurfaceModule` loads `@orkestrel/guide` lazily and narrows it with `isSurfaceModule`, which
+requires `createGuide`, `createSource`, `extractSourceLines`, and `isGuideError` as functions, and
+refuses with `TARGET` a module that lacks one or holds another value there; every reader takes an optional `SurfaceLoader` that resolves the module, and requires the package in
 scaffold's resolution path when none is supplied. Importing the server entry alone does not load
 it.
 

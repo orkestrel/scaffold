@@ -160,7 +160,7 @@ describe('isDigest', () => {
 
 describe('isSurfaceModule', () => {
 	it('refuses a module that lacks exactly one of the guide functions', () => {
-		const names = ['createGuide', 'createSource', 'extractSourceLines']
+		const names = ['createGuide', 'createSource', 'extractSourceLines', 'isGuideError']
 		expect(isSurfaceModule(Object.fromEntries(names.map((name) => [name, Math.max])))).toBe(true)
 		for (const missing of names) {
 			const present = names.filter((name) => name !== missing)

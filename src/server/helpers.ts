@@ -1982,7 +1982,7 @@ export function readSurfaceModule(
 	if (!loaded.success || !isSurfaceModule(loaded.value)) {
 		throw new ScaffoldError(
 			'TARGET',
-			"Surface reflection requires @orkestrel/guide with createGuide, createSource, and extractSourceLines. Supply that module in scaffold's resolution path.",
+			"Surface reflection requires @orkestrel/guide with createGuide, createSource, extractSourceLines, and isGuideError. Supply that module in scaffold's resolution path.",
 			{
 				...(!loaded.success ? { error: loaded.error } : {}),
 			},
@@ -1995,7 +1995,8 @@ export function readSurfaceModule(
  * Reads one guide's claims and reports parser refusals with its owner and source.
  *
  * @param source - The source label or path to name in a refusal.
- * @throws Thrown with TARGET when the module or the guide parser refuses the reading.
+ * @throws Thrown with TARGET when the module is unusable or the guide parser refuses the guide
+ * with an error its `isGuideError` guard accepts; every other parser error propagates unchanged.
  * @example
  * ```ts
  * import { readSurfaceGuide } from '@orkestrel/scaffold/server'
@@ -2015,14 +2016,13 @@ export function readSurfaceGuide(
 			.surface()
 			.map(({ name }) => name),
 	)
-	if (!parsed.success) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Surface guide for ${JSON.stringify(owner.slice(0, 512))} from ${JSON.stringify(source.slice(0, 512))} was refused: ${isError(parsed.error) ? parsed.error.message : String(parsed.error)}`,
-			{ owner, source },
-		)
-	}
-	return { owner, names: parsed.value }
+	if (parsed.success) return { owner, names: parsed.value }
+	if (!guide.isGuideError(parsed.error)) throw parsed.error
+	throw new ScaffoldError(
+		'TARGET',
+		`Surface guide for ${JSON.stringify(owner.slice(0, 512))} from ${JSON.stringify(source.slice(0, 512))} was refused: ${parsed.error.message}`,
+		{ owner, source, code: parsed.error.code },
+	)
 }
 
 /**

@@ -2392,6 +2392,21 @@ describe('readSurfaceCollisions', () => {
 				code: 'TARGET',
 				message: expect.stringContaining('createSource'),
 			})
+			workspace.write('members/node_modules/@orkestrel/guide/package.json', '{"main":"index.cjs"}')
+			workspace.write(
+				'members/node_modules/@orkestrel/guide/index.cjs',
+				[
+					'exports.createGuide = () => ({ surface: () => [] })',
+					'exports.createSource = () => ({ surface: () => [] })',
+					'exports.extractSourceLines = () => []',
+					'',
+				].join('\n'),
+			)
+			const members = createRequire(join(workspace.path, 'members', 'loader.cjs'))
+			expect(captureError(() => readSurfaceModule(members))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining('isGuideError'),
+			})
 		} finally {
 			workspace.destroy()
 		}
@@ -2531,33 +2546,18 @@ describe('readSurfaceCollisions', () => {
 		}
 	})
 
-	it('refuses a guide its parser refuses with the owner, the source, and the parser message', () => {
+	it('refuses a guide its parser refuses with the owner, the source, the parser message, and the guide code', () => {
+		const text =
+			'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `Alpha` | interface | Describes a claim. |\n'
 		const workspace = createScratch({
-			files: {
-				'package.json': '{"name":"@orkestrel/alpha"}',
-				'guides/alpha.md':
-					'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Alpha` | interface | `{}` | Describes a claim. |\n',
-				'node_modules/@orkestrel/guide/package.json': '{"main":"index.cjs"}',
-				'node_modules/@orkestrel/guide/index.cjs': [
-					'class GuideError extends Error {',
-					'  constructor(message) { super(message); this.name = "GuideError"; this.code = "header" }',
-					'}',
-					'exports.createGuide = () => { throw new GuideError("## Surface table 1 has header \\"Name | Kind | Summary\\"") }',
-					'exports.createSource = () => ({ surface: () => [] })',
-					'exports.extractSourceLines = () => []',
-					'',
-				].join('\n'),
-			},
+			files: { 'package.json': '{"name":"@orkestrel/alpha"}', 'guides/alpha.md': text },
 		})
 		try {
-			const loader = createRequire(join(workspace.path, 'loader.cjs'))
 			const guide = join(workspace.path, 'guides', 'alpha.md')
 			const refusals = [
-				captureError(() =>
-					readSurfaceGuide('## Surface\n', 'alpha', 'live guides/alpha.md', loader),
-				),
-				captureError(() => readSurfaceFile(workspace.path, 'alpha', 'floor', loader)),
-				captureError(() => readSurfaceCandidate(workspace.path, loader)),
+				captureError(() => readSurfaceGuide(text, 'alpha', 'live guides/alpha.md')),
+				captureError(() => readSurfaceFile(workspace.path, 'alpha', 'floor')),
+				captureError(() => readSurfaceCandidate(workspace.path)),
 			]
 			for (const [index, source] of [
 				'live guides/alpha.md',
@@ -2565,12 +2565,67 @@ describe('readSurfaceCollisions', () => {
 				`candidate ${guide}`,
 			].entries()) {
 				const error = refusals[index]
-				expect(error).toMatchObject({ code: 'TARGET' })
+				expect(error).toMatchObject({
+					code: 'TARGET',
+					context: { owner: 'alpha', source, code: 'header' },
+				})
 				expect(isError(error) ? error.message : '').toContain(
 					`Surface guide for "alpha" from ${JSON.stringify(source)} was refused: ## Surface table 1 has header "Name | Kind | Summary"`,
 				)
 			}
-			expect(readSurfaceFile(workspace.path, 'absent', 'floor', loader)).toBeUndefined()
+			expect(readSurfaceFile(workspace.path, 'absent', 'floor')).toBeUndefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('propagates a parser error its module guard does not accept unchanged', () => {
+		const workspace = createScratch({
+			files: {
+				'node_modules/@orkestrel/guide/package.json': '{"main":"index.cjs"}',
+				'node_modules/@orkestrel/guide/index.cjs': [
+					'exports.thrown = new TypeError("createGuide received a malformed table")',
+					'exports.createGuide = () => { throw exports.thrown }',
+					'exports.createSource = () => ({ surface: () => [] })',
+					'exports.extractSourceLines = () => []',
+					'exports.isGuideError = (value) => value instanceof Error && "code" in value',
+					'',
+				].join('\n'),
+			},
+		})
+		try {
+			const loader = createRequire(join(workspace.path, 'loader.cjs'))
+			const fixture = loader('@orkestrel/guide')
+			const thrown = isRecord(fixture) ? fixture.thrown : undefined
+			expect(thrown).toBeInstanceOf(TypeError)
+			expect(
+				captureError(() => readSurfaceGuide('# Alpha', 'alpha', 'live guides/alpha.md', loader)),
+			).toBe(thrown)
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('leaves the decision to the module guard, propagating a coded error it refuses', () => {
+		const workspace = createScratch({
+			files: {
+				'node_modules/@orkestrel/guide/package.json': '{"main":"index.cjs"}',
+				'node_modules/@orkestrel/guide/index.cjs': [
+					'exports.thrown = Object.assign(new Error("createGuide refused the header"), { code: "header" })',
+					'exports.createGuide = () => { throw exports.thrown }',
+					'exports.createSource = () => ({ surface: () => [] })',
+					'exports.extractSourceLines = () => []',
+					'exports.isGuideError = () => false',
+					'',
+				].join('\n'),
+			},
+		})
+		try {
+			const loader = createRequire(join(workspace.path, 'loader.cjs'))
+			const fixture = loader('@orkestrel/guide')
+			const thrown = isRecord(fixture) ? fixture.thrown : undefined
+			expect(thrown).toMatchObject({ code: 'header' })
+			expect(
+				captureError(() => readSurfaceGuide('# Alpha', 'alpha', 'live guides/alpha.md', loader)),
+			).toBe(thrown)
 		} finally {
 			workspace.destroy()
 		}

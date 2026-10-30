@@ -1725,7 +1725,7 @@ export const ENTRY_GUIDE = [
 	'| Name | Kind | Signature | Summary |',
 	'| --- | --- | --- | --- |',
 	'| `shape` | function | `(parts: string) => string` | Shapes a widget from its parts. |',
-	'| `Widget` | interface | `{ paint(): void }` | One widget the workspace renders. |',
+	'| `Widget` | interface | `{ paint() }` | One widget the workspace renders. |',
 	'',
 	'## Methods',
 	'',
@@ -1767,7 +1767,7 @@ export const ENTRY_GUIDE_WRITTEN = [
 	'| Name | Kind | Signature | Summary |',
 	'| --- | --- | --- | --- |',
 	'| `shape` | function | `(parts: string) => string` | Shapes a widget from the parts it is given. |',
-	'| `Widget` | interface | `{ paint(): void }` | One widget the workspace renders. |',
+	'| `Widget` | interface | `{ paint() }` | One widget the workspace renders. |',
 	'',
 	'## Methods',
 	'',
@@ -1836,7 +1836,7 @@ export const ENTRY_REPORTED_GUIDE = [
 	'| --- | --- | --- | --- |',
 	'| `shape` | function | `(parts: string) => string` | Shapes a widget from the parts it is given. |',
 	'| `measure` | function | `(parts: string) => number` | Measures a widget against the frame it fills. |',
-	'| `Widget` | interface | `{ paint(): void }` | One widget the workspace renders. |',
+	'| `Widget` | interface | `{ paint() }` | One widget the workspace renders. |',
 	'',
 	'## Methods',
 	'',
@@ -1890,6 +1890,31 @@ export const ENTRY_VITE = [
 	'\t\t],',
 	'\t},',
 	'})',
+	'',
+].join('\n')
+
+/**
+ * Names the scoped project the guide compiler emits the entry workspace's core declarations through.
+ */
+export const ENTRY_PROJECT_PATH = 'configs/src/tsconfig.core.json'
+
+/**
+ * Holds the scoped core project of the entry workspace, which every computed `Signature` cell reads.
+ */
+export const ENTRY_PROJECT = [
+	'{',
+	'\t"compilerOptions": {',
+	'\t\t"target": "ESNext",',
+	'\t\t"module": "ESNext",',
+	'\t\t"moduleResolution": "bundler",',
+	'\t\t"strict": true,',
+	'\t\t"skipLibCheck": true,',
+	'\t\t"lib": ["ESNext"],',
+	'\t\t"types": [],',
+	'\t\t"rootDir": "../../src/core"',
+	'\t},',
+	'\t"include": ["../../src/core/**/*.ts"]',
+	'}',
 	'',
 ].join('\n')
 

@@ -108,6 +108,9 @@ export interface SurfaceModule {
 	readonly extractSourceLines: (
 		text: string,
 	) => ReadonlyArray<{ readonly code: string; readonly source: string }>
+	readonly isGuideError: (
+		value: unknown,
+	) => value is Error & { readonly code: string; readonly message: string }
 }
 
 /** Loads a module by specifier for validated surface reflection. */

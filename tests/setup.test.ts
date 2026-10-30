@@ -69,6 +69,8 @@ import {
 	ENTRY_OVERLAP_WRITTEN,
 	ENTRY_SUCCESS_TEST,
 	ENTRY_PATH,
+	ENTRY_PROJECT,
+	ENTRY_PROJECT_PATH,
 	ENTRY_PITCH,
 	ENTRY_README,
 	ENTRY_REPORTED,
@@ -770,6 +772,7 @@ describe('the entry workspace fixtures', () => {
 		expect(written).toHaveLength(frame.length)
 		expect(frame.filter((line, index) => line !== written[index])).toHaveLength(2)
 		expect(ENTRY_OVERLAP_INDEX).toContain('panel.md')
+		expect(ENTRY_OVERLAP_INDEX).toContain('[`src/core/panels`]')
 		expect(ENTRY_OVERLAP_PARENT).toContain('`frame`')
 		expect(ENTRY_OVERLAP_CHILD).toContain('`frame`')
 		expect(ENTRY_REPORTED_GUIDE).toContain('`measure`')
@@ -783,6 +786,11 @@ describe('the entry workspace fixtures', () => {
 		expect(ENTRY_VITE).not.toContain(ENTRY_PATH)
 		expect(ENTRY_AUTHORED_VITE).toContain(ENTRY_PATH)
 		expect(ENTRY_AUTHORED_VITE).not.toContain(ENTRY_OBSERVATION_PATH)
+		expect(ENTRY_PROJECT_PATH).toBe('configs/src/tsconfig.core.json')
+		expect(JSON.parse(ENTRY_PROJECT)).toMatchObject({
+			compilerOptions: { rootDir: '../../src/core' },
+			include: ['../../src/core/**/*.ts'],
+		})
 		expect(ENTRY_RUN_TIMEOUT).toBeGreaterThan(5_000)
 	})
 
