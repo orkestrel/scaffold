@@ -53,12 +53,11 @@ Give scaffold a read-only `surface` verb that reports every public name two `@or
 - 2026-10-30: guide's signature, engine, and repair units are accepted uncommitted after a final independent review, with the collision check keyed by the bare name; every guide check but `policy` passes, and `policy` waits on scaffold's uniform fixtures and mirrors. Scaffold's guide holds column 1 and the moved inventory table at `af782e5f8`; the surface-rules unit runs.
 - 2026-10-30: scaffold's `Report environment conflicts and declare the template sets` commit lands the surface-rules unit after an independent review: the verb exits 1 on a name a candidate exports from two environments, `CONFIG_TEMPLATES` and `ARTIFACT_TEMPLATES` carry declared interfaces, `.claude/rules/names.md` and the wave procedure name the check, and every scaffold fixture is uniform. Scaffold's commits push after its release is served.
 - 2026-10-30: scaffold `691aaa87d` carries column 3 in its own guide (18 tables, 381 cells, 321,834 bytes). guide `1697436` commits and pushes its signature, engine, repair, and collision units with its uniform guide; its policy project fails 98 cases, each an old-header fixture or mirror from scaffold 0.0.115. The catalog refresh mirrors every package's `main`, guide included, and every mirror is uniform.
-- Next: commit the catalog refresh, then the scaffold release; then guide's re-pin onto it, which turns its policy project green, and guide's release.
+- 2026-10-30: scaffold 0.0.116 (`5ccb6400b`) and guide 0.0.27 (`41148fb`) are served and pushed. guide's policy project passes 179 after its re-pin onto scaffold 0.0.116 (`6fea922`). Sequence steps 1 and 2 close: the verb ships in scaffold 0.0.116, and `20823f4c7` lands the procedure.
+- Next: scaffold re-pins `@orkestrel/guide` onto 0.0.27, narrows the `readSurfaceGuide` catch to `isGuideError` (§ Deferred), and closes `ROADMAP.md` item 26 through guide's signature comparison in `tests/guides.test.ts`; then the sweep.
 
 ## Sequence
 
-1. **The verb.** Types and the pure comparison in `src/core`, the guide and barrel reading in `src/server`, the `surface` verb in `src/bin`, its guide, an independent review, and a scaffold release.
-2. **The procedure.** `.agents/skills/orkestrel-publish/references/wave.md` § Prepare a layer runs the verb over the layer's candidates before upload; `.claude/rules/names.md` § Fleet name ownership names it; `ROADMAP.md` holds the backlog's shape.
 3. **The sweep.** Rule every recorded collision under rules 1 to 3, grouped by owner pair, and write one `ROADMAP.md` item per package that gives names up; the lsp and mcp JSON-RPC set goes to a design round.
-4. **The signature cell.** `@orkestrel/guide` projects the `Signature` cell on `SurfaceSymbol`, released; then the overlap probe.
+4. **The overlap probe.** Run the overlap classes over the fleet's `Signature` cells, which guide 0.0.27 projects on `SurfaceSymbol`, and rule them.
 5. **The warning probe.** Run the warning classes over one candidate's added names and rule them.
