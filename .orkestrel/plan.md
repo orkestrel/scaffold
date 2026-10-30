@@ -173,7 +173,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: scaffold 0.0.113 is published and pushed; every package's re-pin visit on it passed every gate, and every dist moved.
 - 2026-10-30: L0 (contract 0.0.20) and L1 (13 packages) are published, served, and pushed; the ledger names each release commit.
 - 2026-10-30: L2 (12 packages) is published, served, and pushed; the ledger names each release commit.
-- Next: prepare L3 on the served L2 versions, adopt the process and reason renames of § Renames where its gates surface them, run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
+- 2026-10-30: L3 (12 packages) is published, served, and pushed; lsp adopted process's `ended` rename at lsp `d3d6ed3`.
+- Next: prepare L4 on the served L3 versions, adopt item 44's exports from test and process's renamed members in mcp, run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
 
 ## Sequence
 
