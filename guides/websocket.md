@@ -5,7 +5,7 @@
 > handshake, the masked and unmasked frame codec, ping and pong, and the close handshake,
 > and surfacing every message on an owned `emitter`.
 
-After an HTTP server hands you an upgraded socket, this wrapper turns that raw byte stream into a typed, observable connection, and its only runtime dependency is `@orkestrel/emitter`, which supplies the typed emitter; [`node:crypto`](https://nodejs.org/api/crypto.html) supplies the one handshake hash. The wrapper has no knowledge of MCP, JSON-RPC, reconnection, heartbeats, or any message schema — those belong to a _message_ transport built one layer up, and this is only the wire. The codec and the boundary guards are pure exported functions, pinned against [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)'s worked byte vectors and malformed-input cases, and the [`NodeWebSocket`](#nodewebsocketinterface) class is the thin stateful driver that runs them over a [`node:stream`](https://nodejs.org/api/stream.html) Duplex. Keeping the codec pure and the wrapper minimal is the lean-native-wrapper discipline: a small typed surface over native power, with the hard parts exported as testable units. Source: [`src/server`](../src/server). Surfaced through the `@src/server` barrel.
+After an HTTP server hands you an upgraded socket, this wrapper turns that raw byte stream into a typed, observable connection, and its runtime dependencies are `@orkestrel/emitter`, which supplies the typed emitter, and `@orkestrel/contract`, which supplies the guards and the error recognition; [`node:crypto`](https://nodejs.org/api/crypto.html) supplies the one handshake hash. The wrapper has no knowledge of MCP, JSON-RPC, reconnection, heartbeats, or any message schema — those belong to a _message_ transport built one layer up, and this is only the wire. The codec and the boundary guards are pure exported functions, pinned against [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)'s worked byte vectors and malformed-input cases, and the [`NodeWebSocket`](#nodewebsocketinterface) class is the thin stateful driver that runs them over a [`node:stream`](https://nodejs.org/api/stream.html) Duplex. Keeping the codec pure and the wrapper minimal is the lean-native-wrapper discipline: a small typed surface over native power, with the hard parts exported as testable units. Source: [`src/server`](../src/server). Surfaced through the `@src/server` barrel.
 
 ## Surface
 
@@ -146,6 +146,8 @@ These invariants hold across `src/server` ↔ `websocket.md`:
 ## Errors
 
 `WebSocketError` is the one failure type, carrying a stable machine-readable `code`. Narrow a caught value with `isWebSocketError`, then branch on `code`.
+
+The guard accepts branded errors from another installed copy and subclasses, regardless of `name`. It requires a global `Error` instance with a derived prototype, an own self-identity brand, a declared code, and an optional object context. It refuses unbranded look-alikes, transparent proxies, and a plain object carrying only the brand.
 
 | Code     | Raised when                                                                                                                                                                           |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

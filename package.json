@@ -98,20 +98,20 @@
 		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:templates && npm run test:distribution -- --mode release"
 	},
 	"dependencies": {
-		"@orkestrel/console": "^0.0.16",
-		"@orkestrel/contract": "^0.0.19",
-		"@orkestrel/emitter": "^0.0.12",
-		"@orkestrel/markdown": "^0.0.17",
-		"@orkestrel/process": "^0.0.15",
-		"@orkestrel/template": "^0.0.10"
+		"@orkestrel/console": "^0.0.17",
+		"@orkestrel/contract": "^0.0.20",
+		"@orkestrel/emitter": "^0.0.13",
+		"@orkestrel/markdown": "^0.0.18",
+		"@orkestrel/process": "^0.0.16",
+		"@orkestrel/template": "^0.0.11"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.60.0",
-		"@orkestrel/browser": "^0.0.29",
-		"@orkestrel/guide": "^0.0.25",
-		"@orkestrel/html": "^0.0.12",
-		"@orkestrel/probe": "^0.0.25",
-		"@orkestrel/test": "^0.0.30",
+		"@orkestrel/browser": "^0.0.30",
+		"@orkestrel/guide": "^0.0.26",
+		"@orkestrel/html": "^0.0.13",
+		"@orkestrel/probe": "^0.0.26",
+		"@orkestrel/test": "^0.0.31",
 		"@types/node": "^24.19.2",
 		"@vitest/browser-playwright": "^5.0.5",
 		"oxfmt": "^0.75.0",
