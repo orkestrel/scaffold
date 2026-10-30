@@ -109,6 +109,7 @@ Each published rename a realignment made, which every consumer adopts at its re-
 | mcp | `createScopeMessageListener` (removed) | the `ScopeServer` that `createScopeServer` returns | `.claude/rules/typescript.md` § Immutability (it wrote a caller-owned map) |
 | middleware | `isBufferingIneligible` | `matchesUnbufferableResponse` | `.claude/rules/names.md` § Fixed derivation/construction forms |
 | middleware | `LimiterResult.resetAt`, `LimiterEntry.resetAt` (added this wave) | `expiry` | `.claude/rules/names.md` § Entity-scoped names |
+| browser | `createBrowserReading`, `BrowserReadingInterface`, `BrowserReadingInput` | `createBrowserContent`, `BrowserContentInterface`, `BrowserContentInput` | `.claude/rules/names.md` § General vocabulary (browser `feac6c3`) |
 | agent | `AgentTurn.ending` | `AgentTurn.outcome` | `.claude/rules/names.md` § General vocabulary |
 | agent | `MessageMeasure.framing` | `MessageMeasure.uniform` | the same |
 | agent | `LedgerPlanningGroup` | `LedgerPlanGroup` | the same |
@@ -177,7 +178,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: L3 (12 packages) is published, served, and pushed; lsp adopted process's `ended` rename at lsp `d3d6ed3`.
 - 2026-10-30: L4 (6 packages) is published, served, and pushed; mcp adopted item 44 and process's `ended` rename at mcp `bafe85c`, and worker's option snapshot case awaits pool's warm-up `release` at worker `a684608`.
 - 2026-10-30: L5 (agent, browser, probe) is published, served, and pushed; browser and probe adopted items 44 and 61 at browser `293ff75` and probe `54a70a2`.
-- Next: prepare L6 on the served L5 versions, adopt item 44's exports from test and process's renamed members in ollama, run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
+- 2026-10-30: L6 (ollama, toolbox) is published, served, and pushed; ollama adopted item 44, process's renamed members, and browser's `createBrowserContent` at ollama `5b5b0aa`.
+- Next: prepare L7 on the served L6 versions, adopt agent's `uniform` rename in study's measure parts, run its release chain, and publish it on the user's one-time code (§ Sequence step 6); then close agent's standing reading and run § Sequence step 7.
 
 ## Sequence
 
