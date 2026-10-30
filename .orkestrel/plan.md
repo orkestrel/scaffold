@@ -174,7 +174,8 @@ A finding blocks a layer when it fails a gate or the release chain, falsifies a 
 - 2026-10-30: L0 (contract 0.0.20) and L1 (13 packages) are published, served, and pushed; the ledger names each release commit.
 - 2026-10-30: L2 (12 packages) is published, served, and pushed; the ledger names each release commit.
 - 2026-10-30: L3 (12 packages) is published, served, and pushed; lsp adopted process's `ended` rename at lsp `d3d6ed3`.
-- Next: prepare L4 on the served L3 versions, adopt item 44's exports from test and process's renamed members in mcp, run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
+- 2026-10-30: L4 (6 packages) is published, served, and pushed; mcp adopted item 44 and process's `ended` rename at mcp `bafe85c`, and worker's option snapshot case awaits pool's warm-up `release` at worker `a684608`.
+- Next: prepare L5 on the served L4 versions; land browser's item 44 and item 61 adoptions and probe's awaited `killTree` and LintStage bound ruling, and check both for a case that asserts pool's warm-up `release` before a first acquire; run its release chains, and publish it on the user's one-time code (§ Sequence step 6).
 
 ## Sequence
 
