@@ -61,6 +61,12 @@ The wave `.orkestrel/plan.md` plans: every catalog package re-pinned to the scaf
 | L6 | ollama | 0.0.26 | 0.0.27 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `48b97d5a3` |
 | L6 | toolbox | 0.0.21 | 0.0.22 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `3dc9dad63` |
 | L7 | study | 0.0.6 | 0.0.7 | patch: `compare.ts` exit 3 at the scaffold 0.0.113 re-pin visit (the dist moved) | `fc00f6720` |
+| L2 | reason | 0.0.14 | 0.0.15 | patch: `compare.ts` exit 3 after reason drops its `iterateIndices` for contract's, closing the fleet name collision scaffold's catalog refresh found after L7 | `6aeb47c4a` |
+| L3 | interpret | 0.0.17 | 0.0.18 | patch: the runtime range `@orkestrel/reason` `^0.0.15` moved (`compare.ts` exit 0) | `cd42deed0` |
+| L3 | qualifier | 0.0.18 | 0.0.19 | patch: the runtime range `@orkestrel/reason` `^0.0.15` moved (`compare.ts` exit 0) | `abb02bb90` |
+| L3 | rater | 0.0.18 | 0.0.19 | patch: the runtime range `@orkestrel/reason` `^0.0.15` moved (`compare.ts` exit 0) | `8cba5ec2d` |
+| L4 | brief | 0.0.12 | 0.0.13 | patch: the runtime ranges `@orkestrel/reason` `^0.0.15` and `@orkestrel/interpret` `^0.0.18` moved (`compare.ts` exit 0) | `b6f1a3ab6` |
+| L4 | program | 0.0.17 | 0.0.18 | patch: the runtime ranges `@orkestrel/reason` `^0.0.15`, `@orkestrel/qualifier` `^0.0.19`, and `@orkestrel/rater` `^0.0.19` moved (`compare.ts` exit 0) | `ad10db3c1` |
 
 ## Standing readings
 
