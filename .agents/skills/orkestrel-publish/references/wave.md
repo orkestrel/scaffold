@@ -58,10 +58,19 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
 6. Sweep the self-pins, per § Sweep the self-pins: the re-pin moves the snapshot class.
 7. Run the mutating `format` script to converge generated writes.
 8. Commit the overwrite's writes as `Overwrite with scaffold <version>`: every path the overwrite
-   wrote or removed, and the manifest and lockfile the install converged. The step refuses a dirty
-   path the overwrite did not write and names it. After committing an unrelated path, complete the intended overwrite commit by hand:
-   inspect the receipt's written and removed paths, stage those paths and the converged manifest
-   and lockfile, and commit them as `Overwrite with scaffold <version>`. Then resume with `--from gates`.
+   wrote or removed, and the manifest and lockfile the install converged. Then commit the remaining
+   paths this run's `format` step dirtied as `Format with oxfmt <version>`, using the version read
+   from the target's installed `node_modules/oxfmt/package.json`. Attribute those paths only from
+   the dirty sets read immediately before and after that successful format step. Refuse every
+   dirty path neither group accounts for, naming each path, before either commit. Keep a path that
+   was already dirty outside the overwrite group refused even when the formatter rewrites it.
+   When resuming with `--from record`, report the absent format evidence and commit only paths the
+   valid overwrite receipt and manifest pair account for; never recover attribution from file
+   content or a previous run's journals. After an unrelated commit, or a refusal of the formatter's
+   rewrites on a resumed run, complete the intended overwrite commit by hand: inspect the receipt's
+   written and removed paths, stage those paths and the converged manifest and lockfile, and commit
+   them as `Overwrite with scaffold <version>`; then commit the formatter's remaining rewrites as
+   `Format with oxfmt <version>`. Then resume with `--from gates`.
    Treat the receipt as stale after any intervening commit; never use that receipt to authorize
    another `record` commit. Skip this step for an offline overwrite and the `@orkestrel/scaffold` package.
 9. Run the quality gates.

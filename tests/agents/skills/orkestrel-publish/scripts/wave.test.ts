@@ -66,6 +66,7 @@ import {
 	buildPackument,
 	createFleet,
 	createSink,
+	createRepository,
 	createUpstreamServer,
 	createWaveRecorder,
 	createWaveWorkspace,
@@ -81,11 +82,169 @@ import {
 	WAVE_JOURNAL_FAILURES,
 	WAVE_SCRIPT,
 	WAVE_STEPS,
+	WAVE_IDENTITY,
 	WORKSPACE_ROOT,
 	FLEET_RELEASE_REPLIES,
 } from '../../../../setupServer.js'
 
 describe('wave.ts', () => {
+	it.each(['same run', 'resume', 'unrelated', 'missing version', 'format failure', 'format only'])(
+		'attributes formatter rewrites from the visit evidence: %s',
+		(condition) => {
+			const scratch = createScratch({
+				parent: join(WORKSPACE_ROOT, 'tmp', 'units'),
+				prefix: 'wave-format-',
+			})
+			try {
+				scratch.write('.gitignore', 'tmp/\nnode_modules/\n')
+				scratch.write(
+					'package.json',
+					renderPackageManifest({
+						name: '@fixture/format',
+						version: '1.0.0',
+						type: 'module',
+						scripts: { format: 'node format.ts' },
+					}),
+				)
+				scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
+				const formatter = readInstalledRecord(join(WORKSPACE_ROOT, 'node_modules', 'oxfmt'))
+				scratch.write('node_modules/oxfmt/package.json', JSON.stringify(formatter))
+				scratch.write('owned.ts', 'export const value={answer:42};\n')
+				scratch.write('overwritten.txt', 'before\n')
+				scratch.write(
+					'format.ts',
+					[
+						"import { spawnSync } from 'node:child_process'",
+						"import { readFileSync, writeFileSync } from 'node:fs'",
+						`const formatted = spawnSync(process.execPath, ${JSON.stringify([join(WORKSPACE_ROOT, 'node_modules', 'oxfmt', 'bin', 'oxfmt'), '--stdin-filepath', 'owned.ts'])}, { encoding: 'utf8', input: readFileSync('owned.ts', 'utf8') })`,
+						'if (formatted.status !== 0) throw new Error(formatted.stderr)',
+						"writeFileSync('owned.ts', formatted.stdout)",
+						...(condition === 'format failure' ? ['process.exitCode = 1'] : []),
+					].join('\n'),
+				)
+				createRepository(scratch.path)
+				trackFiles(scratch.path)
+				commitFiles(scratch.path)
+				const head = spawnSync('git', ['rev-parse', 'HEAD'], {
+					cwd: scratch.path,
+					encoding: 'utf8',
+				}).stdout.trim()
+				scratch.write(
+					'tmp/units/wave/overwrite.json',
+					JSON.stringify({
+						head,
+						version: '1.2.3',
+						offline: false,
+						written: ['overwritten.txt'],
+						removed: [],
+					}),
+				)
+				if (condition !== 'format only') scratch.write('overwritten.txt', 'after\n')
+				if (condition === 'unrelated') scratch.write('stray.txt', 'unrelated\n')
+				if (condition === 'missing version') {
+					scratch.remove('node_modules/oxfmt/package.json')
+				}
+				const options = { cwd: scratch.path, env: WAVE_IDENTITY }
+				const format =
+					condition === 'resume'
+						? runSkillScript(
+								WAVE_SCRIPT,
+								['--visit', '--from', 'format', '--to', 'format', '--json'],
+								options,
+							)
+						: undefined
+				expect(format?.status).toBe(condition === 'resume' ? 0 : undefined)
+				const run = runSkillScript(
+					WAVE_SCRIPT,
+					[
+						'--visit',
+						'--from',
+						condition === 'resume' ? 'record' : 'format',
+						'--to',
+						'record',
+						'--json',
+					],
+					options,
+				)
+				const success = condition === 'same run' || condition === 'format only'
+				expect(run.status).toBe(success ? 0 : 1)
+				const commits = spawnSync(
+					'git',
+					['log', '--reverse', '--format=%s', '--name-only', `${head}..HEAD`],
+					options,
+				)
+					.stdout.toString()
+					.split(/\r\n|\n/u)
+					.filter(Boolean)
+				expect(commits).toEqual(
+					success
+						? [
+								...(condition === 'same run'
+									? ['Overwrite with scaffold 1.2.3', 'overwritten.txt']
+									: []),
+								`Format with oxfmt ${String(formatter.version)}`,
+								'owned.ts',
+							]
+						: [],
+				)
+				expect(spawnSync('git', ['status', '--porcelain'], options).stdout.toString() === '').toBe(
+					success,
+				)
+				expect(run.stdout).toContain(
+					condition === 'resume'
+						? 'format evidence is absent in this run'
+						: condition === 'unrelated'
+							? 'stray.txt'
+							: condition === 'missing version'
+								? 'oxfmt/package.json'
+								: condition === 'format failure'
+									? '"step":"format"'
+									: `Format with oxfmt ${String(formatter.version)}`,
+				)
+			} finally {
+				scratch.destroy()
+			}
+		},
+		30_000,
+	)
+
+	it('refuses another bin package without an installed scaffold and never executes its own bin', () => {
+		const scratch = createScratch({
+			parent: join(WORKSPACE_ROOT, 'tmp', 'units'),
+			prefix: 'wave-bin-',
+		})
+		try {
+			scratch.write('package.json', '{"name":"@fixture/tool","version":"1.0.0"}')
+			scratch.write('dist/bin/main.js', "require('node:fs').writeFileSync('called.txt', 'called')")
+			const run = runSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'verify', '--to', 'verify', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(2)
+			expect(run.stderr.trim()).toBe(
+				`wave: no @orkestrel/scaffold executable under ${scratch.path}, and its manifest declares none; run npm install --save-dev @orkestrel/scaffold first`,
+			)
+			expect(scratch.has('called.txt')).toBe(false)
+			scratch.write(
+				'package.json',
+				'{"name":"@fixture/tool","version":"1.0.0","devDependencies":{"@orkestrel/scaffold":"^1.0.0"}}',
+			)
+			const declared = runSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'verify', '--to', 'verify', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(declared.status).toBe(2)
+			expect(declared.stderr.trim()).toBe(
+				`wave: no @orkestrel/scaffold executable under ${scratch.path}; run npm install to install its declared @orkestrel/scaffold dependency first`,
+			)
+			expect(scratch.has('called.txt')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('F20 refuses an unreported descendant of a reported file and preserves HEAD', () => {
 		const fixture = createWaveWorkspace('orkestrel-wave-descendant-')
 		try {
@@ -533,7 +692,12 @@ describe('wave.ts', () => {
 			)
 			expect(JSON.stringify(run.json)).toContain('--regenerate and resume with --from pin')
 			const manifest = readInstalledRecord(session.target)
-			expect(manifest.devDependencies).toEqual({ vt: '^1.0.0', bp: '^1.0.0', pr: '^1.0.1' })
+			expect(manifest.devDependencies).toEqual({
+				'@orkestrel/scaffold': '1.0.0',
+				vt: '^1.0.0',
+				bp: '^1.0.0',
+				pr: '^1.0.1',
+			})
 			expect(readFileSync(join(session.target, 'package-lock.json'))).toEqual(lock)
 			expect(readInventory(session.target, ['node_modules'])).toEqual(inventory)
 			expect(globSync('tmp/units/wave/**/node_modules.before', { cwd: session.target })).toEqual([])
@@ -587,6 +751,29 @@ describe('wave.ts', () => {
 					[],
 				)
 				expect(readFileSync(sentinel, 'utf8')).toBe('keep\n')
+				expect(resolveScaffold(session.target)).toEqual([
+					process.execPath,
+					join(session.target, 'node_modules', '@orkestrel', 'scaffold', 'dist', 'bin', 'main.js'),
+				])
+				const audit = spawnSync(
+					process.execPath,
+					[
+						join(
+							session.target,
+							'node_modules',
+							'@orkestrel',
+							'scaffold',
+							'dist',
+							'bin',
+							'main.js',
+						),
+						'audit',
+						'--json',
+					],
+					{ cwd: session.target, encoding: 'utf8' },
+				)
+				expect(audit.status, `${audit.stdout}${audit.stderr}`).toBe(0)
+				expect(session.scratch.read('consumer/tmp/calls.txt')).toBe('audit --json\naudit --json\n')
 			} finally {
 				await session.destroy()
 			}
@@ -945,7 +1132,7 @@ describe('wave.ts', () => {
 					'\t',
 				),
 			)
-			scratch.write('dist/bin/main.js', '')
+			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
 			const run = runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--json'], {
 				cwd: scratch.path,
 			})
@@ -984,6 +1171,10 @@ describe('wave.ts', () => {
 			expect(text.stdout).toContain(
 				'git commit --only -m Re-pin the @orkestrel ranges for the release visit -- package.json package-lock.json',
 			)
+			for (const message of ['Overwrite with scaffold <version>', 'Format with oxfmt <version>'])
+				expect(text.stdout).toContain(
+					`git --literal-pathspecs commit --only -m ${message} --pathspec-from-file=- --pathspec-file-nul`,
+				)
 			expect(text.stdout).toContain('audit --json')
 			expect(text.stdout).toContain('--version 1.0.0')
 			expect(text.stdout).toContain(`${join('orkestrel-publish', 'scripts', 'pins.ts')} --version`)
@@ -1085,6 +1276,10 @@ describe('wave.ts', () => {
 				throw new Error('Fixture refuses to delete a link')
 			scratch.remove('calls.txt')
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			scratch.write(
+				'node_modules/@orkestrel/scaffold/dist/bin/main.js',
+				scratch.read('dist/bin/main.js') ?? '',
+			)
 			const other = runSkillScript(
 				WAVE_SCRIPT,
 				['--visit', '--from', 'overwrite', '--to', 'verify'],
@@ -1125,7 +1320,7 @@ describe('wave.ts', () => {
 			// The recorder stands in for the scaffold executable: every verb prints the
 			// answer file on stdout and four lines on stderr, then exits 1.
 			scratch.write(
-				'dist/bin/main.js',
+				'node_modules/@orkestrel/scaffold/dist/bin/main.js',
 				[
 					"const { readFileSync } = require('node:fs')",
 					"process.stdout.write(readFileSync('answer.txt', 'utf8'))",
@@ -1157,7 +1352,7 @@ describe('wave.ts', () => {
 	it('refuses an unknown or inverted step range, a flag with no value, a malformed prior version, no mode, two modes, and reports an unreadable target as 2', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-usage-' })
 		try {
-			scratch.write('dist/bin/main.js', '')
+			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
 			expect(runSkillScript(WAVE_SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
 			expect(
 				runSkillScript(WAVE_SCRIPT, ['--plan', '--regenerate'], { cwd: scratch.path }).status,
@@ -1197,9 +1392,9 @@ describe('wave.ts', () => {
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run'], { cwd: scratch.path }).status,
 			).toBe(2)
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
-			if (lstatSync(join(scratch.path, 'dist')).isSymbolicLink())
+			if (lstatSync(join(scratch.path, 'node_modules')).isSymbolicLink())
 				throw new Error('Fixture refuses to delete a link')
-			scratch.remove('dist')
+			scratch.remove('node_modules')
 			expect(
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run'], { cwd: scratch.path }).status,
 			).toBe(2)
@@ -1211,7 +1406,7 @@ describe('wave.ts', () => {
 	it('refuses a flag it does not read, the equals form included, before it runs a step', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-unknown-' })
 		try {
-			scratch.write('dist/bin/main.js', '')
+			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
 			for (const argv of [
 				['--visit', '--dry-run', '--bogus'],
@@ -1236,7 +1431,7 @@ describe('wave.ts', () => {
 	it('reports a sweep hit as a reading and keeps the exit at zero', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-reading-' })
 		try {
-			scratch.write('dist/bin/main.js', '')
+			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
 			scratch.write('src/a.ts', '"1.0.0"\n')
 			const run = runSkillScript(
@@ -1565,11 +1760,15 @@ describe('the manifest ranges', () => {
 })
 
 describe('the scaffold executable, the receipt, and the catalog', () => {
-	it('prefers the installed scaffold entry, then the target own build, and answers none otherwise', () => {
+	it('prefers the installed scaffold entry and permits an own build only for the scaffold manifest', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-scaffold-' })
 		try {
 			expect(resolveScaffold(scratch.path)).toEqual([])
 			const own = scratch.write('dist/bin/main.js', '')
+			expect(resolveScaffold(scratch.path)).toEqual([])
+			scratch.write('package.json', '{"name":"@fixture/tool"}')
+			expect(resolveScaffold(scratch.path)).toEqual([])
+			scratch.write('package.json', '{"name":"@orkestrel/scaffold"}')
 			expect(resolveScaffold(scratch.path).map((path) => normalizeSlashes(path))).toEqual(
 				[process.execPath, own].map((path) => normalizeSlashes(path)),
 			)

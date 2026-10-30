@@ -11,7 +11,8 @@
 // the audit's writable dependency population matches its lookup bounds; on @orkestrel/scaffold itself an audit exit of 1 is
 // read as the expected foreign-path findings of its own canonical sources), install,
 // pins (the self-pin sweep with --prior or the manifest version and every range the visit moved; hits are reported, not
-// fatal), format, record (commit the overwrite paths), gates (format:check, lint:check, check, build, test), and compare (the rebuilt
+// fatal), format, record (commit the overwrite paths, then this run's formatter rewrites), gates
+// (format:check, lint:check, check, build, test), and compare (the rebuilt
 // dist against the published tarball, and the final runtime dependency set against the published
 // manifest `npm view NAME --json` serves; both readings are reported, not fatal). The summary
 // carries each step's exit and duration, a failed step's refusal (the `code: message` envelope or
@@ -209,6 +210,12 @@ export interface OverwriteReceipt {
 	readonly offline: boolean
 	readonly written: readonly string[]
 	readonly removed: readonly string[]
+}
+
+/** Describes the paths dirtied by this visit's format step and its installed formatter version. */
+export interface FormatReceipt {
+	readonly paths: readonly string[]
+	readonly version: string | undefined
 }
 
 /** Describes the outcome of writing a journal file. */
@@ -508,14 +515,15 @@ export function compareRanges(
  * Resolves the scaffold executable a target runs.
  *
  * @param target - The target directory.
- * @returns Node and the installed scaffold entry, else Node and the target's own built entry, else
- * none.
+ * @returns Node and the installed scaffold entry, else Node and the target's own built entry when
+ * its manifest names @orkestrel/scaffold, else none.
  */
 export function resolveScaffold(target: string): readonly string[] {
 	const installed = join(target, 'node_modules', '@orkestrel', 'scaffold', 'dist', 'bin', 'main.js')
 	if (existsSync(installed)) return [process.execPath, installed]
 	const own = join(target, 'dist', 'bin', 'main.js')
-	if (existsSync(own)) return [process.execPath, own]
+	if (readString(readManifest(target), 'name') === SCAFFOLD && existsSync(own))
+		return [process.execPath, own]
 	return []
 }
 
@@ -1274,32 +1282,51 @@ export function readReceipt(target: string): OverwriteReceipt | undefined {
  *
  * @param runner - The visit's state.
  * @param name - The package name the manifest declares.
- * @returns Nothing after the rows are appended; the overwrite's paths are committed when the receipt
- * attributes every dirty path to them.
+ * @param format - The evidence collected by this invocation's format step. Without it, paths outside
+ * the overwrite receipt and manifest pair are refused.
+ * @returns Nothing after the rows are appended; each attributed group is committed separately when
+ * every dirty path belongs to the overwrite or this invocation's formatter rewrites.
  */
-export function runRecord(runner: Runner, name: string | undefined): void {
+export function runRecord(runner: Runner, name: string | undefined, format?: FormatReceipt): void {
 	if (name === SCAFFOLD) {
 		appendStep(runner, 'record', 'git commit', `skipped: ${SCAFFOLD}`)
 		return
 	}
 	if (refuseLocalSpecs(runner, 'record')) return
 	if (runner.dry) {
-		runStep(
-			runner,
-			'record',
-			'git',
-			['add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
-			runner.target,
-		)
-		runStep(
-			runner,
-			'record',
-			'git',
-			['commit', '-m', 'Overwrite with scaffold <version>'],
-			runner.target,
-		)
+		for (const message of ['Overwrite with scaffold <version>', 'Format with oxfmt <version>']) {
+			runStep(
+				runner,
+				'record',
+				'git',
+				['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
+				runner.target,
+			)
+			runStep(
+				runner,
+				'record',
+				'git',
+				[
+					'--literal-pathspecs',
+					'commit',
+					'--only',
+					'-m',
+					message,
+					'--pathspec-from-file=-',
+					'--pathspec-file-nul',
+				],
+				runner.target,
+			)
+		}
 		return
 	}
+	if (format === undefined)
+		appendStep(
+			runner,
+			'record',
+			'attribute format paths',
+			'format evidence is absent in this run; only overwrite receipt paths and the manifest pair can be committed',
+		)
 	const status = runStep(
 		runner,
 		'record',
@@ -1337,17 +1364,20 @@ export function runRecord(runner: Runner, name: string | undefined): void {
 	const allowed = [...receipt.written, ...receipt.removed, 'package.json', 'package-lock.json'].map(
 		(path) => normalizeSlashes(relative(runner.target, resolve(runner.target, path))),
 	)
-	const outside = dirty.filter(
-		(path) =>
-			!allowed.some(
-				(entry) =>
-					entry !== '' &&
-					entry !== '..' &&
-					!entry.startsWith('../') &&
-					!isAbsolute(entry) &&
-					path === entry,
-			),
+	const overwritten = dirty.filter((path) =>
+		allowed.some(
+			(entry) =>
+				entry !== '' &&
+				entry !== '..' &&
+				!entry.startsWith('../') &&
+				!isAbsolute(entry) &&
+				path === entry,
+		),
 	)
+	const formatted = dirty.filter(
+		(path) => !overwritten.includes(path) && format?.paths.includes(path),
+	)
+	const outside = dirty.filter((path) => !overwritten.includes(path) && !formatted.includes(path))
 	if (outside.length > 0) {
 		appendStep(
 			runner,
@@ -1358,29 +1388,94 @@ export function runRecord(runner: Runner, name: string | undefined): void {
 		)
 		return
 	}
-	runStep(
-		runner,
-		'record',
-		'git',
-		['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
-		runner.target,
-		readVerdict,
-		`${dirty.join('\0')}\0`,
-	)
-	if (failed(runner.steps)) return
-	runStep(
-		runner,
-		'record',
-		'git',
-		['commit', '-m', `Overwrite with scaffold ${receipt.version}`],
-		runner.target,
-	)
+	if (formatted.length > 0 && (format?.version === undefined || !VERSION.test(format.version))) {
+		appendStep(
+			runner,
+			'record',
+			'read formatter version',
+			'cannot read the installed formatter version from node_modules/oxfmt/package.json; restore the oxfmt install before recording',
+			1,
+		)
+		return
+	}
+	for (const group of [
+		{ paths: overwritten, message: `Overwrite with scaffold ${receipt.version}` },
+		{ paths: formatted, message: `Format with oxfmt ${format?.version}` },
+	]) {
+		if (group.paths.length === 0) continue
+		const input = `${group.paths.join('\0')}\0`
+		runStep(
+			runner,
+			'record',
+			'git',
+			['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
+			runner.target,
+			readVerdict,
+			input,
+		)
+		if (failed(runner.steps)) return
+		runStep(
+			runner,
+			'record',
+			'git',
+			[
+				'--literal-pathspecs',
+				'commit',
+				'--only',
+				'-m',
+				group.message,
+				'--pathspec-from-file=-',
+				'--pathspec-file-nul',
+			],
+			runner.target,
+			readVerdict,
+			input,
+		)
+		if (failed(runner.steps)) return
+	}
 	if (failed(runner.steps)) return
 	runStep(runner, 'record', 'git', ['status', '--porcelain'], runner.target, (result) =>
 		result.status === 0 && result.stdout.trim() !== ''
 			? { exit: 1, note: `tree remains dirty: ${result.stdout}` }
 			: readVerdict(result),
 	)
+}
+
+/**
+ * Runs the formatter and attributes paths from the dirty sets read immediately before and after it.
+ *
+ * @param runner - The visit's state.
+ * @returns This invocation's evidence, or undefined for a dry run or a failed step.
+ */
+export function runFormat(runner: Runner): FormatReceipt | undefined {
+	if (runner.dry) {
+		runNpmStep(runner, 'format', ['run', 'format'])
+		return undefined
+	}
+	const version = readString(readManifest(join(runner.target, 'node_modules', 'oxfmt')), 'version')
+	const before = runStep(
+		runner,
+		'format',
+		'git',
+		['status', '--porcelain=v1', '-z', '--untracked-files=all'],
+		runner.target,
+	)
+	if (before?.status !== 0 || failed(runner.steps)) return undefined
+	runNpmStep(runner, 'format', ['run', 'format'])
+	if (failed(runner.steps)) return undefined
+	const after = runStep(
+		runner,
+		'format',
+		'git',
+		['status', '--porcelain=v1', '-z', '--untracked-files=all'],
+		runner.target,
+	)
+	if (after?.status !== 0 || failed(runner.steps)) return undefined
+	const prior = new Set(readDirtyPaths(before.stdout))
+	return {
+		paths: [...new Set(readDirtyPaths(after.stdout))].filter((path) => !prior.has(path)),
+		version,
+	}
 }
 
 /**
@@ -1748,7 +1843,14 @@ export function runVisit(argv: readonly string[]): Visit | undefined {
 	}
 	const scaffold = resolveScaffold(target)
 	if (scaffold.length === 0) {
-		console.error(`wave: no scaffold executable under ${target}; run npm install first`)
+		const declared = [...readRanges(readManifest(target) ?? {}, RANGE_FIELDS).keys()].some((key) =>
+			key.endsWith(` ${SCAFFOLD}`),
+		)
+		console.error(
+			declared
+				? `wave: no @orkestrel/scaffold executable under ${target}; run npm install to install its declared @orkestrel/scaffold dependency first`
+				: `wave: no @orkestrel/scaffold executable under ${target}, and its manifest declares none; run npm install --save-dev @orkestrel/scaffold first`,
+		)
 		return undefined
 	}
 	const [scaffoldFile, ...scaffoldPrefix] = scaffold
@@ -1805,9 +1907,8 @@ export function runVisit(argv: readonly string[]): Visit | undefined {
 		selected.has('pins') && !failed(runner.steps)
 			? runPins(runner, before, readOption(argv, '--prior') ?? version)
 			: undefined
-	if (selected.has('format') && !failed(runner.steps))
-		runNpmStep(runner, 'format', ['run', 'format'])
-	if (selected.has('record') && !failed(runner.steps)) runRecord(runner, name)
+	const format = selected.has('format') && !failed(runner.steps) ? runFormat(runner) : undefined
+	if (selected.has('record') && !failed(runner.steps)) runRecord(runner, name, format)
 	if (selected.has('gates') && !failed(runner.steps)) {
 		for (const gate of GATES) {
 			if (failed(runner.steps)) break

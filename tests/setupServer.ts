@@ -6286,7 +6286,16 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 				}),
 			),
 		)
-		const registry = await createSwapRegistry(scratch.path, directories)
+		const scaffold = writeSwapPackage(scratch.path, 'scaffold', { name: '@orkestrel/scaffold' })
+		scratch.write(
+			'scaffold/dist/bin/main.js',
+			[
+				"import { appendFileSync } from 'node:fs'",
+				"appendFileSync('tmp/calls.txt', process.argv.slice(2).join(' ') + '\\n')",
+				`console.log(JSON.stringify({ releases: [{ name: 'pr', range: '^1.0.0', latest: '1.0.1' }] }))`,
+			].join('\n'),
+		)
+		const registry = await createSwapRegistry(scratch.path, [...directories, scaffold])
 		try {
 			const target = scratch.ensure('consumer')
 			const environment = { ...buildSwapEnvironment(scratch.path, registry.url), ...WAVE_IDENTITY }
@@ -6296,7 +6305,12 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 				renderPackageManifest({
 					name: '@fixture/wave',
 					version: '1.0.0',
-					devDependencies: { vt: '1.0.0', bp: '1.0.0', pr: '1.0.0' },
+					devDependencies: {
+						'@orkestrel/scaffold': '1.0.0',
+						vt: '1.0.0',
+						bp: '1.0.0',
+						pr: '1.0.0',
+					},
 				}),
 			)
 			const installed = await spawnNpm(['install', '--ignore-scripts'], {
@@ -6307,7 +6321,12 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 			const manifest = {
 				name: '@fixture/wave',
 				version: '1.0.0',
-				devDependencies: { vt: '^1.0.0', bp: '^1.0.0', pr: '^1.0.0' },
+				devDependencies: {
+					'@orkestrel/scaffold': '1.0.0',
+					vt: '^1.0.0',
+					bp: '^1.0.0',
+					pr: '^1.0.0',
+				},
 			}
 			scratch.write('consumer/package.json', renderPackageManifest(manifest))
 			const lock: unknown = parseJSON(scratch.read('consumer/package-lock.json') ?? '')
@@ -6322,14 +6341,6 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 						'': { ...lock.packages[''], devDependencies: manifest.devDependencies },
 					},
 				}),
-			)
-			scratch.write(
-				'consumer/dist/bin/main.js',
-				[
-					"const { appendFileSync } = require('node:fs')",
-					"appendFileSync('tmp/calls.txt', process.argv.slice(2).join(' ') + '\\n')",
-					`console.log(JSON.stringify({ releases: [{ name: 'pr', range: '^1.0.0', latest: '1.0.1' }] }))`,
-				].join('\n'),
 			)
 			scratch.ensure('consumer/tmp')
 			createRepository(target)
