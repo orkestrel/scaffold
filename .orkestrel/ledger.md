@@ -67,12 +67,12 @@
 | 2026-10-31 | Finding: under a local contract pin, `test:policy` and `test:config` cannot load, because scaffold 0.0.118 imports `compareValues`; from the registry, scaffold resolves its own contract 0.0.20, so those suites run in the publish waves | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Visits of capture, ollama, and toolbox: every gate green but ollama's `test:policy`, which refuses its `tests/setupServer.ts` export `listChildren` that markdown owns; each pinned to its changed upstreams | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Review of mcp, rater, workflow, and msg: every claim held; the Orchestrator ordered msg's type imports first | reviewer | mcp `b3aa1e9`, rater `88077c3`, workflow `db0c335`, msg `cf6eeb9` |
-| 2026-10-31 | capture adoption: process's `Duplex` names | opus | in flight |
-| 2026-10-31 | ollama adoption: process's `Duplex` names and the `listChildren` helper's rename | opus | in flight |
+| 2026-10-31 | capture adoption: process's `Duplex` names; every gate green | opus | capture, uncommitted |
+| 2026-10-31 | ollama adoption: process's `Duplex` names and `listChildren` renamed `collectTreeChildren`; every gate green | opus | ollama, uncommitted |
 | 2026-10-31 | toolbox adoption: workspace's and server's renames; check and build pass, and no suite loads, because the published agent 0.0.33 imports workspace's `isText` through the pin's override | opus | toolbox, uncommitted |
 | 2026-10-31 | lsp item 81: the jsonrpc adoption and process's `Duplex` names, on local jsonrpc and process tarballs | opus | in flight |
-| 2026-10-31 | router deferred: `escapeRegExp` from contract | opus | in flight |
-| 2026-10-31 | workspace deferred: `escapeRegExp` from contract | opus | in flight |
+| 2026-10-31 | router deferred: `escapeRegExp` from contract | opus | router, uncommitted |
+| 2026-10-31 | workspace deferred: `escapeRegExp` from contract | opus | workspace, uncommitted |
 | 2026-10-31 | brief item 83 with interpret's recipe renames, on local interpret and contract tarballs | opus | in flight |
 | 2026-10-31 | Review of sea, guide, and interpret: every claim held | reviewer | sea `c8ac45d`, guide `6e8f4c9`, interpret `5fcfe79` |
 | 2026-10-31 | csv deferred: `BOM` from codec | opus | in flight |
@@ -80,3 +80,5 @@
 | 2026-10-31 | sse item 105: `BOM` from codec | opus | in flight |
 | 2026-10-31 | mcp item 81: the jsonrpc adoption and server's `SSEStreamInterface`, on local jsonrpc and server tarballs | opus | in flight |
 | 2026-10-31 | console item 84: `TableColumn` | opus | in flight |
+| 2026-10-31 | Visits of the seventeen packages with no wave item | Orchestrator | in flight |
+| 2026-10-31 | Review of table, workspace, router, agent, and toolbox | reviewer | in flight |
