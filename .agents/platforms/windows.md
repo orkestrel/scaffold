@@ -4,7 +4,8 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 
 ## Processes
 
-- When a held native module interrupts an install, identify its holders with `tasklist /M`, terminate no process the session did not launch, and record the partial installation state. Rebuild from the unchanged lockfile, verify the manifest and lockfile identities, and report the clean-install criterion the recovery did not prove.
+- Before `npm ci`, list the processes holding a file under the checkout's `node_modules`: `tasklist /M <file>.node` for a loaded native module, and the `ExecutablePath` of each `Get-CimInstance Win32_Process` row for an executable such as a language server. When one is held, skip `npm ci` and recover per the following bullet.
+- When a held file under `node_modules` blocks or interrupts an install, identify its holders, terminate no process the session did not launch, and record the partial installation state. Rebuild from the unchanged lockfile with `npm install`, verify the manifest and lockfile identities and the tree with `npm ls --all`, and report the clean-install criterion the recovery did not prove.
 - Read liveness with `Get-Process -Id <pid>` in PowerShell, or under Git Bash from the output of `tasklist //FI "PID eq <pid>" //NH`: a row naming the pid means alive, and the `INFO:` line means gone. Never read liveness from `tasklist`'s exit code, `kill -0`, or `ps -eo`.
 - List descendants with `Get-CimInstance Win32_Process -Filter "ParentProcessId=<pid>"`, applied to each listed id in turn. Under Git Bash, run it through `powershell -NoProfile -Command`, and write every Windows slash option as `//`.
 - Kill a recorded tree with `taskkill /pid <pid> /T /F`. `launch.ts` kills the tree at its cap on this host.

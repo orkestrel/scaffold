@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "74edc68f824ec46a7ffcc46ee6a3e654024fee646cd5441762e8c3a3b8929d6c"
+			"digest": "c97cc6fc884e8cb69af7799b0bab232e832f954bb98fcc4a28dbd3cac5dbe7b4"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -466,13 +466,13 @@
 			"storage": "agents/skills/orkestrel-publish/references/release.md",
 			"destination": ".agents/skills/orkestrel-publish/references/release.md",
 			"executable": false,
-			"digest": "c52e27bd27e011766514c3cf683362ed695c834d2aafc2e922bb4ac22a97b320"
+			"digest": "2f41dd3fcaec1fd79d68ece06701cc2752f90f399693dd99f1768ce5d47502fd"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "51f5303628eae0b7508955382ac4173d2e8245a93e424179dbeb6bd3a4311440"
+			"digest": "3510fdb44223071f85bd9cc333224094440c1016e4fb98aebe0ebee1f21e17b8"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -700,7 +700,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "f6bc1693ac9d9850eee36e70c2b95e26102738a52ff65a102b80a7f7601d97d7"
+			"digest": "18bac0bc31e70ba3dfca68b1519f747dff908b7023b80d11e44e6fdf3a2b8e7e"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -2141,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "461c2456d47acc1b510a19690530ee7ee12346677c6a2858210daeb0242f5488"
+	"digest": "cf4e9670b54785b12420ba70c9bbc199932e21dd57524b8475f74c4470f2fbf2"
 }

@@ -170,6 +170,8 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
   `.claude/rules/workspace.md` fixes where each isolated project runs, and that placement
   differs between a publishing and a `private: true` workspace.
 - Use `distribution` and `service` as the fixed expensive-proof projects.
+- When a change alters what a package ships, such as an export, its declaration text, or a packed
+  path, run its `distribution` project before accepting the change.
 - Put a study's proofs under `tests/studies/` in the `studies` project, which
   `.claude/rules/workspace.md` § Test project matrix places.
 - Put in `studies` only the proofs the `@orkestrel/study` engine drives. Place a slow end-to-end proof of
