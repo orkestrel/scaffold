@@ -13,7 +13,7 @@ description: >-
 | Within one session | subagents, child tasks, and background commands the session launches                           | launch results and completion notices                                                                     |
 | Across sessions    | separate top-level sessions on one machine sharing a checkout, the host, or the execution lane | messages that wake the receiving session; one tracked coordination record when no such channel reaches it |
 
-- Read the page for each harness that hosts a lane before its first launch: `references/claude.md`, `references/codex.md`, `references/cursor.md`, `references/t3.md`, or `references/cloud.md`. A harness without a page carries no writer or runner lane until § Bring up a harness is answered on a page of its own.
+- Read the page for each harness that hosts a lane before its first launch: `references/claude-code.md`, `references/codex.md`, `references/cursor.md`, `references/t3.md`, or `references/cloud.md`. A harness without a page carries no writer or runner lane until § Bring up a harness is answered on a page of its own.
 - Apply `.agents/orchestration.md` for routing, session reuse, consultation, independence, and acceptance.
 
 ## Scripts
@@ -119,7 +119,7 @@ Apply this section when two sessions on one machine share the tests, checks, bui
 - One session runs process-running commands at a time. Ask the holder for the lane in one message; the holder hands it over in one message as soon as its running command exits. Silence is no handover.
 - While another session holds the lane, edit your own files, read, and queue your commands.
 - Hand the lane over by naming the last command's exit and that none of your processes still runs. Set no clock windows and send no per-command acknowledgments.
-- Record contention from another session as a host limit, not a test failure. Rerun the interrupted unit alone after the window clears.
+- Class contention from another session per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief. Rerun the interrupted unit alone after the window clears.
 - When the user stops work, send the stop to every affected session. Withdraw queued work by its id and preserve finished evidence.
 - When no message channel reaches a peer session, coordinate through one tracked record holding owned paths and a dated log. Read its latest entry before each unit, log each landing, and delete the record when the shared work closes.
 - A session that finds another session's hand-off record without the user's go-ahead reads it for context only.

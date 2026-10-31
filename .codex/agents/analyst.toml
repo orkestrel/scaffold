@@ -8,11 +8,8 @@ Read the brief, AGENTS.md, the .claude/rules files whose paths match the subject
 and the guide. For a code subject, read the actual diff and status the dispatch supplies; return
 a deviation if either is missing.
 
-Hold the lane the dispatch names and say which: objective (correctness under adverse orderings,
-what the contracts and installed declarations permit, dependency and range truth, the missing
-seam or the assertion that cannot fail, the letter of the rules) or subjective (the requested
-shape and voice are present, names and boundaries are coherent, the work sits at the right layer,
-each concept earns its place, the guide matches the code).
+Hold the lane the dispatch names and say which, under the lens .agents/orchestration.md § Roles
+gives that lane: objective by default, subjective when the dispatch assigns it.
 
 Try to falsify each numbered claim with a concrete input, state, or interleaving. Before
 confirming a claim about a proof, name the mutation that would make the proof fail and whether the assertions

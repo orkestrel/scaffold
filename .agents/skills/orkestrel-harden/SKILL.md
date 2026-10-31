@@ -7,7 +7,7 @@ description: Research, audit, refactor, implement, centralize, test, document, a
 
 ## Read
 
-`AGENTS.md` § Authority and loading names the files every unit reads. This skill adds the references the selected lane names, the contracts, barrels, manifest, and configuration that lane needs, and every decision-bearing implementation file the user names, read first-hand by the decision owner. Delegate bulk reconnaissance and supporting research, never the design decision. Preserve dirty and user-owned work.
+`AGENTS.md` § Authority and loading names the files every unit reads. This skill adds the references the selected phases name, the contracts, barrels, manifest, and configuration those phases need, and every decision-bearing implementation file the user names, read first-hand by the decision owner. Delegate bulk reconnaissance and supporting research, never the design decision. Preserve dirty and user-owned work.
 
 ## Scripts
 
@@ -17,13 +17,13 @@ Run each from the checkout root. Each script's opening comment owns its behavior
 - `scripts/titles.ts --base REV [--root DIR] [--json] [--out FILE.json|FILE.txt]` compares the `describe`, `it`, `test`, and `suite` titles of `tests/**/*.test.ts` against `REV`. It flags a title registered fewer times than at `REV` as missing, or as moved when another string literal in `tests/**/*.ts` spells it; the reader rules each moved row by reading its holder. It reports each registration whose title is no literal (dynamic), which the comparison cannot follow, and flags a file that registers fewer of them than at `REV` (lost dynamic). It cannot see a removed `.each` table row or a title registered through an alias such as a `test.extend` result. `--root` defaults to the working directory and may sit below the repository top; `REV` may not open with `-`. Exit 0 no missing or moved title and no lost-dynamic file, 3 any of them, 2 git, filesystem, or lexical refusal, 64 usage.
 - `scripts/measure.ts --rule ID [--options JSON] PATH...` counts one lint rule's hits over the named paths before the rule is enabled. It writes a variant config under `tmp/probes/lint/` that enables only that rule as an error beside the workspace's `plugins` and `jsPlugins` (so a `policy/` rule loads), runs the installed oxlint from the checkout root, and prints the total and the hits per file. A hit is a diagnostic whose code names the rule; another diagnostic, a parse error included, or a linter status other than a clean 0 or 1 refuses the count. `--options` is the rule's JSON options, an array spread after `error` or one value. The variant carries no `ignorePatterns` and no override, so it reads exactly the named paths. It needs `npm ci` first. Exit 0 no hit, 3 a hit, 2 the config or the linter cannot run or reports another diagnostic, 64 usage.
 
-## Select the work lane
+## Select the phases
 
-Choose the smallest lane that fully satisfies the request:
+Run the smallest selection of phases that fully satisfies the request:
 
 - **Structural:** centralization, nested-function removal, wrapper cleanup, or test-infrastructure consolidation.
 - **Capability:** research and implement named missing behavior or upstream parity.
-- **Hardening:** perform the complete production-readiness workflow.
+- **Hardening:** every phase of the complete production-readiness workflow.
 - **Documentation:** a guide, README, or TSDoc pass on one package; it runs step 10 alone.
 
 A narrow structural request does not authorize unrelated API redesign. A hardening request does authorize fixing every verified in-scope defect and completing every in-scope deferred capability.
@@ -32,15 +32,15 @@ Load [research.md](references/research.md) for upstream comparisons, legacy/`old
 
 Load [contract.md](references/contract.md) whenever the package declares `@orkestrel/contract`, the user requests contract adoption, or local code overlaps validation, parsing, outcomes, safe exception capture, schemas, or contract generation.
 
-Load [centralization.md](references/centralization.md) for every structural lane and as a mandatory cleanup pass after capability or hardening work.
+Load [centralization.md](references/centralization.md) for every structural selection and as a mandatory cleanup pass after capability or hardening work.
 
-Load [hardening.md](references/hardening.md) for the hardening lane, for any request involving concurrency, lifecycle pressure, security boundaries, real services/models, test discovery, or package inspection, and before any repair round at a seam.
+Load [hardening.md](references/hardening.md) for a hardening selection, for any request involving concurrency, lifecycle pressure, security boundaries, real services/models, test discovery, or package inspection, and before any repair round at a seam.
 
-Load [document.md](references/document.md) for the documentation lane and for step 10 of every other lane.
+Load [document.md](references/document.md) for a documentation selection and for step 10 of every other selection.
 
 Load [bindings.md](references/bindings.md) for a census or a sweep under `.claude/rules/typescript.md` § Bindings, together with [equivalence.md](references/equivalence.md). Before a census item becomes a lint rule, count the rule's hits with `scripts/measure.ts`.
 
-Load [equivalence.md](references/equivalence.md) for a structural lane whose rewrite claims unchanged behavior, and cite it in the claims of the review that judges one.
+Load [equivalence.md](references/equivalence.md) for a structural selection whose rewrite claims unchanged behavior, and cite it in the claims of the review that judges one.
 
 ## Execute the workflow
 

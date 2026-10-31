@@ -6,6 +6,7 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 
 - Launch as a harness-tracked background command through `scripts/launch.ts` under a hard cap, per § Launch ownership.
 - Spawn a package manager through its JavaScript entry; `.agents/platforms/<platform>.md` names the entry and the shell quirks of each host.
+- When a chain's scripts must run on a selected Node, launch the chain under a `PATH` that leads with that Node's directory: npm resolves a script's `node` from `PATH` and adds no directory of the Node running it.
 - Write a multi-step chain as a TypeScript file run by `node`, with an opening comment naming its log and its cap. Never edit a script while it runs: copy, edit the copy, launch the copy.
 - Run the first use of any flag, subcommand, or quoting form in a throwaway probe, never inside a unit.
 - Keep network-dependent work (installs, lockfile generation, live fetches) out of sandboxed bench execs.
@@ -29,7 +30,7 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 - Read liveness, list descendants, and kill with the commands of `.agents/platforms/<platform>.md`: list every descendant of the recorded pid, print the list, then kill each listed id and the recorded pid.
 - Refuse a list holding PID 1, the harness shell, or an id outside the descent of the recorded pid. At the cap, `launch.ts` kills what the platform page states; kill the remaining listed descendants by hand.
 - Confirm the recorded process and every listed descendant are gone before another writer takes the files. Check owned-file mtimes before dispatching the substitute.
-- Rerun a failure alone only after the unit exits, as a reading and never a verdict, per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief; a unit's own rerun is never alone.
+- Rerun a failure alone only after the unit exits, and class the reading per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief; a unit's own rerun is never alone.
 
 ## Cap
 

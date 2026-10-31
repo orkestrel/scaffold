@@ -344,7 +344,7 @@ describe('installed package consumer', () => {
 			'.agents/skills/orkestrel-journey/references/styles.md',
 			'.agents/skills/orkestrel-parallel/SKILL.md',
 			'.agents/skills/orkestrel-parallel/agents/openai.yaml',
-			'.agents/skills/orkestrel-parallel/references/claude.md',
+			'.agents/skills/orkestrel-parallel/references/claude-code.md',
 			'.agents/skills/orkestrel-parallel/references/cloud.md',
 			'.agents/skills/orkestrel-parallel/references/codex.md',
 			'.agents/skills/orkestrel-parallel/references/cursor.md',

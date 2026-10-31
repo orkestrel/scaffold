@@ -1,6 +1,6 @@
 # Production hardening
 
-This reference governs the hardening lane: the package's bounds, the risk and seam matrix, real-implementation testing, live-service tests, lifecycle pressure, holding the bounds, security paths, the test audit, and generated outputs.
+This reference governs a hardening selection: the package's bounds, the risk and seam matrix, real-implementation testing, live-service tests, lifecycle pressure, holding the bounds, security paths, the test audit, and generated outputs.
 
 ## Build the risk and seam matrix
 
@@ -80,7 +80,7 @@ A seam's finding concerns the package when it falsifies a promise the contract m
 - When a finding falsifies a promise, repair it within its row and close the repair with the mutation probe `.agents/orchestration.md` § Size gate names.
 - When a finding describes a host behavior the contract never promised to survive, open one design question on the package's dependence on that behavior: remove the dependence, narrow the promise, or refuse on that host. Never add a mechanism around the behavior.
 - When a finding is outside the bounds and below the release bar, record it in the deferral list (`.claude/rules/campaign.md` § Content), and reopen it only when its trigger fires.
-- Before another round at one seam, weigh a further repair against a design question and re-examine the stop set for that seam against the signals `.agents/orchestration.md` § Size gate names; the hardening lane adds one: findings move from the contract to the host.
+- Before another round at one seam, weigh a further repair against a design question and re-examine the stop set for that seam against the signals `.agents/orchestration.md` § Size gate names; a hardening selection adds one: findings move from the contract to the host.
 - A seam that reprices on every edit (a count, a timing) is not a seam; drop the claim per the `orkestrel-falsify` skill § End the depth search.
 
 ## Audit security and destructive paths
@@ -96,7 +96,7 @@ For every fetch, write, delete, extraction, path, protocol, or authentication bo
 
 ## Audit the tests themselves
 
-Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states (step 11 of the hardening lane): which project collects each file, which gate reaches each project, and where a file carries `.todo`, a conditional skip (`.skipIf`, `.runIf`), `.fails`, a retry, or a timeout. `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse `.only` and `.skip`. Then verify:
+Run the discovery census, `scripts/discovery.ts` as `SKILL.md` § Scripts states (step 11 of the workflow): which project collects each file, which gate reaches each project, and where a file carries `.todo`, a conditional skip (`.skipIf`, `.runIf`), `.fails`, a retry, or a timeout. `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse `.only` and `.skip`. Then verify:
 
 - every intended test file is collected by the correct project, and the test counts and environments match the intent;
 - judge each discovered project's invocation and gate membership by `.claude/rules/workspace.md` § Test project matrix; read each reported chain and rule each workbench by its purpose;

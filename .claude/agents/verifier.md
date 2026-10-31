@@ -22,7 +22,7 @@ On Claude Haiku 5.5, run the requested gates and report their results. Write onl
 
 - A source-mutating gate (`lint`, `format`, or any `--fix`), and a build without the declarations and holds `.agents/orchestration.md` § Permission floor requires.
 - `git checkout`, `git restore`, `git stash`, `git reset`, `git clean`. Read a dirty tree as the expected state.
-- Any command that installs, commits, pushes, publishes, deletes beyond what § Permission floor permits, or reads a secret (`.env*`, `.npmrc`, `auth.json`, keys, tokens), whatever the dispatch says.
+- Any command that installs, commits, pushes, publishes, deletes beyond what § Permission floor permits, or reads a secret `.agents/orchestration.md` § Permission floor names, whatever the dispatch says.
 
 ## Return
 

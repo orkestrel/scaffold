@@ -91,7 +91,11 @@ rest of the layer either fits inside it or takes another approval.
   `npm publish --ignore-scripts --otp=<code>` command uploads with no browser authorization and no
   poll. The code has its own life: measured on 2026-09-04 against `registry.npmjs.org`, one code
   carried every upload of a layer started within about a minute of its first use, and a code read
-  before its layer was ready was refused at its first upload.
+  before its layer was ready was refused at its first upload. Measured on 2026-10-31 against the
+  same registry, one code carried 11 of 14 uploads in one batch before `EOTP` refused the 12th, and
+  13 of 13 in another.
+- Read the session with `window.ts --whoami` before asking the user for a code; when it answers
+  nothing, run `window.ts --login` first.
 - Prepare the whole layer, then ask for one code at the moment the layer's first upload starts, and
   chase the layer's uploads back-to-back inside that code's life with no gate between them. A code
   read minutes earlier is already spent.

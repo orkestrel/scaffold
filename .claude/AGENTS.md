@@ -4,7 +4,7 @@
 
 ## Dispatch
 
-- `.agents/skills/orkestrel-parallel/references/claude.md` owns starting, continuing, tracking, and backgrounding lanes in Claude Code, and its quirks. Choose continuation or a fresh context per `.agents/orchestration.md` § Sessions and consultation.
+- `.agents/skills/orkestrel-parallel/references/claude-code.md` owns starting, continuing, tracking, and backgrounding lanes in Claude Code, and its quirks. Choose continuation or a fresh context per `.agents/orchestration.md` § Sessions and consultation.
 - Serialize writing Workflow nodes, and give every `agent()` node a model alias from § Models and an effort.
 - Probe a bench with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts`, launch a lane through `scripts/launch.ts`, and read its answer with `scripts/result.ts`, all from the dispatch skill. `.agents/platforms/<platform>.md` owns the host shell's quirks.
 

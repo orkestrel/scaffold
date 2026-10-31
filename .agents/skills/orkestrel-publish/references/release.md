@@ -30,11 +30,11 @@ When a consumer needs a dependency's unpublished source, to meet a defect that l
 - A development `devDependencies` bump reaches nobody: re-pin, prove the gates green, commit to `main`; do not bump or publish.
 - A development bump that moves the published artifact is a runtime bump. Prove the direction with the build: rebuild after the re-pin and run `node .agents/skills/orkestrel-publish/scripts/compare.ts`, which compares `dist/` against the published tarball on material content only. Exit 3 bumps and publishes that package, and its dependents follow the runtime rule.
 - A `0.0.x` caret pins one exact release, so the fleet publishes in topological layer order derived from runtime `dependencies` and `peerDependencies` edges, never from a development edge.
-- Read each package's version and layer from the catalog table in `.claude/agents/orkestrel.md`, regenerated with `scaffold catalog` before sequencing a cascade. Never write a second order elsewhere.
+- Read each package's version and layer from the catalog table in `.claude/agents/orkestrel.md`, refreshed per [wave.md](wave.md) § Prepare a layer before sequencing a cascade. Never write a second order elsewhere.
 
 ## The scaffold surface
 
-- After a package's first publish, run `scaffold catalog --all` in the scaffold checkout and release scaffold, so the `surface` rule reads the package's guide from that release.
+- After a package's first publish, refresh the catalog in the scaffold checkout per [wave.md](wave.md) § Prepare a layer and release scaffold, so the `surface` rule reads the package's guide from that release.
 - When a `@orkestrel/guide` release refuses a guide form its parser read before, push each catalog package's conforming guide to that package's `main`, the releasing package's own included, before the scaffold release that carries the catalog refresh; the `surface` rule parses every hosted guide, a target's own among them.
 - `scaffold` is a development dependency of every package, so it publishes on its own and propagates as files, never as a cascade. Each package builds against the published `scaffold`.
 - `scaffold` ships `dist/host`, the vendored file set every target receives through `repair`. Bump and publish `scaffold` when any vendored byte or the set of vendored paths changes.

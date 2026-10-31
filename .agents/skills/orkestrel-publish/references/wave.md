@@ -107,13 +107,16 @@ skips the catalog step and exits `1` with a note naming that refusal, so run the
 
 When the target is the `@orkestrel/scaffold` package, expect the runner to record the overwrite step
 as skipped and to read the verify audit's foreign-path findings as expected; never run the `scaffold repair` or `scaffold overwrite` command
-against that checkout.
+against that checkout. After `scripts/swap.ts --restore` there, re-pin every `@orkestrel` range to
+the caret of the version the registry serves, install, and build before the visit, because the
+visit runs the checkout's own built `dist`.
 
 When a refused build leaves no `dist/host` for `scaffold catalog`, run a verified published scaffold
 executable from owned scratch to refresh the catalog, then rerun the build.
 
-Run visits in parallel slices of disjoint repositories, each slice strictly serial inside itself,
-reporting per target. Refuse a failed target, name it, repair it, and re-run it alone.
+Run visits one at a time under `.agents/skills/orkestrel-parallel/SKILL.md` § Bound the host,
+reporting per target. Refuse a failed target, name it, repair it, and rerun it alone; class a
+failure that passes alone per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief.
 
 ### Regenerate a lock the install cannot move
 
@@ -167,7 +170,9 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 
 ## Prepare a layer
 
-- After the re-pin and before `prepublishOnly`, run `scaffold surface` live over every candidate checkout of the layer, never with `--offline`. Stop the upload on any exit but `0`, and resolve every name it reports under `.claude/rules/names.md` § Fleet name ownership. In scaffold's own layer, run `scaffold catalog`, then `npm run build`, so `host.json` records the refreshed files' digests, and then `scaffold surface --from .`.
+- After the re-pin and before `prepublishOnly`, run `scaffold surface` live over every candidate checkout of the layer, never with `--offline`. Stop the upload on any exit but `0`, and resolve every name it reports under `.claude/rules/names.md` § Fleet name ownership.
+- When the candidate is a package scaffold loads at run time (`@orkestrel/guide`), run `scaffold surface` from a published scaffold install that resolves that package, with `--target` naming the candidate; the candidate's own checkout does not install itself.
+- In scaffold's own layer, run `scaffold catalog --all`; track each mirror it adds with `git add`; add each added mirror's path to the declared vendored inventory in `tests/distribution.test.ts`; then run `npm run build`, so `host.json` records the refreshed files' digests, and then `scaffold surface --from .`.
 - In the scaffold release that opens a transfer under `.claude/rules/names.md` § Fleet name ownership rule 5, declare it in `SURFACE_TRANSFERS` before `npm run build`. In the scaffold visit that closes it, remove the declaration before the build and confirm `host.json` no longer records the name.
 - When `scaffold surface` prints an advisory, rule it under `.claude/rules/names.md` § Fleet name ownership before the upload; an advisory never stops the upload.
 - Begin each release chain plan with the clean reinstall and the clean, whether it runs in a clone or the checkout.
@@ -191,10 +196,16 @@ Prepare a published package's layer in this order, after the visit has ruled the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
 4. **Run `prepublishOnly` to green on the candidate commit, in a fresh clone or, where the user rules clones out, in the checkout, in the order the package's own chain fixes.** Run every release step whose inputs remain valid after a failure and report each result. Before using a serial chain that stops on failure, split aggregate commands into their component steps and record each step's prerequisites. After a failure, run the independent steps in separate chains, mark dependent steps blocked, and keep the release result failed while a required step fails or remains blocked.
-   Run the visit and this script on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION` floor a
-   generated workspace declares in `devEngines`: the scripts spawn the npm CLI beside the running
-   Node binary when one is there, so a `PATH` change reaches them only where none is.
+   Run this chain and the visit's gates on the newest release of the lowest Node major the
+   package's `engines.node` admits, on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION`
+   floor a generated workspace declares in `devEngines`, launched under the `PATH` the
+   `orkestrel-dispatch` skill's reference Long-running commands § Launch requires. The publish
+   scripts spawn the npm CLI beside the running Node binary when one is there, whatever `PATH`
+   holds.
 5. **Write the release commit before the window opens. Push it only after the registry serves its version.**
+   While a release commit waits for its upload, dispatch no writer into that checkout. When one
+   ran, upload from a `git archive` export of the release commit, installed with `npm ci`, built,
+   and proved by `test:distribution -- --mode release` apart from the checkout.
 
 Where an inventory taken before the round already ruled every dist moved, apply the bump before
 the visit, pass the replaced version through `--prior` so the self-pin sweep finds it, and complete
@@ -216,7 +227,10 @@ re-pin install, not after the manifest edit.
 
 - Run `node .agents/skills/orkestrel-publish/scripts/pins.ts --version <prior> --range <prior range> ...`
   with the prior version and the prior range of every re-pinned dependency, rule on every hit, and
-  move every generated-manifest snapshot hit with its re-pin.
+  move every generated-manifest snapshot hit with its re-pin. The visit's `pins` step passes every
+  range that moved since the prior version's `Release <version>` commit beside the ranges the visit
+  moved, and `pins.ts` sweeps `src`, `tests`, and `guides` by default; on a run by hand, pass the
+  same ranges with `--range`.
   A canned packument in a fixture and a looked-up version in a CLI suite carry the version with no
   tripwire comment beside them, and a generated-manifest fixture carries the ranges and never the
   package's own version, so one run names both classes.

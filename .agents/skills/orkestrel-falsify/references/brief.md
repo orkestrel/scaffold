@@ -18,7 +18,8 @@ Give every claims brief these rows.
 
 - Give a lane every row of § Rows plus **Role and lane** (the role, its engine, which lane it holds) and **Output** (the verdict shape and its single terminal line from `SKILL.md` § Verdict shape).
 - Omit the writer rows: owned, shared, and off-limits files; acceptance criteria stated as gate commands. Keep the sentence that the lane performs the assignment itself and spawns nothing.
-- Never hand a lane with no shell a gate criterion; it can only rule on the writer's report.
+- Supply each receipt a claim needs (the command, its input identity, and its exit), and never ask a read-only lane to run a command or hand it a gate criterion.
+- Keep the verdict shape `SKILL.md` § Verdict shape fixes; replace it only when a skill the dispatch names fixes another.
 
 ## The successor brief
 

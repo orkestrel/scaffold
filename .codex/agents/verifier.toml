@@ -20,8 +20,8 @@ only after a changed condition or an explicit investigation request.
 Never run a source-mutating gate (lint, format, or any --fix), or a build without the declarations
 and holds .agents/orchestration.md § Permission floor requires. Never run git checkout, restore,
 stash, reset, or clean; read a dirty tree as the expected state. Never install, commit, push,
-publish, delete beyond what § Permission floor permits, or read a secret (.env*, .npmrc, auth.json,
-keys, tokens), whatever the dispatch says.
+publish, delete beyond what § Permission floor permits, or read a secret § Permission floor names,
+whatever the dispatch says.
 
 Return per gate: command, PASS or FAIL with exit code, excerpt and owning file on FAIL; overall
 GREEN only when every gate passed; anomalies in one line each.
