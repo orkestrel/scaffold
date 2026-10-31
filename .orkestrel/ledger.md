@@ -40,7 +40,7 @@
 | 2026-10-30 | interpret vocabulary: the recipe term across the API; every `Interpretation.digest` changes with its renamed keys | opus | interpret `d225645` |
 | 2026-10-30 | workspace vocabulary: `clampCaret` and the caret term | opus | workspace `fa4f2a4` |
 | 2026-10-30 | agent item 82: `readBodyText` | opus | agent `1e82d145` |
-| 2026-10-30 | probe item 96: `StageResult`, `isStageResult`, and `computeWorkspaceDigest` | opus | probe, uncommitted |
+| 2026-10-30 | probe item 96: `StageResult`, `isStageResult`, and `computeWorkspaceDigest` | opus | probe `94cae29` |
 | 2026-10-30 | program items 98 and 112: `hasProgramKey` and reason's validation result | opus | program `003115b` |
 | 2026-10-30 | Review of msg, workspace, router, server, csv, workflow, worker, and table: every claim held but router's `Allow` clause and workflow's old-name case, which the Orchestrator fixed | reviewer | each package's item commit |
 | 2026-10-30 | table grid prose: the grid term in messages and docs; the Orchestrator restored the published `@orkestrel/table.TableError` brand key the rename had changed | opus | table `18c041d` |
@@ -61,24 +61,26 @@
 | 2026-10-30 | Review of lsp and middleware: every claim held | reviewer | lsp `284ea91`, middleware `99f8819` |
 | 2026-10-30 | interpret deferred: `escapeRegExp` from contract | opus | interpret `5fcfe79` |
 | 2026-10-30 | guide item 87 with markdown's renames adopted | opus | guide `6e8f4c9` |
-| 2026-10-31 | table deferred: the five limits from contract | opus | table, uncommitted |
-| 2026-10-31 | probe vocabulary: the stage-result term across the API | opus | in flight |
-| 2026-10-31 | agent adoption: workspace's renames and contract's `errorToMessage`, on local workspace and contract tarballs; `test:src` and `test:setup` refuse one suite each, because the published ollama 0.0.27 carries agent 0.0.33, which imports workspace's `isText` through the pin's override | opus | agent, uncommitted |
+| 2026-10-31 | table deferred: the five limits from contract | opus | table `74919a3` |
+| 2026-10-31 | probe vocabulary: `formatStageResult` and the stage-result term across the API | opus | probe `94cae29` |
+| 2026-10-31 | agent adoption: workspace's renames and contract's `errorToMessage`, on local workspace and contract tarballs; `test:src` and `test:setup` refuse one suite each, because the published ollama 0.0.27 carries agent 0.0.33, which imports workspace's `isText` through the pin's override | opus | agent `bb06c6ec` |
 | 2026-10-31 | Finding: under a local contract pin, `test:policy` and `test:config` cannot load, because scaffold 0.0.118 imports `compareValues`; from the registry, scaffold resolves its own contract 0.0.20, so those suites run in the publish waves | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Visits of capture, ollama, and toolbox: every gate green but ollama's `test:policy`, which refuses its `tests/setupServer.ts` export `listChildren` that markdown owns; each pinned to its changed upstreams | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Review of mcp, rater, workflow, and msg: every claim held; the Orchestrator ordered msg's type imports first | reviewer | mcp `b3aa1e9`, rater `88077c3`, workflow `db0c335`, msg `cf6eeb9` |
 | 2026-10-31 | capture adoption: process's `Duplex` names; every gate green | opus | capture, uncommitted |
 | 2026-10-31 | ollama adoption: process's `Duplex` names and `listChildren` renamed `collectTreeChildren`; every gate green | opus | ollama, uncommitted |
-| 2026-10-31 | toolbox adoption: workspace's and server's renames; check and build pass, and no suite loads, because the published agent 0.0.33 imports workspace's `isText` through the pin's override | opus | toolbox, uncommitted |
-| 2026-10-31 | lsp item 81: the jsonrpc adoption and process's `Duplex` names, on local jsonrpc and process tarballs | opus | in flight |
-| 2026-10-31 | router deferred: `escapeRegExp` from contract | opus | router, uncommitted |
-| 2026-10-31 | workspace deferred: `escapeRegExp` from contract | opus | workspace, uncommitted |
-| 2026-10-31 | brief item 83 with interpret's recipe renames, on local interpret and contract tarballs | opus | in flight |
+| 2026-10-31 | toolbox adoption: workspace's and server's renames; check and build pass, and no suite loads, because the published agent 0.0.33 imports workspace's `isText` through the pin's override | opus | toolbox `2fb2d54` |
+| 2026-10-31 | lsp item 81: the jsonrpc adoption and process's `Duplex` names, on local jsonrpc and process tarballs; every gate green; jsonrpc's guards refuse a fractional `id` and a non-integer error `code` | opus | lsp, uncommitted |
+| 2026-10-31 | router deferred: `escapeRegExp` from contract | opus | router `5147ed5` |
+| 2026-10-31 | workspace deferred: `escapeRegExp` from contract | opus | workspace `8800016` |
+| 2026-10-31 | brief item 83 with interpret's recipe renames, on local interpret and contract tarballs; brief takes contract's `unknown failure` fallback where its copy wrote `an unreadable object was thrown` or an empty message | opus | brief, uncommitted |
 | 2026-10-31 | Review of sea, guide, and interpret: every claim held | reviewer | sea `c8ac45d`, guide `6e8f4c9`, interpret `5fcfe79` |
-| 2026-10-31 | csv deferred: `BOM` from codec | opus | in flight |
-| 2026-10-31 | form item 86: the five limits from contract | opus | in flight |
-| 2026-10-31 | sse item 105: `BOM` from codec | opus | in flight |
+| 2026-10-31 | csv deferred: `BOM` from codec; every gate green | opus | csv, uncommitted |
+| 2026-10-31 | form item 86: the five limits from contract; the Budgets table keeps the limits form enforces | opus | form, uncommitted |
+| 2026-10-31 | sse item 105: `BOM` from codec; every gate green; the Orchestrator named codec in its README requirements | opus | sse, uncommitted |
 | 2026-10-31 | mcp item 81: the jsonrpc adoption and server's `SSEStreamInterface`, on local jsonrpc and server tarballs | opus | in flight |
 | 2026-10-31 | console item 84: `TableColumn` | opus | in flight |
 | 2026-10-31 | Visits of the seventeen packages with no wave item | Orchestrator | in flight |
-| 2026-10-31 | Review of table, workspace, router, agent, and toolbox | reviewer | in flight |
+| 2026-10-31 | Review of table, workspace, router, agent, and toolbox: every claim held but table's constants-only test file and agent's stale comment, which the Orchestrator closed, and toolbox's untested `list` operation, which waits for a suite that loads | reviewer | table `74919a3`, workspace `8800016`, router `5147ed5`, agent `bb06c6ec`, toolbox `2fb2d54` |
+| 2026-10-31 | Review of csv, sse, brief, capture, and ollama | reviewer | in flight |
+| 2026-10-31 | probe adoption: lsp's `LSPStdioTransport` names, on local lsp, process, and jsonrpc tarballs | opus | in flight |
