@@ -51,13 +51,15 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - Node 22's own `node_modules/npm` is npm 10.9.9, below `MINIMUM_NPM_VERSION`; npm 11.21.1 sits in its `bin` prefix. A release chain therefore runs Node 22's `node.exe` with that prefix's `npm-cli.js`, launched under the `node22` wrapper so every script's `node` resolves to 22. A visit runs `wave.ts` on the default Node, whose own npm meets the floor, with Node 22 first on `PATH`, so its gates run on 22. npm adds no Node directory to a script's `PATH`.
 - Layer 4's visits and its first chains ran on Node 26 before the Node 22 ruling; its chains rerun on Node 22 before the upload. Every release before layer 4 ran its gates on Node 26.13.0.
 - 2026-10-31: the registry serves layer 4, each release pushed, its chains green on Node 22.23.4: console 0.0.18 (`d50c20b`), brief 0.0.14 (`ece91ac`), mcp 0.0.41 (`f9a88e9`; its distribution consumer composes the served releases with workspace held at agent 0.0.33's `^0.0.13`, `39e2f00`), middleware 0.0.27 (`b2997af`), program 0.0.19 (`2a6f3f9`), worker 0.0.19 (`004d585`), and workflow 0.0.25 (`404ad43`, then `920de64`: its proxied-signal case accepts the `Error` Node 22 throws where Node 26 throws a `TypeError`).
-- Next: § Sequence layer 5; post on the Agent campaign thread after agent 0.0.34 is served and pushed.
+- 2026-10-31: the registry serves layer 5, each release pushed, its gates on Node 22.23.4: agent 0.0.34 (`fe5a1703`; the Agent campaign thread was told), probe 0.0.27 (`9fefe3e`), and browser 0.0.31 (`de799d8`; its fixture document maps jsonrpc, `abe4c43`, and its release commit records the standing Windows reading: default-mode distribution 15 passed with 9 host-bound skips, `test:service` 257 passed). Toolbox 0.0.23 (`5da43f8`) published beside it, carrying the `list` operation's `kind` case (`adb4fe1`).
+- 2026-10-31: the close's seam is committed: `HostStageOptions.transfers` defaults to `SURFACE_TRANSFERS`, the list is empty, and the stage cases pass fictional transfers (`164909120`, reviewed). The close's scaffold release still re-pins browser 0.0.31, so `BROWSE_UPSTREAM` gains jsonrpc, and refreshes every guide mirror so `host.json` drops the collisions the givers closed.
+- 2026-10-31: the Agent campaign session holds file-only lanes until this wave posts "lane to agent" on its thread after the wave's last run.
+- Next: § Sequence layer 6, ollama; then layer 7 and the close.
 
 ## Sequence
 
 Each package's units are committed ahead of its upload on local tarballs. Publish in layer order, one one-time code per layer; prepare a layer only after the layer before it is served. For each package of a layer: `swap.ts --restore`, the release visit (`wave.ts --visit`: re-pin to the registry, overwrite with the latest served scaffold, gates), the bump from the registry's version, the self-pin sweep, `prepublishOnly` through a chain plan, the `Release <version>` commit, the upload through `window.ts`, and the push after the registry serves it. Before each upload, run `scaffold surface` live over the layer's checkouts.
 
-1. **Layer 5.** agent: item 82 and workspace's and contract's adoptions. probe: item 96 and lsp's renames. browser re-pins, and scaffold's `BROWSE_UPSTREAM` gains jsonrpc when browser re-pins an mcp that declares it.
-2. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
-3. **Layer 7.** study re-pins.
-4. **Close.** A scaffold catalog refresh and release that empties `SURFACE_TRANSFERS`; then the live `scaffold surface` run over every catalog checkout.
+1. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
+2. **Layer 7.** study re-pins.
+3. **Close.** A scaffold catalog refresh and release that empties `SURFACE_TRANSFERS`; then the live `scaffold surface` run over every catalog checkout.
