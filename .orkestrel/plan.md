@@ -40,19 +40,19 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - Publish-time follow-ups: toolbox gains a case for its workspace tool's `list` operation, whose `kind` reads `isTextContent`, once its suites load against a published agent; lsp's `package.json` description drops "JSON-RPC and protocol guards" after its pins are restored; mcp, lsp, and every package whose guide names a moved name refresh their vendored mirrors at their overwrite.
 - 2026-10-31: every item unit, deferred import, and adoption is committed and reviewed, scaffold's item 102 unit (`3ed3059c1`) included, and a fresh census finds no catalog import of a renamed or moved name. The `Shape`-cell sweep reached every package guide that carried the retired notation, 45 of them. Each dependent's local pins stay uncommitted in its manifest until its publish visit restores them.
 - 2026-10-31: on the user's ruling, every error brand key names its class: table's `GridError` key drops the key from before the Grid rename (table `7439255`), and budget, contract, lsp, probe, process, and study drop their package-wide `.error` keys (budget `03814fa`, contract `f512643`, lsp `1b5047e`, probe `d71916d`, process `4e608ae`, study `d802de4`). Each package's build, error cases, and guide proof pass, and each distribution proof passes except probe's, which cannot install until jsonrpc publishes.
-- Next: the user's one-time code for scaffold 0.0.119's upload from its export; then § Sequence layer 0, contract, with its visit on scaffold 0.0.119.
+- 2026-10-31: the registry serves scaffold 0.0.119, uploaded from the export of `5eca32026`; scaffold `main` is pushed through `51455000b`, and `3ed3059c1` onward waits for contract, process, and test to publish, because item 102 imports their renamed names.
+- 2026-10-31: the registry serves contract 0.0.21 (`Release 0.0.21`, contract `d16b2f9`, pushed); its visit on scaffold 0.0.119, the live `scaffold surface` run, and its `prepublishOnly` chain passed.
+- Next: § Sequence layer 1, with each visit on scaffold 0.0.119 and contract 0.0.21.
 
 ## Sequence
 
 Each package's units are committed ahead of its upload on local tarballs. Publish in layer order, one one-time code per layer; prepare a layer only after the layer before it is served. For each package of a layer: `swap.ts --restore`, the release visit (`wave.ts --visit`: re-pin to the registry, overwrite with the latest served scaffold, gates), the bump from the registry's version, the self-pin sweep, `prepublishOnly` through a chain plan, the `Release <version>` commit, the upload through `window.ts`, and the push after the registry serves it. Before each upload, run `scaffold surface` live over the layer's checkouts.
 
-0. **Transfers.** scaffold 0.0.119: rule 5 and the wave's transfers (`Release 0.0.119`, chain green).
-1. **Layer 0.** contract: item 79.
-2. **Layer 1.** codec: item 80. jsonrpc 0.0.1: item 81. html: item 88. indexeddb: item 89. test: item 107. abort, budget, emitter, ndjson, sqlite, and timeout re-pin.
-3. **Layer 2.** csv, msg, and sse, each declaring codec: items 85, 95, and 105. form: item 86. markdown: item 92. process: item 97. reason: item 100. router: item 101. table: item 106. database, pool, template, tool, and websocket re-pin.
-4. **Layer 3.** capture: process's renames. guide: item 87 and markdown's renames. interpret: item 90. lsp: items 91 and 81. rater: item 99. sea: item 103. server: item 104. workspace: item 110. scaffold 0.0.120: item 102, the contract, process, and test adoptions, and item 107's rule and skill updates. qualifier, queue, relation, and terminal re-pin.
-5. **Layer 4.** console: item 84, after scaffold 0.0.120 publishes a catalog whose table guide no longer claims `TableColumn`. brief: item 83 and interpret's renames. mcp: items 77, 81, and 93. middleware: items 78 and 94. program: items 98 and 112. worker: items 108 and 111. workflow: item 109.
-6. **Layer 5.** agent: item 82 and workspace's and contract's adoptions. probe: item 96 and lsp's renames. browser re-pins, and scaffold's `BROWSE_UPSTREAM` gains jsonrpc when browser re-pins an mcp that declares it.
-7. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
-8. **Layer 7.** study re-pins.
-9. **Close.** A scaffold catalog refresh and release that empties `SURFACE_TRANSFERS`; then the live `scaffold surface` run over every catalog checkout.
+1. **Layer 1.** codec: item 80. jsonrpc 0.0.1: item 81. html: item 88. indexeddb: item 89. test: item 107. abort, budget, emitter, ndjson, sqlite, and timeout re-pin.
+2. **Layer 2.** csv, msg, and sse, each declaring codec: items 85, 95, and 105. form: item 86. markdown: item 92. process: item 97. reason: item 100. router: item 101. table: item 106. database, pool, template, tool, and websocket re-pin.
+3. **Layer 3.** capture: process's renames. guide: item 87 and markdown's renames. interpret: item 90. lsp: items 91 and 81. rater: item 99. sea: item 103. server: item 104. workspace: item 110. scaffold 0.0.120: item 102, the contract, process, and test adoptions, and item 107's rule and skill updates. qualifier, queue, relation, and terminal re-pin.
+4. **Layer 4.** console: item 84, after scaffold 0.0.120 publishes a catalog whose table guide no longer claims `TableColumn`. brief: item 83 and interpret's renames. mcp: items 77, 81, and 93. middleware: items 78 and 94. program: items 98 and 112. worker: items 108 and 111. workflow: item 109.
+5. **Layer 5.** agent: item 82 and workspace's and contract's adoptions. probe: item 96 and lsp's renames. browser re-pins, and scaffold's `BROWSE_UPSTREAM` gains jsonrpc when browser re-pins an mcp that declares it.
+6. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
+7. **Layer 7.** study re-pins.
+8. **Close.** A scaffold catalog refresh and release that empties `SURFACE_TRANSFERS`; then the live `scaffold surface` run over every catalog checkout.
