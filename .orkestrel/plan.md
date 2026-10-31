@@ -50,14 +50,14 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - Deferred: markdown's deep-tree `walkMarkdownNodes` and `foldMarkdownTree` cases, database's `computeAggregate` extrema case, and guide's `GuideCommand` cleanup case time out at the 5-second default under a contended host and pass alone; each needs a budget sized from a contended run, at each package's next visit. Scaffold's stage tests in `tests/src/server/helpers.test.ts` read the live `SURFACE_TRANSFERS` entries `JSONRPCId` and `escapeRegExp`; the close that empties the list gives `stageHost` a transfer seam or fixture first.
 - Node 22's own `node_modules/npm` is npm 10.9.9, below `MINIMUM_NPM_VERSION`; npm 11.21.1 sits in its `bin` prefix. A release chain therefore runs Node 22's `node.exe` with that prefix's `npm-cli.js`, launched under the `node22` wrapper so every script's `node` resolves to 22. A visit runs `wave.ts` on the default Node, whose own npm meets the floor, with Node 22 first on `PATH`, so its gates run on 22. npm adds no Node directory to a script's `PATH`.
 - Layer 4's visits and its first chains ran on Node 26 before the Node 22 ruling; its chains rerun on Node 22 before the upload. Every release before layer 4 ran its gates on Node 26.13.0.
-- Next: § Sequence layer 4 upload, then layer 5.
+- 2026-10-31: the registry serves layer 4, each release pushed, its chains green on Node 22.23.4: console 0.0.18 (`d50c20b`), brief 0.0.14 (`ece91ac`), mcp 0.0.41 (`f9a88e9`; its distribution consumer composes the served releases with workspace held at agent 0.0.33's `^0.0.13`, `39e2f00`), middleware 0.0.27 (`b2997af`), program 0.0.19 (`2a6f3f9`), worker 0.0.19 (`004d585`), and workflow 0.0.25 (`404ad43`, then `920de64`: its proxied-signal case accepts the `Error` Node 22 throws where Node 26 throws a `TypeError`).
+- Next: § Sequence layer 5; post on the Agent campaign thread after agent 0.0.34 is served and pushed.
 
 ## Sequence
 
 Each package's units are committed ahead of its upload on local tarballs. Publish in layer order, one one-time code per layer; prepare a layer only after the layer before it is served. For each package of a layer: `swap.ts --restore`, the release visit (`wave.ts --visit`: re-pin to the registry, overwrite with the latest served scaffold, gates), the bump from the registry's version, the self-pin sweep, `prepublishOnly` through a chain plan, the `Release <version>` commit, the upload through `window.ts`, and the push after the registry serves it. Before each upload, run `scaffold surface` live over the layer's checkouts.
 
-1. **Layer 4.** console: item 84, after scaffold 0.0.120 publishes a catalog whose table guide no longer claims `TableColumn`. brief: item 83 and interpret's renames. mcp: items 77, 81, and 93. middleware: items 78 and 94. program: items 98 and 112. worker: items 108 and 111. workflow: item 109.
-2. **Layer 5.** agent: item 82 and workspace's and contract's adoptions. probe: item 96 and lsp's renames. browser re-pins, and scaffold's `BROWSE_UPSTREAM` gains jsonrpc when browser re-pins an mcp that declares it.
-3. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
-4. **Layer 7.** study re-pins.
-5. **Close.** A scaffold catalog refresh and release that empties `SURFACE_TRANSFERS`; then the live `scaffold surface` run over every catalog checkout.
+1. **Layer 5.** agent: item 82 and workspace's and contract's adoptions. probe: item 96 and lsp's renames. browser re-pins, and scaffold's `BROWSE_UPSTREAM` gains jsonrpc when browser re-pins an mcp that declares it.
+2. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
+3. **Layer 7.** study re-pins.
+4. **Close.** A scaffold catalog refresh and release that empties `SURFACE_TRANSFERS`; then the live `scaffold surface` run over every catalog checkout.
