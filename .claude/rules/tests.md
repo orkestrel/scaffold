@@ -283,9 +283,9 @@ Import `createScratch` from `@orkestrel/test/server` when a proof needs real fil
 
 Browser/style setup exposes shared assertions/builders:
 
-`mount`, `render`, `build`, `readStyle`, `readToken`, `readRootToken`, `readPixels`, `parseCSSColor`, `matchesColor`, `findRule`.
+`mount`, `render`, `build`, `readStyle`, `readToken`, `readRootToken`, `readPixels`, `parseCSSColor`, `matchesColor`, `findStyleRule`.
 
-`findRule` proves a declaration exists in the cascade; `readStyle()` reads the resolved result.
+`findStyleRule` proves a declaration exists in the cascade; `readStyle()` reads the resolved result.
 
 ## Browser tests
 

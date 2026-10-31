@@ -1,4 +1,4 @@
-import type { CatalogEntry, Finding, Group, Ownership } from '@src/core'
+import type { CatalogEntry, ArtifactFinding, ArtifactGroup, Ownership } from '@src/core'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isRecord } from '@orkestrel/contract'
@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import { requireValue } from '@orkestrel/test'
 import {
-	artifactToFinding,
+	artifactToArtifactFinding,
 	artifactToHex,
 	bytesToHex,
 	CANON_PATHS,
@@ -24,24 +24,24 @@ import {
 	extractRangeMajor,
 	EXECUTABLE_PATHS,
 	extractVersion,
-	GROUPS,
+	ARTIFACT_GROUPS,
 	HOST_PATHS,
 	REFERENCE_PATHS,
 	renderSkillPointer,
-	inferDrift,
-	inferGroup,
+	inferArtifactDrift,
+	inferArtifactGroup,
 	inferSurfaceSimilarity,
 	isCanonPath,
 	isCollection,
 	isDeferredPath,
 	isDependency,
-	isFinding,
+	isArtifactFinding,
 	isFloorPath,
 	isRetainedPath,
 	iterateAnswers,
 	manifestToDependencies,
 	manifestToName,
-	matchesDriftReachability,
+	matchesArtifactDriftReachability,
 	matchesEngines,
 	matchesOrchestrationPath,
 	matchesPrintWidth,
@@ -53,7 +53,7 @@ import {
 	planToSummary,
 	PRINT_WIDTH,
 	scanManifestTokens,
-	selectGroups,
+	selectArtifactGroups,
 	selectHostPaths,
 	ScaffoldError,
 	serializeTypeScriptString,
@@ -580,8 +580,8 @@ describe('isFloorPath', () => {
 	})
 })
 
-describe('inferGroup', () => {
-	const groups: ReadonlyArray<readonly [string, Group]> = [
+describe('inferArtifactGroup', () => {
+	const groups: ReadonlyArray<readonly [string, ArtifactGroup]> = [
 		['package.json', 'manifest'],
 		['package-lock.json', 'manifest'],
 		['.mcp.json', 'orchestration'],
@@ -600,7 +600,7 @@ describe('inferGroup', () => {
 
 	for (const [path, group] of groups) {
 		it(`reads ${path} as ${group}`, () => {
-			expect(inferGroup(path)).toBe(group)
+			expect(inferArtifactGroup(path)).toBe(group)
 		})
 	}
 })
@@ -701,11 +701,14 @@ describe('selectHostPaths', () => {
 	})
 })
 
-describe('selectGroups', () => {
+describe('selectArtifactGroups', () => {
 	it('reads a selection as membership and takes its order from the plan', () => {
-		expect(selectGroups(['tests', 'manifest', 'tests'])).toStrictEqual(['manifest', 'tests'])
-		expect(selectGroups()).toStrictEqual(GROUPS)
-		expect(selectGroups([])).toStrictEqual([])
+		expect(selectArtifactGroups(['tests', 'manifest', 'tests'])).toStrictEqual([
+			'manifest',
+			'tests',
+		])
+		expect(selectArtifactGroups()).toStrictEqual(ARTIFACT_GROUPS)
+		expect(selectArtifactGroups([])).toStrictEqual([])
 	})
 })
 
@@ -717,24 +720,24 @@ describe('artifactToHex', () => {
 	})
 })
 
-describe('inferDrift', () => {
+describe('inferArtifactDrift', () => {
 	it('never compares a birth-owned artifact', () => {
 		const artifact = buildHostArtifact({ ownership: 'birth' })
-		expect(inferDrift(artifact)).toBe('aligned')
-		expect(inferDrift(artifact, contentToHex('anything\n'))).toBe('aligned')
+		expect(inferArtifactDrift(artifact)).toBe('aligned')
+		expect(inferArtifactDrift(artifact, contentToHex('anything\n'))).toBe('aligned')
 	})
 
 	it('compares only existence for a presence-owned artifact', () => {
 		const artifact = buildHostArtifact()
-		expect(inferDrift(artifact)).toBe('missing')
-		expect(inferDrift(artifact, contentToHex('anything\n'))).toBe('aligned')
+		expect(inferArtifactDrift(artifact)).toBe('missing')
+		expect(inferArtifactDrift(artifact, contentToHex('anything\n'))).toBe('aligned')
 	})
 
 	it('compares bytes for a content-owned artifact', () => {
 		const artifact = buildContentArtifact()
-		expect(inferDrift(artifact, contentToHex('# Sample\n'))).toBe('aligned')
-		expect(inferDrift(artifact, contentToHex('# Stale\n'))).toBe('stale')
-		expect(inferDrift(artifact)).toBe('missing')
+		expect(inferArtifactDrift(artifact, contentToHex('# Sample\n'))).toBe('aligned')
+		expect(inferArtifactDrift(artifact, contentToHex('# Stale\n'))).toBe('stale')
+		expect(inferArtifactDrift(artifact)).toBe('missing')
 	})
 
 	it('binds every ownership and observation to its reachable verdict', () => {
@@ -745,8 +748,8 @@ describe('inferDrift', () => {
 				contentToHex('# Sample\n'),
 				contentToHex('# Stale\n'),
 			] satisfies ReadonlyArray<string | undefined>) {
-				const drift = inferDrift(artifact, observed)
-				const finding: Finding =
+				const drift = inferArtifactDrift(artifact, observed)
+				const finding: ArtifactFinding =
 					drift === 'stale'
 						? {
 								path: artifact.path,
@@ -760,18 +763,18 @@ describe('inferDrift', () => {
 							: observed === undefined
 								? { path: artifact.path, group: artifact.group, ownership, drift }
 								: { path: artifact.path, group: artifact.group, ownership, drift, observed }
-				expect(matchesDriftReachability(ownership, finding)).toBe(true)
+				expect(matchesArtifactDriftReachability(ownership, finding)).toBe(true)
 			}
 		}
 
-		const unreachable: Finding = {
+		const unreachable: ArtifactFinding = {
 			path: 'README.md',
 			group: 'docs',
 			ownership: 'birth',
 			drift: 'stale',
 			observed: contentToHex('# Stale\n'),
 		}
-		expect(matchesDriftReachability('birth', unreachable)).toBe(false)
+		expect(matchesArtifactDriftReachability('birth', unreachable)).toBe(false)
 	})
 })
 
@@ -1178,7 +1181,7 @@ describe('scanManifestTokens', () => {
 	})
 })
 
-describe('artifactToFinding producer matrix', () => {
+describe('artifactToArtifactFinding producer matrix', () => {
 	// The instrument's population is every finding the producer can reach: every
 	// ownership tier by every observation state a target can present.
 	// Its control is drawn from outside that population, because a control sampled
@@ -1193,13 +1196,13 @@ describe('artifactToFinding producer matrix', () => {
 					['differing', DIFFERING_HEX],
 				] as const
 			).map(([state, observed]) => {
-				const finding = artifactToFinding(
+				const finding = artifactToArtifactFinding(
 					buildContentArtifact({ ownership, content: PLANNED_TEXT }),
 					observed,
 				)
 				// Soundness in the direction the guard does promise: the producer never
 				// emits a finding the guard rejects.
-				expect(isFinding(finding)).toBe(true)
+				expect(isArtifactFinding(finding)).toBe(true)
 				const verdict = `${finding.ownership}/${finding.drift}/${finding.observed === undefined ? 'no observed' : 'observed'}`
 				return { cell: `${ownership} ${state} -> ${verdict}`, verdict }
 			}),
@@ -1237,11 +1240,11 @@ describe('artifactToFinding producer matrix', () => {
 			drift: 'stale',
 			observed: MATCHING_HEX,
 		}
-		expect(isFinding(control)).toBe(true)
+		expect(isArtifactFinding(control)).toBe(true)
 		expect(verdicts).not.toContain('birth/stale/observed')
 
 		// What the control established: the guard's population is strictly wider
-		// than the producer's, so the gap the `Finding` and `isFinding` remarks
+		// than the producer's, so the gap the `ArtifactFinding` and `isArtifactFinding` remarks
 		// describe is measured rather than assumed, and a consumer that treats a
 		// guarded finding as a verdict some audit reached is wrong on real input.
 		// What it did not establish: nothing about what happens next. It does not

@@ -96,7 +96,7 @@ import {
 import {
 	AUDIT_EXIT_CASES,
 	buildHostManifest,
-	buildManifestEntry,
+	buildHostManifestEntry,
 	buildOptionArgv,
 	CATALOG_AGENT_ROWS_TEXT,
 	COMMAND_CASES,
@@ -155,7 +155,7 @@ it('resolves the bundled host, a built root, and a raw checkout as the floor', (
 			JSON.stringify(
 				buildHostManifest({
 					entries: [
-						buildManifestEntry({
+						buildHostManifestEntry({
 							storage,
 							destination: CATALOG_AGENT_PATH,
 							digest: computeDigest(text),

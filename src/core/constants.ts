@@ -1,11 +1,11 @@
 import type {
 	AppDefinition,
+	ArtifactGroup,
 	Axis,
 	BuildFormat,
 	Environment,
 	Framework,
 	FrameworkDefinition,
-	Group,
 	SrcDefinition,
 	Surface,
 	SurfaceTransfer,
@@ -78,14 +78,14 @@ export const RESERVED_SHEET_NAMES: readonly string[] = Object.freeze([
 ])
 
 /**
- * Lists the `Group` values in plan order, frozen.
+ * Lists the `ArtifactGroup` values in plan order, frozen.
  *
  * @remarks
  * A compile that names no groups covers every one of them, so this list is the
  * default selection as well as the accepted candidates for a rejected one. The
  * order is the order a plan lists its artifacts in.
  */
-export const GROUPS: readonly Group[] = Object.freeze([
+export const ARTIFACT_GROUPS: readonly ArtifactGroup[] = Object.freeze([
 	'manifest',
 	'configs',
 	'source',

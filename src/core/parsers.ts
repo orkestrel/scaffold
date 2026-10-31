@@ -1,10 +1,10 @@
-import type { Blueprint, CompilerOptions, Extension, Group, Snapshot } from './types.js'
+import type { ArtifactGroup, Blueprint, CompilerOptions, Extension, Snapshot } from './types.js'
 import { isString } from '@orkestrel/contract'
 import {
+	isArtifactGroups,
 	isBlueprint,
 	isCompilerOptions,
 	isExtension,
-	isGroups,
 	isSnapshot,
 	isSurface,
 } from './validators.js'
@@ -61,20 +61,20 @@ export function parseBlueprint(value: unknown): Blueprint | undefined {
  * @returns The selection, or `undefined` when the value is not one.
  *
  * @remarks
- * Derived from {@link isGroups}. Order and repetition are preserved: which
+ * Derived from {@link isArtifactGroups}. Order and repetition are preserved: which
  * groups a plan finally covers, and in which order, is the compiler's to decide
- * from `GROUPS`, not this boundary's.
+ * from `ARTIFACT_GROUPS`, not this boundary's.
  *
  * @example
  * ```ts
- * import { parseGroups } from '@orkestrel/scaffold'
+ * import { parseArtifactGroups } from '@orkestrel/scaffold'
  *
- * parseGroups(['manifest', 'configs']) // ['manifest', 'configs']
- * parseGroups(['readme']) // undefined
+ * parseArtifactGroups(['manifest', 'configs']) // ['manifest', 'configs']
+ * parseArtifactGroups(['readme']) // undefined
  * ```
  */
-export function parseGroups(value: unknown): readonly Group[] | undefined {
-	return isGroups(value) ? value : undefined
+export function parseArtifactGroups(value: unknown): readonly ArtifactGroup[] | undefined {
+	return isArtifactGroups(value) ? value : undefined
 }
 
 /**

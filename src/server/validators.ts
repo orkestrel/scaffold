@@ -4,7 +4,7 @@ import type { CatalogEntry, Dependency, ManifestRegionSet, Mirror } from '@src/c
 import type {
 	Host,
 	HostManifest,
-	ManifestEntry,
+	HostManifestEntry,
 	MaterializerEventMap,
 	MaterializerOptions,
 	Worktree,
@@ -333,7 +333,7 @@ export const isCatalogEntries: Guard<readonly CatalogEntry[]> = andOf(
 )
 
 /**
- * Narrows a value to one {@link ManifestEntry}.
+ * Narrows a value to one {@link HostManifestEntry}.
  *
  * @remarks
  * Both paths are measured by the core path law, because a vendored host's
@@ -343,9 +343,9 @@ export const isCatalogEntries: Guard<readonly CatalogEntry[]> = andOf(
  *
  * @example
  * ```ts
- * import { isManifestEntry } from '@orkestrel/scaffold/server'
+ * import { isHostManifestEntry } from '@orkestrel/scaffold/server'
  *
- * isManifestEntry({
+ * isHostManifestEntry({
  *   storage: 'AGENTS.md',
  *   destination: 'AGENTS.md',
  *   executable: false,
@@ -353,7 +353,7 @@ export const isCatalogEntries: Guard<readonly CatalogEntry[]> = andOf(
  * }) // true
  * ```
  */
-export const isManifestEntry: Guard<ManifestEntry> = recordOf({
+export const isHostManifestEntry: Guard<HostManifestEntry> = recordOf({
 	storage: isPath,
 	destination: isPath,
 	executable: isBoolean,
@@ -370,7 +370,7 @@ export const isManifestEntry: Guard<ManifestEntry> = recordOf({
  * the syntax of the digest that authenticates that membership.
  */
 export const isHostManifest: Guard<HostManifest> = recordOf({
-	entries: andOf(isCollection, arrayOf(isManifestEntry)),
+	entries: andOf(isCollection, arrayOf(isHostManifestEntry)),
 	roots: andOf(isCollection, arrayOf(isPath)),
 	surface: whereOf(
 		arrayOf(

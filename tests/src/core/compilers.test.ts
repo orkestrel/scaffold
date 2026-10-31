@@ -50,7 +50,7 @@ import {
 	manifestToDependencies,
 	ORKESTREL_RANGE_PATTERN,
 	overridesToQuestions,
-	planToFindings,
+	planToArtifactFindings,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestOverride,
 	replaceManifestRanges,
@@ -5431,7 +5431,7 @@ describe('compilers over a caller-supplied list with a hole', () => {
 	it('refuses a hole in the artifacts a plan carries when reading its findings', () => {
 		const plan = buildPlan({ artifacts: buildTrailingHole(buildContentArtifact()) })
 
-		expect(() => planToFindings(plan, {})).toThrow(TypeError)
+		expect(() => planToArtifactFindings(plan, {})).toThrow(TypeError)
 	})
 })
 
@@ -5465,7 +5465,7 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 			readLazily(
 				shape,
 				buildContentArtifact,
-				(artifacts) => planToFindings(buildPlan({ artifacts }), {}),
+				(artifacts) => planToArtifactFindings(buildPlan({ artifacts }), {}),
 				refuseObject(buildContentArtifact),
 			),
 		),
@@ -5731,7 +5731,7 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 		buildMissingCase(
 			'the artifacts a plan carries when reading its findings',
 			buildContentArtifact,
-			(artifacts) => planToFindings(buildPlan({ artifacts }), {}),
+			(artifacts) => planToArtifactFindings(buildPlan({ artifacts }), {}),
 		),
 		buildMissingCase(
 			'the declarations a package list is measured over',

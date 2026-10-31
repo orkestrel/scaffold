@@ -12,9 +12,9 @@ import type {
 	CaptureVariant,
 	CensusFixture,
 	CensusResult,
-	Color,
 	ContrastFixture,
 	EscapeFixture,
+	RGBA,
 } from '@orkestrel/test/browser'
 import {
 	CANVAS_COLOR,
@@ -25,7 +25,7 @@ import {
 	extractOrphans,
 	extractStyles,
 	findKeyframes,
-	findRule,
+	findStyleRule,
 	matchesColor,
 	measureContrast,
 	measureLuminance,
@@ -57,7 +57,7 @@ import { inject } from 'vitest'
 - Read `readPixels` as a measured contribution rather than a parsed length. A resolved value
   carrying no leading number reads as `0`, so read the text with `readStyle` where an unparsable
   value and a genuine zero are different findings.
-- Never substitute `findRule` for a resolved read. It proves a declaration exists, and another rule
+- Never substitute `findStyleRule` for a resolved read. It proves a declaration exists, and another rule
   may still win; reach for it where the stylesheet itself is the subject, and for `findKeyframes`
   where the animation's declaration is.
 - Compare a color through `matchesColor` or `parseCSSColor` rather than by string. A browser normalizes a color

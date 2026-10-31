@@ -34,6 +34,7 @@ import {
 	isRendered,
 	mount,
 	pressKeys,
+	readControlValue,
 	readFocus,
 	readHit,
 	readName,
@@ -43,7 +44,6 @@ import {
 	readRole,
 	readStates,
 	readText,
-	readValue,
 	removeDatabase,
 	render,
 	resolveAccessible,
@@ -109,12 +109,12 @@ A journey verb resolves its own target from role and accessible name, and refuse
 component instance, or a selector from the caller. A reader, a fixture builder, and a capture each
 take one, because their subject is a node the caller already holds.
 
-| Population                                                                                                                                                                                                                                                          | Takes an element |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `resolveAccessible`, `resolveRendered`, `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`, `typeAccessible`, `fillAccessible`, `traverseAccessible`, `pressKeys`, `waitForState`, `readRefusal`, `readPerception`, `readPage`, `readFocus`, `readValue` | No               |
-| `readText`, `readRole`, `readName`, `readStates`, `describeTree`, `describeFocus`, `isReachable`, `isRendered`, `readHit`, `waitForAnimations`                                                                                                                      | Yes              |
-| `readContrast`, `readRing`, `readLayers`, `readBackdrop`, `readStyle`, `readToken`, `readPixels`, `readClasses`, `readCensus`, `extractStyles`, `extractOrphans`, `readRows`                                                                                        | Yes              |
-| `mount`, `typeInput`, `commitInput`, `captureFrame`, and a portfolio's `place`                                                                                                                                                                                      | Yes              |
+| Population                                                                                                                                                                                                                                                                 | Takes an element |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `resolveAccessible`, `resolveRendered`, `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`, `typeAccessible`, `fillAccessible`, `traverseAccessible`, `pressKeys`, `waitForState`, `readRefusal`, `readPerception`, `readPage`, `readFocus`, `readControlValue` | No               |
+| `readText`, `readRole`, `readName`, `readStates`, `describeTree`, `describeFocus`, `isReachable`, `isRendered`, `readHit`, `waitForAnimations`                                                                                                                             | Yes              |
+| `readContrast`, `readRing`, `readLayers`, `readBackdrop`, `readStyle`, `readToken`, `readPixels`, `readClasses`, `readCensus`, `extractStyles`, `extractOrphans`, `readRows`                                                                                               | Yes              |
+| `mount`, `typeInput`, `commitInput`, `captureFrame`, and a portfolio's `place`                                                                                                                                                                                             | Yes              |
 
 - Never pass an element to a verb from a journey step. Read a step that would pass one as a missing
   verb, and add the verb instead.
@@ -169,7 +169,7 @@ the capture voices in [captures.md](captures.md), and every other voice in `guid
 | Forward Tab never lands on the target                  | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>` | `traverseAccessible`    |
 | The named region is hidden                             | `Named region "<name>" is not visible`                                                | `readPerception`        |
 | Several named regions carry the name                   | `Named region "<name>" is ambiguous across <n> elements`                              | `readPerception`        |
-| The resolved control renders no value                  | `Interactive target "<name>" does not carry a value`                                  | `readValue`             |
+| The resolved control renders no value                  | `Interactive target "<name>" does not carry a value`                                  | `readControlValue`      |
 | A key sequence reached nothing                         | `Key sequence "<keys>" was sent with nothing focused`                                 | `pressKeys`             |
 | A host withholds `getItem`, `setItem`, or `removeItem` | `Access is denied for <operation> "<key>"`                                            | `createStorage`         |
 | A host withholds `length`, `clear`, or `key`           | `Access is denied for <operation>`                                                    | `createStorage`         |
@@ -281,7 +281,7 @@ beside each.
 | `document.elementFromPoint`                                      | `readHit`                                                                                        |
 | `element.focus()`                                                | `traverseAccessible`, `pressKeys`                                                                |
 | A navigation a journey step performs by a router call            | The visible link or control that navigates, through `clickAccessible` or `clickAccessibleWithin` |
-| A store or route state read standing in for a rendered assertion | `readPerception`, `readValue`, `readStates`, `waitForText`                                       |
+| A store or route state read standing in for a rendered assertion | `readPerception`, `readControlValue`, `readStates`, `waitForText`                                |
 
 - Admit a selector only for a population that carries no role, declared in the workspace's browser
   test setup module with the reason beside it.
@@ -318,7 +318,7 @@ dialog, table, tab panel, alert, or status. Quote that text in assertions.
   the layout hides. Descendant visually-hidden text stays in, which is what a screen reader
   perceives.
 - Reach for `readPage` for a cross-region sentence and the vocabulary sweep, `readFocus` for the
-  active element's rendered text, and `readValue` for a resolved control's rendered value. A
+  active element's rendered text, and `readControlValue` for a resolved control's rendered value. A
   perception assertion may quote that value: it is a rendered fact rather than internal state.
 - Reach for `describeTree` and `describeFocus` where the subject is the accessible tree itself —
   roles, names, states, and focus order. They are the accessibility snapshot a written artifact

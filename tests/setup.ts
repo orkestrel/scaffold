@@ -9,8 +9,8 @@ import type {
 	ContentArtifact,
 	Dependency,
 	Environment,
-	Finding,
-	Group,
+	ArtifactFinding,
+	ArtifactGroup,
 	HostArtifact,
 	HydratedArtifact,
 	ManifestScript,
@@ -51,8 +51,8 @@ import {
 	DEFAULT_VERSION,
 	extractVersion,
 	HOST_PATHS,
-	inferDrift,
-	inferGroup,
+	inferArtifactDrift,
+	inferArtifactGroup,
 	isArtifact,
 	isAudit,
 	isBlueprint,
@@ -64,10 +64,10 @@ import {
 	isDependency,
 	isDependencyName,
 	isEnvironment,
-	isFinding,
-	isGroup,
-	isGroups,
-	isHex,
+	isArtifactFinding,
+	isArtifactGroup,
+	isArtifactGroups,
+	isHexContent,
 	isManifestScript,
 	isMirror,
 	isOverride,
@@ -85,12 +85,12 @@ import {
 	nameToGuide,
 	parseBlueprint,
 	parseCompilerOptions,
-	parseGroups,
+	parseArtifactGroups,
 	parseSnapshot,
 	planToSummary,
 	PRINT_WIDTH,
 	RELEASE_PROOF_COMMAND,
-	selectGroups,
+	selectArtifactGroups,
 	selectHostPaths,
 	TAB_WIDTH,
 } from '@src/core'
@@ -99,7 +99,7 @@ import {
  * Describes one adversarial value every total guard, parser, and cloner must survive.
  *
  * @remarks
- * `owned` records whether `cloneValue` can take ownership of the value. A
+ * `owned` records whether `parseOwnedJSONValue` can take ownership of the value. A
  * hostile value is not automatically unclonable: a null-prototype record and a
  * proxy whose `get` trap throws both carry exact data behind their hostility,
  * and the cloner reads descriptors rather than accessors, so it owns them.
@@ -954,7 +954,7 @@ export function buildSnapshot(): Snapshot {
  *
  * @returns A missing finding, the one branch that records no observed bytes.
  */
-export function buildFinding(): Finding {
+export function buildArtifactFinding(): ArtifactFinding {
 	return { path: 'AGENTS.md', group: 'docs', ownership: 'content', drift: 'missing' }
 }
 
@@ -964,7 +964,7 @@ export function buildFinding(): Finding {
  * @returns An audit over a single missing destination.
  */
 export function buildAudit(): Audit {
-	return { findings: [buildFinding()], questions: [buildQuestion()] }
+	return { findings: [buildArtifactFinding()], questions: [buildQuestion()] }
 }
 
 /**
@@ -1146,20 +1146,20 @@ export function readKeyCount(value: unknown): number {
  * @returns One case per guard, freshly built.
  */
 export function buildGuardCases(): readonly TestGuardCase[] {
-	const alignedFinding: Finding = {
+	const alignedFinding: ArtifactFinding = {
 		path: 'AGENTS.md',
 		group: 'docs',
 		ownership: 'birth',
 		drift: 'aligned',
 	}
-	const staleFinding: Finding = {
+	const staleFinding: ArtifactFinding = {
 		path: 'AGENTS.md',
 		group: 'docs',
 		ownership: 'content',
 		drift: 'stale',
 		observed: contentToHex('# Stale\n'),
 	}
-	const foreignFinding: Finding = {
+	const foreignFinding: ArtifactFinding = {
 		path: 'notes.txt',
 		group: 'configs',
 		drift: 'foreign',
@@ -1196,7 +1196,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 			accepted: ['configs/src/tsconfig.core.json', '.mcp.json', 'a'.repeat(MAX_PATH_LENGTH)],
 			admits: [],
 		},
-		{ name: 'isHex', guard: isHex, accepted: ['68690a', ''], admits: [] },
+		{ name: 'isHexContent', guard: isHexContent, accepted: ['68690a', ''], admits: [] },
 		{ name: 'isContent', guard: isContent, accepted: ['# Title\n', ''], admits: [] },
 		{
 			name: 'isCollection',
@@ -1212,8 +1212,18 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 			accepted: ['core', 'browser', 'server'],
 			admits: [],
 		},
-		{ name: 'isGroup', guard: isGroup, accepted: ['manifest', 'orchestration'], admits: [] },
-		{ name: 'isGroups', guard: isGroups, accepted: [[], ['manifest', 'configs']], admits: [] },
+		{
+			name: 'isArtifactGroup',
+			guard: isArtifactGroup,
+			accepted: ['manifest', 'orchestration'],
+			admits: [],
+		},
+		{
+			name: 'isArtifactGroups',
+			guard: isArtifactGroups,
+			accepted: [[], ['manifest', 'configs']],
+			admits: [],
+		},
 		{
 			name: 'isDependencyName',
 			guard: isDependencyName,
@@ -1265,9 +1275,9 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 			admits: [],
 		},
 		{
-			name: 'isFinding',
-			guard: isFinding,
-			accepted: [buildFinding(), alignedFinding, staleFinding, foreignFinding],
+			name: 'isArtifactFinding',
+			guard: isArtifactFinding,
+			accepted: [buildArtifactFinding(), alignedFinding, staleFinding, foreignFinding],
 			admits: [],
 		},
 		{ name: 'isAudit', guard: isAudit, accepted: [buildAudit()], admits: [] },
@@ -1316,9 +1326,9 @@ export function buildParserCases(): readonly TestParserCase[] {
 			],
 		},
 		{
-			name: 'parseGroups',
-			parse: parseGroups,
-			guard: isGroups,
+			name: 'parseArtifactGroups',
+			parse: parseArtifactGroups,
+			guard: isArtifactGroups,
 			accepted: [[], ['manifest', 'configs'], ['tests', 'manifest', 'tests']],
 			refused: [['readme'], 'manifest', undefined],
 		},
@@ -1348,7 +1358,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 	const hostArtifact: Record<string, unknown> = { ...buildHostArtifact() }
 	const hydratedArtifact: Record<string, unknown> = { ...buildHydratedArtifact() }
 	const contentArtifact: Record<string, unknown> = { ...buildContentArtifact() }
-	const missingFinding: Record<string, unknown> = { ...buildFinding() }
+	const missingFinding: Record<string, unknown> = { ...buildArtifactFinding() }
 	const foreignFinding: Record<string, unknown> = {
 		path: 'notes.txt',
 		group: 'configs',
@@ -1403,19 +1413,19 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 		},
 		{
 			label: 'missing finding carrying observed',
-			guard: isFinding,
+			guard: isArtifactFinding,
 			accepted: missingFinding,
 			refused: { ...missingFinding, observed: contentToHex('# Stale\n') },
 		},
 		{
 			label: 'stale finding without observed',
-			guard: isFinding,
+			guard: isArtifactFinding,
 			accepted: missingFinding,
 			refused: { ...missingFinding, drift: 'stale' },
 		},
 		{
 			label: 'foreign finding carrying ownership',
-			guard: isFinding,
+			guard: isArtifactFinding,
 			accepted: foreignFinding,
 			refused: { ...foreignFinding, ownership: 'content' },
 		},
@@ -1464,7 +1474,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 export function buildPurityCases(): readonly TestPurityCase[] {
 	const bytes = new Uint8Array([0x68, 0x69, 0x0a])
 	const paths = [...HOST_PATHS]
-	const groups: Group[] = ['tests', 'manifest', 'tests']
+	const groups: ArtifactGroup[] = ['tests', 'manifest', 'tests']
 	const artifact = buildContentArtifact()
 	const plan = buildPlan({
 		artifacts: [buildHostArtifact(), buildHydratedArtifact(), buildContentArtifact()],
@@ -1479,18 +1489,22 @@ export function buildPurityCases(): readonly TestPurityCase[] {
 			call: () => matchesOrchestrationPath('.claude/rules/names.md'),
 			inputs: [],
 		},
-		{ helper: 'inferGroup', call: () => inferGroup('src/core/index.ts'), inputs: [] },
+		{
+			helper: 'inferArtifactGroup',
+			call: () => inferArtifactGroup('src/core/index.ts'),
+			inputs: [],
+		},
 		{ helper: 'nameToGuide', call: () => nameToGuide('@orkestrel/router'), inputs: [] },
 		{
 			helper: 'selectHostPaths',
 			call: () => selectHostPaths(paths, 'scaffold'),
 			inputs: [paths],
 		},
-		{ helper: 'selectGroups', call: () => selectGroups(groups), inputs: [groups] },
+		{ helper: 'selectArtifactGroups', call: () => selectArtifactGroups(groups), inputs: [groups] },
 		{ helper: 'artifactToHex', call: () => artifactToHex(artifact), inputs: [artifact] },
 		{
-			helper: 'inferDrift',
-			call: () => inferDrift(artifact, contentToHex('# Sample\n')),
+			helper: 'inferArtifactDrift',
+			call: () => inferArtifactDrift(artifact, contentToHex('# Sample\n')),
 			inputs: [artifact],
 		},
 		{ helper: 'planToSummary', call: () => planToSummary(plan), inputs: [plan] },

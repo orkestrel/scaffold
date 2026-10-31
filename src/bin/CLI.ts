@@ -1,10 +1,10 @@
 import type {
+	ArtifactGroup,
 	Audit,
 	Blueprint,
 	CatalogEntry,
 	Dependency,
 	DependencyPinSet,
-	Group,
 	ManifestRegionSet,
 	Mirror,
 	Plan,
@@ -1299,7 +1299,7 @@ export class CLI implements CLIInterface {
 	// are the one fact that code names: this blueprint will not be built. The
 	// questions the message quotes are what tells them apart, and a second code
 	// would be a label for a fact they already carry.
-	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
+	#compile(blueprint: Blueprint, groups?: readonly ArtifactGroup[]): Plan {
 		const compiler = new Compiler()
 		try {
 			const result = compiler.compile(blueprint, groups)
@@ -1333,7 +1333,7 @@ export class CLI implements CLIInterface {
 		materializer: MaterializerInterface,
 		blueprint: Blueprint,
 		target: string,
-		groups?: readonly Group[],
+		groups?: readonly ArtifactGroup[],
 	): readonly [audit: Audit, plan: Plan | undefined] {
 		const compiler = new Compiler()
 		try {
@@ -1798,7 +1798,7 @@ export class CLI implements CLIInterface {
 	#targetQuestions(
 		target: string,
 		blueprint: Blueprint,
-		groups: readonly Group[] | undefined,
+		groups: readonly ArtifactGroup[] | undefined,
 		writing = false,
 		declaring = false,
 	): readonly Question[] {
@@ -1888,7 +1888,7 @@ export class CLI implements CLIInterface {
 		audit: Audit,
 		target: string,
 		blueprint: Blueprint,
-		groups: readonly Group[] | undefined,
+		groups: readonly ArtifactGroup[] | undefined,
 	): Audit {
 		const questions = this.#targetQuestions(target, blueprint, groups)
 		return questions.length === 0
@@ -1907,7 +1907,7 @@ export class CLI implements CLIInterface {
 	#assertTarget(
 		target: string,
 		blueprint: Blueprint,
-		groups: readonly Group[] | undefined,
+		groups: readonly ArtifactGroup[] | undefined,
 		declaring = false,
 	): void {
 		if (manifestToName(this.#manifest(target)) === PACKAGE_NAME) {

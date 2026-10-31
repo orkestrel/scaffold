@@ -19,13 +19,13 @@ import { arrayOf, isError, isRecord, isString } from '@orkestrel/contract'
 import { executeSync } from '@orkestrel/process/server'
 import { captureError, createRecorder, requireValue } from '@orkestrel/test'
 import {
+	ARTIFACT_GROUPS,
 	ARTIFACT_TEMPLATES,
 	BASE_DEV_DEPENDENCIES,
 	CANON_PATHS,
 	CATALOG_AGENT_PATH,
 	contentToHex,
 	EXECUTABLE_PATHS,
-	GROUPS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
 	isCanonPath,
@@ -71,7 +71,7 @@ import {
 	readFileText,
 	readHostFloor,
 	readHostManifest,
-	readManifestEntry,
+	readHostManifestEntry,
 	readSnapshot,
 	readSurfaceBaseline,
 	readSurfaceCollisions,
@@ -109,7 +109,7 @@ import {
 	buildLiveFiles,
 	buildMissingFile,
 	buildVendoredPlan,
-	buildManifestEntry,
+	buildHostManifestEntry,
 	buildHostManifest,
 	buildStagedManifest,
 	buildVendoredManifest,
@@ -131,7 +131,7 @@ import {
 	resolveOllamaShell,
 	resolveTool,
 	SCRATCH_PREFIX,
-	selectManifestEntry,
+	selectHostManifestEntry,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
 	STAGE_SURFACE_FILES,
@@ -822,17 +822,17 @@ describe('decodeHexText', () => {
 
 describe('computeManifestDigest', () => {
 	it('changes when membership changes and holds when it does not', () => {
-		const entries = [buildManifestEntry()]
+		const entries = [buildHostManifestEntry()]
 		const first = computeManifestDigest(entries, ['.claude'], [])
-		expect(computeManifestDigest([buildManifestEntry()], ['.claude'], [])).toBe(first)
+		expect(computeManifestDigest([buildHostManifestEntry()], ['.claude'], [])).toBe(first)
 		expect(computeManifestDigest(entries, [], [])).not.toBe(first)
 		expect(computeManifestDigest([], ['.claude'], [])).not.toBe(first)
 		expect(
-			computeManifestDigest([buildManifestEntry({ executable: true })], ['.claude'], []),
+			computeManifestDigest([buildHostManifestEntry({ executable: true })], ['.claude'], []),
 		).not.toBe(first)
 		expect(
 			computeManifestDigest(
-				[buildManifestEntry({ digest: computeDigest('changed') })],
+				[buildHostManifestEntry({ digest: computeDigest('changed') })],
 				['.claude'],
 				[],
 			),
@@ -840,8 +840,8 @@ describe('computeManifestDigest', () => {
 	})
 
 	it('reads order as part of the membership it authenticates', () => {
-		const first = buildManifestEntry({ storage: 'a', destination: 'a' })
-		const second = buildManifestEntry({ storage: 'b', destination: 'b' })
+		const first = buildHostManifestEntry({ storage: 'a', destination: 'a' })
+		const second = buildHostManifestEntry({ storage: 'b', destination: 'b' })
 		expect(computeManifestDigest([first, second], [], [])).not.toBe(
 			computeManifestDigest([second, first], [], []),
 		)
@@ -853,17 +853,17 @@ describe('computeManifestDigest', () => {
 	it('reads exactly the declared fields and nothing a caller added', () => {
 		// Built through a variable so the extra field survives to the runtime call
 		// instead of being refused by the excess-property check at the literal.
-		const extended = { ...buildManifestEntry(), note: 'added' }
+		const extended = { ...buildHostManifestEntry(), note: 'added' }
 		expect(computeManifestDigest([extended], [], [])).toBe(
-			computeManifestDigest([buildManifestEntry()], [], []),
+			computeManifestDigest([buildHostManifestEntry()], [], []),
 		)
 	})
 
 	it('leaves the lists it was handed exactly as it found them', () => {
-		const entries = [buildManifestEntry()]
+		const entries = [buildHostManifestEntry()]
 		const roots = ['.claude']
 		computeManifestDigest(entries, roots, [])
-		expect(entries).toEqual([buildManifestEntry()])
+		expect(entries).toEqual([buildHostManifestEntry()])
 		expect(roots).toEqual(['.claude'])
 	})
 })
@@ -1474,8 +1474,8 @@ describe('listCanonPaths', () => {
 		try {
 			workspace.write('guides/scaffold.md', 'guide\n')
 			workspace.ensure('.claude/agents')
-			expect(listCanonPaths(workspace.path, [...GROUPS])).toEqual([])
-			expect(listCanonPaths(join(workspace.path, 'absent'), [...GROUPS])).toEqual([])
+			expect(listCanonPaths(workspace.path, [...ARTIFACT_GROUPS])).toEqual([])
+			expect(listCanonPaths(join(workspace.path, 'absent'), [...ARTIFACT_GROUPS])).toEqual([])
 		} finally {
 			workspace.destroy()
 		}
@@ -1853,7 +1853,7 @@ describe('readHostManifest', () => {
 			expect(readHostManifest(host)).toEqual(manifest)
 			workspace.write(
 				'host/manifest.json',
-				JSON.stringify({ ...manifest, entries: [...manifest.entries, buildManifestEntry()] }),
+				JSON.stringify({ ...manifest, entries: [...manifest.entries, buildHostManifestEntry()] }),
 			)
 			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
@@ -1972,12 +1972,12 @@ describe('readHostFloor', () => {
 	})
 })
 
-describe('readManifestEntry', () => {
+describe('readHostManifestEntry', () => {
 	it('maps a destination to its storage name and its declared executable bit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const source = workspace.write('.gitignore', 'dist\n')
-			expect(readManifestEntry('.gitignore', source)).toEqual({
+			expect(readHostManifestEntry('.gitignore', source)).toEqual({
 				storage: 'dotfiles/gitignore',
 				destination: '.gitignore',
 				executable: false,
@@ -1997,14 +1997,14 @@ describe('readManifestEntry', () => {
 			const declared = workspace.write('scripts/codex.sh', '#!/bin/sh\n')
 			chmodSync(declared, 0o644)
 			expect((lstatSync(declared).mode & 0o111) !== 0).toBe(false)
-			expect(readManifestEntry('scripts/codex.sh', declared)?.executable).toBe(true)
+			expect(readHostManifestEntry('scripts/codex.sh', declared)?.executable).toBe(true)
 			// The control, drawn from outside the declared set rather than from
 			// another declared path: an undeclared script carrying the bit answers
 			// false, so the helper is reading the declaration and not the extension,
 			// the directory, or the mode.
 			const undeclared = workspace.write('scripts/plain.sh', '#!/bin/sh\n')
 			chmodSync(undeclared, 0o755)
-			expect(readManifestEntry('scripts/plain.sh', undeclared)?.executable).toBe(false)
+			expect(readHostManifestEntry('scripts/plain.sh', undeclared)?.executable).toBe(false)
 		} finally {
 			workspace.destroy()
 		}
@@ -2015,12 +2015,12 @@ describe('readManifestEntry', () => {
 		try {
 			const source = workspace.write('scripts/deps.sh', '#!/bin/sh\n')
 			chmodSync(source, 0o644)
-			const restrictive = readManifestEntry('scripts/deps.sh', source)
+			const restrictive = readHostManifestEntry('scripts/deps.sh', source)
 			chmodSync(source, 0o755)
 			// The entry a checkout stages is a function of the path alone, so the same
 			// checkout produces the same manifest on a host with executable bits and
 			// on one without. Nothing below the mode changed between these reads.
-			expect(readManifestEntry('scripts/deps.sh', source)).toEqual(restrictive)
+			expect(readHostManifestEntry('scripts/deps.sh', source)).toEqual(restrictive)
 		} finally {
 			workspace.destroy()
 		}
@@ -2029,11 +2029,11 @@ describe('readManifestEntry', () => {
 	it('answers undefined for an absent path, a directory, and a shared-byte file', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(readManifestEntry('absent.md', join(workspace.path, 'absent.md'))).toBeUndefined()
-			expect(readManifestEntry('guides', workspace.ensure('guides'))).toBeUndefined()
+			expect(readHostManifestEntry('absent.md', join(workspace.path, 'absent.md'))).toBeUndefined()
+			expect(readHostManifestEntry('guides', workspace.ensure('guides'))).toBeUndefined()
 			const source = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(source, join(workspace.path, 'CLAUDE.md'))
-			expect(readManifestEntry('AGENTS.md', source)).toBeUndefined()
+			expect(readHostManifestEntry('AGENTS.md', source)).toBeUndefined()
 		} finally {
 			workspace.destroy()
 		}
@@ -2044,9 +2044,9 @@ describe('readManifestEntry', () => {
 		try {
 			const source = workspace.write('big.md', '')
 			writeFileSync(source, Buffer.alloc(MAX_ARTIFACT_BYTES))
-			expect(readManifestEntry('big.md', source)?.storage).toBe('big.md')
+			expect(readHostManifestEntry('big.md', source)?.storage).toBe('big.md')
 			writeFileSync(source, Buffer.alloc(MAX_ARTIFACT_BYTES + 1))
-			expect(readManifestEntry('big.md', source)).toBeUndefined()
+			expect(readHostManifestEntry('big.md', source)).toBeUndefined()
 		} finally {
 			workspace.destroy()
 		}
@@ -3608,7 +3608,7 @@ parentPort.postMessage('ready')`,
 			// so acceptance is a check rather than a shape the reader cannot fail.
 			workspace.write(
 				'host/manifest.json',
-				JSON.stringify({ ...manifest, entries: [...entries, buildManifestEntry()] }),
+				JSON.stringify({ ...manifest, entries: [...entries, buildHostManifestEntry()] }),
 			)
 			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
@@ -4192,11 +4192,11 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 
 	it('digests every floor entry an iterator yields beyond the list length', () => {
 		const served = [
-			selectManifestEntry(manifest, 'AGENTS.md'),
-			selectManifestEntry(manifest, '.claude/agents/orkestrel.md'),
-			selectManifestEntry(manifest, '.claude/rules/names.md'),
+			selectHostManifestEntry(manifest, 'AGENTS.md'),
+			selectHostManifestEntry(manifest, '.claude/agents/orkestrel.md'),
+			selectHostManifestEntry(manifest, '.claude/rules/names.md'),
 		]
-		const entries = createServedList([selectManifestEntry(manifest, 'AGENTS.md')], served)
+		const entries = createServedList([selectHostManifestEntry(manifest, 'AGENTS.md')], served)
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },
 			bytes: floor.bytes,
@@ -4213,8 +4213,8 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 		const entries = createServedList(
 			[],
 			[
-				selectManifestEntry(manifest, 'AGENTS.md'),
-				selectManifestEntry(manifest, 'scripts/codex.sh'),
+				selectHostManifestEntry(manifest, 'AGENTS.md'),
+				selectHostManifestEntry(manifest, 'scripts/codex.sh'),
 			],
 		)
 
@@ -4226,7 +4226,7 @@ describe('filesToHost reads the entries the iterators of its lists yield, not th
 
 	it('digests the entry an iterator yields when it yields fewer entries than the list is long', () => {
 		const entries = createServedList(manifest.entries, [
-			selectManifestEntry(manifest, 'guides/guide.md'),
+			selectHostManifestEntry(manifest, 'guides/guide.md'),
 		])
 		const assembled = filesToHost([], {
 			manifest: { ...manifest, entries: entries.list },

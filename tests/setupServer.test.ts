@@ -25,7 +25,7 @@ import {
 	ScaffoldError,
 	TARGET_SKILL_NAMES,
 } from '@src/core'
-import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
+import { execute, namesFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
 import { computeDigest, pathToStorage, readHostFloor } from '@src/server'
 import packageManifest from '../package.json' with { type: 'json' }
 import {
@@ -63,7 +63,7 @@ import {
 	buildLiveFiles,
 	buildInstalledHostReplies,
 	buildInventory,
-	buildManifestEntry,
+	buildHostManifestEntry,
 	buildMaterializerOptions,
 	buildMissingFile,
 	buildOptionArgv,
@@ -192,7 +192,7 @@ import {
 	runEntry,
 	runSkillScript,
 	SCRATCH_PREFIX,
-	selectManifestEntry,
+	selectHostManifestEntry,
 	selectSeededNames,
 	SENSITIVE_PATH_CASES,
 	serveFloorEntries,
@@ -328,15 +328,15 @@ describe('the manifest builders', () => {
 		// The entry's storage file carries `${destination}\n`, so a published SHA-256 of
 		// that exact text is what the default digest owes, measured against the
 		// algorithm rather than against a second copy of it.
-		expect(buildManifestEntry({ destination: 'hi' }).digest).toBe(anchor.digest)
-		expect(buildManifestEntry()).toStrictEqual({
+		expect(buildHostManifestEntry({ destination: 'hi' }).digest).toBe(anchor.digest)
+		expect(buildHostManifestEntry()).toStrictEqual({
 			storage: 'AGENTS.md',
 			destination: 'AGENTS.md',
 			executable: false,
-			digest: buildManifestEntry({ destination: 'AGENTS.md' }).digest,
+			digest: buildHostManifestEntry({ destination: 'AGENTS.md' }).digest,
 		})
-		expect(buildManifestEntry({ digest: anchor.digest }).digest).toBe(anchor.digest)
-		expect(buildManifestEntry({ executable: true }).executable).toBe(true)
+		expect(buildHostManifestEntry({ digest: anchor.digest }).digest).toBe(anchor.digest)
+		expect(buildHostManifestEntry({ executable: true }).executable).toBe(true)
 	})
 
 	it('builds the host rows and the floor entries a lazy reader is run over', () => {
@@ -363,13 +363,13 @@ describe('the manifest builders', () => {
 			note: 'none',
 		})
 		expect(buildDeclaredEntry()).toStrictEqual(
-			buildManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' }),
+			buildHostManifestEntry({ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh' }),
 		)
 		expect(buildDeclaredEntry('guides/guide.md').storage).toBe('guides/guide.md')
-		expect(selectManifestEntry(manifest, '.claude/rules/names.md').storage).toBe(
+		expect(selectHostManifestEntry(manifest, '.claude/rules/names.md').storage).toBe(
 			'claude/rules/names.md',
 		)
-		expect(() => selectManifestEntry(manifest, 'absent.md')).toThrow('Value is required')
+		expect(() => selectHostManifestEntry(manifest, 'absent.md')).toThrow('Value is required')
 		expect(buildFloorEntry()).toStrictEqual(manifest.entries[0])
 		expect(buildFloorEntry()).not.toBe(buildFloorEntry())
 		// A floor that carries no bytes leaves the inventory as the only path the repository answers.
@@ -1680,7 +1680,7 @@ describe('the admitted npm', () => {
 			const resolved = resolveNpmEntry({ ...process.env, npm_execpath: absent })
 			expect(resolved).not.toBe(absent)
 			expect(basename(resolved)).toBe('npm-cli.js')
-			expect(isFile(resolved)).toBe(true)
+			expect(namesFile(resolved)).toBe(true)
 		} finally {
 			workspace.destroy()
 		}
@@ -1826,7 +1826,7 @@ printf 'executed\\n'
 		// answered a path no file sits at would leave the script without the programs it
 		// runs, and one that answered a path for every name would put `ollama` back.
 		const resolved = requireValue(resolveTool('node'))
-		expect(isFile(resolved)).toBe(true)
+		expect(namesFile(resolved)).toBe(true)
 		expect(basename(resolved).startsWith('node')).toBe(true)
 		expect(resolveTool('orkestrel-scaffold-absent-command')).toBe(undefined)
 		// An environment carrying no `PATH` entry reaches nothing, which is what makes the
@@ -1906,7 +1906,7 @@ describe.skipIf(process.platform !== 'win32')('Ollama Windows setup', () => {
 			const file = requireValue(resolveExecutable('ollama'))
 			const server = await createOllamaServer()
 			try {
-				expect(isFile(file)).toBe(true)
+				expect(namesFile(file)).toBe(true)
 				const result = await execute(
 					{
 						file,

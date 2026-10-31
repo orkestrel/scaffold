@@ -1,5 +1,5 @@
 import type { Blueprint } from './types.js'
-import { cloneValue } from './cloners.js'
+import { parseOwnedJSONValue } from './cloners.js'
 import { DEFAULT_ENGINES, DEFAULT_VERSION } from './constants.js'
 import { ScaffoldError } from './errors.js'
 import { parseBlueprint } from './parsers.js'
@@ -77,7 +77,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		journey: input?.journey ?? false,
 		skills: input?.skills ?? false,
 	}
-	const blueprint = parseBlueprint(cloneValue(candidate))
+	const blueprint = parseBlueprint(parseOwnedJSONValue(candidate))
 	if (blueprint === undefined) {
 		throw new ScaffoldError('INVALID', 'The filled record is not a blueprint.', { name })
 	}

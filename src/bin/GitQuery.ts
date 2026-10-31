@@ -1,6 +1,6 @@
 import type { GitQueryInterface } from './types.js'
 import { attempt } from '@orkestrel/contract'
-import { createSession } from '@orkestrel/process/server'
+import { createDuplex } from '@orkestrel/process/server'
 import { isScaffoldError, ScaffoldError } from '@src/core'
 import { findGitRefusal, splitGitRecords } from './helpers.js'
 
@@ -58,7 +58,7 @@ export class GitQuery implements GitQueryInterface {
 		this.#started = true
 		const target = this.#target
 		const created = attempt(() =>
-			createSession({
+			createDuplex({
 				command: { file: 'git', arguments: ['-C', target, ...this.#args] },
 				workspace: '.',
 				signal: this.#controller.signal,

@@ -358,7 +358,7 @@
 			"storage": "agents/skills/orkestrel-journey/references/layer.md",
 			"destination": ".agents/skills/orkestrel-journey/references/layer.md",
 			"executable": false,
-			"digest": "a366c0129c78c2f092e382f1145d78501c43ed31605b5c1676c5b2b747427a23"
+			"digest": "5404674a1696aa3e215d860c2fb7d5e6b860bfb68a3b4ba31784b464d182ce6c"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/references/recorded.md",
@@ -370,13 +370,13 @@
 			"storage": "agents/skills/orkestrel-journey/references/statechart.md",
 			"destination": ".agents/skills/orkestrel-journey/references/statechart.md",
 			"executable": false,
-			"digest": "5c3d1be8ac28d1ba0de967ef2736eba9ebc98203adf2f2de6b3c5fc0f1adc569"
+			"digest": "33411a26b18f9968ec59716ae34c7b77f213000181d87c98a50f2799f6e1282c"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/references/styles.md",
 			"destination": ".agents/skills/orkestrel-journey/references/styles.md",
 			"executable": false,
-			"digest": "b7d2aaf5173525e7fcd07fc1db0d26ca9445ec359d3f7980c6ed2a716940424d"
+			"digest": "c1937fd8106b8421e5c675d677076a4d9692a9cbeef09456f2fe3cf3c29b48e4"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/SKILL.md",
@@ -700,7 +700,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "18bac0bc31e70ba3dfca68b1519f747dff908b7023b80d11e44e6fdf3a2b8e7e"
+			"digest": "c8654f37f076e33697b9896aaf54b5b81646cb7fc7ff8df36e46356644e99b8e"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -1168,7 +1168,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "7939bba1c9cdc969900fa7db97eef1f9b837c03f02f9b4c835f06dee1a5ee8de"
+			"digest": "b807d4749e1fd721d8f831b9d539ca4042a34b02ce4f122545ec7b9af9d79f79"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1439,27 +1439,6 @@
 			]
 		},
 		{
-			"name": "Drift",
-			"owners": [
-				"guide",
-				"scaffold"
-			]
-		},
-		{
-			"name": "Finding",
-			"owners": [
-				"qualifier",
-				"scaffold"
-			]
-		},
-		{
-			"name": "Group",
-			"owners": [
-				"router",
-				"scaffold"
-			]
-		},
-		{
 			"name": "INTEGER_PATTERN",
 			"owners": [
 				"csv",
@@ -1589,13 +1568,6 @@
 			"owners": [
 				"guide",
 				"router"
-			]
-		},
-		{
-			"name": "ManifestEntry",
-			"owners": [
-				"guide",
-				"scaffold"
 			]
 		},
 		{
@@ -1821,13 +1793,6 @@
 			]
 		},
 		{
-			"name": "cloneValue",
-			"owners": [
-				"form",
-				"scaffold"
-			]
-		},
-		{
 			"name": "compareValues",
 			"owners": [
 				"contract",
@@ -1994,20 +1959,6 @@
 			]
 		},
 		{
-			"name": "isFinding",
-			"owners": [
-				"qualifier",
-				"scaffold"
-			]
-		},
-		{
-			"name": "isHex",
-			"owners": [
-				"codec",
-				"scaffold"
-			]
-		},
-		{
 			"name": "isJSONRPCError",
 			"owners": [
 				"jsonrpc",
@@ -2072,13 +2023,6 @@
 			"owners": [
 				"jsonrpc",
 				"mcp"
-			]
-		},
-		{
-			"name": "isManifestEntry",
-			"owners": [
-				"guide",
-				"scaffold"
 			]
 		},
 		{
@@ -2238,5 +2182,5 @@
 			]
 		}
 	],
-	"digest": "1513378f249a7b0a68febf63d5abdb8dfdbd70d19be420efadad6908d54654ea"
+	"digest": "2784dba5c4090aa2f3f1e6edbabcfeda7b435b04ce279998812b54407f63080f"
 }

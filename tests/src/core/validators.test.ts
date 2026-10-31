@@ -1,4 +1,4 @@
-import type { Group } from '@src/core'
+import type { ArtifactGroup } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import {
 	createBlueprint,
@@ -15,8 +15,8 @@ import {
 	isSurface,
 	isExtension,
 	isSheetName,
-	isGroups,
-	isHex,
+	isArtifactGroups,
+	isHexContent,
 	isMirror,
 	isPath,
 	isPlan,
@@ -243,21 +243,24 @@ describe('isCompilerHooks', () => {
 
 describe('collection bounds', () => {
 	it('accepts a collection at the item ceiling and refuses one item past it', () => {
-		const atLimit: readonly Group[] = Array.from({ length: MAX_COLLECTION_ITEMS }, () => 'manifest')
-		const overLimit: readonly Group[] = Array.from(
+		const atLimit: readonly ArtifactGroup[] = Array.from(
+			{ length: MAX_COLLECTION_ITEMS },
+			() => 'manifest',
+		)
+		const overLimit: readonly ArtifactGroup[] = Array.from(
 			{ length: MAX_COLLECTION_ITEMS + 1 },
 			() => 'manifest',
 		)
 		expect(isCollection(atLimit)).toBe(true)
 		expect(isCollection(overLimit)).toBe(false)
-		expect(isGroups(atLimit)).toBe(true)
-		expect(isGroups(overLimit)).toBe(false)
+		expect(isArtifactGroups(atLimit)).toBe(true)
+		expect(isArtifactGroups(overLimit)).toBe(false)
 	})
 
 	it('refuses a sparse selection through the composed element guard', () => {
 		const sparse = selectHostileCase('sparse array')
 		expect(isCollection(sparse.value)).toBe(true)
-		expect(isGroups(sparse.value)).toBe(false)
+		expect(isArtifactGroups(sparse.value)).toBe(false)
 	})
 })
 
@@ -323,16 +326,16 @@ describe('isPlan', () => {
 	})
 })
 
-describe('isHex', () => {
+describe('isHexContent', () => {
 	it('accepts empty content and exact lowercase byte pairs', () => {
-		expect(isHex('')).toBe(true)
-		expect(isHex('68690a')).toBe(true)
+		expect(isHexContent('')).toBe(true)
+		expect(isHexContent('68690a')).toBe(true)
 	})
 
 	it('refuses uppercase digits, an odd length, and non-hexadecimal text', () => {
-		expect(isHex('68690A')).toBe(false)
-		expect(isHex('68690')).toBe(false)
-		expect(isHex('hi')).toBe(false)
+		expect(isHexContent('68690A')).toBe(false)
+		expect(isHexContent('68690')).toBe(false)
+		expect(isHexContent('hi')).toBe(false)
 	})
 })
 

@@ -769,7 +769,7 @@ describe('installed package consumer', () => {
 				"dist/src/core/index.d.ts: parseExtension('styles:print') // { surface: 'styles', name: 'print' }",
 				'dist/src/core/index.d.ts: planToSummary(plan).computed // the number of computed artifacts',
 				'dist/src/core/index.d.ts: replacePlanRanges(plan, pins) // the plan carrying the resolved writable ranges',
-				'dist/src/core/index.d.ts: selectGroups() // every group, in plan order',
+				'dist/src/core/index.d.ts: selectArtifactGroups() // every group, in plan order',
 				"dist/src/core/index.d.ts: serializeTypeScriptString(\"it's\") // `'it\\\\'s'`",
 				"dist/src/core/index.d.ts: SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // the showcase plugin range",
 				"dist/src/server/index.d.ts: climbRealPath(resolve('./packages/new/src'), [], 0) // the real path of packages, plus new/src",
@@ -795,7 +795,7 @@ describe('installed package consumer', () => {
 				'dist/src/server/index.d.ts: readSurfaceRecord(resolveHostRoot()) // the bundled collision record',
 				'dist/src/server/index.d.ts: resolveHostRoot() // the checkout in source, or the installed dist/host directory',
 				"dist/src/server/index.d.ts: resolveRealPath('./packages/new/src') // the real path of `packages`, plus `new/src`",
-				"dist/src/server/index.d.ts: stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged",
+				"dist/src/server/index.d.ts: stageHost(process.cwd(), 'dist/host') // one HostManifestEntry per file staged",
 				"dist/src/server/index.d.ts: stageInventory(process.cwd(), 'host.json') // the committed host inventory",
 				'dist/src/server/index.d.ts: inventory.surface // the verified record when lookup is found',
 				"dist/src/server/index.d.ts: isBranch('main') // false — a branch name is not a branch",
@@ -810,7 +810,7 @@ describe('installed package consumer', () => {
 			])
 			expect(undriven).toStrictEqual([
 				'dist/src/core/index.d.ts: if (isScaffoldError(error)) error.code',
-				"dist/src/core/index.d.ts: if (isGroup('manifest')) inferGroup('AGENTS.md')",
+				"dist/src/core/index.d.ts: if (isArtifactGroup('manifest')) inferArtifactGroup('AGENTS.md')",
 			])
 			// Both declarations contribute, and the corrected claim is one of them.
 			// The previous instrument read one function in one file.

@@ -4,10 +4,10 @@ import type {
 	Dependency,
 	ManifestDependencySet,
 	ManifestToken,
-	Drift,
+	ArtifactDrift,
 	Environment,
-	Finding,
-	Group,
+	ArtifactFinding,
+	ArtifactGroup,
 	Ownership,
 	Plan,
 	PlanSummary,
@@ -19,15 +19,15 @@ import type {
 	SurfaceFinding,
 	SurfaceSimilarity,
 } from './types.js'
-import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
+import { comparePrimitives, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
 import {
+	ARTIFACT_GROUPS,
 	CANON_PATHS,
 	CATALOG_AGENT_PATH,
 	DEPENDENCY_NAME_PATTERN,
 	ENGINES_PATTERN,
 	EXTRA_RANGE_PATTERN,
-	GROUPS,
 	MAX_COLLECTION_ITEMS,
 	MAX_DEPENDENCY_NAME_LENGTH,
 	MAX_MANIFEST_BYTES,
@@ -262,11 +262,11 @@ export function collectSurfaceAdvisories(
 		)
 		.sort(
 			(left, right) =>
-				compareValues(left.owner, right.owner) || compareValues(left.name, right.name),
+				comparePrimitives(left.owner, right.owner) || comparePrimitives(left.name, right.name),
 		)
 	return [...new Set(candidate.names)]
 		.filter((name) => !known.has(name))
-		.sort(compareValues)
+		.sort(comparePrimitives)
 		.flatMap((name) => {
 			const signature = candidate.signatures.get(name)
 			const structure = signature !== undefined && matchesSurfaceStructure(signature)
@@ -601,7 +601,7 @@ export function isFloorPath(path: string): boolean {
 }
 
 /**
- * Infers the {@link Group} a path belongs to.
+ * Infers the {@link ArtifactGroup} a path belongs to.
  *
  * @param path - The target-relative path to classify.
  * @returns The group that owns the path.
@@ -617,14 +617,14 @@ export function isFloorPath(path: string): boolean {
  *
  * @example
  * ```ts
- * import { inferGroup } from '@orkestrel/scaffold'
+ * import { inferArtifactGroup } from '@orkestrel/scaffold'
  *
- * inferGroup('src/core/index.ts') // 'source'
- * inferGroup('AGENTS.md') // 'docs'
- * inferGroup('.editorconfig') // 'configs'
+ * inferArtifactGroup('src/core/index.ts') // 'source'
+ * inferArtifactGroup('AGENTS.md') // 'docs'
+ * inferArtifactGroup('.editorconfig') // 'configs'
  * ```
  */
-export function inferGroup(path: string): Group {
+export function inferArtifactGroup(path: string): ArtifactGroup {
 	if (path === 'package.json' || path === 'package-lock.json') return 'manifest'
 	if (matchesOrchestrationPath(path)) return 'orchestration'
 	if (path.startsWith('src/') || path.startsWith('app/')) return 'source'
@@ -790,26 +790,26 @@ export function selectHostPaths(paths: readonly string[], name: string): readonl
  * Selects the groups a compile covers, in plan order.
  *
  * @param groups - The requested selection; every group when absent.
- * @returns The requested groups in `GROUPS` order, without repeats.
+ * @returns The requested groups in `ARTIFACT_GROUPS` order, without repeats.
  *
  * @remarks
  * A caller's selection is data, so it arrives in whatever order and with
  * whatever repeats the caller wrote. Plan order is this package's, so the
- * selection is read as membership and the order comes from `GROUPS`. An empty
+ * selection is read as membership and the order comes from `ARTIFACT_GROUPS`. An empty
  * selection covers nothing, which is a caller asking for an empty plan rather
  * than a caller asking for everything.
  *
  * @example
  * ```ts
- * import { selectGroups } from '@orkestrel/scaffold'
+ * import { selectArtifactGroups } from '@orkestrel/scaffold'
  *
- * selectGroups(['tests', 'manifest', 'tests']) // ['manifest', 'tests']
- * selectGroups() // every group, in plan order
+ * selectArtifactGroups(['tests', 'manifest', 'tests']) // ['manifest', 'tests']
+ * selectArtifactGroups() // every group, in plan order
  * ```
  */
-export function selectGroups(groups?: readonly Group[]): readonly Group[] {
-	const selection = groups ?? GROUPS
-	return GROUPS.filter((group) => selection.includes(group))
+export function selectArtifactGroups(groups?: readonly ArtifactGroup[]): readonly ArtifactGroup[] {
+	const selection = groups ?? ARTIFACT_GROUPS
+	return ARTIFACT_GROUPS.filter((group) => selection.includes(group))
 }
 
 /**
@@ -863,7 +863,7 @@ export function artifactToHex(artifact: Artifact): string | undefined {
  * @example
  * ```ts
  * import type { Artifact } from '@orkestrel/scaffold'
- * import { inferDrift } from '@orkestrel/scaffold'
+ * import { inferArtifactDrift } from '@orkestrel/scaffold'
  *
  * const artifact: Artifact = {
  * 	path: 'README.md',
@@ -873,12 +873,15 @@ export function artifactToHex(artifact: Artifact): string | undefined {
  * 	content: 'hi\n',
  * }
  *
- * inferDrift(artifact, '68690a') // 'aligned'
- * inferDrift(artifact, '6279650a') // 'stale'
- * inferDrift(artifact) // 'missing'
+ * inferArtifactDrift(artifact, '68690a') // 'aligned'
+ * inferArtifactDrift(artifact, '6279650a') // 'stale'
+ * inferArtifactDrift(artifact) // 'missing'
  * ```
  */
-export function inferDrift(artifact: Artifact, observed?: string): Exclude<Drift, 'foreign'> {
+export function inferArtifactDrift(
+	artifact: Artifact,
+	observed?: string,
+): Exclude<ArtifactDrift, 'foreign'> {
 	if (artifact.ownership === 'birth') return 'aligned'
 	if (observed === undefined) return 'missing'
 	if (artifact.ownership === 'presence') return 'aligned'
@@ -895,7 +898,7 @@ export function inferDrift(artifact: Artifact, observed?: string): Exclude<Drift
  * exactly where bytes were read.
  *
  * @remarks
- * The comparison itself is {@link inferDrift}'s, so ownership decides it here
+ * The comparison itself is {@link inferArtifactDrift}'s, so ownership decides it here
  * exactly as it does everywhere else. This adds only the shape: a missing
  * destination has no bytes to record, and every other verdict records the bytes
  * it was given, which is the precondition the mutation that follows is held to.
@@ -907,35 +910,35 @@ export function inferDrift(artifact: Artifact, observed?: string): Exclude<Drift
  *
  * @example
  * ```ts
- * import { artifactToFinding } from '@orkestrel/scaffold'
+ * import { artifactToArtifactFinding } from '@orkestrel/scaffold'
  *
- * artifactToFinding(
+ * artifactToArtifactFinding(
  * 	{ path: 'README.md', group: 'docs', ownership: 'content', origin: 'computed', content: 'hi\n' },
  * 	'6279650a',
  * ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }
  * ```
  */
-export function artifactToFinding(artifact: Artifact, observed?: string): Finding {
+export function artifactToArtifactFinding(artifact: Artifact, observed?: string): ArtifactFinding {
 	const path = artifact.path
 	const group = artifact.group
 	const ownership = artifact.ownership
 	if (observed === undefined) {
-		return inferDrift(artifact) === 'aligned'
+		return inferArtifactDrift(artifact) === 'aligned'
 			? { path, group, ownership, drift: 'aligned' }
 			: { path, group, ownership, drift: 'missing' }
 	}
-	return inferDrift(artifact, observed) === 'stale'
+	return inferArtifactDrift(artifact, observed) === 'stale'
 		? { path, group, ownership, drift: 'stale', observed }
 		: { path, group, ownership, drift: 'aligned', observed }
 }
 
 /**
- * Tests whether {@link inferDrift} could have produced a finding for an ownership.
+ * Tests whether {@link inferArtifactDrift} could have produced a finding for an ownership.
  *
  * @param ownership - What scaffold claims at the planned path.
  * @param finding - The audit verdict to test.
  * @returns True if the ownership and verdict are reachable through
- * {@link inferDrift}; false otherwise.
+ * {@link inferArtifactDrift}; false otherwise.
  *
  * @remarks
  * This predicate keeps the comparison law beside the reachability law it
@@ -944,16 +947,16 @@ export function artifactToFinding(artifact: Artifact, observed?: string): Findin
  *
  * @example
  * ```ts
- * import type { Finding } from '@orkestrel/scaffold'
- * import { matchesDriftReachability } from '@orkestrel/scaffold'
+ * import type { ArtifactFinding } from '@orkestrel/scaffold'
+ * import { matchesArtifactDriftReachability } from '@orkestrel/scaffold'
  *
- * const aligned: Finding = {
+ * const aligned: ArtifactFinding = {
  * 	path: 'README.md',
  * 	group: 'docs',
  * 	ownership: 'birth',
  * 	drift: 'aligned',
  * }
- * const stale: Finding = {
+ * const stale: ArtifactFinding = {
  * 	path: 'README.md',
  * 	group: 'docs',
  * 	ownership: 'birth',
@@ -961,11 +964,14 @@ export function artifactToFinding(artifact: Artifact, observed?: string): Findin
  * 	observed: '6279650a',
  * }
  *
- * matchesDriftReachability('birth', aligned) // true
- * matchesDriftReachability('birth', stale) // false
+ * matchesArtifactDriftReachability('birth', aligned) // true
+ * matchesArtifactDriftReachability('birth', stale) // false
  * ```
  */
-export function matchesDriftReachability(ownership: Ownership, finding: Finding): boolean {
+export function matchesArtifactDriftReachability(
+	ownership: Ownership,
+	finding: ArtifactFinding,
+): boolean {
 	if (finding.drift === 'aligned') return ownership === 'birth' || finding.observed !== undefined
 	if (finding.drift === 'missing') return ownership !== 'birth'
 	return finding.drift === 'stale' && ownership === 'content'
@@ -1178,10 +1184,10 @@ export function compareVersions(left: string, right: string): number {
 	if (first === undefined || second === undefined) {
 		if (first !== undefined) return 1
 		if (second !== undefined) return -1
-		return compareValues(left, right)
+		return comparePrimitives(left, right)
 	}
 	for (const [index, component] of first.entries()) {
-		const order = compareValues(component, second[index] ?? 0)
+		const order = comparePrimitives(component, second[index] ?? 0)
 		if (order !== 0) return order
 	}
 	return 0

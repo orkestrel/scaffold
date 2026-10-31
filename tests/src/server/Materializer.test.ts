@@ -11,7 +11,7 @@ import {
 	DISTRIBUTION_SETUP_PATH,
 	DISTRIBUTION_TEST_PATH,
 	insertManifestDependencies,
-	isFinding,
+	isArtifactFinding,
 	isScaffoldError,
 	RELEASE_PROOF_COMMAND,
 	renderSkillPointer,
@@ -43,7 +43,7 @@ import {
 	buildHostManifest,
 	buildCompiledPlan,
 	buildFleetManifest,
-	buildManifestEntry,
+	buildHostManifestEntry,
 	buildTargetAudit,
 	buildVendoredManifest,
 	buildVendoredPlan,
@@ -149,7 +149,7 @@ describe('Materializer construction', () => {
 			const membership = buildVendoredManifest()
 			const recased = buildVendoredManifest({
 				entries: [
-					buildManifestEntry({ storage: 'agents.md', destination: 'AGENTS.md' }),
+					buildHostManifestEntry({ storage: 'agents.md', destination: 'AGENTS.md' }),
 					...membership.entries.slice(1),
 				],
 			})
@@ -180,7 +180,7 @@ describe('Materializer construction', () => {
 			const collided = buildVendoredManifest({
 				entries: [
 					...membership.entries,
-					buildManifestEntry({ storage: 'alternate.md', destination: 'AGENTS.md' }),
+					buildHostManifestEntry({ storage: 'alternate.md', destination: 'AGENTS.md' }),
 				],
 			})
 			const host = createHostRoot(workspace, 'host', collided)
@@ -1179,7 +1179,7 @@ describe('Materializer repair', () => {
 					),
 					questions: [],
 				}
-				expect(unreachable.findings.every((finding) => isFinding(finding))).toBe(true)
+				expect(unreachable.findings.every((finding) => isArtifactFinding(finding))).toBe(true)
 				expect(
 					captureScaffoldCode(() => materializer.repair(buildVendoredPlan(), unreachable, target)),
 				).toBe('TARGET')

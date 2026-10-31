@@ -2,11 +2,11 @@ import type { Guard, Result } from '@orkestrel/contract'
 import type { EmitterInterface } from '@orkestrel/emitter'
 import type {
 	Artifact,
+	ArtifactDrift,
+	ArtifactFinding,
 	Audit,
 	CatalogEntry,
 	ContentArtifact,
-	Drift,
-	Finding,
 	HostArtifact,
 	HydratedArtifact,
 	ManifestRegionSet,
@@ -18,7 +18,7 @@ import type {
 import type {
 	Host,
 	HostManifest,
-	ManifestEntry,
+	HostManifestEntry,
 	MaterializeResult,
 	MaterializerEventMap,
 	MaterializerInterface,
@@ -36,11 +36,11 @@ import {
 	CATALOG_AGENT_PATH,
 	CATALOG_END_MARKER,
 	CATALOG_START_MARKER,
-	cloneValue,
+	parseOwnedJSONValue,
 	computeBytes,
 	computeTotal,
 	contentToHex,
-	inferGroup,
+	inferArtifactGroup,
 	insertManifestDependencies,
 	isAudit,
 	isPlan,
@@ -48,9 +48,9 @@ import {
 	MAX_ARTIFACT_BYTES,
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
-	matchesDriftReachability,
+	matchesArtifactDriftReachability,
 	nameToGuide,
-	planToFindings,
+	planToArtifactFindings,
 	replaceManifestRanges,
 	replaceManifestOverrides,
 	renderSkillPointer,
@@ -141,7 +141,7 @@ export class Materializer implements MaterializerInterface {
 	readonly #root: string | undefined
 	readonly #value: Host | undefined
 	readonly #manifest: HostManifest | undefined
-	readonly #entries: ReadonlyMap<string, ManifestEntry>
+	readonly #entries: ReadonlyMap<string, HostManifestEntry>
 	#destroyed = false
 
 	/**
@@ -189,7 +189,7 @@ export class Materializer implements MaterializerInterface {
 			this.#value = value
 			this.#root = undefined
 			this.#manifest = value.manifest
-			this.#entries = new Map<string, ManifestEntry>(
+			this.#entries = new Map<string, HostManifestEntry>(
 				value.manifest.entries.map((entry) => [entry.destination, entry]),
 			)
 			this.#verify(value)
@@ -205,7 +205,7 @@ export class Materializer implements MaterializerInterface {
 				})
 			}
 			this.#manifest = read.value
-			this.#entries = new Map<string, ManifestEntry>(
+			this.#entries = new Map<string, HostManifestEntry>(
 				(read.value?.entries ?? []).map((entry) => [entry.destination, entry]),
 			)
 			if (read.value !== undefined) this.#reconcile(read.value, root)
@@ -298,7 +298,7 @@ export class Materializer implements MaterializerInterface {
 	 * match the ones the audit carried for every path the plan owns; anything else
 	 * means the target moved, and the whole call is refused. The audit is checked
 	 * for agreement rather than for plausibility, so a verdict the comparison could
-	 * not have produced — a birth-owned path reported stale, which the `Finding`
+	 * not have produced — a birth-owned path reported stale, which the `ArtifactFinding`
 	 * shape admits — disagrees with the derived one and is refused. A missing
 	 * destination is restored whatever its ownership; a stale one is replaced only
 	 * where the artifact claims its bytes, which is what leaves a presence-owned
@@ -312,7 +312,7 @@ export class Materializer implements MaterializerInterface {
 		const hydrated = this.#hydrate(accepted)
 		const derived = this.#derive(accepted, directory, hydrated)
 		this.#reconfirm(derived.findings, preview.findings, directory)
-		const drifted = new Map<string, Drift>(
+		const drifted = new Map<string, ArtifactDrift>(
 			derived.findings.map((finding) => [finding.path, finding.drift]),
 		)
 		// Only a missing or a stale path is written; the rest are skipped. A missing destination
@@ -384,7 +384,7 @@ export class Materializer implements MaterializerInterface {
 				fetched.lookup === 'found'
 					? {
 							path: fetched.path,
-							group: inferGroup(fetched.path),
+							group: inferArtifactGroup(fetched.path),
 							ownership: 'content',
 							origin: 'computed',
 							content: fetched.content,
@@ -555,7 +555,7 @@ export class Materializer implements MaterializerInterface {
 	// handed in as a value is live until it is copied, so what the following verification
 	// measures is what every later read returns.
 	#own(host: Host): Host {
-		const owned = cloneValue(host)
+		const owned = parseOwnedJSONValue(host)
 		if (isHost(owned)) return owned
 		throw this.#error(
 			'INVALID',
@@ -720,7 +720,7 @@ export class Materializer implements MaterializerInterface {
 			}
 		}
 		return {
-			findings: planToFindings(hydrated, readSnapshot(target, [...paths])),
+			findings: planToArtifactFindings(hydrated, readSnapshot(target, [...paths])),
 			questions,
 		}
 	}
@@ -938,7 +938,7 @@ export class Materializer implements MaterializerInterface {
 	// One declared file's exact bytes, from the value the caller supplied or from
 	// the storage name the root holds it under. The ceiling is the same either
 	// way, so a value host retains no more of one file than a root does.
-	#read(entry: ManifestEntry, budget: number): string {
+	#read(entry: HostManifestEntry, budget: number): string {
 		const held = this.#value?.bytes[entry.destination]
 		if (held === undefined) return this.#readRoot(entry.storage, budget)
 		if (held.length / 2 > Math.max(0, Math.min(MAX_ARTIFACT_BYTES, budget))) {
@@ -968,8 +968,14 @@ export class Materializer implements MaterializerInterface {
 	// The audit is a preview of the same comparison this call made, so they
 	// must agree on every path the plan owns. A wider audit may also carry foreign
 	// paths, which belong to the deletion verb and say nothing here.
-	#reconfirm(derived: readonly Finding[], preview: readonly Finding[], target: string): void {
-		const previewed = new Map<string, Finding>(preview.map((finding) => [finding.path, finding]))
+	#reconfirm(
+		derived: readonly ArtifactFinding[],
+		preview: readonly ArtifactFinding[],
+		target: string,
+	): void {
+		const previewed = new Map<string, ArtifactFinding>(
+			preview.map((finding) => [finding.path, finding]),
+		)
 		for (const finding of derived) {
 			if (finding.drift === 'foreign') continue
 			const other = previewed.get(finding.path)
@@ -980,7 +986,7 @@ export class Materializer implements MaterializerInterface {
 				})
 			}
 			if (other.drift === finding.drift && other.observed === finding.observed) continue
-			if (!matchesDriftReachability(finding.ownership, other)) {
+			if (!matchesArtifactDriftReachability(finding.ownership, other)) {
 				throw this.#error(
 					'TARGET',
 					`The path ${finding.path} carries an audit verdict this plan could not produce.`,
@@ -998,8 +1004,8 @@ export class Materializer implements MaterializerInterface {
 	// preview must carry that exact membership and the same bytes, so neither a
 	// fabricated candidate nor a path that moved can reach a transaction.
 	#reconfirmCandidates(
-		derived: readonly Finding[],
-		preview: readonly Finding[],
+		derived: readonly ArtifactFinding[],
+		preview: readonly ArtifactFinding[],
 		target: string,
 	): void {
 		const current = derived.filter((finding) => finding.drift === 'foreign')
@@ -1085,7 +1091,15 @@ export class Materializer implements MaterializerInterface {
 		}
 		return this.#apply(
 			target,
-			[{ path, group: inferGroup(path), ownership: 'content', origin: 'computed', content }],
+			[
+				{
+					path,
+					group: inferArtifactGroup(path),
+					ownership: 'content',
+					origin: 'computed',
+					content,
+				},
+			],
 			[],
 			[],
 			[this.#bind(target, path, false)],
@@ -1338,7 +1352,7 @@ export class Materializer implements MaterializerInterface {
 	// closes the guard/use race: a property backed by an accessor never reaches the
 	// guard, so what the guard measured is what every later read returns.
 	#accept<T>(value: unknown, guard: Guard<T>, field: string): T {
-		const snapshot = cloneValue(value)
+		const snapshot = parseOwnedJSONValue(value)
 		if (guard(snapshot)) return snapshot
 		throw this.#error(
 			'INVALID',

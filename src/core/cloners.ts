@@ -38,12 +38,12 @@ import { attempt, cloneJSONValue } from '@orkestrel/contract'
  *
  * @example
  * ```ts
- * import { cloneValue, parseBlueprint } from '@orkestrel/scaffold'
+ * import { parseBlueprint, parseOwnedJSONValue } from '@orkestrel/scaffold'
  *
- * const owned = parseBlueprint(cloneValue(input))
+ * const owned = parseBlueprint(parseOwnedJSONValue(input))
  * ```
  */
-export function cloneValue(value: unknown): JSONValue | undefined {
+export function parseOwnedJSONValue(value: unknown): JSONValue | undefined {
 	const outcome = attempt(() => cloneJSONValue(value))
 	return outcome.success ? outcome.value : undefined
 }

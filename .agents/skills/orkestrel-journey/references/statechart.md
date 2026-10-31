@@ -174,7 +174,7 @@ it('walks the disclosure statechart', async () => {
   `buildRefusal(name, cause)` from `@orkestrel/test` builds that same error, so an assertion on
   a refused build compares against what it returns rather than against a spelled string.
 - Never assert the entity's internal state in `assert` where the transition is one a person drives.
-  Assert what the interface renders, through `readPerception`, `readValue`, or `readStates`.
+  Assert what the interface renders, through `readPerception`, `readControlValue`, or `readStates`.
 
 ## Drive the act the way the transition happens
 

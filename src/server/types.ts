@@ -64,7 +64,7 @@ export interface MaterializerOptions {
  * against the target's copy, and verifies host-supplied bytes against it before
  * treating them as that entry.
  */
-export interface ManifestEntry {
+export interface HostManifestEntry {
 	readonly storage: string
 	readonly destination: string
 	readonly executable: boolean
@@ -85,7 +85,7 @@ export interface ManifestEntry {
  * contract.
  */
 export interface HostManifest {
-	readonly entries: readonly ManifestEntry[]
+	readonly entries: readonly HostManifestEntry[]
 	readonly roots: readonly string[]
 	readonly surface: readonly SurfaceCollision[]
 	readonly digest: string
@@ -261,7 +261,7 @@ export interface MaterializerInterface {
 	 * @remarks
 	 * The audit is checked for agreement rather than for plausibility, so a verdict
 	 * the comparison could not have produced — a birth-owned path reported stale,
-	 * which the `Finding` shape admits — disagrees with the derived one and is
+	 * which the `ArtifactFinding` shape admits — disagrees with the derived one and is
 	 * refused.
 	 *
 	 * The whole audit is guarded before any of it is read, so an audit produced by

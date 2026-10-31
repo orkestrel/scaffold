@@ -15,6 +15,7 @@ import { join, matchesGlob } from 'node:path'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
 	APP_DEV_DEPENDENCIES,
+	ARTIFACT_GROUPS,
 	ARTIFACT_TEMPLATES,
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
@@ -27,7 +28,6 @@ import {
 	CATALOG_START_MARKER,
 	CONFIG_TEMPLATES,
 	createBlueprint,
-	GROUPS,
 	isCanonPath,
 	RELEASE_PROOF_COMMAND,
 	renderSkillPointer,
@@ -73,7 +73,7 @@ import {
 	buildFleetManifest,
 	buildHostManifest,
 	buildInstalledHostReplies,
-	buildManifestEntry,
+	buildHostManifestEntry,
 	buildOrganization,
 	buildPackument,
 	commitFiles,
@@ -158,13 +158,13 @@ describe('surface command', () => {
 				JSON.stringify(
 					buildHostManifest({
 						entries: [
-							buildManifestEntry({
+							buildHostManifestEntry({
 								storage,
 								destination: CATALOG_AGENT_PATH,
 								digest: computeDigest(catalog),
 							}),
 							...['alpha', 'beta'].map((owner) =>
-								buildManifestEntry({
+								buildHostManifestEntry({
 									storage: pathToStorage(`guides/${owner}.md`),
 									destination: `guides/${owner}.md`,
 									digest: computeDigest(requireValue(workspace.read(`host/guides/${owner}.md`))),
@@ -1018,12 +1018,12 @@ describe('surface command', () => {
 				JSON.stringify(
 					buildHostManifest({
 						entries: [
-							buildManifestEntry({
+							buildHostManifestEntry({
 								storage: pathToStorage(CATALOG_AGENT_PATH),
 								destination: CATALOG_AGENT_PATH,
 								digest: computeDigest(catalog),
 							}),
-							buildManifestEntry({
+							buildHostManifestEntry({
 								storage: pathToStorage('guides/alpha.md'),
 								destination: 'guides/alpha.md',
 								digest: computeDigest('# Alpha\n'),
@@ -1678,14 +1678,14 @@ describe('CLI usage', () => {
 			]),
 		).toBe(EXIT_USAGE)
 		expect(sink.diagnostic[0] ?? '').toContain('readme')
-		for (const group of GROUPS) expect(sink.diagnostic[0] ?? '').toContain(group)
+		for (const group of ARTIFACT_GROUPS) expect(sink.diagnostic[0] ?? '').toContain(group)
 	})
 
 	it('accepts every group some plan has', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			for (const group of GROUPS) {
+			for (const group of ARTIFACT_GROUPS) {
 				const sink = createSink()
 				const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
 					'audit',
@@ -6452,7 +6452,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			for (const group of GROUPS) {
+			for (const group of ARTIFACT_GROUPS) {
 				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
 					'repair',
 					'--groups',

@@ -1,5 +1,5 @@
 import type {
-	Group,
+	ArtifactGroup,
 	HostFile,
 	Snapshot,
 	SurfaceCandidate,
@@ -9,8 +9,8 @@ import type {
 import type {
 	Host,
 	HostManifest,
+	HostManifestEntry,
 	HostStageOptions,
-	ManifestEntry,
 	SurfaceLoader,
 	SurfaceModule,
 	WriteAnchor,
@@ -43,7 +43,7 @@ import { basename, dirname, extname, join, parse, relative, resolve, sep } from 
 import { fileURLToPath } from 'node:url'
 import {
 	attempt,
-	compareValues,
+	comparePrimitives,
 	holds,
 	isDefined,
 	isError,
@@ -64,10 +64,10 @@ import {
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
-	inferGroup,
+	inferArtifactGroup,
 	isCollection,
 	isFloorPath,
-	isHex,
+	isHexContent,
 	isPath,
 	iterateAnswers,
 	MAX_ARTIFACT_BYTES,
@@ -296,7 +296,7 @@ export function computeDigest(content: string): string {
  * ```
  */
 export function hexToDigest(hex: string): string {
-	if (!isHex(hex)) {
+	if (!isHexContent(hex)) {
 		throw new ScaffoldError('INVALID', 'Digest input is not exact hexadecimal bytes', { hex })
 	}
 	return createHash('sha256').update(Buffer.from(hex, 'hex')).digest('hex')
@@ -324,7 +324,7 @@ export function hexToDigest(hex: string): string {
  * ```
  */
 export function decodeHexText(hex: string): string | undefined {
-	if (!isHex(hex)) {
+	if (!isHexContent(hex)) {
 		throw new ScaffoldError('INVALID', 'Decode input is not exact hexadecimal bytes', { hex })
 	}
 	const decoded = attempt(() =>
@@ -357,7 +357,7 @@ export function decodeHexText(hex: string): string | undefined {
  * ```
  */
 export function computeManifestDigest(
-	entries: readonly ManifestEntry[],
+	entries: readonly HostManifestEntry[],
 	roots: readonly string[],
 	surface: readonly SurfaceCollision[],
 ): string {
@@ -1011,13 +1011,16 @@ export function listDirectories(root: string): readonly string[] {
  * listCanonPaths('vacant', ['orchestration']) // []
  * ```
  */
-export function listCanonPaths(target: string, groups: readonly Group[]): readonly string[] {
+export function listCanonPaths(
+	target: string,
+	groups: readonly ArtifactGroup[],
+): readonly string[] {
 	return CANON_PATHS.flatMap((member): readonly string[] => {
 		const full = resolveContainedPath(target, member)
 		if (full === undefined) return []
 		if (isPhysicalFile(full)) return [member]
 		return isPhysicalDirectory(full) ? listFiles(full).map((name) => `${member}/${name}`) : []
-	}).filter((path) => groups.includes(inferGroup(path)))
+	}).filter((path) => groups.includes(inferArtifactGroup(path)))
 }
 
 /**
@@ -1064,7 +1067,8 @@ export function pruneEmptiedDirectories(
 	)
 	const ordered = [...candidates].sort(
 		(left, right) =>
-			compareValues(right.split('/').length, left.split('/').length) || compareValues(left, right),
+			comparePrimitives(right.split('/').length, left.split('/').length) ||
+			comparePrimitives(left, right),
 	)
 	return ordered.flatMap((candidate): readonly string[] => {
 		const directory = resolveContainedPath(target, candidate)
@@ -1411,13 +1415,16 @@ export function readHostFloor(root?: string): Host {
  *
  * @example
  * ```ts
- * import { readManifestEntry } from '@orkestrel/scaffold/server'
+ * import { readHostManifestEntry } from '@orkestrel/scaffold/server'
  *
- * readManifestEntry('.gitignore', '/tmp/checkout/.gitignore')
+ * readHostManifestEntry('.gitignore', '/tmp/checkout/.gitignore')
  * // { storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false, digest: '...' }
  * ```
  */
-export function readManifestEntry(destination: string, source: string): ManifestEntry | undefined {
+export function readHostManifestEntry(
+	destination: string,
+	source: string,
+): HostManifestEntry | undefined {
 	const digest = computeFileDigest(source)
 	if (digest === undefined) return undefined
 	return {
@@ -1489,7 +1496,7 @@ export function filesToHost(files: readonly HostFile[], floor: Host): Host | und
 	const filled = [
 		...iterateAnswers(
 			floor.manifest.entries,
-			(entry): readonly [ManifestEntry, string] | undefined => {
+			(entry): readonly [HostManifestEntry, string] | undefined => {
 				const hex = isFloorPath(entry.destination)
 					? floor.bytes[entry.destination]
 					: held.get(entry.destination)
@@ -1559,14 +1566,14 @@ export function stageBytes(
 	host: Host,
 	root: string,
 	destinations: readonly string[],
-): readonly ManifestEntry[] {
+): readonly HostManifestEntry[] {
 	if (!isFilesystemPath(root)) {
 		throw new ScaffoldError('INVALID', 'Staging host root is not a host path', { host: root })
 	}
 	const declared = new Map(host.manifest.entries.map((entry) => [entry.destination, entry]))
 	// A hole reads as an `undefined` destination, which the host carries no bytes for.
 	return Iterator.from(destinations)
-		.map((destination): ManifestEntry => {
+		.map((destination): HostManifestEntry => {
 			const entry = declared.get(destination)
 			const hex = host.bytes[destination]
 			if (entry === undefined || hex === undefined) {
@@ -1685,14 +1692,14 @@ export function stageBytes(
  * ```ts
  * import { stageHost } from '@orkestrel/scaffold/server'
  *
- * stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged
+ * stageHost(process.cwd(), 'dist/host') // one HostManifestEntry per file staged
  * ```
  */
 export function stageHost(
 	checkout: string,
 	host: string,
 	options?: HostStageOptions,
-): readonly ManifestEntry[] {
+): readonly HostManifestEntry[] {
 	if (!isFilesystemPath(checkout)) {
 		throw new ScaffoldError('INVALID', 'Staging checkout is not a host path', { checkout })
 	}
@@ -1788,7 +1795,7 @@ export function stageHost(
 	// already claimed it, and each path is checked after its own read, as a walk in order would.
 	const storages = vendored.map((destination) => pathToStorage(destination))
 	const candidates = vendored
-		.map((destination, index): ManifestEntry => {
+		.map((destination, index): HostManifestEntry => {
 			const full = resolveContainedPath(source, destination)
 			if (full === undefined) {
 				throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${destination}`, {
@@ -1796,7 +1803,7 @@ export function stageHost(
 					path: destination,
 				})
 			}
-			const entry = readManifestEntry(destination, full)
+			const entry = readHostManifestEntry(destination, full)
 			if (entry === undefined) {
 				throw new ScaffoldError(
 					'TARGET',
@@ -1844,7 +1851,7 @@ export function stageHost(
 			...(established.success ? {} : { error: established.error }),
 		})
 	}
-	const entries = candidates.map((entry): ManifestEntry => {
+	const entries = candidates.map((entry): HostManifestEntry => {
 		const origin = resolveContainedPath(source, entry.destination)
 		const destination = resolveContainedPath(root, entry.storage)
 		if (origin === undefined || destination === undefined) {

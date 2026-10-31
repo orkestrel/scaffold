@@ -70,7 +70,7 @@ export type Origin = 'host' | 'template' | 'computed'
 export type Ownership = 'content' | 'presence' | 'birth'
 
 /** Names the artifact group a plan selects over. */
-export type Group =
+export type ArtifactGroup =
 	| 'manifest'
 	| 'configs'
 	| 'source'
@@ -87,7 +87,7 @@ export type Group =
  * `overwrite` deletes from, narrowed by the paths no verb may remove and by
  * what git tracks.
  */
-export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
+export type ArtifactDrift = 'aligned' | 'stale' | 'missing' | 'foreign'
 
 /**
  * Names how an upstream lookup resolved: found, missing, unmatched, or failed.
@@ -420,7 +420,7 @@ export type Release =
  * one that produced no answer carries the cause and no bytes. `observed` is the target's
  * file as exact bytes when the read was made, and is absent when the target
  * holds no such file; it is the precondition the write is held to, exactly as
- * {@link Finding.observed} is.
+ * {@link ArtifactFinding.observed} is.
  *
  * A found row may carry the target's own bytes rather than read ones, where
  * those bytes already satisfy the claim the read was going to check. They are
@@ -450,7 +450,7 @@ export type HostFile =
  * the cause and no bytes. Either way `observed` is the local mirror's exact
  * bytes as they stood when the fetch was made, and is absent when the mirror
  * was not there; it is the precondition the write is held to, exactly as
- * {@link Finding.observed} is. Whether the mirror is behind is not recorded,
+ * {@link ArtifactFinding.observed} is. Whether the mirror is behind is not recorded,
  * because it is `content` against `observed` and a stored answer could only
  * disagree with them. These bytes belong to the catalog verb, which is why a
  * guide mirror is presence-owned: repair restores one that is absent and never
@@ -477,7 +477,7 @@ export type Mirror =
 /** Describes the fields every planned file carries. */
 export interface ArtifactBase {
 	readonly path: string
-	readonly group: Group
+	readonly group: ArtifactGroup
 	readonly ownership: Ownership
 	readonly environment?: Environment
 }
@@ -558,7 +558,7 @@ export type Snapshot = Readonly<Record<string, string>>
  */
 export interface Plan {
 	readonly blueprint: Blueprint
-	readonly groups: readonly Group[]
+	readonly groups: readonly ArtifactGroup[]
 	readonly artifacts: readonly Artifact[]
 	readonly hash?: string
 }
@@ -581,7 +581,7 @@ export interface Plan {
  * therefore no ownership.
  *
  * Which combinations of `ownership`, `drift`, and `observed` a real audit
- * produces is {@link inferDrift}'s law, not this type's. A birth-owned path is
+ * produces is {@link inferArtifactDrift}'s law, not this type's. A birth-owned path is
  * never compared and is always aligned, a presence-owned path compares existence
  * only, and bytes are recorded only where they were read. This shape therefore
  * admits a combination that law never produces — a birth-owned path reported
@@ -592,31 +592,31 @@ export interface Plan {
  * does not match, so a verdict the comparison could not have reached is refused
  * rather than acted on.
  */
-export type Finding =
+export type ArtifactFinding =
 	| {
 			readonly path: string
-			readonly group: Group
+			readonly group: ArtifactGroup
 			readonly ownership: Ownership
 			readonly drift: 'stale'
 			readonly observed: string
 	  }
 	| {
 			readonly path: string
-			readonly group: Group
+			readonly group: ArtifactGroup
 			readonly ownership?: never
 			readonly drift: 'foreign'
 			readonly observed: string
 	  }
 	| {
 			readonly path: string
-			readonly group: Group
+			readonly group: ArtifactGroup
 			readonly ownership: Ownership
 			readonly drift: 'missing'
 			readonly observed?: never
 	  }
 	| {
 			readonly path: string
-			readonly group: Group
+			readonly group: ArtifactGroup
 			readonly ownership: Ownership
 			readonly drift: 'aligned'
 			readonly observed?: string
@@ -632,7 +632,7 @@ export type Finding =
  * separately bounded plan artifacts and snapshot paths.
  */
 export interface Audit {
-	readonly findings: readonly Finding[]
+	readonly findings: readonly ArtifactFinding[]
 	readonly questions: readonly Question[]
 }
 
@@ -656,7 +656,7 @@ export interface PlanSummary {
 	readonly name: string
 	readonly src: readonly Environment[]
 	readonly app: readonly Environment[]
-	readonly groups: readonly Group[]
+	readonly groups: readonly ArtifactGroup[]
 	readonly host: number
 	readonly template: number
 	readonly computed: number
@@ -723,7 +723,7 @@ export interface CompilerInterface {
 	 * @param groups - The artifact groups to cover; every group when absent.
 	 * @returns The compile result, carrying a plan only when the gate passed.
 	 */
-	compile(blueprint: Blueprint, groups?: readonly Group[]): CompileResult
+	compile(blueprint: Blueprint, groups?: readonly ArtifactGroup[]): CompileResult
 	/**
 	 * Compiles a blueprint and compares its plan to a target's current content.
 	 *
@@ -732,7 +732,7 @@ export interface CompilerInterface {
 	 * @param groups - The artifact groups to cover; every group when absent.
 	 * @returns The audit; empty findings and blocking questions when the gate refused.
 	 */
-	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit
+	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly ArtifactGroup[]): Audit
 	/**
 	 * Tears the compiler down. Every later call throws, and teardown is idempotent.
 	 *

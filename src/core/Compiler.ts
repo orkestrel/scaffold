@@ -8,7 +8,7 @@ import type {
 	CompilerEventMap,
 	CompilerInterface,
 	CompilerOptions,
-	Group,
+	ArtifactGroup,
 	Plan,
 	Question,
 	ScaffoldErrorCode,
@@ -16,7 +16,7 @@ import type {
 	Snapshot,
 } from './types.js'
 import { Emitter } from '@orkestrel/emitter'
-import { cloneValue } from './cloners.js'
+import { parseOwnedJSONValue } from './cloners.js'
 import {
 	applyOverrides,
 	artifactsToQuestions,
@@ -30,13 +30,18 @@ import {
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
 	overridesToQuestions,
-	planToFindings,
+	planToArtifactFindings,
 	planToHash,
 } from './compilers.js'
-import { GROUPS } from './constants.js'
+import { ARTIFACT_GROUPS } from './constants.js'
 import { ScaffoldError } from './errors.js'
-import { selectGroups } from './helpers.js'
-import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from './parsers.js'
+import { selectArtifactGroups } from './helpers.js'
+import {
+	parseBlueprint,
+	parseCompilerOptions,
+	parseArtifactGroups,
+	parseSnapshot,
+} from './parsers.js'
 
 /**
  * Represents the compile spine: draft, gate, pin, run in that order over a blueprint.
@@ -54,7 +59,7 @@ import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from
  * so a caller reads the refusal from the value it asked for.
  *
  * Both entry points snapshot each caller-supplied value and then guard the
- * snapshot, which is the order `cloneValue` fixes. A value that is not the exact
+ * snapshot, which is the order `parseOwnedJSONValue` fixes. A value that is not the exact
  * shape is off-contract input rather than an answerable question, so it raises
  * `INVALID`. Structure raises; the laws a well-formed blueprint can still break
  * are the gate's, and they answer with questions.
@@ -149,7 +154,7 @@ export class Compiler implements CompilerInterface {
 	 * new Compiler().compile(blueprint, ['manifest']).plan?.artifacts.length // 1
 	 * ```
 	 */
-	compile(blueprint: Blueprint, groups?: readonly Group[]): CompileResult {
+	compile(blueprint: Blueprint, groups?: readonly ArtifactGroup[]): CompileResult {
 		this.#assertAlive()
 		const accepted = this.#accept(blueprint, parseBlueprint, 'blueprint')
 		const result = this.#scaffold(accepted, this.#select(groups))
@@ -188,14 +193,14 @@ export class Compiler implements CompilerInterface {
 	 * new Compiler().audit(blueprint, {}, ['configs']).findings[0]?.drift // 'missing'
 	 * ```
 	 */
-	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit {
+	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly ArtifactGroup[]): Audit {
 		this.#assertAlive()
 		const accepted = this.#accept(blueprint, parseBlueprint, 'blueprint')
 		const observed = this.#accept(current, parseSnapshot, 'current')
 		const compiled = this.#scaffold(accepted, this.#select(groups))
 		if (compiled.plan === undefined) this.#emitter.emit('block', compiled.questions)
 		const result: Audit = {
-			findings: compiled.plan === undefined ? [] : planToFindings(compiled.plan, observed),
+			findings: compiled.plan === undefined ? [] : planToArtifactFindings(compiled.plan, observed),
 			questions: compiled.questions,
 		}
 		this.#emitter.emit('audit', result)
@@ -226,7 +231,7 @@ export class Compiler implements CompilerInterface {
 	// The stages in order, recording each one and stopping at the first
 	// failure. Every public method runs this and choreographs its own events, so
 	// an audit never emits a compile's completion.
-	#scaffold(blueprint: Blueprint, groups: readonly Group[]): CompileResult {
+	#scaffold(blueprint: Blueprint, groups: readonly ArtifactGroup[]): CompileResult {
 		const stages: CompileRecord[] = []
 		const draft = this.#draft(blueprint)
 		const selected = groups.flatMap((group) => draft.filter((artifact) => artifact.group === group))
@@ -310,18 +315,20 @@ export class Compiler implements CompilerInterface {
 	}
 
 	// The groups boundary: absence covers every group, a selection is refused
-	// unless it is one, and what survives is read as membership against `GROUPS`.
-	#select(groups: readonly Group[] | undefined): readonly Group[] {
+	// unless it is one, and what survives is read as membership against `ARTIFACT_GROUPS`.
+	#select(groups: readonly ArtifactGroup[] | undefined): readonly ArtifactGroup[] {
 		const selection =
-			groups === undefined ? undefined : this.#accept(groups, parseGroups, 'groups', GROUPS)
-		return selectGroups(selection)
+			groups === undefined
+				? undefined
+				: this.#accept(groups, parseArtifactGroups, 'groups', ARTIFACT_GROUPS)
+		return selectArtifactGroups(selection)
 	}
 
 	// Snapshot the caller's value, then guard the snapshot. The snapshot is what
 	// closes the guard/use race: a property backed by an accessor never reaches
 	// the guard, so what the guard measured is what every later read returns.
 	#accept<T>(value: unknown, parse: Parser<T>, field: string, candidates?: readonly string[]): T {
-		const accepted = parse(cloneValue(value))
+		const accepted = parse(parseOwnedJSONValue(value))
 		if (accepted !== undefined) return accepted
 		throw this.#error(
 			'INVALID',

@@ -15,7 +15,7 @@ import { buildDependency } from '../../setup.js'
 import {
 	buildInventory,
 	buildHostManifest,
-	buildManifestEntry,
+	buildHostManifestEntry,
 	buildOrganization,
 	buildPackument,
 	buildVendoredSnapshot,
@@ -823,7 +823,7 @@ describe('Upstream read', () => {
 		const tampered = JSON.stringify({
 			...(isRecord(declared) ? declared : {}),
 			entries: [
-				buildManifestEntry({
+				buildHostManifestEntry({
 					storage: pathToStorage(VENDORED_FILES.license.path),
 					destination: VENDORED_FILES.license.path,
 					digest: computeDigest(VENDORED_FILES.license.content),
@@ -956,7 +956,7 @@ describe('Upstream read', () => {
 	it('round-trips a leading byte-order mark under the digest of the exact bytes', async () => {
 		const hex = 'efbbbf61'
 		const entries = [
-			buildManifestEntry({
+			buildHostManifestEntry({
 				storage: 'AGENTS.md',
 				destination: 'AGENTS.md',
 				digest: hexToDigest(hex),
@@ -988,7 +988,7 @@ describe('Upstream read', () => {
 	it('refuses a leading byte-order mark under the digest of the stripped bytes', async () => {
 		const hex = 'efbbbf61'
 		const entries = [
-			buildManifestEntry({
+			buildHostManifestEntry({
 				storage: 'AGENTS.md',
 				destination: 'AGENTS.md',
 				digest: hexToDigest('61'),
@@ -1072,7 +1072,11 @@ describe('Upstream read', () => {
 	it('answers an aligned binary row from its exact local bytes', async () => {
 		const hex = 'ff'
 		const entries = [
-			buildManifestEntry({ storage: 'BINARY', destination: 'BINARY', digest: hexToDigest(hex) }),
+			buildHostManifestEntry({
+				storage: 'BINARY',
+				destination: 'BINARY',
+				digest: hexToDigest(hex),
+			}),
 		]
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.vendored.inventory]: {

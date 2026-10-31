@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { contentToHex, isHex, PRINT_WIDTH, RELEASE_PROOF_COMMAND, TAB_WIDTH } from '@src/core'
+import {
+	contentToHex,
+	isHexContent,
+	PRINT_WIDTH,
+	RELEASE_PROOF_COMMAND,
+	TAB_WIDTH,
+} from '@src/core'
 import {
 	BENIGN_ACCESSOR_DESCRIPTOR,
 	BROWSER_PLUGIN_DECLARATIONS,
@@ -10,7 +16,7 @@ import {
 	buildCompilerOptions,
 	buildContentArtifact,
 	buildDependency,
-	buildFinding,
+	buildArtifactFinding,
 	buildGuardCases,
 	buildHooks,
 	buildHostArtifact,
@@ -544,12 +550,12 @@ describe('the inert value builders', () => {
 	})
 
 	it('records no observed bytes on the one drift branch that reads none', () => {
-		const finding = buildFinding()
+		const finding = buildArtifactFinding()
 		expect(finding.path).toBe('AGENTS.md')
 		expect(finding.drift).toBe('missing')
 		expect('observed' in finding).toBe(false)
 		const audit = buildAudit()
-		expect(audit.findings).toStrictEqual([buildFinding()])
+		expect(audit.findings).toStrictEqual([buildArtifactFinding()])
 		expect(audit.questions).toStrictEqual([buildQuestion()])
 	})
 
@@ -1031,7 +1037,7 @@ describe('the artifact fixtures', () => {
 	it('names every ownership tier once and derives the matching and differing bytes from the planned text', () => {
 		expect(new Set(OWNERSHIPS).size).toBe(OWNERSHIPS.length)
 		expect(MATCHING_HEX).toBe(contentToHex(PLANNED_TEXT))
-		expect(isHex(DIFFERING_HEX)).toBe(true)
+		expect(isHexContent(DIFFERING_HEX)).toBe(true)
 		expect(DIFFERING_HEX).not.toBe(MATCHING_HEX)
 	})
 

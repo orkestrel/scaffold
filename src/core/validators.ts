@@ -2,6 +2,8 @@ import type { Guard } from '@orkestrel/contract'
 import type { EmitterHooks } from '@orkestrel/emitter'
 import type {
 	Artifact,
+	ArtifactFinding,
+	ArtifactGroup,
 	Audit,
 	Blueprint,
 	BrowserExtension,
@@ -11,8 +13,6 @@ import type {
 	Dependency,
 	Environment,
 	Extension,
-	Finding,
-	Group,
 	ManifestScript,
 	Mirror,
 	Override,
@@ -38,12 +38,12 @@ import {
 	unionOf,
 } from '@orkestrel/contract'
 import {
+	ARTIFACT_GROUPS,
 	AXES,
 	CONTROL_CHARACTER_PATTERN,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
 	FRAMEWORKS,
-	GROUPS,
 	HEX_PATTERN,
 	INVALID_PATH_CHARACTER_PATTERN,
 	MANIFEST_PATH,
@@ -107,13 +107,13 @@ export function isPath(value: unknown): value is string {
  *
  * @example
  * ```ts
- * import { isHex } from '@orkestrel/scaffold'
+ * import { isHexContent } from '@orkestrel/scaffold'
  *
- * isHex('68690a') // true
- * isHex('68690A') // false
+ * isHexContent('68690a') // true
+ * isHexContent('68690A') // false
  * ```
  */
-export const isHex: Guard<string> = stringOf({
+export const isHexContent: Guard<string> = stringOf({
 	max: MAX_ARTIFACT_HEX_LENGTH,
 	pattern: HEX_PATTERN,
 })
@@ -255,20 +255,23 @@ export const isStylesExtension: Guard<StylesExtension> = recordOf({
 export const isExtension: Guard<Extension> = unionOf(isBrowserExtension, isStylesExtension)
 
 /**
- * Narrows a value to one {@link Group} a plan selects over.
+ * Narrows a value to one {@link ArtifactGroup} a plan selects over.
  *
  * @example
  * ```ts
- * import { isGroup } from '@orkestrel/scaffold'
+ * import { isArtifactGroup } from '@orkestrel/scaffold'
  *
- * isGroup('manifest') // true
- * isGroup('readme') // false
+ * isArtifactGroup('manifest') // true
+ * isArtifactGroup('readme') // false
  * ```
  */
-export const isGroup: Guard<Group> = literalOf(GROUPS)
+export const isArtifactGroup: Guard<ArtifactGroup> = literalOf(ARTIFACT_GROUPS)
 
 /** Narrows a value to a bounded group selection. */
-export const isGroups: Guard<readonly Group[]> = andOf(isCollection, arrayOf(isGroup))
+export const isArtifactGroups: Guard<readonly ArtifactGroup[]> = andOf(
+	isCollection,
+	arrayOf(isArtifactGroup),
+)
 
 /**
  * Narrows a value to the scoped package name a runtime dependency carries.
@@ -427,7 +430,7 @@ export const isArtifact: Guard<Artifact> = unionOf(
 	recordOf(
 		{
 			path: isPath,
-			group: isGroup,
+			group: isArtifactGroup,
 			ownership: literalOf('presence', 'birth'),
 			environment: isEnvironment,
 			origin: literalOf('host'),
@@ -439,19 +442,19 @@ export const isArtifact: Guard<Artifact> = unionOf(
 	recordOf(
 		{
 			path: isPath,
-			group: isGroup,
+			group: isArtifactGroup,
 			ownership: literalOf('content'),
 			environment: isEnvironment,
 			origin: literalOf('host'),
 			source: isPath,
-			hex: isHex,
+			hex: isHexContent,
 		},
 		['environment', 'source'],
 	),
 	recordOf(
 		{
 			path: isPath,
-			group: isGroup,
+			group: isArtifactGroup,
 			ownership: literalOf('content', 'presence', 'birth'),
 			environment: isEnvironment,
 			origin: literalOf('template', 'computed'),
@@ -475,9 +478,9 @@ export const isPlan: Guard<Plan> = andOf(
 	recordOf(
 		{
 			blueprint: isBlueprint,
-			groups: isGroups,
+			groups: isArtifactGroups,
 			artifacts: andOf(isCollection, arrayOf(isArtifact)),
-			hash: isHex,
+			hash: isHexContent,
 		},
 		['hash'],
 	),
@@ -508,7 +511,7 @@ export const isQuestion: Guard<Question> = recordOf(
 )
 
 /**
- * Narrows a value to a {@link Finding}.
+ * Narrows a value to an {@link ArtifactFinding}.
  *
  * @remarks
  * `observed` is required exactly where the mutation it precedes is held to it,
@@ -519,35 +522,35 @@ export const isQuestion: Guard<Question> = recordOf(
  * That is the whole claim. This guard proves the shape a reader may destructure
  * and nothing about whether the verdict is one an audit could have reached: the
  * correlation between `ownership`, `drift`, and `observed` belongs to
- * {@link inferDrift}, and it is re-derived at the verb that acts on the finding.
+ * {@link inferArtifactDrift}, and it is re-derived at the verb that acts on the finding.
  */
-export const isFinding: Guard<Finding> = unionOf(
+export const isArtifactFinding: Guard<ArtifactFinding> = unionOf(
 	recordOf({
 		path: isPath,
-		group: isGroup,
+		group: isArtifactGroup,
 		ownership: literalOf('content', 'presence', 'birth'),
 		drift: literalOf('stale'),
-		observed: isHex,
+		observed: isHexContent,
 	}),
 	recordOf({
 		path: isPath,
-		group: isGroup,
+		group: isArtifactGroup,
 		drift: literalOf('foreign'),
-		observed: isHex,
+		observed: isHexContent,
 	}),
 	recordOf({
 		path: isPath,
-		group: isGroup,
+		group: isArtifactGroup,
 		ownership: literalOf('content', 'presence', 'birth'),
 		drift: literalOf('missing'),
 	}),
 	recordOf(
 		{
 			path: isPath,
-			group: isGroup,
+			group: isArtifactGroup,
 			ownership: literalOf('content', 'presence', 'birth'),
 			drift: literalOf('aligned'),
-			observed: isHex,
+			observed: isHexContent,
 		},
 		['observed'],
 	),
@@ -565,7 +568,7 @@ export const isAudit: Guard<Audit> = recordOf({
 	findings: andOf(
 		(value: unknown): value is readonly unknown[] =>
 			holds(() => isArray(value) && value.length <= MAX_AUDIT_FINDINGS),
-		arrayOf(isFinding),
+		arrayOf(isArtifactFinding),
 	),
 	questions: andOf(isCollection, arrayOf(isQuestion)),
 })
@@ -585,7 +588,7 @@ export const isMirror: Guard<Mirror> = unionOf(
 			path: isPath,
 			lookup: literalOf('found'),
 			content: isContent,
-			observed: isHex,
+			observed: isHexContent,
 		},
 		['observed'],
 	),
@@ -595,7 +598,7 @@ export const isMirror: Guard<Mirror> = unionOf(
 			path: isPath,
 			lookup: literalOf('missing', 'unmatched', 'failed'),
 			note: isString,
-			observed: isHex,
+			observed: isHexContent,
 		},
 		['observed'],
 	),
@@ -650,7 +653,7 @@ export function isSnapshot(value: unknown): value is Snapshot {
 		const keys = enumerableKeys(value)
 		if (keys === undefined || keys.length > MAX_COLLECTION_ITEMS) return false
 		for (const key of keys) {
-			if (!isPath(key) || !isHex(value[key])) return false
+			if (!isPath(key) || !isHexContent(value[key])) return false
 		}
 		return true
 	})

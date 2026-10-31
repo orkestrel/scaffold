@@ -1,5 +1,6 @@
 import type {
 	Artifact,
+	ArtifactGroup,
 	Audit,
 	Axis,
 	Blueprint,
@@ -8,7 +9,6 @@ import type {
 	DependencyPinSet,
 	Environment,
 	Extension,
-	Group,
 	ManifestScript,
 	Mirror,
 	Question,
@@ -52,7 +52,7 @@ import {
 	FRAMEWORKS,
 	extractRangeMajor,
 	extractVersion,
-	GROUPS,
+	ARTIFACT_GROUPS,
 	isScaffoldError,
 	isSheetName,
 	iterateAnswers,
@@ -1509,16 +1509,18 @@ export function selectionToEnvironments(
  * selectionToGroups('tests,manifest') // ['manifest', 'tests']
  * ```
  */
-export function selectionToGroups(selection: string | undefined): readonly Group[] | undefined {
+export function selectionToGroups(
+	selection: string | undefined,
+): readonly ArtifactGroup[] | undefined {
 	if (selection === undefined) return undefined
 	const requested = selection.split(',')
-	const refused = requested.filter((name) => !GROUPS.some((group) => group === name))
+	const refused = requested.filter((name) => !ARTIFACT_GROUPS.some((group) => group === name))
 	if (refused.length > 0) {
 		throw new UsageError(
-			`'--groups' does not take ${refused.join(', ')}. It takes ${GROUPS.join(', ')}.`,
+			`'--groups' does not take ${refused.join(', ')}. It takes ${ARTIFACT_GROUPS.join(', ')}.`,
 		)
 	}
-	return GROUPS.filter((group) => requested.includes(group))
+	return ARTIFACT_GROUPS.filter((group) => requested.includes(group))
 }
 
 /**

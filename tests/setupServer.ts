@@ -1,15 +1,15 @@
 import type {
 	Host,
 	HostManifest,
-	ManifestEntry,
+	HostManifestEntry,
 	MaterializerOptions,
 	Worktree,
 	UpstreamOptions,
 } from '@src/server'
 import type {
+	ArtifactFinding,
 	Audit,
 	Blueprint,
-	Finding,
 	HostFile,
 	Plan,
 	ScaffoldErrorCode,
@@ -54,8 +54,8 @@ import {
 	detach,
 	execute,
 	executeSync,
-	isFile,
 	mergeEnvironment,
+	namesFile,
 	readVariable,
 	resolveExecutable,
 } from '@orkestrel/process/server'
@@ -109,7 +109,7 @@ import {
 	isInventory,
 	listAncestors,
 	listFiles,
-	isManifestEntry,
+	isHostManifestEntry,
 	isManifestRegionSet,
 	isMaterializerHooks,
 	isMaterializerOptions,
@@ -151,7 +151,7 @@ import {
 import {
 	buildBlueprint,
 	buildContentArtifact,
-	buildFinding,
+	buildArtifactFinding,
 	buildHostArtifact,
 	buildPlan,
 	buildQuestion,
@@ -775,7 +775,8 @@ export function resolveNpmEntry(environment: NodeJS.ProcessEnv = process.env): s
 		join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
 		tool === undefined ? undefined : realpathSync(tool),
 	].find(
-		(candidate) => candidate !== undefined && candidate.endsWith('npm-cli.js') && isFile(candidate),
+		(candidate) =>
+			candidate !== undefined && candidate.endsWith('npm-cli.js') && namesFile(candidate),
 	)
 	if (entry === undefined) throw new Error('The host supplies no npm-cli.js entry')
 	return entry
@@ -1294,7 +1295,7 @@ export const GENERATED_VUE_SETUP_FILES: Readonly<Record<string, string>> = Objec
  * @param fields - The entry fields to replace on the returned value.
  * @returns An entry carrying the requested fields over minimal defaults.
  */
-export function buildManifestEntry(fields?: Partial<ManifestEntry>): ManifestEntry {
+export function buildHostManifestEntry(fields?: Partial<HostManifestEntry>): HostManifestEntry {
 	const entry = { storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false, ...fields }
 	return { ...entry, digest: fields?.digest ?? computeDigest(`${entry.destination}\n`) }
 }
@@ -1308,8 +1309,8 @@ export function buildManifestEntry(fields?: Partial<ManifestEntry>): ManifestEnt
 export function buildHostManifest(fields?: Partial<HostManifest>): HostManifest {
 	const membership = {
 		entries: [
-			buildManifestEntry(),
-			buildManifestEntry({
+			buildHostManifestEntry(),
+			buildHostManifestEntry({
 				storage: 'scripts/codex.sh',
 				destination: 'scripts/codex.sh',
 				executable: true,
@@ -1493,9 +1494,9 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 			admits: [],
 		},
 		{
-			name: 'isManifestEntry',
-			guard: isManifestEntry,
-			accepted: [buildManifestEntry(), buildManifestEntry({ executable: true })],
+			name: 'isHostManifestEntry',
+			guard: isHostManifestEntry,
+			accepted: [buildHostManifestEntry(), buildHostManifestEntry({ executable: true })],
 			admits: [],
 		},
 		{
@@ -1751,7 +1752,9 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
 		{
 			label: 'a manifest entry mapping outside the target',
 			guard: isHostManifest,
-			value: buildHostManifest({ entries: [buildManifestEntry({ destination: '../secrets' })] }),
+			value: buildHostManifest({
+				entries: [buildHostManifestEntry({ destination: '../secrets' })],
+			}),
 			accepted: false,
 		},
 		{
@@ -1764,7 +1767,7 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
 			label: 'a manifest entry list past the collection ceiling',
 			guard: isHostManifest,
 			value: buildHostManifest({
-				entries: Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => buildManifestEntry()),
+				entries: Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => buildHostManifestEntry()),
 			}),
 			accepted: false,
 		},
@@ -2011,8 +2014,8 @@ export function readSpecifiers(source: string, name: string): ReadonlyArray<stri
 export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'>>): HostManifest {
 	const membership = {
 		entries: [
-			buildManifestEntry(),
-			buildManifestEntry({
+			buildHostManifestEntry(),
+			buildHostManifestEntry({
 				storage: 'claude/rules/names.md',
 				destination: '.claude/rules/names.md',
 			}),
@@ -2182,17 +2185,17 @@ export function buildVendoredManifest(
 ): HostManifest {
 	const membership = {
 		entries: [
-			buildManifestEntry(),
-			buildManifestEntry({
+			buildHostManifestEntry(),
+			buildHostManifestEntry({
 				storage: 'claude/agents/orkestrel.md',
 				destination: '.claude/agents/orkestrel.md',
 			}),
-			buildManifestEntry({
+			buildHostManifestEntry({
 				storage: 'claude/rules/names.md',
 				destination: '.claude/rules/names.md',
 			}),
-			buildManifestEntry({ storage: 'guides/guide.md', destination: 'guides/guide.md' }),
-			buildManifestEntry({
+			buildHostManifestEntry({ storage: 'guides/guide.md', destination: 'guides/guide.md' }),
+			buildHostManifestEntry({
 				storage: 'scripts/codex.sh',
 				destination: 'scripts/codex.sh',
 				executable: true,
@@ -2379,12 +2382,12 @@ export function buildFleetManifest(): HostManifest {
 	const entries = [
 		...planned.flatMap((path) => {
 			if (!HOST_DIRECTORY_PATHS.includes(path)) {
-				return [buildManifestEntry({ storage: pathToStorage(path), destination: path })]
+				return [buildHostManifestEntry({ storage: pathToStorage(path), destination: path })]
 			}
 			const directory = fileURLToPath(new URL(`../${path}/`, import.meta.url))
 			return listFiles(directory).map((name) => {
 				const destination = `${path}/${name}`
-				return buildManifestEntry({
+				return buildHostManifestEntry({
 					storage: pathToStorage(destination),
 					destination,
 					executable: matchesExecutablePath(destination),
@@ -2392,7 +2395,7 @@ export function buildFleetManifest(): HostManifest {
 			})
 		}),
 		...Object.entries(SKILL_CANON_FILES).map(([destination, text]) =>
-			buildManifestEntry({
+			buildHostManifestEntry({
 				storage: pathToStorage(destination),
 				destination,
 				digest: computeDigest(text),
@@ -2486,7 +2489,7 @@ export function buildCheckoutManifest(): HostManifest {
 		...STAGED_PATHS.flatMap((path) => {
 			if (!HOST_DIRECTORY_PATHS.includes(path)) {
 				return [
-					buildManifestEntry({
+					buildHostManifestEntry({
 						storage: pathToStorage(path),
 						destination: path,
 						executable: matchesExecutablePath(path),
@@ -2497,7 +2500,7 @@ export function buildCheckoutManifest(): HostManifest {
 			if (path === '.claude/skills') return []
 			if (path === 'guides') {
 				return CHECKOUT_GUIDE_PATHS.map((guide) =>
-					buildManifestEntry({
+					buildHostManifestEntry({
 						storage: guide,
 						destination: guide,
 						digest: computeDigest(`${guide}\n`),
@@ -2506,7 +2509,7 @@ export function buildCheckoutManifest(): HostManifest {
 			}
 			const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
 			return [
-				buildManifestEntry({
+				buildHostManifestEntry({
 					storage: pathToStorage(destination),
 					destination,
 					executable: matchesExecutablePath(destination),
@@ -2514,7 +2517,7 @@ export function buildCheckoutManifest(): HostManifest {
 				}),
 			]
 		}),
-		buildManifestEntry({
+		buildHostManifestEntry({
 			storage: pathToStorage(CATALOG_AGENT_PATH),
 			destination: CATALOG_AGENT_PATH,
 			digest: computeDigest(CATALOG_AGENT_ROWS_TEXT),
@@ -2764,7 +2767,7 @@ export function buildTargetAudit(
 ): Audit {
 	// A hole in `paths` reads as an `undefined` path, which the byte read refuses.
 	const findings = Iterator.from(paths)
-		.map((path): Finding => {
+		.map((path): ArtifactFinding => {
 			const observed = readFileHex(target, path)
 			return observed === undefined
 				? { path, group: 'docs', ownership: 'content', drift: 'missing' }
@@ -3026,7 +3029,7 @@ export const VENDORED_FILES = Object.freeze({
  * destination twice and measure what the reader does with an ambiguous row.
  */
 export function buildInventory(files: readonly TestVendoredFile[]): string {
-	const entries: readonly ManifestEntry[] = files.map((file) => ({
+	const entries: readonly HostManifestEntry[] = files.map((file) => ({
 		storage: pathToStorage(file.path),
 		destination: file.path,
 		executable: matchesExecutablePath(file.path),
@@ -3373,7 +3376,7 @@ export function resolveTool(
 	for (const entry of (readVariable(environment, 'PATH') ?? '').split(delimiter)) {
 		if (entry === '') continue
 		const candidate = join(entry, tool)
-		if (isFile(candidate)) return candidate
+		if (namesFile(candidate)) return candidate
 	}
 	return undefined
 }
@@ -3996,7 +3999,7 @@ export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
 	},
 	{
 		label: 'a missing planned path',
-		audit: { findings: [buildFinding()], questions: [] },
+		audit: { findings: [buildArtifactFinding()], questions: [] },
 		clean: false,
 	},
 	{
@@ -4207,7 +4210,7 @@ export const DECLARATION_CASES: readonly TestDeclarationCase[] = Object.freeze([
 				"new Compiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true",
 			].join('\n'),
 			// A statement rather than an expression, which the rule excludes.
-			"if (isGroup('manifest')) inferGroup('AGENTS.md') // 'docs'",
+			"if (isArtifactGroup('manifest')) inferArtifactGroup('AGENTS.md') // 'docs'",
 		],
 	},
 	{
@@ -5554,7 +5557,7 @@ export function readTreeDigest(root: string): string {
 	const hash = createHash('sha256')
 	for (const path of globSync('**/*', { cwd: root }).sort()) {
 		hash.update(`${path}\0`)
-		if (isFile(join(root, path))) hash.update(readFileSync(join(root, path)))
+		if (namesFile(join(root, path))) hash.update(readFileSync(join(root, path)))
 		hash.update('\0')
 	}
 	return hash.digest('hex')
@@ -7114,8 +7117,8 @@ export function buildMissingFile(): HostFile {
  * @param destination - The destination the entry declares. Default: the Codex script.
  * @returns An entry whose digest is computed for that destination.
  */
-export function buildDeclaredEntry(destination = 'scripts/codex.sh'): ManifestEntry {
-	return buildManifestEntry({ storage: destination, destination })
+export function buildDeclaredEntry(destination = 'scripts/codex.sh'): HostManifestEntry {
+	return buildHostManifestEntry({ storage: destination, destination })
 }
 
 /**
@@ -7126,7 +7129,10 @@ export function buildDeclaredEntry(destination = 'scripts/codex.sh'): ManifestEn
  * @returns The entry.
  * @throws Error - Thrown when the manifest declares no entry for the destination.
  */
-export function selectManifestEntry(manifest: HostManifest, destination: string): ManifestEntry {
+export function selectHostManifestEntry(
+	manifest: HostManifest,
+	destination: string,
+): HostManifestEntry {
 	return requireValue(manifest.entries.find((one) => one.destination === destination))
 }
 
@@ -7135,7 +7141,7 @@ export function selectManifestEntry(manifest: HostManifest, destination: string)
  *
  * @returns A fresh entry on each call.
  */
-export function buildFloorEntry(): ManifestEntry {
+export function buildFloorEntry(): HostManifestEntry {
 	return requireValue(buildStagedManifest().entries[0])
 }
 
@@ -7146,7 +7152,7 @@ export function buildFloorEntry(): ManifestEntry {
  * @returns The replies, which hold the inventory alone because the floor carries no bytes.
  */
 export function serveFloorEntries(
-	entries: ManifestEntry[],
+	entries: HostManifestEntry[],
 ): Readonly<Record<string, TestUpstreamReply>> {
 	return buildInstalledHostReplies({ manifest: { ...buildStagedManifest(), entries }, bytes: {} })
 }

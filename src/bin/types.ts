@@ -1,8 +1,8 @@
 import type {
+	ArtifactGroup,
 	Audit,
 	CatalogEntry,
 	DependencyPinSet,
-	Group,
 	Mirror,
 	Question,
 	Release,
@@ -382,7 +382,7 @@ export interface GitQueryInterface {
 
 /** Represents one target question beside the artifact groups that make it relevant. */
 export interface TargetQuestion extends Question {
-	readonly groups: readonly Group[]
+	readonly groups: readonly ArtifactGroup[]
 }
 
 /** Describes the executable's boundary. */

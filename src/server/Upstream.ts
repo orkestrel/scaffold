@@ -29,14 +29,14 @@ import {
 } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
 import {
-	cloneValue,
+	parseOwnedJSONValue,
 	compareVersions,
 	computeTotal,
 	CONTROL_CHARACTER_PATTERN,
 	extractRangeMajor,
 	extractVersion,
 	HOST_INVENTORY_PATH,
-	inferGroup,
+	inferArtifactGroup,
 	isCollection,
 	isDependencyName,
 	isSnapshot,
@@ -564,7 +564,7 @@ export class Upstream implements UpstreamInterface {
 		if (inventory.lookup !== 'found') {
 			return { path, lookup: inventory.lookup, note: inventory.note, ...carried }
 		}
-		if (inferGroup(path) === 'guides') {
+		if (inferArtifactGroup(path) === 'guides') {
 			return {
 				path,
 				lookup: 'missing',
@@ -1057,7 +1057,7 @@ export class Upstream implements UpstreamInterface {
 	// Snapshot the caller's value, then guard the snapshot, so a property backed
 	// by an accessor never reaches a decision this reader later depends on.
 	#accept<T>(value: unknown, guard: Guard<T>, field: string): T {
-		const snapshot = cloneValue(value)
+		const snapshot = parseOwnedJSONValue(value)
 		if (guard(snapshot)) return snapshot
 		throw this.#error(
 			'INVALID',

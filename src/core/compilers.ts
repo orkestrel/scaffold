@@ -7,7 +7,7 @@ import type {
 	Dependency,
 	DependencyPinSet,
 	Environment,
-	Finding,
+	ArtifactFinding,
 	ManifestEdit,
 	ManifestScript,
 	ManifestToken,
@@ -21,7 +21,7 @@ import type {
 import {
 	attempt,
 	canonicalStringify,
-	compareValues,
+	comparePrimitives,
 	isRecord,
 	isString,
 	parseJSON,
@@ -80,11 +80,11 @@ import {
 	WORKSPACE_DEV_ENGINES,
 } from './constants.js'
 import {
-	artifactToFinding,
+	artifactToArtifactFinding,
 	computeBytes,
 	computeHash,
 	computeTotal,
-	inferGroup,
+	inferArtifactGroup,
 	matchesEngines,
 	matchesPrintWidth,
 	scanManifestTokens,
@@ -396,7 +396,7 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 	return Object.fromEntries(
 		Object.entries(merged)
 			.filter(([name]) => name !== own && !runtime.has(name))
-			.sort(([left], [right]) => compareValues(left, right)),
+			.sort(([left], [right]) => comparePrimitives(left, right)),
 	)
 }
 
@@ -1063,10 +1063,10 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const dependencies = Object.fromEntries(
 		[...blueprint.dependencies]
-			.sort((left, right) => compareValues(left.name, right.name))
+			.sort((left, right) => comparePrimitives(left.name, right.name))
 			.map((dependency) => [dependency.name, dependency.range]),
 	)
-	const peers = [...blueprint.peers].sort((left, right) => compareValues(left.name, right.name))
+	const peers = [...blueprint.peers].sort((left, right) => comparePrimitives(left.name, right.name))
 	const peerDependencies = Object.fromEntries(peers.map((peer) => [peer.name, peer.range]))
 	const peerDependenciesMeta = Object.fromEntries(
 		peers.filter((peer) => peer.optional === true).map((peer) => [peer.name, { optional: true }]),
@@ -2635,7 +2635,7 @@ export function blueprintToOrchestrationArtifacts(
  *
  * `source` is left absent because it falls back to `path`, and every vendored
  * path is stored under the name it is written to. The group comes from
- * {@link inferGroup}, so a vendored path and a foreign path found in a target
+ * {@link inferArtifactGroup}, so a vendored path and a foreign path found in a target
  * are classified by one rule and a plan never disagrees with the audit beside
  * it.
  *
@@ -2674,7 +2674,7 @@ export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifac
 	const selected = selectHostPaths([...HOST_PATHS, ...SEED_GUIDE_PATHS], blueprint.name)
 	const vendored = [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
 		path,
-		group: inferGroup(path),
+		group: inferArtifactGroup(path),
 		ownership: 'presence',
 		origin: 'host',
 	}))
@@ -2684,11 +2684,11 @@ export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifac
 		const sidecar = `.agents/skills/${name}/agents/openai.yaml`
 		const pointer = `.agents/skills/${name}/SKILL.md`
 		return [
-			{ path: bridge, group: inferGroup(bridge), ownership: 'presence', origin: 'host' },
-			{ path: sidecar, group: inferGroup(sidecar), ownership: 'presence', origin: 'host' },
+			{ path: bridge, group: inferArtifactGroup(bridge), ownership: 'presence', origin: 'host' },
+			{ path: sidecar, group: inferArtifactGroup(sidecar), ownership: 'presence', origin: 'host' },
 			{
 				path: pointer,
-				group: inferGroup(pointer),
+				group: inferArtifactGroup(pointer),
 				ownership: 'presence',
 				origin: 'host',
 				pointer: true,
@@ -2954,7 +2954,7 @@ export function insertManifestSection(
 ): string | undefined {
 	const tokens = scanManifestTokens(manifest)
 	if (tokens === undefined) return undefined
-	const ordered = [...dependencies].sort((left, right) => compareValues(left.name, right.name))
+	const ordered = [...dependencies].sort((left, right) => comparePrimitives(left.name, right.name))
 	const lines = ordered.map(
 		({ name, range }) => `${JSON.stringify(name)}: ${JSON.stringify(range)}`,
 	)
@@ -3037,7 +3037,7 @@ export function insertManifestSection(
 	const placements = ordered.map((dependency, index) => {
 		const line = lines[index] ?? ''
 		const anchor = declarations.find(
-			(declaration) => compareValues(declaration.name, dependency.name) > 0,
+			(declaration) => comparePrimitives(declaration.name, dependency.name) > 0,
 		)
 		return {
 			position: anchor?.start ?? last.end,
@@ -3339,28 +3339,28 @@ export function planToHash(plan: Plan): string | undefined {
  *
  * @example
  * ```ts
- * import { Compiler, createBlueprint, planToFindings } from '@orkestrel/scaffold'
+ * import { Compiler, createBlueprint, planToArtifactFindings } from '@orkestrel/scaffold'
  *
  * const { plan } = new Compiler().compile(createBlueprint('router', { src: ['core'] }))
  *
- * plan === undefined ? [] : planToFindings(plan, { 'AGENTS.md': '68690a' })
+ * plan === undefined ? [] : planToArtifactFindings(plan, { 'AGENTS.md': '68690a' })
  * ```
  */
-export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
+export function planToArtifactFindings(plan: Plan, current: Snapshot): readonly ArtifactFinding[] {
 	// The iterator consumes one artifact at a time and reads a hole as an `undefined` artifact, as a
 	// `for…of` over the list would. The path is read for the plan before the finding reads it.
 	const listed = Iterator.from(plan.artifacts)
 		.map((artifact) => ({
 			path: artifact.path,
-			finding: artifactToFinding(artifact, current[artifact.path]),
+			finding: artifactToArtifactFinding(artifact, current[artifact.path]),
 		}))
 		.toArray()
 	const planned = new Set(listed.map(({ path }) => path))
 	return [
 		...listed.map(({ finding }) => finding),
-		...Object.entries(current).flatMap(([path, observed]): readonly Finding[] => {
+		...Object.entries(current).flatMap(([path, observed]): readonly ArtifactFinding[] => {
 			if (planned.has(path)) return []
-			const group = inferGroup(path)
+			const group = inferArtifactGroup(path)
 			return plan.groups.includes(group) ? [{ path, group, drift: 'foreign', observed }] : []
 		}),
 	]

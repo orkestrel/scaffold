@@ -4,7 +4,7 @@ import {
 	parseExtension,
 	parseBlueprint,
 	parseCompilerOptions,
-	parseGroups,
+	parseArtifactGroups,
 	parseSnapshot,
 } from '@src/core'
 import { buildBlueprint, buildHostileCases, buildParserCases, buildSnapshot } from '../../setup.js'
@@ -74,22 +74,22 @@ describe('parser soundness', () => {
 	}
 })
 
-describe('parseGroups', () => {
+describe('parseArtifactGroups', () => {
 	it('preserves the caller order and repetition it was given', () => {
 		const requested: readonly string[] = ['tests', 'manifest', 'tests']
-		expect(parseGroups(requested)).toStrictEqual(['tests', 'manifest', 'tests'])
+		expect(parseArtifactGroups(requested)).toStrictEqual(['tests', 'manifest', 'tests'])
 	})
 
 	it('refuses a selection carrying an unknown group', () => {
 		const requested: readonly string[] = ['manifest', 'readme']
-		expect(parseGroups(requested)).toBeUndefined()
+		expect(parseArtifactGroups(requested)).toBeUndefined()
 	})
 })
 
 describe('absent input', () => {
 	it('reads absence as a refusal rather than as defaults', () => {
 		expect(parseBlueprint(undefined)).toBeUndefined()
-		expect(parseGroups(undefined)).toBeUndefined()
+		expect(parseArtifactGroups(undefined)).toBeUndefined()
 		expect(parseSnapshot(undefined)).toBeUndefined()
 		expect(parseCompilerOptions(undefined)).toBeUndefined()
 	})
