@@ -15,6 +15,7 @@ import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { createScratch, readInventory, supportsDirectoryLinks } from '@orkestrel/test/server'
 import { CLI } from '../../../../../src/bin/CLI.js'
 import {
+	collectPriorRanges,
 	collectSpecs,
 	compareRanges,
 	computeRanges,
@@ -38,6 +39,7 @@ import {
 	readOption,
 	readRanges,
 	readReceipt,
+	readReleasedRanges,
 	readReleases,
 	readString,
 	readUnknownFlags,
@@ -1440,11 +1442,125 @@ describe('wave.ts', () => {
 				{ cwd: scratch.path },
 			)
 			expect(run.status).toBe(0)
-			expect(run.json?.steps).toEqual([expect.objectContaining({ step: 'pins', exit: 3 })])
+			expect(run.json?.steps).toEqual([
+				expect.objectContaining({
+					step: 'pins',
+					exit: 3,
+					note: expect.stringContaining('no "Release 1.0.0" commit touched package.json'),
+				}),
+			])
 			expect(run.json?.ruling).toMatchObject({ hits: 1 })
 		} finally {
 			scratch.destroy()
 		}
+	})
+
+	it('sweeps a range re-pinned and committed after the release commit, before the visit starts', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-repin-' })
+		try {
+			const options = { cwd: scratch.path, env: { ...process.env, ...WAVE_IDENTITY } }
+			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
+			scratch.write('.gitignore', 'node_modules/\n')
+			scratch.write(
+				'package.json',
+				renderPackageManifest({
+					name: '@fixture/pkg',
+					version: '1.0.0',
+					devDependencies: { '@orkestrel/test': '^0.0.31' },
+				}),
+			)
+			scratch.write('tests/src/bin/CLI.test.ts', "const pin = { '@orkestrel/test': '^0.0.31' }\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			expect(
+				spawnSync('git', ['commit', '--quiet', '--message', 'Release 1.0.0'], options).status,
+			).toBe(0)
+			scratch.write(
+				'package.json',
+				renderPackageManifest({
+					name: '@fixture/pkg',
+					version: '1.0.0',
+					devDependencies: { '@orkestrel/test': '^0.0.32' },
+				}),
+			)
+			expect(
+				spawnSync('git', ['commit', '--quiet', '--all', '--message', 'Re-pin by hand'], options)
+					.status,
+			).toBe(0)
+			const run = runSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'pins', '--to', 'pins', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(run.json?.steps).toEqual([
+				expect.objectContaining({
+					step: 'pins',
+					exit: 3,
+					command: expect.stringContaining('--version 1.0.0 --range ^0.0.31'),
+					note: expect.stringContaining('moved since the "Release 1.0.0" commit'),
+				}),
+			])
+			expect(run.json?.ruling).toMatchObject({ hits: 1 })
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('the prior ranges', () => {
+	it('reads the manifest of the newest commit whose subject is exactly the release of a version', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-released-' })
+		try {
+			const options = { cwd: scratch.path, env: { ...process.env, ...WAVE_IDENTITY } }
+			expect(readReleasedRanges(scratch.path, '1.0.0')).toBeUndefined()
+			createRepository(scratch.path)
+			for (const { subject, range } of [
+				{ subject: 'Release 1.0.0', range: '^1.0.0' },
+				{ subject: 'Release 1.0.0', range: '^1.1.0' },
+				{ subject: 'Release 1.0.0-rc.1', range: '^1.2.0' },
+				{ subject: 'Prepare Release 1.0.0', range: '^1.3.0' },
+			]) {
+				scratch.write(
+					'package.json',
+					renderPackageManifest({ name: '@fixture/pkg', dependencies: { left: range } }),
+				)
+				trackFiles(scratch.path)
+				expect(spawnSync('git', ['commit', '--quiet', '--message', subject], options).status).toBe(
+					0,
+				)
+			}
+			expect(readReleasedRanges(scratch.path, '1.0.0')).toEqual(
+				new Map([['dependencies left', '^1.1.0']]),
+			)
+			expect(readReleasedRanges(scratch.path, '1.0.0-rc.1')).toEqual(
+				new Map([['dependencies left', '^1.2.0']]),
+			)
+			expect(readReleasedRanges(scratch.path, '2.0.0')).toBeUndefined()
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('collects each distinct prior range whose key no longer holds it, in reading order', () => {
+		const after = new Map([
+			['dependencies a', '^2.0.0'],
+			['dependencies b', '^1.0.0'],
+			['devDependencies c', '^3.0.0'],
+		])
+		const released = new Map([
+			['dependencies a', '^1.0.0'],
+			['dependencies b', '^1.0.0'],
+			['devDependencies gone', '^9.0.0'],
+		])
+		const before = new Map([
+			['dependencies a', '^1.5.0'],
+			['devDependencies c', '^1.0.0'],
+		])
+		expect(collectPriorRanges(after, [released, before])).toEqual(['^1.0.0', '^9.0.0', '^1.5.0'])
+		expect(collectPriorRanges(after, [before])).toEqual(['^1.5.0', '^1.0.0'])
+		expect(collectPriorRanges(after, [after])).toEqual([])
+		expect(collectPriorRanges(after, [])).toEqual([])
 	})
 })
 

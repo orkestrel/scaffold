@@ -6,6 +6,7 @@ import {
 	formatStep,
 	isStringArray,
 	isStringRecord,
+	mergeEnv,
 	parseJson,
 	parsePlan,
 	readMissingFlags,
@@ -112,6 +113,44 @@ describe('chain.ts', () => {
 			)
 			expect(missing.exit).toBeUndefined()
 			expect(missing.error).toContain('ENOENT')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lays a step env over the inherited environment by case-folded name', () => {
+		expect(
+			mergeEnv(
+				{ NPM_CONFIG_CACHE: 'outer', Path: 'bin', KEEP: 'k' },
+				{ npm_config_cache: 'inner', PATH: 'other' },
+			),
+		).toStrictEqual({ KEEP: 'k', npm_config_cache: 'inner', PATH: 'other' })
+		expect(mergeEnv({ KEEP: 'k' }, {})).toStrictEqual({ KEEP: 'k' })
+	})
+
+	it('hands a step only its own spelling of a variable the chain inherited in another case', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-chain-case-' })
+		try {
+			scratch.write(
+				'plan.json',
+				JSON.stringify([
+					{
+						name: 'probe',
+						command: process.execPath,
+						args: [
+							'-e',
+							"console.log(Object.keys(process.env).filter((name) => name.toLowerCase() === 'chain_case').map((name) => name + '=' + process.env[name]).join(','))",
+						],
+						env: { chain_case: 'inner' },
+					},
+				]),
+			)
+			const run = runSkillScript(CHAIN_SCRIPT, ['--plan', 'plan.json', '--journal', 'j'], {
+				cwd: scratch.path,
+				env: { CHAIN_CASE: 'outer' },
+			})
+			expect(run.status).toBe(0)
+			expect(scratch.read('j/probe.txt')?.trim()).toBe('chain_case=inner')
 		} finally {
 			scratch.destroy()
 		}

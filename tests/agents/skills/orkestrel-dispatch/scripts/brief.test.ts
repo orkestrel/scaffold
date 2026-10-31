@@ -1,18 +1,24 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import { runSkillScript, BRIEF_SCRIPT } from '../../../../setupServer.js'
 import {
 	extractPaths,
+	extractSection,
 	LANES,
 	readMissingFlags,
 	readOption,
 	readsAsPath,
 	readUnknownFlags,
+	REQUIREMENTS,
 	resolveBriefPath,
+	scanOmissions,
 	TEMPLATE,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/brief.ts'
+
+const SECTIONS =
+	'## Role and engine\n\n`opus` on Opus 5.5.\n\n## Execution\n\nPerform the assignment yourself and spawn nothing.\n'
 
 describe('brief.ts', () => {
 	it('refuses an unknown flag and the equals form before it writes or reads anything', () => {
@@ -74,15 +80,66 @@ describe('brief.ts', () => {
 			scratch.write('src/other.ts', '')
 			scratch.write(
 				'b.md',
-				'Read `src/present.ts:3`, `src\\other.ts`, and `src/missing.ts:12–14`, not `https://example.test/a/b`, `tmp/<lane>/x.md`, `OWNED_FILES/x`, or `README.md`.\n',
+				`${SECTIONS}\nRead \`src/present.ts:3\`, \`src\\other.ts\`, and \`src/missing.ts:12–14\`, not \`https://example.test/a/b\`, \`tmp/<lane>/x.md\`, \`OWNED_FILES/x\`, or \`README.md\`.\n`,
 			)
 			const check = runSkillScript(BRIEF_SCRIPT, ['--check', 'b.md'], { cwd: scratch.path })
 			expect(check.status).toBe(3)
-			expect(check.json).toMatchObject({ checked: 3, missing: ['src/missing.ts'] })
+			expect(check.json).toMatchObject({ checked: 3, missing: ['src/missing.ts'], omitted: [] })
 			scratch.write('src/missing.ts', '')
 			expect(runSkillScript(BRIEF_SCRIPT, ['--check', 'b.md'], { cwd: scratch.path }).status).toBe(
 				0,
 			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a brief that omits the role section or the spawn-nothing sentence, naming each omission', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-brief-sections-' })
+		try {
+			scratch.write('bare.md', '# Unit x\n\n## Objective\n\nOne outcome.\n')
+			const bare = runSkillScript(BRIEF_SCRIPT, ['--check', 'bare.md'], { cwd: scratch.path })
+			expect(bare.status).toBe(3)
+			expect(bare.json).toMatchObject({
+				checked: 0,
+				missing: [],
+				omitted: [
+					'the "## Role and engine" section',
+					'the "## Execution" section with the sentence "Perform the assignment yourself and spawn nothing."',
+				],
+			})
+			expect(bare.stderr).toContain('omits the "## Role and engine" section')
+			scratch.write(
+				'spawn.md',
+				'## Role and engine\n\n`opus`.\n\n## Execution\n\nDelegate the work.\n\n## Output\n\nPerform the assignment yourself and spawn nothing.\n',
+			)
+			const spawn = runSkillScript(BRIEF_SCRIPT, ['--check', 'spawn.md'], { cwd: scratch.path })
+			expect(spawn.status).toBe(3)
+			expect(spawn.json).toMatchObject({
+				omitted: [
+					'the sentence "Perform the assignment yourself and spawn nothing." under "## Execution"',
+				],
+			})
+			scratch.write('whole.md', SECTIONS.replace(/\n/gu, '\r\n'))
+			const whole = runSkillScript(BRIEF_SCRIPT, ['--check', 'whole.md'], { cwd: scratch.path })
+			expect(whole.status).toBe(0)
+			expect(whole.json).toMatchObject({ checked: 0, missing: [], omitted: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('accepts a brief written from the template on the sections it requires', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-brief-template-' })
+		try {
+			expect(
+				runSkillScript(BRIEF_SCRIPT, ['--unit', 'demo', '--lane', 'units'], { cwd: scratch.path })
+					.status,
+			).toBe(0)
+			const check = runSkillScript(BRIEF_SCRIPT, ['--check', 'tmp/units/demo-brief.md'], {
+				cwd: scratch.path,
+			})
+			expect(check.json).toMatchObject({ omitted: [] })
 		} finally {
 			scratch.destroy()
 		}
@@ -156,6 +213,37 @@ describe('the path reader', () => {
 		expect(extractPaths(content)).toEqual(['src/a.ts', 'src/b.ts', 'src/c.ts'])
 		expect(extractPaths('no backticks src/a.ts here')).toEqual([])
 		expect(extractPaths('')).toEqual([])
+	})
+})
+
+describe('the section reader', () => {
+	it('reads a level-two section up to the next one, across line endings, and nothing for an absent heading', () => {
+		const content = '# T\r\n## Execution  \r\nfirst\r\n### Sub\r\nsecond\r\n## Output\r\nlater\r\n'
+		expect(extractSection(content, '## Execution')).toBe('first\n### Sub\nsecond')
+		expect(extractSection(content, '## Output')).toBe('later\n')
+		expect(extractSection(content, '## Role and engine')).toBeUndefined()
+		expect(extractSection('## Executions\n', '## Execution')).toBeUndefined()
+		expect(extractSection('', '## Execution')).toBeUndefined()
+	})
+
+	it('names each omission in requirement order and reads a sentence wrapped across lines', () => {
+		expect(scanOmissions(SECTIONS, REQUIREMENTS)).toEqual([])
+		expect(
+			scanOmissions(
+				'## Role and engine\n\n## Execution\n\nPerform the assignment\nyourself and spawn nothing.\n',
+				REQUIREMENTS,
+			),
+		).toEqual([])
+		expect(scanOmissions('## Execution\n', REQUIREMENTS)).toEqual([
+			'the "## Role and engine" section',
+			'the sentence "Perform the assignment yourself and spawn nothing." under "## Execution"',
+		])
+		expect(scanOmissions('anything', [])).toEqual([])
+	})
+
+	it('requires the sections the template carries, with the sentence written as the template writes it', () => {
+		const template = readFileSync(TEMPLATE, 'utf8')
+		expect(scanOmissions(template, REQUIREMENTS)).toEqual([])
 	})
 })
 

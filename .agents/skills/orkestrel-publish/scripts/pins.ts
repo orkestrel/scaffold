@@ -1,6 +1,6 @@
-// Sweep source and tests for a prior version or range literal after a bump or a re-pin. Run from
-// the publishing package's root:
-//   node .agents/skills/orkestrel-publish/scripts/pins.ts --version 0.0.76 [--range ^0.0.16 ...] [--paths src,tests] [--json]
+// Sweep source, tests, and guides for a prior version or range literal after a bump or a re-pin.
+// Run from the publishing package's root:
+//   node .agents/skills/orkestrel-publish/scripts/pins.ts --version 0.0.76 [--range ^0.0.16 ...] [--paths src,tests,guides] [--json]
 // `--range` repeats. A version hit is the literal bounded by characters other than digits and dots,
 // so `~0.0.76` and `"0.0.76"` both hit and `0.0.760` does not. A range that is one comparator over
 // one version (`^8.3.0`, `~8.3.0`, `>=8.3.0`, `v8.3.0`) hits its bare version in any form, bounded the
@@ -35,7 +35,7 @@ export const FLAGS: readonly string[] = ['--version', '--range', '--paths', '--j
 
 /** Holds the usage line the script prints on a usage refusal. */
 export const USAGE =
-	'usage: pins.ts --version PRIOR [--range PRIOR_RANGE ...] [--paths src,tests] [--json]'
+	'usage: pins.ts --version PRIOR [--range PRIOR_RANGE ...] [--paths src,tests,guides] [--json]'
 
 /** Describes one requested literal and the pattern that finds it in a line. */
 export interface Literal {
@@ -255,7 +255,7 @@ export function main(argv: readonly string[]): number {
 	}
 	const version = readOptions(argv, '--version')[0]
 	const ranges = readOptions(argv, '--range')
-	const paths = (readOptions(argv, '--paths')[0] ?? 'src,tests').split(',')
+	const paths = (readOptions(argv, '--paths')[0] ?? 'src,tests,guides').split(',')
 	if (version === undefined && ranges.length === 0) {
 		console.error(USAGE)
 		return 64

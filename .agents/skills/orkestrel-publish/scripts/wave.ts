@@ -10,8 +10,9 @@
 // is staged from that checkout), verify (`scaffold audit --json` prints the releases envelope and
 // the audit's writable dependency population matches its lookup bounds; on @orkestrel/scaffold itself an audit exit of 1 is
 // read as the expected foreign-path findings of its own canonical sources), install,
-// pins (the self-pin sweep with --prior or the manifest version and every range the visit moved; hits are reported, not
-// fatal), format, record (commit the overwrite paths, then this run's formatter rewrites), gates
+// pins (the self-pin sweep with --prior or the manifest version and every range that moved since
+// that version's `Release <version>` commit or during the visit; hits are reported, not fatal),
+// format, record (commit the overwrite paths, then this run's formatter rewrites), gates
 // (format:check, lint:check, check, build, test), and compare (the rebuilt
 // dist against the published tarball, and the final runtime dependency set against the published
 // manifest `npm view NAME --json` serves; both readings are reported, not fatal). The summary
@@ -1746,7 +1747,75 @@ export function runVerify(
 }
 
 /**
+ * Reads the ranges the manifest declared in the commit that released a version.
+ *
+ * @remarks
+ * The fleet's release commit carries the subject `Release <version>` and touches the manifest, and
+ * the upload is exported from it, so its manifest holds the ranges the version shipped. A re-pin
+ * made after it, committed or not, differs from those ranges, which `HEAD` alone cannot show.
+ *
+ * @param target - The target directory.
+ * @param version - The released version.
+ * @returns The ranges keyed by `field name` from the newest commit whose subject is exactly
+ * `Release <version>`, or undefined when the target is no work tree, no such commit touched its
+ * manifest, or that manifest is unreadable.
+ */
+export function readReleasedRanges(
+	target: string,
+	version: string,
+): ReadonlyMap<string, string> | undefined {
+	const subject = `Release ${version}`
+	const log = spawnSync(
+		'git',
+		['log', '--format=%H %s', '--fixed-strings', `--grep=${subject}`, '--', 'package.json'],
+		{ cwd: target, encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 },
+	)
+	if (log.status !== 0) return undefined
+	const commit = log.stdout
+		.split(/\r\n|\n/u)
+		.map((line) => /^([0-9a-f]+) (.*)$/u.exec(line))
+		.find((match) => match?.[2] === subject)?.[1]
+	if (commit === undefined) return undefined
+	const shown = spawnSync('git', ['show', `${commit}:./package.json`], {
+		cwd: target,
+		encoding: 'utf8',
+		windowsHide: true,
+		maxBuffer: 64 * 1024 * 1024,
+	})
+	const manifest = shown.status === 0 ? parseJsonRecord(shown.stdout) : undefined
+	return manifest === undefined ? undefined : readRanges(manifest, RANGE_FIELDS)
+}
+
+/**
+ * Collects every prior range that no longer stands in the final ranges.
+ *
+ * @param after - The ranges the manifest declares after the visit.
+ * @param priors - Each earlier reading of the ranges, such as the release commit's and the visit's
+ * starting ones.
+ * @returns Each distinct range an earlier reading declared under a key whose final range differs,
+ * in reading order.
+ */
+export function collectPriorRanges(
+	after: ReadonlyMap<string, string>,
+	priors: ReadonlyArray<ReadonlyMap<string, string>>,
+): readonly string[] {
+	return [
+		...new Set(
+			priors.flatMap((prior) =>
+				[...prior].filter(([key, range]) => after.get(key) !== range).map(([, range]) => range),
+			),
+		),
+	]
+}
+
+/**
  * Runs the pins step.
+ *
+ * @remarks
+ * The sweep takes every range that moved since the prior version's release commit as well as every
+ * range the visit moved, so a re-pin made before the visit is swept too. Without that commit, or
+ * under --dry-run, it takes the visit's moves alone; a run that executes the sweep names its source
+ * in the row's note.
  *
  * @param runner - The visit's state.
  * @param before - The ranges the manifest declared before the visit.
@@ -1758,20 +1827,30 @@ export function runPins(
 	before: ReadonlyMap<string, string>,
 	version: string | undefined,
 ): number | undefined {
-	const after = readRanges(readManifest(runner.target) ?? {}, RANGE_FIELDS)
-	const prior = [...before]
-		.filter(([name, range]) => after.get(name) !== range)
-		.flatMap(([, range]) => ['--range', range])
 	if (version === undefined) {
 		appendStep(runner, 'pins', basename(PINS), 'no prior version to sweep for; pass --prior')
 		return undefined
 	}
+	const after = readRanges(readManifest(runner.target) ?? {}, RANGE_FIELDS)
+	const released = runner.dry ? undefined : readReleasedRanges(runner.target, version)
+	const prior = collectPriorRanges(after, released === undefined ? [before] : [released, before])
+	const source =
+		released === undefined
+			? `no "Release ${version}" commit touched package.json; swept the ranges this visit moved`
+			: `swept the ranges moved since the "Release ${version}" commit and by this visit`
 	const swept = runStep(
 		runner,
 		'pins',
 		process.execPath,
-		[PINS, '--version', version, ...prior],
+		[PINS, '--version', version, ...prior.flatMap((range) => ['--range', range])],
 		runner.target,
+		(result) => {
+			const verdict = readVerdict(result)
+			return {
+				...verdict,
+				note: [verdict.note, source].filter((part) => part !== undefined).join('; '),
+			}
+		},
 	)
 	return swept === undefined
 		? undefined

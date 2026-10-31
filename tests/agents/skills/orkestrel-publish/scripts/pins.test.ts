@@ -28,6 +28,7 @@ describe('pins.ts', () => {
 				['"~0.0.7"', '"0.0.770"', '"^0.0.16"', '"^0.0.160"', '"~0.0.16"', '"0.0.7"'].join('\n'),
 			)
 			scratch.write('tests/b.ts', '// nothing\n')
+			scratch.write('guides/c.md', 'nothing\n')
 			const run = runSkillScript(
 				PINS_SCRIPT,
 				['--version', '0.0.7', '--range', '^0.0.16', '--json'],
@@ -48,6 +49,34 @@ describe('pins.ts', () => {
 			expect(
 				runSkillScript(PINS_SCRIPT, ['--version', '9.9.9'], { cwd: scratch.path }).status,
 			).toBe(0)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('sweeps guides beside source and tests by default, so a guide fence keeps no prior version', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-pins-guides-' })
+		try {
+			scratch.write('src/server/constants.ts', "export const VERSION = '0.0.31'\n")
+			scratch.write('tests/a.test.ts', '// nothing\n')
+			scratch.write('guides/browser.md', '```ts\nconst creator = { version: "0.0.30" }\n```\n')
+			const run = runSkillScript(PINS_SCRIPT, ['--version', '0.0.30', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(3)
+			expect(run.json?.paths).toEqual(['src', 'tests', 'guides'])
+			expect(run.json?.hits).toEqual([
+				{
+					path: 'guides/browser.md',
+					line: 2,
+					literal: '0.0.30',
+					text: 'const creator = { version: "0.0.30" }',
+				},
+			])
+			const scoped = runSkillScript(PINS_SCRIPT, ['--version', '0.0.30', '--paths', 'src,tests'], {
+				cwd: scratch.path,
+			})
+			expect(scoped.status).toBe(0)
 		} finally {
 			scratch.destroy()
 		}

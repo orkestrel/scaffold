@@ -8,9 +8,10 @@
 // edited. The second form reads every backticked token carrying a slash (a backslash counts and is
 // read as a slash), strips a `:line` or
 // `:line-line` suffix, resolves it from the working directory, and prints the ones that do not
-// exist; a bare filename is outside the check. The two forms are two modes; name one. The script
-// refuses a flag it does not read, the `--flag=value` form included. Exit 3 when any is missing, 64
-// on usage.
+// exist; a bare filename is outside the check. It also names each template section the brief omits:
+// the `## Role and engine` section, and the `## Execution` section with its spawn-nothing sentence.
+// The two forms are two modes; name one. The script refuses a flag it does not read, the
+// `--flag=value` form included. Exit 3 when a path or a section is missing, 64 on usage.
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -32,6 +33,18 @@ export const LANES: Readonly<Record<string, string>> = Object.freeze({
 	codex: 'tmp/codex',
 	claude: 'tmp/claude',
 })
+
+/** Describes a template section a brief must keep: its heading and the sentence it must carry. */
+export interface Requirement {
+	readonly heading: string
+	readonly sentence: string | undefined
+}
+
+/** Lists the template sections every brief must keep, in template order. */
+export const REQUIREMENTS: readonly Requirement[] = [
+	{ heading: '## Role and engine', sentence: undefined },
+	{ heading: '## Execution', sentence: 'Perform the assignment yourself and spawn nothing.' },
+]
 
 /** Lists the flags that take a value. */
 export const VALUE_FLAGS: readonly string[] = ['--unit', '--lane', '--subject', '--check']
@@ -126,6 +139,44 @@ export function extractPaths(content: string): readonly string[] {
 }
 
 /**
+ * Reads the body of a level-two section.
+ *
+ * @param content - The brief text.
+ * @param heading - The heading line, such as `## Execution`.
+ * @returns The text between the heading line and the next level-two heading or the end, or
+ * undefined when no line equals the heading.
+ */
+export function extractSection(content: string, heading: string): string | undefined {
+	const lines = content.split(/\r\n|\n/u)
+	const start = lines.findIndex((line) => line.trimEnd() === heading)
+	if (start === -1) return undefined
+	const rest = lines.slice(start + 1)
+	const end = rest.findIndex((line) => line.startsWith('## '))
+	return (end === -1 ? rest : rest.slice(0, end)).join('\n')
+}
+
+/**
+ * Names each required template section a brief omits.
+ *
+ * @param content - The brief text.
+ * @param requirements - The sections the brief must keep.
+ * @returns One description per omission, in requirement order: the heading when its section is
+ * absent, and the sentence with its heading when the section is present without it.
+ */
+export function scanOmissions(
+	content: string,
+	requirements: readonly Requirement[],
+): readonly string[] {
+	return requirements.flatMap(({ heading, sentence }) => {
+		const body = extractSection(content, heading)
+		const named = sentence === undefined ? '' : ` with the sentence ${JSON.stringify(sentence)}`
+		if (body === undefined) return [`the ${JSON.stringify(heading)} section${named}`]
+		if (sentence === undefined || body.replace(/\s+/gu, ' ').includes(sentence)) return []
+		return [`the sentence ${JSON.stringify(sentence)} under ${JSON.stringify(heading)}`]
+	})
+}
+
+/**
  * Resolves the first brief path for a unit that no file occupies.
  *
  * @param directory - The lane directory.
@@ -168,27 +219,32 @@ export function writeBrief(argv: readonly string[]): number {
 }
 
 /**
- * Checks that every path a brief names exists.
+ * Checks that every path a brief names exists and that the brief keeps every required section.
  *
  * @param path - The brief file.
- * @returns The exit code: 0 when every path exists, 3 when one is missing, 64 when the brief is not a file.
+ * @returns The exit code: 0 when every path exists and no section is omitted, 3 when a path is
+ * missing or a section is omitted, 64 when the brief is not a file.
  */
 export function checkBrief(path: string): number {
 	if (!existsSync(path) || !statSync(path).isFile()) {
 		console.error(`brief: ${path} is not a file`)
 		return 64
 	}
-	const paths = extractPaths(readFileSync(path, 'utf8'))
+	const content = readFileSync(path, 'utf8')
+	const paths = extractPaths(content)
 	const missing = paths.filter((candidate) => !existsSync(resolve(candidate)))
-	console.log(JSON.stringify({ brief: path, checked: paths.length, missing }))
-	return missing.length === 0 ? 0 : 3
+	const omitted = scanOmissions(content, REQUIREMENTS)
+	console.log(JSON.stringify({ brief: path, checked: paths.length, missing, omitted }))
+	if (omitted.length > 0) console.error(`brief: ${path} omits ${omitted.join('; ')}`)
+	return missing.length === 0 && omitted.length === 0 ? 0 : 3
 }
 
 /**
  * Runs the script on its arguments.
  *
  * @param argv - The arguments after the script path.
- * @returns The exit code: 0 on success, 3 when a named path is missing, 64 on usage.
+ * @returns The exit code: 0 on success, 3 when a named path or a required section is missing, 64 on
+ * usage.
  */
 export function main(argv: readonly string[]): number {
 	const unknown = readUnknownFlags(argv, FLAGS)

@@ -2,7 +2,8 @@
 //   node .agents/skills/orkestrel-dispatch/scripts/chain.ts --plan FILE.json --journal DIR
 // The plan is a JSON array of steps, each `{ "name": "...", "command": "...", "args": ["..."] }`
 // with an optional `"cwd"` (a directory, relative to the working directory) and `"env"` (a record
-// of strings laid over this process's environment). A step name is letters, digits, dots,
+// of strings laid over this process's environment by case-folded name, so an added variable drops
+// every inherited one whose lower-cased name it claims). A step name is letters, digits, dots,
 // underscores, and hyphens, opens with a letter or digit, and is unique in the plan. Each step runs
 // with no shell and closed stdin, in plan order, with its standard output and standard error
 // written together to `DIR/<name>.txt`; the script prints one `name exit=N durationMs=N` line per
@@ -236,6 +237,31 @@ export function readStep(entry: unknown): readonly Step[] {
 }
 
 /**
+ * Lays added variables over an inherited environment by case-folded name.
+ *
+ * @remarks
+ * A Windows environment block folds names by case, so an inherited `NPM_CONFIG_CACHE` would
+ * outrank an added `npm_config_cache`; every inherited variable whose lower-cased name an added
+ * variable claims is dropped first.
+ *
+ * @param inherited - The environment the child would inherit.
+ * @param added - The variables the step sets.
+ * @returns The inherited variables no added name claims, followed by the added variables.
+ */
+export function mergeEnv(
+	inherited: Readonly<Record<string, string | undefined>>,
+	added: Readonly<Record<string, string>>,
+): Record<string, string | undefined> {
+	const claimed = new Set(Object.keys(added).map((name) => name.toLowerCase()))
+	return {
+		...Object.fromEntries(
+			Object.entries(inherited).filter(([name]) => !claimed.has(name.toLowerCase())),
+		),
+		...added,
+	}
+}
+
+/**
  * Runs one step with no shell, its output and errors written together to a file.
  *
  * @param step - The step to run.
@@ -249,7 +275,7 @@ export function runStep(step: Step, output: string): Finish {
 	try {
 		const result = spawnSync(step.command, step.args, {
 			cwd: step.cwd === undefined ? undefined : resolve(step.cwd),
-			env: { ...process.env, ...step.env },
+			env: mergeEnv(process.env, step.env),
 			stdio: ['ignore', descriptor, descriptor],
 			windowsHide: true,
 			shell: false,
