@@ -210,9 +210,8 @@ type Result<T, E = Error> = Success<T> | Failure<E>
   `isInstance` function against the class.
 - Brand every public error class for that guard:
   - key the brand `Symbol.for('<package>.<ClassName>')`, where `<package>` is the manifest's `name`
-    field and `<ClassName>` is the class identifier, and keep a key the package has published, such
-    as `Symbol.for('@orkestrel/contract.error')`, because a changed key stops recognizing every
-    earlier copy;
+    field and `<ClassName>` is the class identifier. When you rename the class, rename the key in
+    the same change, and keep no earlier key;
   - in the constructor, define an own non-enumerable, non-writable property under that key whose
     value is the error itself, so that a subclass instance holds its own identity there and a
     transparent `Proxy` object over the error forwards its target's;

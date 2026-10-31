@@ -96,3 +96,4 @@
 | 2026-10-31 | Shape-cell sweep, last passes: lsp and mcp; every package guide is clear of the retired notation | Orchestrator | each package's `Describe the computed Signature cell in the guide's prose` commit |
 | 2026-10-31 | Review of scaffold's unit: every claim held; the Orchestrator renamed the test-setup helpers to the artifact term, sorted an example's imports, and headed the group table `ArtifactGroup` | reviewer | scaffold `3ed3059c1` |
 | 2026-10-31 | scaffold 0.0.119 upload artifact: a `git archive` export of `5eca32026`, installed, built, and proved by `test:distribution -- --mode release`; its `host.json` equals the release commit's | Orchestrator | `.orkestrel/plan.md` § State |
+| 2026-10-31 | Ruling: no compatibility and no deprecation; every error brand key is `<package>.<ClassName>` and follows its class through a rename | user | `.orkestrel/plan.md` § Rulings |
