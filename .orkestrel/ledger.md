@@ -34,30 +34,39 @@
 | 2026-10-30 | workflow item 109: `TaskActivityOperation` and `taskDefinitionShape`; contract imports deferred | opus | workflow `2714ef2` |
 | 2026-10-30 | server item 104: `SSEStreamInterface` | opus | server `2033fea` |
 | 2026-10-30 | worker items 108 and 111: `Job` and the queue's own contract | opus | worker `7cb1745` |
-| 2026-10-30 | table item 106: the `Grid` family, keeping the names that bind the `<table>` element; the limits' contract import deferred | opus | table, uncommitted |
+| 2026-10-30 | table item 106: the `Grid` family, keeping the names that bind the `<table>` element; the limits' contract import deferred | opus | table `18c041d` |
 | 2026-10-30 | csv item 85: the renames; the `BOM` import deferred | opus | csv `20ff6dc` |
 | 2026-10-30 | User ruling: a renamed concept carries its new term across its package's API in the same release | user | `.orkestrel/plan.md` § Rulings |
 | 2026-10-30 | interpret vocabulary: the recipe term across the API; every `Interpretation.digest` changes with its renamed keys | opus | interpret `d225645` |
 | 2026-10-30 | workspace vocabulary: `clampCaret` and the caret term | opus | workspace `fa4f2a4` |
-| 2026-10-30 | agent item 82: `readBodyText` | opus | agent, uncommitted |
+| 2026-10-30 | agent item 82: `readBodyText` | opus | agent `1e82d145` |
 | 2026-10-30 | probe item 96: `StageResult`, `isStageResult`, and `computeWorkspaceDigest` | opus | probe, uncommitted |
 | 2026-10-30 | program items 98 and 112: `hasProgramKey` and reason's validation result | opus | program `003115b` |
 | 2026-10-30 | Review of msg, workspace, router, server, csv, workflow, worker, and table: every claim held but router's `Allow` clause and workflow's old-name case, which the Orchestrator fixed | reviewer | each package's item commit |
-| 2026-10-30 | table grid prose: the grid term in messages and docs | opus | in flight |
+| 2026-10-30 | table grid prose: the grid term in messages and docs; the Orchestrator restored the published `@orkestrel/table.TableError` brand key the rename had changed | opus | table `18c041d` |
 | 2026-10-30 | scaffold release chain for 0.0.119; `test:src:bin` timed out under load and passed on its rerun | Orchestrator | scaffold `Release 0.0.119` commit |
 | 2026-10-30 | lsp item 91: the `LSPStdioTransport` family | opus | lsp, uncommitted |
-| 2026-10-30 | mcp items 77 and 93: the environment conflicts and `WorkerScopeInterface` | opus | in flight |
+| 2026-10-30 | mcp items 77 and 93: `createHTTPClientTransport` in core, the `Browser` and `Node` WebSocket client names on one core options base, and `WorkerScopeInterface` | opus | mcp, uncommitted |
 | 2026-10-30 | middleware items 78 and 94: `createNodeCompression` on the server face and `AssetRepresentation` | opus | middleware, uncommitted |
 | 2026-10-30 | Adoption census: the names each changed package dropped from its mirrored guide, and every catalog import of them | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-30 | Local pins: workflow, interpret, router, and workspace on a contract tarball; msg on contract and codec; csv on codec; msg and csv declare codec | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-30 | Review of interpret and program: every claim held but interpret's untested digest keys on the failure path, which the Orchestrator closed with a `NO_RECIPE` digest case, and program's misnamed case, which the Orchestrator renamed | reviewer | interpret `d225645`, program `003115b` |
-| 2026-10-30 | workflow deferred: `errorToMessage`, `success`, and `failure` from contract | opus | in flight |
-| 2026-10-30 | msg deferred: `decodeLatin1` from codec and the Result helpers from contract | opus | in flight |
+| 2026-10-30 | workflow deferred: `errorToMessage`, `success`, and `failure` from contract | opus | workflow, uncommitted |
+| 2026-10-30 | msg deferred: `decodeLatin1` from codec and the Result helpers from contract | opus | msg, uncommitted |
 | 2026-10-30 | Visits of form, sse, and guide: every gate green; form, sse, and guide pinned to local contract, codec, and markdown tarballs, and sse declares codec | Orchestrator | `.orkestrel/plan.md` § State |
-| 2026-10-30 | Review of agent and probe | reviewer | in flight |
-| 2026-10-30 | rater item 99: `WorksheetStage` and `isWorksheetStage` | opus | in flight |
+| 2026-10-30 | Review of agent and probe: every claim held but agent's case asserting the old name's absence, which the Orchestrator deleted, and probe's check term naming the stage result, which a vocabulary unit carries | reviewer | agent `1e82d145` |
+| 2026-10-30 | rater item 99: `WorksheetStage` and `isWorksheetStage` | opus | rater, uncommitted |
 | 2026-10-30 | sea item 103: `computeCompressionSize` | opus | in flight |
 | 2026-10-30 | Visits of brief and console: every gate green | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-30 | Review of lsp and middleware | reviewer | in flight |
 | 2026-10-30 | interpret deferred: `escapeRegExp` from contract | opus | in flight |
 | 2026-10-30 | guide item 87 with markdown's renames adopted | opus | in flight |
+| 2026-10-31 | table deferred: the five limits from contract | opus | in flight |
+| 2026-10-31 | probe vocabulary: the stage-result term across the API | opus | in flight |
+| 2026-10-31 | agent adoption: workspace's renames and contract's `errorToMessage`, on local workspace and contract tarballs | opus | in flight |
+| 2026-10-31 | Finding: under a local contract pin, `test:policy` and `test:config` cannot load, because scaffold 0.0.118 imports `compareValues`; from the registry, scaffold resolves its own contract 0.0.20, so those suites run in the publish waves | Orchestrator | `.orkestrel/plan.md` § State |
+| 2026-10-31 | Visits of capture, ollama, and toolbox: every gate green but ollama's `test:policy`, which refuses its `tests/setupServer.ts` export `listChildren` that markdown owns; each pinned to its changed upstreams | Orchestrator | `.orkestrel/plan.md` § State |
+| 2026-10-31 | Review of mcp, rater, workflow, and msg | reviewer | in flight |
+| 2026-10-31 | capture adoption: process's `Duplex` names | opus | in flight |
+| 2026-10-31 | ollama adoption: process's `Duplex` names and the `listChildren` helper's rename | opus | in flight |
+| 2026-10-31 | toolbox adoption: workspace's and server's renames | opus | in flight |
