@@ -98,3 +98,5 @@
 | 2026-10-31 | scaffold 0.0.119 upload artifact: a `git archive` export of `5eca32026`, installed, built, and proved by `test:distribution -- --mode release`; its `host.json` equals the release commit's | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Ruling: no compatibility and no deprecation; every error brand key is `<package>.<ClassName>` and follows its class through a rename | user | `.orkestrel/plan.md` § Rulings |
 | 2026-10-31 | Ruling: every check and gate runs on the latest Node 22 unless a package requires 24 | user | `.orkestrel/plan.md` § Rulings |
+| 2026-10-31 | transfers-seam: `HostStageOptions.transfers` and the emptied `SURFACE_TRANSFERS` | opus | scaffold `Take stageHost's transfers through an option` commit |
+| 2026-10-31 | Review of transfers-seam: every claim held; the Orchestrator reworded three token-verb sentences | reviewer | same commit |
