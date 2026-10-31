@@ -49,11 +49,6 @@ The members are readonly; `jsonrpc` is `'2.0'`; `params` is `Readonly<Record<str
 - **mcp** declares the package, adds it to its build's externals and its distribution proof's pinned table, deletes its JSON-RPC types, codes, `isJSONRPCId`, nine guards, and both builders, and imports them across the files that name them. Every unreadable-id error envelope on HTTP, stdio, WebSocket, and the legacy client transport carries `id: null`, so `buildJSONRPCError(undefined, …)` becomes `buildJSONRPCError(null, …)`, and every test pinning an absent `id` on an error envelope pins `id: null`. `JSONRPCResultResponse.result` widens from MCP's result union to `unknown`, and `MCPLegacy.ts` narrows it with `isMCPResult` before reading it.
 - **probe**, which depends on both, imports only `JSONRPC_SERVER_ERROR` from mcp and needs no edit. **browser**'s `BROWSE_UPSTREAM` list in scaffold's `src/core/constants.ts` gains the package when browser re-pins an mcp that declares it.
 
-## Open decisions
+## Decisions
 
-- Approve ruling 1's wire change: mcp's error envelopes carry `id: null` where they omit `id` today. No third-party MCP client was run against it.
-- By-name `params` only: the guards refuse JSON-RPC § 4.2 by-position arrays, as both copies do; a later generic consumer would need the array arm.
-- `result: unknown` drops mcp's compile-time claim that a method handler returns an MCP result; mcp's typecheck against the package proves the reads still narrow.
-- `buildJSONRPCResult` is a typed literal with no translation, kept as the success half of a pair; deleting it under the wrapper law is the alternative.
-- The plain-record `isRecord` root refuses a class instance, which `.claude/rules/patterns.md` § Foreign contracts asks a guard over a foreign interface to accept; both copies refuse one today.
-- Creating the `orkestrel/jsonrpc` GitHub repository and publishing the package's first version, 0.0.1.
+The user approved every proposed ruling on 2026-10-30, mcp's `id: null` wire change among them, with the repository's creation and the 0.0.1 release.

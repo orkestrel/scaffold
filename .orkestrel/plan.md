@@ -19,17 +19,17 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - 2026-10-30, the user: `@orkestrel/contract` gains `escapeRegExp`, `errorToMessage`, `success`, `failure`, `isSuccess`, `isFailure`, and the five shared `*_LIMIT` constants; `@orkestrel/codec` gains `BOM`, and csv, sse, and msg declare codec; the JSON-RPC 2.0 wire contract moves into an added `@orkestrel/jsonrpc` package at layer 1 that lsp and mcp declare, never into codec; table renames its family to `Grid*` and database keeps `Table*`; the sweep consult's replacement words stand.
 - 2026-10-30, the user: the `astra` lane holds writer units, the `opus` role holds them while that lane is unavailable, and each review runs on an engine that did not write the work; a design question goes to a consult before a mechanism is improvised.
 - 2026-10-30, the user: one one-time code per upload batch, asked for right before it; a release commit pushes only after the registry serves its version; never push tags.
+- 2026-10-30, the user: `.orkestrel/jsonrpc-design.md`'s proposed rulings stand, mcp's error envelopes carry `id: null`, the `orkestrel/jsonrpc` repository is created, and its package publishes 0.0.1; the wave runs to completion, asking only for one-time codes.
 
 ## Open decisions
 
-- `.orkestrel/jsonrpc-design.md` § Open decisions: the design round's rulings for `@orkestrel/jsonrpc`, its wire change for mcp, and the creation of its repository and first release, before item 81's unit starts.
-- The start of execution: the user holds the wave at its prepared state until they resume it.
+- None.
 
 ## State
 
 - 2026-10-30: the fleet surface campaign retired at `e8b95e120`, leaving items 77 to 112 as this wave's units; scaffold 0.0.118 records 107 collisions.
 - 2026-10-30: contract's release visit re-pinned scaffold 0.0.118 and guide 0.0.28 and committed `Overwrite with scaffold 0.0.118` (contract `fb46eac`, unpushed), every gate green and its built output unchanged; item 81's design round returned `.orkestrel/jsonrpc-design.md`.
-- Next: on the user's go-ahead, item 79's unit in contract, and on their rulings of the design's open decisions, the jsonrpc package's creation and unit.
+- Next: item 79's unit in contract, and the jsonrpc package's creation and unit beside it.
 
 ## Sequence
 
