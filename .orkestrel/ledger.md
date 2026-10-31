@@ -67,20 +67,25 @@
 | 2026-10-31 | Finding: under a local contract pin, `test:policy` and `test:config` cannot load, because scaffold 0.0.118 imports `compareValues`; from the registry, scaffold resolves its own contract 0.0.20, so those suites run in the publish waves | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Visits of capture, ollama, and toolbox: every gate green but ollama's `test:policy`, which refuses its `tests/setupServer.ts` export `listChildren` that markdown owns; each pinned to its changed upstreams | Orchestrator | `.orkestrel/plan.md` § State |
 | 2026-10-31 | Review of mcp, rater, workflow, and msg: every claim held; the Orchestrator ordered msg's type imports first | reviewer | mcp `b3aa1e9`, rater `88077c3`, workflow `db0c335`, msg `cf6eeb9` |
-| 2026-10-31 | capture adoption: process's `Duplex` names; every gate green | opus | capture, uncommitted |
-| 2026-10-31 | ollama adoption: process's `Duplex` names and `listChildren` renamed `collectTreeChildren`; every gate green | opus | ollama, uncommitted |
+| 2026-10-31 | capture adoption: process's `Duplex` names; every gate green | opus | capture `9293c85` |
+| 2026-10-31 | ollama adoption: process's `Duplex` names and `listChildren` renamed `collectTreeChildren`; every gate green | opus | ollama `7b38916` |
 | 2026-10-31 | toolbox adoption: workspace's and server's renames; check and build pass, and no suite loads, because the published agent 0.0.33 imports workspace's `isText` through the pin's override | opus | toolbox `2fb2d54` |
 | 2026-10-31 | lsp item 81: the jsonrpc adoption and process's `Duplex` names, on local jsonrpc and process tarballs; every gate green; jsonrpc's guards refuse a fractional `id` and a non-integer error `code` | opus | lsp, uncommitted |
 | 2026-10-31 | router deferred: `escapeRegExp` from contract | opus | router `5147ed5` |
 | 2026-10-31 | workspace deferred: `escapeRegExp` from contract | opus | workspace `8800016` |
-| 2026-10-31 | brief item 83 with interpret's recipe renames, on local interpret and contract tarballs; brief takes contract's `unknown failure` fallback where its copy wrote `an unreadable object was thrown` or an empty message | opus | brief, uncommitted |
+| 2026-10-31 | brief item 83 with interpret's recipe renames, on local interpret and contract tarballs; brief takes contract's `unknown failure` fallback where its copy wrote `an unreadable object was thrown` or an empty message | opus | brief `e7357f7` |
 | 2026-10-31 | Review of sea, guide, and interpret: every claim held | reviewer | sea `c8ac45d`, guide `6e8f4c9`, interpret `5fcfe79` |
-| 2026-10-31 | csv deferred: `BOM` from codec; every gate green | opus | csv, uncommitted |
+| 2026-10-31 | csv deferred: `BOM` from codec; every gate green | opus | csv `fc166e8` |
 | 2026-10-31 | form item 86: the five limits from contract; the Budgets table keeps the limits form enforces | opus | form, uncommitted |
-| 2026-10-31 | sse item 105: `BOM` from codec; every gate green; the Orchestrator named codec in its README requirements | opus | sse, uncommitted |
-| 2026-10-31 | mcp item 81: the jsonrpc adoption and server's `SSEStreamInterface`, on local jsonrpc and server tarballs | opus | in flight |
-| 2026-10-31 | console item 84: `TableColumn` | opus | in flight |
-| 2026-10-31 | Visits of the seventeen packages with no wave item | Orchestrator | in flight |
+| 2026-10-31 | sse item 105: `BOM` from codec; every gate green; the Orchestrator named codec in its README requirements | opus | sse `b6ff758` |
+| 2026-10-31 | mcp item 81: the jsonrpc adoption with the `id: null` envelopes, and server's `SSEStreamInterface`, on local jsonrpc and server tarballs; `test:distribution` cannot install until jsonrpc publishes | opus | mcp, uncommitted |
+| 2026-10-31 | console item 84: `TableColumn`; `test:policy` and `surface` refuse `TableColumn` until a scaffold catalog carries table's `Grid` guide, so console publishes after scaffold 0.0.120 | opus | console, uncommitted |
+| 2026-10-31 | Visits of the seventeen packages with no wave item: every gate green but study's `StudyExchangeSink` case, which timed out under host load | Orchestrator | each package's `Overwrite with scaffold 0.0.118` commit |
 | 2026-10-31 | Review of table, workspace, router, agent, and toolbox: every claim held but table's constants-only test file and agent's stale comment, which the Orchestrator closed, and toolbox's untested `list` operation, which waits for a suite that loads | reviewer | table `74919a3`, workspace `8800016`, router `5147ed5`, agent `bb06c6ec`, toolbox `2fb2d54` |
-| 2026-10-31 | Review of csv, sse, brief, capture, and ollama | reviewer | in flight |
-| 2026-10-31 | probe adoption: lsp's `LSPStdioTransport` names, on local lsp, process, and jsonrpc tarballs | opus | in flight |
+| 2026-10-31 | Review of csv, sse, brief, capture, and ollama: every claim held but brief's unstated fallback and its untested empty message, which the Orchestrator closed with a guide sentence and a case; csv names its runtime dependencies | reviewer | csv `fc166e8`, sse `b6ff758`, brief `e7357f7`, capture `9293c85`, ollama `7b38916` |
+| 2026-10-31 | probe adoption: lsp's `LSPStdioTransport` names, on local lsp, process, and jsonrpc tarballs; `test:distribution` cannot install the packed probe until jsonrpc publishes | opus | probe, uncommitted |
+| 2026-10-31 | Shape-cell sweep, first pass: the six sentences that describe the retired `Shape` cell deleted, and the one-off sentences reworded for the computed `Signature` cell, in 25 package guides; `format:check` and `test:guides` exit 0 in each but toolbox, whose suites wait for a published agent | Orchestrator | each package's `Describe the computed Signature cell in the guide's prose` commit |
+| 2026-10-31 | Shape-cell sweep, second pass: database, pool, qualifier, queue, relation, sqlite, template, terminal, timeout, tool, websocket, csv, sse, brief, and ollama; `format:check` and `test:guides` exit 0 in each | Orchestrator | each package's `Describe the computed Signature cell in the guide's prose` commit |
+| 2026-10-31 | Review of lsp's and mcp's jsonrpc adoption | reviewer | in flight |
+| 2026-10-31 | Review of console, form, and probe | reviewer | in flight |
+| 2026-10-31 | scaffold unit: item 102, the contract, process, and test adoptions, and item 107's rule and skill updates, on local contract, process, and test tarballs | opus | in flight |

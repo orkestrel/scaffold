@@ -45,9 +45,9 @@ Each package's units are committed ahead of its upload on local tarballs. Publis
 0. **Transfers.** scaffold 0.0.119: rule 5 and the wave's transfers (`Release 0.0.119`, chain green).
 1. **Layer 0.** contract: item 79.
 2. **Layer 1.** codec: item 80. jsonrpc 0.0.1: item 81. html: item 88. indexeddb: item 89. test: item 107. abort, budget, emitter, ndjson, sqlite, and timeout re-pin.
-3. **Layer 2.** csv, msg, and sse, each declaring codec: items 85, 95, and 105. console: item 84. form: item 86. markdown: item 92. process: item 97. reason: item 100. router: item 101. table: item 106. database, pool, template, tool, and websocket re-pin.
+3. **Layer 2.** csv, msg, and sse, each declaring codec: items 85, 95, and 105. form: item 86. markdown: item 92. process: item 97. reason: item 100. router: item 101. table: item 106. database, pool, template, tool, and websocket re-pin.
 4. **Layer 3.** capture: process's renames. guide: item 87 and markdown's renames. interpret: item 90. lsp: items 91 and 81. rater: item 99. sea: item 103. server: item 104. workspace: item 110. scaffold 0.0.120: item 102, the contract, process, and test adoptions, and item 107's rule and skill updates. qualifier, queue, relation, and terminal re-pin.
-5. **Layer 4.** brief: item 83 and interpret's renames. mcp: items 77, 81, and 93. middleware: items 78 and 94. program: items 98 and 112. worker: items 108 and 111. workflow: item 109.
+5. **Layer 4.** console: item 84, after scaffold 0.0.120 publishes a catalog whose table guide no longer claims `TableColumn`. brief: item 83 and interpret's renames. mcp: items 77, 81, and 93. middleware: items 78 and 94. program: items 98 and 112. worker: items 108 and 111. workflow: item 109.
 6. **Layer 5.** agent: item 82 and workspace's and contract's adoptions. probe: item 96 and lsp's renames. browser re-pins, and scaffold's `BROWSE_UPSTREAM` gains jsonrpc when browser re-pins an mcp that declares it.
 7. **Layer 6.** ollama: process's renames and the `collectTreeChildren` helper. toolbox: workspace's and server's renames.
 8. **Layer 7.** study re-pins.
