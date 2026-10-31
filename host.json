@@ -604,7 +604,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "a463a9f55a6c113c0cc61844bc046a01fe875a0cb5fe5c403c00034c60e408ed"
+			"digest": "1744af50375aaf803b4c521210a0d688963c23a8e9a02e5a8b1139e53a7af84e"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -970,19 +970,19 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "e4efd816f5bd77dafb2ad223d529e94806cbbeb1fe11dffe0b8b4cdc532cfcef"
+			"digest": "8033eeef42443aa97b1caa6439f613fbb6425fbc0609180746a2b21572c4eb19"
 		},
 		{
 			"storage": "guides/brief.md",
 			"destination": "guides/brief.md",
 			"executable": false,
-			"digest": "80788c817e14dcd5b08bcf7a4fd1a94fe3f60629e8d4a1ca6656460b80c502a9"
+			"digest": "392e1209e53f64a317b5aea43bad7d00d82ae8fdf7fdbbde96a327a6b7ee074b"
 		},
 		{
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "30260e48f94ef0c6cfdc8364b8d6c286b1107820c0ed2301a311ea8537457cf5"
+			"digest": "2750e69ff89ccdccf6c7c5524fe3d4d6d17cea2778a06b917ca23047a2f0cb5d"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -994,7 +994,7 @@
 			"storage": "guides/capture.md",
 			"destination": "guides/capture.md",
 			"executable": false,
-			"digest": "5335caf1c48db6db63ae69dada251e02d981ccce8863c760fc50cf8e27697fed"
+			"digest": "3687c8cf8601ec1564f5ad6ae39e519c44eb32f2e5ef01ec40348d4a11ee6f38"
 		},
 		{
 			"storage": "guides/codec.md",
@@ -1006,7 +1006,7 @@
 			"storage": "guides/console.md",
 			"destination": "guides/console.md",
 			"executable": false,
-			"digest": "3097c0c41471c31fd39a13776b7fab216af282471a959064bee7a669abd12b30"
+			"digest": "bbc198c599e062c518005cee10de6757da9beb1694e05f5a5c19b695ef818fcd"
 		},
 		{
 			"storage": "guides/contract.md",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/guide.md",
 			"destination": "guides/guide.md",
 			"executable": false,
-			"digest": "b8747025c58c3ea720c02db45d88a1047093f792c2fccde363080f82b0fb38be"
+			"digest": "60696bb79f692a605a152cbee706829479e74f2f6ddf1651a5f821f24c68d441"
 		},
 		{
 			"storage": "guides/html.md",
@@ -1060,7 +1060,7 @@
 			"storage": "guides/interpret.md",
 			"destination": "guides/interpret.md",
 			"executable": false,
-			"digest": "2096b2c52d8551ae6689aec8d4530bb87b4da34f5bec205da31e309dab7f13b5"
+			"digest": "6b5305233e95588a235c1f04928f42b574a4c42383e1fbc61824b80a9bb3bb7c"
 		},
 		{
 			"storage": "guides/jsonrpc.md",
@@ -1072,7 +1072,7 @@
 			"storage": "guides/lsp.md",
 			"destination": "guides/lsp.md",
 			"executable": false,
-			"digest": "708423d96a9122adf8982dadb6fbdf54d81fd8ca3fb7c01cdaa85869ad76fd7e"
+			"digest": "3f4ec8957428a5f6ac519f0465fd5c736c98325538b418b8c89e93f46b7e5c91"
 		},
 		{
 			"storage": "guides/markdown.md",
@@ -1084,13 +1084,13 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "309fd1a40927c866cc43186ce4629c44f30d7be846d04f848bc992b3871d8a96"
+			"digest": "88f6c0b6ab11b351f1c2c56d54e927f8e267bfcd43a2b1e112fb7fbdc9ec81ce"
 		},
 		{
 			"storage": "guides/middleware.md",
 			"destination": "guides/middleware.md",
 			"executable": false,
-			"digest": "39579242328adc69baf4d842c4bc560c83cea5c1e74ad1b09e40a7ca3ed9db55"
+			"digest": "d4196f5768d1ff129d530ea0bc123f03a4b73fc206700ea7d8cc54815c85ca70"
 		},
 		{
 			"storage": "guides/msg.md",
@@ -1108,7 +1108,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "93cbdf9a45e25bebc7a18033593213b39f194f9c5514f22325e1c1a7166b23b2"
+			"digest": "05a5ff5682a10094125886de461c89b92059802db132417b118c2a80f0d30888"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1120,7 +1120,7 @@
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "4448b57b45cb2832fd34e2fd92e99b483fb93dc5483a4fe024f363341fe62dd3"
+			"digest": "5f993a8b6b556d858d1026f82288be866ec69bcc9783a5331b2daab76607a48b"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1132,25 +1132,25 @@
 			"storage": "guides/program.md",
 			"destination": "guides/program.md",
 			"executable": false,
-			"digest": "46ea608eb97dc77a87453bb42103a3f58769b36c208bf31e70a206e10e6e35df"
+			"digest": "9382f5a5ed2435cd03eb4171f7586d20f5b2b19061d716fc6184be2605bf4bf8"
 		},
 		{
 			"storage": "guides/qualifier.md",
 			"destination": "guides/qualifier.md",
 			"executable": false,
-			"digest": "b67c14f568fb03ea4014a71926d7e38d769e53eba003e870d57a124e60cc5270"
+			"digest": "6f52daa59a2041b5282c11776dcbdf47616e137d2acf8db5d6588061b0858910"
 		},
 		{
 			"storage": "guides/queue.md",
 			"destination": "guides/queue.md",
 			"executable": false,
-			"digest": "9290e94e6cefcedd0c1f7c1f74563dd801d4d4d749d321c46dfbefbb2940316d"
+			"digest": "e14f9e331826327f59ba4378a8417c9dc6621b40ce9a0f1e4726a44dcb0d75bd"
 		},
 		{
 			"storage": "guides/rater.md",
 			"destination": "guides/rater.md",
 			"executable": false,
-			"digest": "e7d5d773a3198893ad01037b40785b08d2719b5170a079feb7355cc0d849f2a8"
+			"digest": "8809ce4fdb5cc4bffe4ba5c27676230cc783a57681a169e54655cceb6039b5bf"
 		},
 		{
 			"storage": "guides/reason.md",
@@ -1162,7 +1162,7 @@
 			"storage": "guides/relation.md",
 			"destination": "guides/relation.md",
 			"executable": false,
-			"digest": "3cd02efa7e5f43997cc77da3a355c31c5ca2cd48818941d49f3ffa9036e8a17d"
+			"digest": "03f97521e4d6057529bec4ca140ca707cdfe4cd1239dce54d4dbb8da01b63538"
 		},
 		{
 			"storage": "guides/router.md",
@@ -1180,13 +1180,13 @@
 			"storage": "guides/sea.md",
 			"destination": "guides/sea.md",
 			"executable": false,
-			"digest": "326a964896ccb9f590b1b9a983f3541f04d0229459def0aad085b89de6544a64"
+			"digest": "57875df4d7499e667a17e55bbd80146ccf382b35d6c0467b159b3199a650c7e0"
 		},
 		{
 			"storage": "guides/server.md",
 			"destination": "guides/server.md",
 			"executable": false,
-			"digest": "c7424beb8d1c38cdff10e5ea8c1362037112780ff114a72eee0dcca9f94ffd47"
+			"digest": "6440fb22098f41afa0ddbeafd0966696f88d9d57df9cadac1b7a8779fc039ce4"
 		},
 		{
 			"storage": "guides/sqlite.md",
@@ -1222,7 +1222,7 @@
 			"storage": "guides/terminal.md",
 			"destination": "guides/terminal.md",
 			"executable": false,
-			"digest": "a0fbdeac6ee8eb65ea4e4a0737f2f096dbf1e2f021440d586575059992f66856"
+			"digest": "63900936630bb077dadae27167164885d04fbbc353690f34f3a45c31adc25813"
 		},
 		{
 			"storage": "guides/test.md",
@@ -1246,7 +1246,7 @@
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "536f1eb438c25770421a86c35bb42107041d90bfb28a69069b23d6dd4c04145f"
+			"digest": "f0d20f9da6f3a9715ca0b737a5458e7dc39aa3b3efb5db76e1abc687932fbeb4"
 		},
 		{
 			"storage": "guides/websocket.md",
@@ -1258,19 +1258,19 @@
 			"storage": "guides/worker.md",
 			"destination": "guides/worker.md",
 			"executable": false,
-			"digest": "39ffc2a919522d806f4bcaf0424e641c78cb2211bb6bf82ddf78188758bfe1c1"
+			"digest": "9c72d4495e243e592727f7dd2facb970b9dcb16c16bc3d30a17050c911af10fd"
 		},
 		{
 			"storage": "guides/workflow.md",
 			"destination": "guides/workflow.md",
 			"executable": false,
-			"digest": "8796f9cb552112dbe50a2a65db72f1347bd4ff35d72279e4809a6d21435f87ec"
+			"digest": "fa29da8863e84aceb5c0fc9e0868df81c77a5f76e3a6353e213d33a8cf5bc875"
 		},
 		{
 			"storage": "guides/workspace.md",
 			"destination": "guides/workspace.md",
 			"executable": false,
-			"digest": "ee9d57c3438969443d4ce006810455a31128990a1311e3fe6b352ccd3f09c2e1"
+			"digest": "6046d980582ace9fa4c95c6f3819471e0a0306bc24408eb5cfe70524853cbebe"
 		},
 		{
 			"storage": "scripts/browsers.sh",
@@ -1392,426 +1392,6 @@
 		"guides",
 		"scripts"
 	],
-	"surface": [
-		{
-			"name": "Asset",
-			"owners": [
-				"middleware",
-				"sea"
-			]
-		},
-		{
-			"name": "Check",
-			"owners": [
-				"probe",
-				"reason"
-			]
-		},
-		{
-			"name": "ColumnSpec",
-			"owners": [
-				"console",
-				"toolbox"
-			]
-		},
-		{
-			"name": "Dispatch",
-			"owners": [
-				"brief",
-				"worker"
-			]
-		},
-		{
-			"name": "JSONRPCError",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCErrorResponse",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCId",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCInvocation",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCMessage",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCNotification",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCRequest",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCResponse",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPCResultResponse",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPC_INTERNAL_ERROR",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPC_INVALID_PARAMS",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPC_INVALID_REQUEST",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPC_METHOD_NOT_FOUND",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "JSONRPC_PARSE_ERROR",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "Position",
-			"owners": [
-				"csv",
-				"workspace"
-			]
-		},
-		{
-			"name": "ScopeInterface",
-			"owners": [
-				"agent",
-				"mcp"
-			]
-		},
-		{
-			"name": "Stage",
-			"owners": [
-				"probe",
-				"rater"
-			]
-		},
-		{
-			"name": "StdioClientTransport",
-			"owners": [
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "StdioClientTransportInterface",
-			"owners": [
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "StdioClientTransportOptions",
-			"owners": [
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "StreamInterface",
-			"owners": [
-				"agent",
-				"server"
-			]
-		},
-		{
-			"name": "TaskOperation",
-			"owners": [
-				"brief",
-				"workflow"
-			]
-		},
-		{
-			"name": "Template",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "TemplateManager",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "TemplateManagerEventMap",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "TemplateManagerInterface",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "TemplateManagerOptions",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "UNSAFE_FIELD_SEGMENTS",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "buildJSONRPCError",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "buildJSONRPCResult",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "computeDigest",
-			"owners": [
-				"probe",
-				"scaffold"
-			]
-		},
-		{
-			"name": "computeSize",
-			"owners": [
-				"sea",
-				"workspace"
-			]
-		},
-		{
-			"name": "createStdioClientTransport",
-			"owners": [
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "createTemplateManager",
-			"owners": [
-				"interpret",
-				"template"
-			]
-		},
-		{
-			"name": "errorToMessage",
-			"owners": [
-				"brief",
-				"contract",
-				"workflow"
-			]
-		},
-		{
-			"name": "escapeRegExp",
-			"owners": [
-				"contract",
-				"guide",
-				"interpret",
-				"workspace"
-			]
-		},
-		{
-			"name": "failure",
-			"owners": [
-				"contract",
-				"workflow"
-			]
-		},
-		{
-			"name": "hasReservedKey",
-			"owners": [
-				"program",
-				"qualifier"
-			]
-		},
-		{
-			"name": "isCheck",
-			"owners": [
-				"probe",
-				"reason"
-			]
-		},
-		{
-			"name": "isJSONRPCError",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCErrorResponse",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCId",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCInvocation",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCMessage",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCNotification",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCRequest",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCResponse",
-			"owners": [
-				"jsonrpc",
-				"lsp",
-				"mcp"
-			]
-		},
-		{
-			"name": "isJSONRPCResultResponse",
-			"owners": [
-				"jsonrpc",
-				"mcp"
-			]
-		},
-		{
-			"name": "isStage",
-			"owners": [
-				"probe",
-				"rater"
-			]
-		},
-		{
-			"name": "isText",
-			"owners": [
-				"brief",
-				"workspace"
-			]
-		},
-		{
-			"name": "readText",
-			"owners": [
-				"agent",
-				"test"
-			]
-		},
-		{
-			"name": "success",
-			"owners": [
-				"contract",
-				"workflow"
-			]
-		},
-		{
-			"name": "taskShape",
-			"owners": [
-				"brief",
-				"workflow"
-			]
-		}
-	],
-	"digest": "bd0807558997ed081defabd4120f990dbe90e4afd227e75601503fc55800c81e"
+	"surface": [],
+	"digest": "8fad2924ab66573f9e584a74c59e22538aeaeea0d574d633a07b2887f6549c88"
 }
