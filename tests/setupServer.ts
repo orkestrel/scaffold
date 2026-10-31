@@ -14,6 +14,7 @@ import type {
 	Plan,
 	ScaffoldErrorCode,
 	Snapshot,
+	SurfaceTransfer,
 } from '@src/core'
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
@@ -2471,6 +2472,12 @@ export const STAGE_SURFACE_FILES: Snapshot = Object.freeze({
 	'checkout/guides/alpha.md': STAGE_SURFACE_TEXT,
 	'checkout/guides/beta.md': STAGE_SURFACE_TEXT,
 })
+
+/** Supplies fictional declared transfers for the stage's transfer cases. */
+export const STAGE_TRANSFERS: readonly SurfaceTransfer[] = Object.freeze([
+	Object.freeze({ name: 'Waybill', keeper: 'freight', item: 7 }),
+	Object.freeze({ name: 'formatTariff', keeper: 'customs', item: 8 }),
+])
 
 /**
  * Builds the manifest a host staged from {@link createCheckout} must declare.

@@ -1627,8 +1627,8 @@ export function stageBytes(
  *
  * @param checkout - The checkout the vendored paths are read from.
  * @param host - The vendored host root to fill; it must be absent or empty.
- * @param options - The inventory selection, establishment switch, and reporting callback.
- * Default: no reporting.
+ * @param options - The inventory selection, establishment switch, reporting callback, and
+ * declared transfers. Default: no reporting, and the transfers in `SURFACE_TRANSFERS`.
  * @returns One entry per staged file, sorted by storage name.
  * @throws `ScaffoldError('INVALID', …)` when either argument is not a host path
  * or a vendored path leaves the checkout or the host root.
@@ -1636,8 +1636,8 @@ export function stageBytes(
  * host root is not vacant, the checkout does not carry every vendored path, two
  * vendored files claim one storage name, a vendored file is not a plain file
  * within the artifact ceiling, published guides are unreadable, a staged
- * collision's owner set is not a subset of its published owner set, a
- * `SURFACE_TRANSFERS` entry is spent because its keeper alone claims the name, the
+ * collision's owner set is not a subset of its published owner set, a declared
+ * transfer is spent because its keeper alone claims the name, the
  * inventory is absent without `establish: true`, or the staged manifest does not read back.
  * @throws `ScaffoldError('WRITE', …)` when a staged file or the manifest cannot
  * be written.
@@ -1674,10 +1674,11 @@ export function stageBytes(
  * the canon and reference files for reading. Every catalog package must have a
  * guide in the discovered membership before the host is written.
  * Copied guides must carry no collision whose name and exact owner set the
- * committed inventory lacks. A `SURFACE_TRANSFERS` entry that another guide claims
- * admits its keeper beside the recorded owners, or beside the one owner of a name
- * the inventory lacks, and the staged surface records that keeper whether or not
- * its guide is mirrored. An absent inventory requires `establish: true`;
+ * committed inventory lacks. A declared transfer that another guide claims admits
+ * its keeper beside the recorded owners, or beside the one owner of a name the
+ * inventory lacks, and the staged surface records that keeper whether or not its
+ * guide is mirrored. `options.transfers` declares the transfers, and its default is
+ * `SURFACE_TRANSFERS`. An absent inventory requires `establish: true`;
  * an inventory without a valid recorded Surface is refused.
  * Everything downstream — the missing-path refusal, the
  * storage collision guard, the sort, the digests, and the root inventory — reads
@@ -1888,7 +1889,7 @@ export function stageHost(
 		claims.flatMap(({ owner, names }) => names.map((name) => ({ name, owner }))),
 		({ name }) => name,
 	)
-	const transfers = SURFACE_TRANSFERS.map((transfer) => {
+	const transfers = (options?.transfers ?? SURFACE_TRANSFERS).map((transfer) => {
 		const owners = new Set(claimants.get(transfer.name)?.map(({ owner }) => owner))
 		return {
 			...transfer,

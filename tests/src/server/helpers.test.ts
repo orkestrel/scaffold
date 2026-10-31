@@ -136,6 +136,7 @@ import {
 	STORAGE_PATH_CASES,
 	STAGE_SURFACE_FILES,
 	STAGE_SURFACE_TEXT,
+	STAGE_TRANSFERS,
 	supportsMappedLoopback,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
@@ -2827,16 +2828,16 @@ describe('stageHost', () => {
 			const table =
 				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n'
 			workspace.write(
-				'checkout/guides/lsp.md',
-				`${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n`,
+				'checkout/guides/harbor.md',
+				`${table}| \`Waybill\` | interface | \`{ cargo }\` | Describes. |\n`,
 			)
 			workspace.write(
-				'checkout/guides/mcp.md',
-				`${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n`,
+				'checkout/guides/ledger.md',
+				`${table}| \`Waybill\` | interface | \`{ cargo }\` | Describes. |\n`,
 			)
 			workspace.write(
-				'checkout/guides/interpret.md',
-				`${table}| \`escapeRegExp\` | function | \`(text: string) => string\` | Escapes. |\n`,
+				'checkout/guides/docket.md',
+				`${table}| \`formatTariff\` | function | \`(rate: number) => string\` | Formats. |\n`,
 			)
 			workspace.write(
 				'checkout/host.json',
@@ -2844,19 +2845,19 @@ describe('stageHost', () => {
 					buildStagedManifest({
 						surface: [
 							{ name: 'Another', owners: ['alpha', 'beta'] },
-							{ name: 'JSONRPCId', owners: ['lsp', 'mcp'] },
 							{ name: 'Shared', owners: ['alpha', 'beta'] },
+							{ name: 'Waybill', owners: ['harbor', 'ledger'] },
 						],
 					}),
 				),
 			)
 			const host = join(workspace.path, 'host')
-			stageHost(checkout, host)
+			stageHost(checkout, host, { transfers: STAGE_TRANSFERS })
 			expect(readHostFloor(host).manifest.surface).toStrictEqual([
 				{ name: 'Another', owners: ['alpha', 'beta'] },
-				{ name: 'JSONRPCId', owners: ['jsonrpc', 'lsp', 'mcp'] },
 				{ name: 'Shared', owners: ['alpha', 'beta'] },
-				{ name: 'escapeRegExp', owners: ['contract', 'interpret'] },
+				{ name: 'Waybill', owners: ['freight', 'harbor', 'ledger'] },
+				{ name: 'formatTariff', owners: ['customs', 'docket'] },
 			])
 		} finally {
 			workspace.destroy()
@@ -2869,12 +2870,12 @@ describe('stageHost', () => {
 			const checkout = createCheckout(workspace, 'checkout')
 			const table =
 				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n'
-			const rows = `${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n| \`escapeRegExp\` | function | \`(text: string) => string\` | Escapes. |\n`
-			workspace.write('checkout/guides/lsp.md', rows)
-			workspace.write('checkout/guides/mcp.md', rows)
+			const rows = `${table}| \`Waybill\` | interface | \`{ cargo }\` | Describes. |\n| \`formatTariff\` | function | \`(rate: number) => string\` | Formats. |\n`
+			workspace.write('checkout/guides/harbor.md', rows)
+			workspace.write('checkout/guides/ledger.md', rows)
 			workspace.write(
-				'checkout/guides/table.md',
-				`${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n`,
+				'checkout/guides/quay.md',
+				`${table}| \`Waybill\` | interface | \`{ cargo }\` | Describes. |\n`,
 			)
 			workspace.write(
 				'checkout/host.json',
@@ -2882,16 +2883,20 @@ describe('stageHost', () => {
 					buildStagedManifest({
 						surface: [
 							{ name: 'Another', owners: ['alpha', 'beta'] },
-							{ name: 'JSONRPCId', owners: ['lsp', 'mcp'] },
 							{ name: 'Shared', owners: ['alpha', 'beta'] },
+							{ name: 'Waybill', owners: ['harbor', 'ledger'] },
 						],
 					}),
 				),
 			)
-			expect(captureError(() => stageHost(checkout, join(workspace.path, 'host')))).toMatchObject({
+			expect(
+				captureError(() =>
+					stageHost(checkout, join(workspace.path, 'host'), { transfers: STAGE_TRANSFERS }),
+				),
+			).toMatchObject({
 				code: 'TARGET',
 				message:
-					'Staged Surface collisions differ from the inventory: JSONRPCId staged (jsonrpc, lsp, mcp, table), recorded (lsp, mcp), transferred to jsonrpc; escapeRegExp staged (contract, lsp, mcp), recorded (absent), transferred to contract',
+					'Staged Surface collisions differ from the inventory: Waybill staged (freight, harbor, ledger, quay), recorded (harbor, ledger), transferred to freight; formatTariff staged (customs, harbor, ledger), recorded (absent), transferred to customs',
 			})
 			expect(workspace.has('host/manifest.json')).toBe(false)
 		} finally {
@@ -2904,27 +2909,27 @@ describe('stageHost', () => {
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const row =
-				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `JSONRPCId` | type | `string | number` | Names. |\n'
-			workspace.write('checkout/guides/jsonrpc.md', row)
-			workspace.write('checkout/guides/lsp.md', row)
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Waybill` | interface | `{ cargo }` | Describes. |\n'
+			workspace.write('checkout/guides/freight.md', row)
+			workspace.write('checkout/guides/harbor.md', row)
 			workspace.write(
 				'checkout/host.json',
 				JSON.stringify(
 					buildStagedManifest({
 						surface: [
 							{ name: 'Another', owners: ['alpha', 'beta'] },
-							{ name: 'JSONRPCId', owners: ['jsonrpc', 'lsp', 'mcp'] },
 							{ name: 'Shared', owners: ['alpha', 'beta'] },
+							{ name: 'Waybill', owners: ['freight', 'harbor', 'ledger'] },
 						],
 					}),
 				),
 			)
 			const host = join(workspace.path, 'host')
-			stageHost(checkout, host)
+			stageHost(checkout, host, { transfers: STAGE_TRANSFERS })
 			expect(readHostFloor(host).manifest.surface).toStrictEqual([
 				{ name: 'Another', owners: ['alpha', 'beta'] },
-				{ name: 'JSONRPCId', owners: ['jsonrpc', 'lsp'] },
 				{ name: 'Shared', owners: ['alpha', 'beta'] },
+				{ name: 'Waybill', owners: ['freight', 'harbor'] },
 			])
 		} finally {
 			workspace.destroy()
@@ -2940,13 +2945,17 @@ describe('stageHost', () => {
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write(
-				'checkout/guides/jsonrpc.md',
-				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `JSONRPCId` | type | `string | number` | Names. |\n',
+				'checkout/guides/freight.md',
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Waybill` | interface | `{ cargo }` | Describes. |\n',
 			)
-			expect(captureError(() => stageHost(checkout, join(workspace.path, 'host')))).toMatchObject({
+			expect(
+				captureError(() =>
+					stageHost(checkout, join(workspace.path, 'host'), { transfers: STAGE_TRANSFERS }),
+				),
+			).toMatchObject({
 				code: 'TARGET',
 				message:
-					'Surface transfers are spent, so remove them from SURFACE_TRANSFERS: JSONRPCId to jsonrpc under item 81',
+					'Surface transfers are spent, so remove them from SURFACE_TRANSFERS: Waybill to freight under item 7',
 			})
 			expect(workspace.has('host/manifest.json')).toBe(false)
 		} finally {

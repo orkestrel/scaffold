@@ -303,42 +303,7 @@ export const HOST_INVENTORY_PATH = 'host.json'
  * whose keeper alone claims the name. `.claude/rules/names.md` § Fleet name ownership rule 5
  * governs when a transfer is declared and removed.
  */
-export const SURFACE_TRANSFERS: readonly SurfaceTransfer[] = Object.freeze(
-	[
-		...['errorToMessage', 'escapeRegExp', 'failure', 'success'].map((name) => ({
-			name,
-			keeper: 'contract',
-			item: 79,
-		})),
-		...[
-			'JSONRPCError',
-			'JSONRPCErrorResponse',
-			'JSONRPCId',
-			'JSONRPCInvocation',
-			'JSONRPCMessage',
-			'JSONRPCNotification',
-			'JSONRPCRequest',
-			'JSONRPCResponse',
-			'JSONRPCResultResponse',
-			'JSONRPC_INTERNAL_ERROR',
-			'JSONRPC_INVALID_PARAMS',
-			'JSONRPC_INVALID_REQUEST',
-			'JSONRPC_METHOD_NOT_FOUND',
-			'JSONRPC_PARSE_ERROR',
-			'buildJSONRPCError',
-			'buildJSONRPCResult',
-			'isJSONRPCError',
-			'isJSONRPCErrorResponse',
-			'isJSONRPCId',
-			'isJSONRPCInvocation',
-			'isJSONRPCMessage',
-			'isJSONRPCNotification',
-			'isJSONRPCRequest',
-			'isJSONRPCResponse',
-			'isJSONRPCResultResponse',
-		].map((name) => ({ name, keeper: 'jsonrpc', item: 81 })),
-	].map((transfer) => Object.freeze(transfer)),
-)
+export const SURFACE_TRANSFERS: readonly SurfaceTransfer[] = Object.freeze([])
 
 /**
  * Lists the vendored paths whose present bytes belong to each workspace, frozen.

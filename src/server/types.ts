@@ -11,6 +11,7 @@ import type {
 	Release,
 	Snapshot,
 	SurfaceCollision,
+	SurfaceTransfer,
 } from '@src/core'
 
 /**
@@ -125,11 +126,13 @@ export type SurfaceLoader = (specifier: string) => unknown
  * `inventory` is relative to the checkout. Default: `host.json`.
  * `establish`: if `true`, an absent inventory establishes the baseline; if `false`,
  * an absent inventory refuses staging. Default: `false`.
+ * `transfers` lists the declared transfers the stage admits. Default: `SURFACE_TRANSFERS`.
  */
 export interface HostStageOptions {
 	readonly inventory?: string
 	readonly establish?: boolean
 	readonly report?: (message: string) => void
+	readonly transfers?: readonly SurfaceTransfer[]
 }
 
 /**
