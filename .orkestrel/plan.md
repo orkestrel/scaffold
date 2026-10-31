@@ -20,6 +20,7 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - 2026-10-30, the user: the `astra` lane holds writer units, the `opus` role holds them while that lane is unavailable, and each review runs on an engine that did not write the work; a design question goes to a consult before a mechanism is improvised.
 - 2026-10-30, the user: one one-time code per upload batch, asked for right before it; a release commit pushes only after the registry serves its version; never push tags.
 - 2026-10-30, the user: `.orkestrel/jsonrpc-design.md`'s proposed rulings stand, mcp's error envelopes carry `id: null`, the `orkestrel/jsonrpc` repository is created, and its package publishes 0.0.1; the wave runs to completion, asking only for one-time codes.
+- 2026-10-30, the user: a name moves to the keeper a `ROADMAP.md` item names through a declared transfer, `.claude/rules/names.md` § Fleet name ownership rule 5: `SURFACE_TRANSFERS` names it, the stage admits exactly that keeper, the policy sweep grandfathers a name the installed record admits the target to, and the close empties the list; one scaffold release carries it before layer 0.
 
 ## Open decisions
 
@@ -29,10 +30,12 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 
 - 2026-10-30: the fleet surface campaign retired at `e8b95e120`, leaving items 77 to 112 as this wave's units; scaffold 0.0.118 records 107 collisions.
 - 2026-10-30: contract's release visit re-pinned scaffold 0.0.118 and guide 0.0.28 and committed `Overwrite with scaffold 0.0.118` (contract `fb46eac`, unpushed), every gate green and its built output unchanged; item 81's design round returned `.orkestrel/jsonrpc-design.md`.
-- Next: item 79's unit in contract, and the jsonrpc package's creation and unit beside it.
+- 2026-10-30: the item units for contract, jsonrpc, codec, html, indexeddb, and test are written and reviewed; contract's, codec's, and jsonrpc's policy sweeps refuse their added names until a scaffold release declares the transfers.
+- Next: § Sequence step 0, the transfer unit and scaffold's release.
 
 ## Sequence
 
+0. **Transfers.** scaffold: rule 5 and the wave's transfers, released before layer 0.
 1. **Layer 0.** contract: item 79.
 2. **Layer 1.** codec: item 80. jsonrpc: item 81's design round and first release. html: item 88. indexeddb: item 89. test: item 107.
 3. **Layer 2.** csv, msg, and sse, each declaring codec after item 80 publishes: items 85, 95, and 105. form: item 86. markdown: item 92. process: item 97. reason: item 100. router: item 101. table: item 106; then console: item 84.
