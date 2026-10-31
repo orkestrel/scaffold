@@ -102,3 +102,13 @@
 | 2026-10-31 | Review of transfers-seam: every claim held; the Orchestrator reworded three token-verb sentences | reviewer | same commit |
 | 2026-10-31 | Ruling: Node 22's bundled npm is upgraded to npm 11.21.1, the floor `wave.ts` needs | user | `.orkestrel/plan.md` § Rulings |
 | 2026-10-31 | toolbox list-kind: the workspace tool's `list` case | opus | toolbox `adb4fe1` |
+| 2026-10-31 | Debrief instruction audit, subjective lane: S1 to S12 | reviewer on Claude Opus 5.5 | `.orkestrel/debrief.md` |
+| 2026-10-31 | Debrief instruction audit, objective lane, on Opus while the Astra bench is dark: O1 to O17 | reviewer on Claude Opus 5.5 | `.orkestrel/debrief.md` |
+| 2026-10-31 | debrief-prose: D1 to D22 in the contract, charters, rules, and skills | opus on Claude Opus 5.5 | scaffold `Refine the contract, charters, rules, and skills from the wave's debrief` commit |
+| 2026-10-31 | Review of debrief-prose: claims 1, 2, 3, and 5 held; the Orchestrator deleted an explanatory clause in `wave.md` and a restated `--paths` default | reviewer on Claude Sonnet 5.5 | same commit |
+| 2026-10-31 | debrief-scripts: the self-pin sweep's release-commit ranges, `pins.ts`'s `guides` default, `chain.ts`'s case-folded merge, and `brief.ts --check`'s role and execution sections | opus on Claude Opus 5.5 | scaffold `Sweep self-pins from the release commit` commit |
+| 2026-10-31 | Review of debrief-scripts: claims 2 to 6 held; the Orchestrator corrected the dry-run source claim, dropped a self-comparing assertion, and a banned word | reviewer on Claude Sonnet 5.5 | same commit |
+| 2026-10-31 | User rulings: tracked names take no hyphen, a JSON name is one word, dot folders and convention-fixed names are exempt; no ignore pattern reaches into a nested tracked folder, root outputs and dot folders exempt; `tmp/studies/` joins the tmp layout | user | `.orkestrel/debrief.md` D31 to D33 |
+| 2026-10-31 | debrief-names: the tracked-name law and the fixture renames; dot-folder renames undone on the user's ruling | opus on Claude Opus 5.5 | scaffold `Keep ignored output at the root or under tmp/` commit |
+| 2026-10-31 | debrief-ignore: the ignore law and generated screenshots under `tmp/captures/screenshots` | opus on Claude Opus 5.5 | same commit |
+| 2026-10-31 | Review of debrief-names and debrief-ignore: claims 2 to 5 held; the Orchestrator admitted dotted qualifiers in the name rows, named root ignores in the ignore law, and shortened a comment | reviewer on Claude Sonnet 5.5 | same commit |
