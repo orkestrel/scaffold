@@ -77,7 +77,8 @@ export interface ManifestEntry {
  * @remarks
  * `roots` is the sorted directory inventory, which is what distinguishes a
  * declared empty directory. `surface` records only names claimed by distinct
- * guides, sorted by name with each owner list sorted. `digest` is the SHA-256
+ * guides or admitted to a keeper by `SURFACE_TRANSFERS`, sorted by name with each
+ * owner list sorted. `digest` is the SHA-256
  * of the exact entries, roots, and surface, so an edit without its digest is
  * detected. A self-consistent replacement manifest defines its own smaller
  * membership; authenticating omitted membership is outside a checksum's

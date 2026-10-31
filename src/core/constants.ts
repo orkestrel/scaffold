@@ -8,6 +8,7 @@ import type {
 	Group,
 	SrcDefinition,
 	Surface,
+	SurfaceTransfer,
 	ToolchainHold,
 } from './types.js'
 import manifest from '../../package.json' with { type: 'json' }
@@ -293,6 +294,60 @@ export const SEED_GUIDE_PATHS: readonly string[] = Object.freeze([
 
 /** Names the repository-relative path where the committed vendored-file inventory is served. */
 export const HOST_INVENTORY_PATH = 'host.json'
+
+/**
+ * Lists the declared transfers of bare names to their ruled keepers, frozen.
+ *
+ * @remarks
+ * `stageHost` admits each keeper into its name's recorded owner set and refuses a transfer
+ * whose keeper alone claims the name. `.claude/rules/names.md` § Fleet name ownership rule 5
+ * governs when a transfer is declared and removed.
+ */
+export const SURFACE_TRANSFERS: readonly SurfaceTransfer[] = Object.freeze(
+	[
+		...['BOM'].map((name) => ({ name, keeper: 'codec', item: 80 })),
+		...[
+			'CHOICE_LIMIT',
+			'NAME_LIMIT',
+			'NODE_LIMIT',
+			'STRING_LIMIT',
+			'TEXT_LIMIT',
+			'errorToMessage',
+			'escapeRegExp',
+			'failure',
+			'isFailure',
+			'isSuccess',
+			'success',
+		].map((name) => ({ name, keeper: 'contract', item: 79 })),
+		...[
+			'JSONRPCError',
+			'JSONRPCErrorResponse',
+			'JSONRPCId',
+			'JSONRPCInvocation',
+			'JSONRPCMessage',
+			'JSONRPCNotification',
+			'JSONRPCRequest',
+			'JSONRPCResponse',
+			'JSONRPCResultResponse',
+			'JSONRPC_INTERNAL_ERROR',
+			'JSONRPC_INVALID_PARAMS',
+			'JSONRPC_INVALID_REQUEST',
+			'JSONRPC_METHOD_NOT_FOUND',
+			'JSONRPC_PARSE_ERROR',
+			'buildJSONRPCError',
+			'buildJSONRPCResult',
+			'isJSONRPCError',
+			'isJSONRPCErrorResponse',
+			'isJSONRPCId',
+			'isJSONRPCInvocation',
+			'isJSONRPCMessage',
+			'isJSONRPCNotification',
+			'isJSONRPCRequest',
+			'isJSONRPCResponse',
+			'isJSONRPCResultResponse',
+		].map((name) => ({ name, keeper: 'jsonrpc', item: 81 })),
+	].map((transfer) => Object.freeze(transfer)),
+)
 
 /**
  * Lists the vendored paths whose present bytes belong to each workspace, frozen.

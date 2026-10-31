@@ -352,7 +352,8 @@ Build/check config alignment:
   comparison leaves out the setup modules scaffold owns in every target: each vendored `HOST_PATHS`
   member and the `tests/setupDistribution.ts` harness. `.claude/rules/names.md` § Fleet name
   ownership defines the bare name that comparison matches and decides which declaration gives a
-  claimed name up.
+  claimed name up. The `surface` rule also grandfathers a name the installed record admits the
+  target to under `.claude/rules/names.md` § Fleet name ownership rule 5.
 - Keep every barrel statement in the form `.claude/rules/architecture.md` § Barrel exports fixes.
   The sweep refuses a barrel population it cannot read whole and reports that refusal as a `surface`
   violation rather than passing over the statements it did read. A catalog row with no hosted guide,

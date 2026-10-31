@@ -23,6 +23,7 @@ import {
 	createBlueprint,
 	renderSkillPointer,
 } from '@src/core'
+import { computeManifestDigest } from '@src/server'
 import { POLICY_FILENAMES } from './setup.js'
 import {
 	collectSheets,
@@ -74,8 +75,10 @@ import {
 	POLICY_PUBLISHES,
 	POLICY_ROOT,
 	POLICY_STUDIES_POPULATION,
+	POLICY_CATALOG_FILE,
 	POLICY_SURFACE_HOST,
 	POLICY_SURFACE_EXPORT_CASES,
+	createPolicyCatalog,
 	POLICY_WIRING_RULES,
 	POLICY_WIRING_SETTINGS,
 	collectPolicyOverrideSegments,
@@ -1356,6 +1359,66 @@ describe('inspectPolicySurface evidence', () => {
 			expect(violations.slice(1)).toEqual([])
 		} finally {
 			scratch.destroy()
+		}
+	})
+
+	it('grandfathers a name whose installed record names the target as an owner', () => {
+		const scratch = createPolicySurfaceFixture()
+		const checkout = createPolicySurfaceFixture()
+		try {
+			const violation = {
+				rule: 'surface',
+				path: 'src/core/helpers.ts',
+				line: 1,
+				message: 'surface name belongs to one package: readShared (other)',
+			}
+			const admitted = [{ name: 'readShared', owners: ['other', 'sample'] }]
+			const foreign = [{ name: 'readShared', owners: ['other', 'third'] }]
+			scratch.write('src/core/index.ts', "export * from './helpers.js'\n")
+			scratch.write('src/core/helpers.ts', 'export function readShared() {}\n')
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([violation])
+			scratch.write(
+				`${POLICY_SURFACE_HOST}/manifest.json`,
+				JSON.stringify({
+					entries: [],
+					roots: [],
+					surface: foreign,
+					digest: computeManifestDigest([], [], foreign),
+				}),
+			)
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([violation])
+			scratch.write(
+				`${POLICY_SURFACE_HOST}/manifest.json`,
+				JSON.stringify({
+					entries: [],
+					roots: [],
+					surface: admitted,
+					digest: computeManifestDigest([], [], admitted),
+				}),
+			)
+			expect(inspectPolicyWorkspace(scratch.path)).toEqual([])
+			rmSync(join(checkout.path, POLICY_SURFACE_HOST), { recursive: true, force: true })
+			checkout.write('package.json', '{"name":"@orkestrel/scaffold"}\n')
+			checkout.write(POLICY_CATALOG_FILE, createPolicyCatalog(['other', 'scaffold']))
+			checkout.write('guides/scaffold.md', createPolicySurfaceGuide([]))
+			checkout.write('guides/other.md', createPolicySurfaceGuide(['readShared']))
+			checkout.write('src/core/index.ts', "export * from './helpers.js'\n")
+			checkout.write('src/core/helpers.ts', 'export function readShared() {}\n')
+			expect(inspectPolicyWorkspace(checkout.path)).toEqual([violation])
+			const recorded = [{ name: 'readShared', owners: ['other', 'scaffold'] }]
+			checkout.write(
+				'host.json',
+				JSON.stringify({
+					entries: [],
+					roots: [],
+					surface: recorded,
+					digest: computeManifestDigest([], [], recorded),
+				}),
+			)
+			expect(inspectPolicyWorkspace(checkout.path)).toEqual([])
+		} finally {
+			scratch.destroy()
+			checkout.destroy()
 		}
 	})
 

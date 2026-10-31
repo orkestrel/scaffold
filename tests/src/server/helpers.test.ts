@@ -32,6 +32,7 @@ import {
 	isDeferredPath,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
+	SURFACE_TRANSFERS,
 } from '@src/core'
 import {
 	climbRealPath,
@@ -2814,6 +2815,140 @@ describe('stageHost', () => {
 				message:
 					'Staged Surface collisions differ from the inventory: Shared staged (alpha, beta), recorded (alpha, gamma)',
 			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('records the declared keeper of a transferred name beside its owners', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const table =
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n'
+			workspace.write(
+				'checkout/guides/csv.md',
+				`${table}| \`BOM\` | const | \`string\` | Marks. |\n`,
+			)
+			workspace.write(
+				'checkout/guides/sse.md',
+				`${table}| \`BOM\` | const | \`string\` | Marks. |\n`,
+			)
+			workspace.write(
+				'checkout/guides/msg.md',
+				`${table}| \`isSuccess\` | function | \`() => boolean\` | Checks. |\n`,
+			)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'BOM', owners: ['csv', 'sse'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			const host = join(workspace.path, 'host')
+			stageHost(checkout, host)
+			expect(readHostFloor(host).manifest.surface).toStrictEqual([
+				{ name: 'Another', owners: ['alpha', 'beta'] },
+				{ name: 'BOM', owners: ['codec', 'csv', 'sse'] },
+				{ name: 'Shared', owners: ['alpha', 'beta'] },
+				{ name: 'isSuccess', owners: ['contract', 'msg'] },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an owner a transfer adds beside its keeper', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const table =
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n'
+			const rows = `${table}| \`BOM\` | const | \`string\` | Marks. |\n| \`isSuccess\` | function | \`() => boolean\` | Checks. |\n`
+			workspace.write('checkout/guides/csv.md', rows)
+			workspace.write('checkout/guides/sse.md', rows)
+			workspace.write(
+				'checkout/guides/table.md',
+				`${table}| \`BOM\` | const | \`string\` | Marks. |\n`,
+			)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'BOM', owners: ['csv', 'sse'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			expect(captureError(() => stageHost(checkout, join(workspace.path, 'host')))).toMatchObject({
+				code: 'TARGET',
+				message:
+					'Staged Surface collisions differ from the inventory: BOM staged (codec, csv, sse, table), recorded (csv, sse), transferred to codec; isSuccess staged (contract, csv, sse), recorded (absent), transferred to contract',
+			})
+			expect(workspace.has('host/manifest.json')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('stages a transfer while its keeper and a giver both claim the name', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const row =
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `BOM` | const | `string` | Marks. |\n'
+			workspace.write('checkout/guides/codec.md', row)
+			workspace.write('checkout/guides/csv.md', row)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'BOM', owners: ['codec', 'csv', 'sse'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			const host = join(workspace.path, 'host')
+			stageHost(checkout, host)
+			expect(readHostFloor(host).manifest.surface).toStrictEqual([
+				{ name: 'Another', owners: ['alpha', 'beta'] },
+				{ name: 'BOM', owners: ['codec', 'csv'] },
+				{ name: 'Shared', owners: ['alpha', 'beta'] },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('declares one keeper per transferred name', () => {
+		expect(new Set(SURFACE_TRANSFERS.map(({ name }) => name)).size).toBe(SURFACE_TRANSFERS.length)
+	})
+
+	it('refuses a spent transfer whose keeper alone claims the name', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGE_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write(
+				'checkout/guides/codec.md',
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `BOM` | const | `string` | Marks. |\n',
+			)
+			expect(captureError(() => stageHost(checkout, join(workspace.path, 'host')))).toMatchObject({
+				code: 'TARGET',
+				message:
+					'Surface transfers are spent, so remove them from SURFACE_TRANSFERS: BOM to codec under item 80',
+			})
+			expect(workspace.has('host/manifest.json')).toBe(false)
 		} finally {
 			workspace.destroy()
 		}

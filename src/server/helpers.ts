@@ -78,6 +78,7 @@ import {
 	nameToGuide,
 	REFERENCE_PATHS,
 	ScaffoldError,
+	SURFACE_TRANSFERS,
 } from '@src/core'
 import { isFilesystemPath, isHostManifest, isSurfaceModule } from './validators.js'
 import { MANIFEST_NAME, MAX_INVENTORY_PATHS, MAX_PATH_DEPTH } from './constants.js'
@@ -1628,8 +1629,9 @@ export function stageBytes(
  * host root is not vacant, the checkout does not carry every vendored path, two
  * vendored files claim one storage name, a vendored file is not a plain file
  * within the artifact ceiling, published guides are unreadable, a staged
- * collision's owner set is not a subset of its published owner set, the inventory is absent without
- * `establish: true`, or the staged manifest does not read back.
+ * collision's owner set is not a subset of its published owner set, a
+ * `SURFACE_TRANSFERS` entry is spent because its keeper alone claims the name, the
+ * inventory is absent without `establish: true`, or the staged manifest does not read back.
  * @throws `ScaffoldError('WRITE', …)` when a staged file or the manifest cannot
  * be written.
  *
@@ -1665,7 +1667,10 @@ export function stageBytes(
  * the canon and reference files for reading. Every catalog package must have a
  * guide in the discovered membership before the host is written.
  * Copied guides must carry no collision whose name and exact owner set the
- * committed inventory lacks. An absent inventory requires `establish: true`;
+ * committed inventory lacks. A `SURFACE_TRANSFERS` entry that another guide claims
+ * admits its keeper beside the recorded owners, or beside the one owner of a name
+ * the inventory lacks, and the staged surface records that keeper whether or not
+ * its guide is mirrored. An absent inventory requires `establish: true`;
  * an inventory without a valid recorded Surface is refused.
  * Everything downstream — the missing-path refusal, the
  * storage collision guard, the sort, the digests, and the root inventory — reads
@@ -1871,19 +1876,54 @@ export function stageHost(
 		}
 		return { ...entry, digest }
 	})
-	const collisions = readSurfaceCollisions(join(root, 'guides'))
+	const claims = readSurfaceClaims(join(root, 'guides'))
+	const claimants = Map.groupBy(
+		claims.flatMap(({ owner, names }) => names.map((name) => ({ name, owner }))),
+		({ name }) => name,
+	)
+	const transfers = SURFACE_TRANSFERS.map((transfer) => {
+		const owners = new Set(claimants.get(transfer.name)?.map(({ owner }) => owner))
+		return {
+			...transfer,
+			claimed: owners.has(transfer.keeper),
+			givers: [...owners].filter((owner) => owner !== transfer.keeper).sort(),
+		}
+	})
+	const spent = transfers
+		.filter(({ claimed, givers }) => claimed && givers.length === 0)
+		.map(({ name, keeper, item }) => `${name} to ${keeper} under item ${item}`)
+	if (spent.length > 0) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface transfers are spent, so remove them from SURFACE_TRANSFERS: ${spent.join('; ')}`,
+			{ checkout: source, host: root, transfers: spent },
+		)
+	}
+	const active = transfers.filter(({ givers }) => givers.length > 0)
+	const collisions = collectSurfaceCollisions([
+		...claims,
+		...active.map(({ name, keeper }) => ({ owner: keeper, names: [name] })),
+	])
 	const growth =
 		published === undefined
 			? []
 			: compareSurfaceCollisions(
-					[...collisions].map(([name, owners]) => ({ name, owners })),
-					[...published].map(([name, owners]) => ({ name, owners })),
+					collisions,
+					[
+						...new Map([
+							...published,
+							...active.map(({ name, keeper, givers }): [string, readonly string[]] => [
+								name,
+								[...(published.get(name) ?? (givers.length === 1 ? givers : [])), keeper],
+							]),
+						]),
+					].map(([name, owners]) => ({ name, owners })),
 				)
 					.filter(({ standing }) => standing === 'error')
-					.map(
-						({ name, owners }) =>
-							`${name} staged (${owners.join(', ')}), recorded (${published.get(name)?.join(', ') ?? 'absent'})`,
-					)
+					.map(({ name, owners }) => {
+						const keeper = active.find((transfer) => transfer.name === name)?.keeper
+						return `${name} staged (${owners.join(', ')}), recorded (${published.get(name)?.join(', ') ?? 'absent'})${keeper === undefined ? '' : `, transferred to ${keeper}`}`
+					})
 	if (growth.length > 0) {
 		throw new ScaffoldError(
 			'TARGET',
@@ -1891,12 +1931,11 @@ export function stageHost(
 			{ checkout: source, host: root, baseline, collisions: growth },
 		)
 	}
-	const surface = [...collisions].map(([name, owners]) => ({ name, owners }))
 	const manifest: HostManifest = {
 		entries,
 		roots,
-		surface,
-		digest: computeManifestDigest(entries, roots, surface),
+		surface: collisions,
+		digest: computeManifestDigest(entries, roots, collisions),
 	}
 	const metadata = resolveContainedPath(root, MANIFEST_NAME)
 	if (metadata === undefined) {

@@ -753,6 +753,19 @@ export interface SurfaceCollision {
 	readonly owners: readonly string[]
 }
 
+/**
+ * Represents a declared transfer of one bare name to the package a roadmap item rules keeps it.
+ *
+ * @remarks
+ * `keeper` is the owner admitted into the name's recorded owner set, and `item` is the
+ * `ROADMAP.md` item that rules the transfer.
+ */
+export interface SurfaceTransfer {
+	readonly name: string
+	readonly keeper: string
+	readonly item: number
+}
+
 /** Reports a collision's standing against the recorded owner set. */
 export interface SurfaceFinding extends SurfaceCollision {
 	readonly standing: 'error' | 'recorded' | 'closed'

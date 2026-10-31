@@ -168,6 +168,7 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 ## Prepare a layer
 
 - After the re-pin and before `prepublishOnly`, run `scaffold surface` live over every candidate checkout of the layer, never with `--offline`. Stop the upload on any exit but `0`, and resolve every name it reports under `.claude/rules/names.md` § Fleet name ownership. In scaffold's own layer, run `scaffold catalog`, then `npm run build`, so `host.json` records the refreshed files' digests, and then `scaffold surface --from .`.
+- In the scaffold release that opens a transfer under `.claude/rules/names.md` § Fleet name ownership rule 5, declare it in `SURFACE_TRANSFERS` before `npm run build`. In the scaffold visit that closes it, remove the declaration before the build and confirm `host.json` no longer records the name.
 - When `scaffold surface` prints an advisory, rule it under `.claude/rules/names.md` § Fleet name ownership before the upload; an advisory never stops the upload.
 - Begin each release chain plan with the clean reinstall and the clean, whether it runs in a clone or the checkout.
 - When a writer owns a script the preparation needs, run its installed built twin and record the executable's identity.

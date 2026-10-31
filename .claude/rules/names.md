@@ -134,14 +134,15 @@ Export a bare name from one environment of its package. When two environments of
 
 Before adding a public name, check it against the fleet with `scaffold surface`. `.claude/rules/workspace.md` § Policy instruments owns the `surface` policy rule.
 
-The rule grandfathers a source name the target's own hosted guide claims, because that guide is the target's own claim to it. It grandfathers no root `tests/setup*.ts` export. A vendored `tests/setup*.ts` module a scaffold release stages sits outside the inspected population.
+The rule grandfathers a source name the target's own hosted guide claims, because that guide is the target's own claim to it, and a source name whose installed collision record names the target as an owner: the hosted `manifest.json` in a target, and the committed `host.json` in the `@orkestrel/scaffold` checkout. It grandfathers no root `tests/setup*.ts` export. A vendored `tests/setup*.ts` module a scaffold release stages sits outside the inspected population.
 
 Resolve a reported collision with these rules, in order.
 
 1. **Reuse before renaming.** Where the colliding declarations carry the same contract, delete this one and import the owner's export. Declare the dependency that import needs, or stop and report that the dependency is not authorized.
 2. **The subject keeps the name.** Where the contracts differ, leave the name with the package whose domain the name describes, and rename the other declaration for the thing it is. Refuse a rename that makes the renamed declaration vaguer; name its own contract instead.
 3. **Qualify rather than extract.** Extract a shared package only where a proof shows the colliding declarations interchangeable and the dependency change is authorized. Otherwise qualify the name in place for the domain it serves, and route the extraction through a design round rather than renaming by fiat.
-4. **Close the collision in the code.** Change a declaration; the rule reads no allowlist a target can add a name to, and it carries no suppression. Never suppress the violation, and never edit a vendored policy instrument to clear it. In the `@orkestrel/scaffold` checkout, shrink the committed `host.json` collision record by closing a collision, and never widen it to admit one.
+4. **Close the collision in the code.** Change a declaration; the rule reads no allowlist a target can add a name to, and it carries no suppression. Never suppress the violation, and never edit a vendored policy instrument to clear it. In the `@orkestrel/scaffold` checkout, shrink the committed `host.json` collision record by closing a collision, and widen it only by the keeper a transfer under rule 5 declares.
+5. **Transfer a name through a declared keeper.** When a `ROADMAP.md` item rules that one package gains a bare name other packages export, declare the transfer in `SURFACE_TRANSFERS` in `src/core/constants.ts` of the `@orkestrel/scaffold` checkout as the name, its keeper, and the item, one keeper per name, in the scaffold release that precedes the keeper's visit. A declared transfer admits exactly that keeper into that name's recorded owner set and admits nothing else: the stage still refuses any other added owner, and a collision no transfer names stays closed in the code under rule 4. The keeper exports the name under the transfer; each giver deletes its copy and imports the keeper's at its own visit under rule 1. Remove the transfer in the scaffold visit after the last giver publishes; the stage refuses a transfer whose keeper's mirrored guide alone claims the name.
 
 ## Acronyms
 

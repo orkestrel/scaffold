@@ -472,7 +472,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "3510fdb44223071f85bd9cc333224094440c1016e4fb98aebe0ebee1f21e17b8"
+			"digest": "794a8a64a3a1ae0c6bef241271236c0ea2164b994260527e9fd170589a8d0306"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -670,7 +670,7 @@
 			"storage": "claude/rules/names.md",
 			"destination": ".claude/rules/names.md",
 			"executable": false,
-			"digest": "c92326ad5ab3a786479205ebc9543f19f9b43909b0f4b86c196372768d4ca624"
+			"digest": "cfeccc30997f262fbe50413dc0d2c490a0942221300eb721d5687b3099a3474c"
 		},
 		{
 			"storage": "claude/rules/patterns.md",
@@ -712,7 +712,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "a364813cdba3276deefa159eb2a4cb85f8acb2becb4f55ebff17a019c397c381"
+			"digest": "6ab0017c81925e493061fc991fe8afbf291f7fbd41fc6913be76b09ebdf07ade"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1168,7 +1168,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "ef9158ff72a362260dece3d5f1bacc37d6c9ceb6f75e4b8814e5b64dabc39a5b"
+			"digest": "7939bba1c9cdc969900fa7db97eef1f9b837c03f02f9b4c835f06dee1a5ee8de"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1318,7 +1318,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "66ae0b2a0905d69cb4c85d0eafce5994beb69c8f27e54afdfbe84a4bad528ca1"
+			"digest": "de7149a4e2b47686d4509f5302993276b583a2c1c3c4800fabff9dde3132b9ec"
 		}
 	],
 	"roots": [
@@ -1397,6 +1397,7 @@
 		{
 			"name": "BOM",
 			"owners": [
+				"codec",
 				"csv",
 				"sse"
 			]
@@ -1404,6 +1405,7 @@
 		{
 			"name": "CHOICE_LIMIT",
 			"owners": [
+				"contract",
 				"form",
 				"table"
 			]
@@ -1467,6 +1469,7 @@
 		{
 			"name": "JSONRPCError",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1474,6 +1477,7 @@
 		{
 			"name": "JSONRPCErrorResponse",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1481,13 +1485,22 @@
 		{
 			"name": "JSONRPCId",
 			"owners": [
+				"jsonrpc",
 				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCInvocation",
+			"owners": [
+				"jsonrpc",
 				"mcp"
 			]
 		},
 		{
 			"name": "JSONRPCMessage",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1495,6 +1508,7 @@
 		{
 			"name": "JSONRPCNotification",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1502,6 +1516,7 @@
 		{
 			"name": "JSONRPCRequest",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1509,6 +1524,7 @@
 		{
 			"name": "JSONRPCResponse",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1516,6 +1532,7 @@
 		{
 			"name": "JSONRPCResultResponse",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1523,6 +1540,7 @@
 		{
 			"name": "JSONRPC_INTERNAL_ERROR",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1530,6 +1548,7 @@
 		{
 			"name": "JSONRPC_INVALID_PARAMS",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1537,6 +1556,7 @@
 		{
 			"name": "JSONRPC_INVALID_REQUEST",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1544,6 +1564,7 @@
 		{
 			"name": "JSONRPC_METHOD_NOT_FOUND",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1551,6 +1572,7 @@
 		{
 			"name": "JSONRPC_PARSE_ERROR",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1579,6 +1601,7 @@
 		{
 			"name": "NAME_LIMIT",
 			"owners": [
+				"contract",
 				"form",
 				"table"
 			]
@@ -1586,6 +1609,7 @@
 		{
 			"name": "NODE_LIMIT",
 			"owners": [
+				"contract",
 				"form",
 				"table"
 			]
@@ -1608,6 +1632,7 @@
 		{
 			"name": "STRING_LIMIT",
 			"owners": [
+				"contract",
 				"form",
 				"table"
 			]
@@ -1685,6 +1710,7 @@
 		{
 			"name": "TEXT_LIMIT",
 			"owners": [
+				"contract",
 				"form",
 				"table"
 			]
@@ -1771,6 +1797,20 @@
 			"owners": [
 				"interpret",
 				"template"
+			]
+		},
+		{
+			"name": "buildJSONRPCError",
+			"owners": [
+				"jsonrpc",
+				"mcp"
+			]
+		},
+		{
+			"name": "buildJSONRPCResult",
+			"owners": [
+				"jsonrpc",
+				"mcp"
 			]
 		},
 		{
@@ -1875,12 +1915,14 @@
 			"name": "errorToMessage",
 			"owners": [
 				"brief",
+				"contract",
 				"workflow"
 			]
 		},
 		{
 			"name": "escapeRegExp",
 			"owners": [
+				"contract",
 				"guide",
 				"interpret",
 				"router",
@@ -1897,6 +1939,7 @@
 		{
 			"name": "failure",
 			"owners": [
+				"contract",
 				"msg",
 				"workflow"
 			]
@@ -1937,6 +1980,13 @@
 			]
 		},
 		{
+			"name": "isFailure",
+			"owners": [
+				"contract",
+				"msg"
+			]
+		},
+		{
 			"name": "isFile",
 			"owners": [
 				"process",
@@ -1960,13 +2010,43 @@
 		{
 			"name": "isJSONRPCError",
 			"owners": [
+				"jsonrpc",
 				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCErrorResponse",
+			"owners": [
+				"jsonrpc",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCId",
+			"owners": [
+				"jsonrpc",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCInvocation",
+			"owners": [
+				"jsonrpc",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCMessage",
+			"owners": [
+				"jsonrpc",
 				"mcp"
 			]
 		},
 		{
 			"name": "isJSONRPCNotification",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1974,6 +2054,7 @@
 		{
 			"name": "isJSONRPCRequest",
 			"owners": [
+				"jsonrpc",
 				"lsp",
 				"mcp"
 			]
@@ -1981,7 +2062,15 @@
 		{
 			"name": "isJSONRPCResponse",
 			"owners": [
+				"jsonrpc",
 				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCResultResponse",
+			"owners": [
+				"jsonrpc",
 				"mcp"
 			]
 		},
@@ -1997,6 +2086,13 @@
 			"owners": [
 				"probe",
 				"rater"
+			]
+		},
+		{
+			"name": "isSuccess",
+			"owners": [
+				"contract",
+				"msg"
 			]
 		},
 		{
@@ -2107,6 +2203,7 @@
 		{
 			"name": "success",
 			"owners": [
+				"contract",
 				"msg",
 				"workflow"
 			]
@@ -2141,5 +2238,5 @@
 			]
 		}
 	],
-	"digest": "cf4e9670b54785b12420ba70c9bbc199932e21dd57524b8475f74c4470f2fbf2"
+	"digest": "1513378f249a7b0a68febf63d5abdb8dfdbd70d19be420efadad6908d54654ea"
 }
