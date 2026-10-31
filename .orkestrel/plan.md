@@ -22,12 +22,14 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 
 ## Open decisions
 
-- Item 81's design round: whether the `JSONRPCErrorResponse` type requires `id`, and which arms the `JSONRPCMessage` union names, before `@orkestrel/jsonrpc` publishes.
+- `.orkestrel/jsonrpc-design.md` § Open decisions: the design round's rulings for `@orkestrel/jsonrpc`, its wire change for mcp, and the creation of its repository and first release, before item 81's unit starts.
+- The start of execution: the user holds the wave at its prepared state until they resume it.
 
 ## State
 
 - 2026-10-30: the fleet surface campaign retired at `e8b95e120`, leaving items 77 to 112 as this wave's units; scaffold 0.0.118 records 107 collisions.
-- Next: § Sequence step 1, contract's item 79, and item 81's design round beside it.
+- 2026-10-30: contract's release visit re-pinned scaffold 0.0.118 and guide 0.0.28 and committed `Overwrite with scaffold 0.0.118` (contract `fb46eac`, unpushed), every gate green and its built output unchanged; item 81's design round returned `.orkestrel/jsonrpc-design.md`.
+- Next: on the user's go-ahead, item 79's unit in contract, and on their rulings of the design's open decisions, the jsonrpc package's creation and unit.
 
 ## Sequence
 
