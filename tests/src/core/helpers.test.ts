@@ -12,6 +12,7 @@ import {
 	CANON_PATHS,
 	catalogToLayers,
 	compareVersions,
+	collectSurfaceAdvisories,
 	collectSurfaceCollisions,
 	collectSurfaceConflicts,
 	compareSurfaceCollisions,
@@ -29,6 +30,7 @@ import {
 	renderSkillPointer,
 	inferDrift,
 	inferGroup,
+	inferSurfaceSimilarity,
 	isCanonPath,
 	isCollection,
 	isDeferredPath,
@@ -43,7 +45,9 @@ import {
 	matchesEngines,
 	matchesOrchestrationPath,
 	matchesPrintWidth,
+	matchesGuideRefusal,
 	matchesRange,
+	matchesSurfaceStructure,
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
 	planToSummary,
@@ -51,7 +55,9 @@ import {
 	scanManifestTokens,
 	selectGroups,
 	selectHostPaths,
+	ScaffoldError,
 	serializeTypeScriptString,
+	SURFACE_EDIT_LENGTH,
 	TAB_WIDTH,
 	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
@@ -121,6 +127,109 @@ describe('surface claims', () => {
 		).toEqual([])
 		expect(collectSurfaceConflicts('alpha', {})).toEqual([])
 	})
+
+	it.each(SURFACE_SIMILARITY_CASES)('reads %s beside %s as %s', (name, other, similarity) => {
+		expect(inferSurfaceSimilarity(name, other)).toBe(similarity)
+	})
+
+	it('compares one edit only when both names reach the edit length', () => {
+		const short = 'R'.repeat(SURFACE_EDIT_LENGTH - 1)
+		const long = 'R'.repeat(SURFACE_EDIT_LENGTH)
+		expect(inferSurfaceSimilarity(`${short}a`, `${short}b`)).toBe('edit')
+		expect(inferSurfaceSimilarity(`${long}a`, `${long}`)).toBe('edit')
+		expect(inferSurfaceSimilarity(`${short.slice(1)}a`, `${short.slice(1)}b`)).toBeUndefined()
+		expect(inferSurfaceSimilarity(short, `${short}a`)).toBeUndefined()
+	})
+
+	it.each(SURFACE_STRUCTURE_CASES)(
+		'reads the cell %s as a structure: %s',
+		(signature, structure) => {
+			expect(matchesSurfaceStructure(signature)).toBe(structure)
+		},
+	)
+
+	it('recognizes the guide refusal a surface reader raises and nothing else', () => {
+		expect(
+			matchesGuideRefusal(
+				new ScaffoldError('TARGET', 'Refused', { owner: 'alpha', source: 'live', code: 'header' }),
+			),
+		).toBe(true)
+		expect(matchesGuideRefusal(new ScaffoldError('TARGET', 'Unreadable', { owner: 'alpha' }))).toBe(
+			false,
+		)
+		expect(matchesGuideRefusal(new ScaffoldError('TARGET', 'Unreadable'))).toBe(false)
+		expect(matchesGuideRefusal(new ScaffoldError('FETCH', 'Refused', { code: 'header' }))).toBe(
+			false,
+		)
+		expect(matchesGuideRefusal(Object.assign(new Error('Refused'), { code: 'TARGET' }))).toBe(false)
+		expect(matchesGuideRefusal(undefined)).toBe(false)
+	})
+
+	it('reports near names and equal structures beside added names only, against other owners', () => {
+		const candidate = {
+			owner: 'alpha',
+			names: ['Cache', 'Handler', 'LIMIT', 'Routes', 'Sesion', 'Settings', 'Shared', 'StoreShape'],
+			signatures: new Map([
+				['Routes', '`{ path }`'],
+				['LIMIT', '`2000`'],
+				['Shared', '`{ owner }`'],
+				['StoreShape', '`{ get(), set(), delete() }`'],
+			]),
+		}
+		const contracts = [
+			{ ...candidate, names: [...candidate.names, 'Handlers', 'Sessions'] },
+			{
+				owner: 'router',
+				names: ['Route', 'handler', 'Shared'],
+				signatures: new Map([
+					['Route', '`{ path }`'],
+					['Shared', '`{ owner }`'],
+				]),
+			},
+			{
+				owner: 'store',
+				names: ['Session', 'Setting', 'StoreInterface', 'MAX_LIMIT'],
+				signatures: new Map([
+					['StoreInterface', '`{ get(), set(), delete() }`'],
+					['MAX_LIMIT', '`2000`'],
+				]),
+			},
+		]
+		expect(collectSurfaceAdvisories(candidate, ['Settings'], contracts)).toEqual([
+			{
+				name: 'Handler',
+				owner: 'alpha',
+				peer: { name: 'handler', owner: 'router' },
+				similarity: 'case',
+			},
+			{
+				name: 'Routes',
+				owner: 'alpha',
+				peer: { name: 'Route', owner: 'router' },
+				similarity: 'plural',
+			},
+			{
+				name: 'Routes',
+				owner: 'alpha',
+				peer: { name: 'Route', owner: 'router' },
+				similarity: 'signature',
+			},
+			{
+				name: 'Sesion',
+				owner: 'alpha',
+				peer: { name: 'Session', owner: 'store' },
+				similarity: 'edit',
+			},
+			{
+				name: 'StoreShape',
+				owner: 'alpha',
+				peer: { name: 'StoreInterface', owner: 'store' },
+				similarity: 'signature',
+			},
+		])
+		expect(collectSurfaceAdvisories(candidate, candidate.names, contracts)).toEqual([])
+		expect(collectSurfaceAdvisories({ ...candidate, names: ['Cache'] }, [], contracts)).toEqual([])
+	})
 })
 import {
 	buildBlueprint,
@@ -145,6 +254,8 @@ import {
 	readLazily,
 	refuseClose,
 	refuseObject,
+	SURFACE_SIMILARITY_CASES,
+	SURFACE_STRUCTURE_CASES,
 } from '../../setup.js'
 import { createRecorder, waitForDelay } from '@orkestrel/test'
 

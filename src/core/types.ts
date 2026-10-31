@@ -765,9 +765,41 @@ export interface SurfaceConflict {
 	readonly environments: readonly string[]
 }
 
-/** Represents a candidate checkout's claim with each name two or more of its environments export. */
-export interface SurfaceCandidate extends SurfaceClaim {
+/**
+ * Represents one owner's claim with the guide `Signature` cell of each name a Surface row documents.
+ *
+ * @remarks
+ * `signatures` maps a claimed name to its cell; a name only a barrel claims has no entry.
+ */
+export interface SurfaceContract extends SurfaceClaim {
+	readonly signatures: ReadonlyMap<string, string>
+}
+
+/** Represents a candidate checkout's contract with each name two or more of its environments export. */
+export interface SurfaceCandidate extends SurfaceContract {
 	readonly conflicts: readonly SurfaceConflict[]
+}
+
+/**
+ * Names how an added name resembles a name another owner claims.
+ *
+ * @remarks
+ * `case` is a case-fold twin, `plural` a singular or plural form, `edit` a name one insertion,
+ * deletion, or substitution away, and `signature` a different name with an equal structure cell.
+ */
+export type SurfaceSimilarity = 'case' | 'plural' | 'edit' | 'signature'
+
+/**
+ * Reports a name a candidate adds beside a near name or an equal contract another owner claims.
+ *
+ * @remarks
+ * `name` and `owner` are the candidate's; `peer` is the other owner's claimed name.
+ */
+export interface SurfaceAdvisory {
+	readonly name: string
+	readonly owner: string
+	readonly peer: { readonly name: string; readonly owner: string }
+	readonly similarity: SurfaceSimilarity
 }
 
 /** Represents the configuration template text, grouped by the artifact each template builds. */

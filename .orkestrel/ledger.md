@@ -36,4 +36,5 @@
 | 2026-10-30 | sweep consult: rule each recorded collision under rules 1 to 3 by owner group, place the lsp and mcp JSON-RPC set for a design round, and name the low-confidence rulings | planner | `ROADMAP.md` items 79 to 110 |
 | 2026-10-30 | User ruling: the sweep's dependencies and shared exports, the `@orkestrel/jsonrpc` package over codec, table's `Grid*` family, and the consult's replacement words | user | `.orkestrel/plan.md` § Rulings |
 | 2026-10-30 | User ruling: the advisory section in the surface verb, and contract taking msg's `isSuccess` and `isFailure` guards | user | `.orkestrel/plan.md` § Rulings |
-| 2026-10-30 | advisory: the surface verb's advisory section over a candidate's added names | opus | in flight |
+| 2026-10-30 | advisory: the surface verb's advisory section over a candidate's added names | opus | scaffold `Report advisories beside a candidate's added names` commit |
+| 2026-10-30 | Review of advisory: claims 1, 3, 4, 5, and 7 held; the Orchestrator kept a refused candidate-owner guide from failing the run, pinned the array and union structure forms, revived the self-pair control, and guarded the JSON shape | reviewer | scaffold `Report advisories beside a candidate's added names` commit |

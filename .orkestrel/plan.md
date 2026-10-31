@@ -55,7 +55,8 @@ Give scaffold a read-only `surface` verb that reports every public name two `@or
 - 2026-10-30: scaffold 0.0.117 (`358dd306a`) is served and pushed, carrying guide 0.0.28.
 - 2026-10-30: the sweep rules all 107 recorded collisions in `ROADMAP.md` items 79 to 110, one item per package that gives names up or gains a shared export, and item 81 adds `@orkestrel/jsonrpc`. Each closes at its package's next visit, in layer order after the contract and codec items.
 - 2026-10-30: the overlap probe over the hosted guides finds different names sharing a structured `Signature` cell, of which worker's `WorkerInterface` and `WorkerEventMap` and program's `ProgramValidationResult` repeat a dependency's contract member for member (items 111 and 112); the warning probe finds no warning among the names scaffold and guide added this campaign, and a control fires each class.
-- Next: § Sequence step 6, the advisory section.
+- 2026-10-30: scaffold's `Report advisories beside a candidate's added names` commit adds the advisory section after an independent review; a refused guide for a candidate's own owner falls through to the next source and never fails the run.
+- Next: release scaffold 0.0.118, closing § Sequence step 6; then the campaign closes.
 
 ## Sequence
 

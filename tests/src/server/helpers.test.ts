@@ -2457,10 +2457,11 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(workspace.path)).toEqual({
 				owner: 'alpha',
 				names: ['Documented', 'ServerOnly', 'Unwritten'],
+				signatures: new Map([['Documented', '`{}`']]),
 				conflicts: [],
 			})
 			expect(readSurfaceClaims(join(workspace.path, 'guides'))).toEqual([
-				{ owner: 'alpha', names: ['Documented'] },
+				{ owner: 'alpha', names: ['Documented'], signatures: new Map([['Documented', '`{}`']]) },
 			])
 			workspace.remove('guides/alpha.md')
 			expect(readSurfaceCandidate(workspace.path).names).toEqual(['ServerOnly', 'Unwritten'])
@@ -2468,6 +2469,7 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(workspace.path)).toEqual({
 				owner: 'alpha',
 				names: ['Unwritten'],
+				signatures: new Map(),
 				conflicts: [{ name: 'Unwritten', owner: 'alpha', environments: ['core', 'server'] }],
 			})
 			workspace.write('guideonly/package.json', '{"name":"@orkestrel/beta"}')
@@ -2478,6 +2480,7 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(join(workspace.path, 'guideonly'))).toEqual({
 				owner: 'beta',
 				names: ['Documented'],
+				signatures: new Map([['Documented', '`() => void`']]),
 				conflicts: [],
 			})
 		} finally {
@@ -2499,6 +2502,7 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(workspace.path)).toEqual({
 				owner: 'alpha',
 				names: ['Session', 'Source'],
+				signatures: new Map(),
 				conflicts: [],
 			})
 		} finally {
@@ -2519,6 +2523,7 @@ describe('readSurfaceCollisions', () => {
 			expect(readSurfaceCandidate(workspace.path)).toEqual({
 				owner: 'alpha',
 				names: [],
+				signatures: new Map(),
 				conflicts: [],
 			})
 		} finally {
@@ -2630,6 +2635,41 @@ describe('readSurfaceCollisions', () => {
 			workspace.destroy()
 		}
 	})
+	it('keeps each row Signature cell and leaves out a missing cell and a cell that is not text', () => {
+		expect(
+			readSurfaceGuide(
+				'# Alpha\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Route` | interface | `{ path, handler }` | Describes a route. |\n',
+				'alpha',
+				'live guides/alpha.md',
+			),
+		).toEqual({
+			owner: 'alpha',
+			names: ['Route'],
+			signatures: new Map([['Route', '`{ path, handler }`']]),
+		})
+		const workspace = createScratch({
+			files: {
+				'node_modules/@orkestrel/guide/package.json': '{"main":"index.cjs"}',
+				'node_modules/@orkestrel/guide/index.cjs': [
+					'exports.createGuide = () => ({ surface: () => [{ name: "Route", signature: 42 }, { name: "Limit" }, { name: "Path", signature: "`{ name }`" }] })',
+					'exports.createSource = () => ({ surface: () => [] })',
+					'exports.extractSourceLines = () => []',
+					'exports.isGuideError = () => false',
+					'',
+				].join('\n'),
+			},
+		})
+		try {
+			const loader = createRequire(join(workspace.path, 'loader.cjs'))
+			expect(readSurfaceGuide('# Alpha', 'alpha', 'live guides/alpha.md', loader)).toEqual({
+				owner: 'alpha',
+				names: ['Route', 'Limit', 'Path'],
+				signatures: new Map([['Path', '`{ name }`']]),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
 	it('reads a guide from a host value by destination and refuses bytes that are not UTF-8', () => {
 		const host = {
 			manifest: buildHostManifest({}),
@@ -2640,7 +2680,11 @@ describe('readSurfaceCollisions', () => {
 				'guides/beta.md': 'ff',
 			},
 		}
-		expect(readSurfaceFile(host, 'alpha', 'floor')).toEqual({ owner: 'alpha', names: ['Alpha'] })
+		expect(readSurfaceFile(host, 'alpha', 'floor')).toEqual({
+			owner: 'alpha',
+			names: ['Alpha'],
+			signatures: new Map([['Alpha', '`{}`']]),
+		})
 		expect(readSurfaceFile(host, 'absent', 'floor')).toBeUndefined()
 		expect(captureError(() => readSurfaceFile(host, 'beta', 'floor'))).toMatchObject({
 			code: 'TARGET',

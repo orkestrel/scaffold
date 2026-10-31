@@ -146,6 +146,7 @@ describe('surface command', () => {
 						{ name: 'Shared', owners: ['alpha', 'beta'], standing: 'recorded' },
 					],
 					conflicts: [],
+					advisories: [],
 				},
 			])
 			const catalog = requireValue(workspace.read(`host/${CATALOG_AGENT_PATH}`))
@@ -340,6 +341,119 @@ describe('surface command', () => {
 		}
 	})
 
+	it('prints an advisory per near name and equal structure a candidate adds and keeps the exit code', async () => {
+		const guides = {
+			router: [
+				['Route', 'interface', '`{ path }`'],
+				['handler', 'function', '`() => void`'],
+			],
+			store: [
+				['Session', 'interface', '`{ id }`'],
+				['Setting', 'interface', '`{ theme }`'],
+				['StoreInterface', 'interface', '`{ get(), set(), delete() }`'],
+				['MAX_LIMIT', 'const', '`2000`'],
+			],
+			alpha: [['Settings', 'interface', '`{ theme }`']],
+		}
+		const workspace = createScratch({
+			files: {
+				[`host/${CATALOG_AGENT_PATH}`]:
+					'| Package |\n| --- |\n| @orkestrel/alpha |\n| @orkestrel/router |\n| @orkestrel/store |\n',
+				'host/host.json': JSON.stringify(
+					buildHostManifest({ entries: [], roots: ['guides'], surface: [] }),
+				),
+				'alpha/package.json': '{"name":"@orkestrel/alpha"}',
+				...Object.fromEntries(
+					Object.entries(guides).map(([owner, rows]) => [
+						`host/guides/${owner}.md`,
+						`# ${owner}\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n${rows.map(([name, kind, cell]) => `| \`${name}\` | ${kind} | ${cell} | Describes a value. |\n`).join('')}`,
+					]),
+				),
+			},
+		})
+		try {
+			const args = [
+				'surface',
+				'--from',
+				join(workspace.path, 'host'),
+				'--target',
+				join(workspace.path, 'alpha'),
+			]
+			workspace.write(
+				'alpha/guides/alpha.md',
+				'# alpha\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Ledger` | interface | `{ entries }` | Describes a value. |\n| `Settings` | interface | `{ theme }` | Describes a value. |\n',
+			)
+			const control = createSink()
+			expect(await new CLI(control.options).execute([...args, '--json'])).toBe(EXIT_CLEAN)
+			expect(JSON.parse(requireValue(control.output[0]))).toMatchObject({
+				collisions: [],
+				conflicts: [],
+				advisories: [],
+			})
+			workspace.write(
+				'alpha/guides/alpha.md',
+				`# alpha\n\n## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n${[
+					['Handler', 'function', '`(request: Request) => void`'],
+					['LIMIT', 'const', '`2000`'],
+					['Ledger', 'interface', '`{ entries }`'],
+					['Routes', 'interface', '`{ path }`'],
+					['Sesion', 'interface', '`{ name }`'],
+					['Settings', 'interface', '`{ theme }`'],
+					['StoreShape', 'interface', '`{ get(), set(), delete() }`'],
+				]
+					.map(([name, kind, cell]) => `| \`${name}\` | ${kind} | ${cell} | Describes a value. |\n`)
+					.join('')}`,
+			)
+			const advised = createSink()
+			expect(await new CLI(advised.options).execute([...args, '--json'])).toBe(EXIT_CLEAN)
+			expect(JSON.parse(requireValue(advised.output[0]))).toMatchObject({
+				collisions: [],
+				conflicts: [],
+				advisories: [
+					{
+						name: 'Handler',
+						owner: 'alpha',
+						peer: { name: 'handler', owner: 'router' },
+						similarity: 'case',
+					},
+					{
+						name: 'Routes',
+						owner: 'alpha',
+						peer: { name: 'Route', owner: 'router' },
+						similarity: 'plural',
+					},
+					{
+						name: 'Routes',
+						owner: 'alpha',
+						peer: { name: 'Route', owner: 'router' },
+						similarity: 'signature',
+					},
+					{
+						name: 'Sesion',
+						owner: 'alpha',
+						peer: { name: 'Session', owner: 'store' },
+						similarity: 'edit',
+					},
+					{
+						name: 'StoreShape',
+						owner: 'alpha',
+						peer: { name: 'StoreInterface', owner: 'store' },
+						similarity: 'signature',
+					},
+				],
+			})
+			const human = createSink()
+			expect(await new CLI(human.options).execute(args)).toBe(EXIT_CLEAN)
+			expect(human.output).toContain(
+				'Surface advisory "Sesion": "alpha" adds it beside "Session" from "store" (edit). Rule it under fleet name ownership before the upload.',
+			)
+			expect(human.output.filter((line) => line.startsWith('Surface advisory '))).toHaveLength(5)
+			expect(human.output.at(-1)).toBe('0 recorded collisions, 0 closed collisions.')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('refuses an unknown surface flag with the usage exit code', async () => {
 		const workspace = createScratch()
 		try {
@@ -358,13 +472,17 @@ describe('surface command', () => {
 			files: {
 				'alpha/package.json': '{"name":"@orkestrel/alpha"}',
 				'alpha/src/core/index.ts': "export * from './types.js'\n",
-				'alpha/src/core/types.ts': 'export interface LiveName {}\n',
+				'alpha/src/core/types.ts': 'export interface LiveName {}\nexport interface LiveNames {}\n',
 			},
 		})
 		const server = await createUpstreamServer({
 			'/-/org/orkestrel/package': {
 				status: 200,
 				body: JSON.stringify({ '@orkestrel/beta': 'write' }),
+			},
+			'/orkestrel/alpha/refs/heads/main/guides/alpha.md': {
+				status: 200,
+				body: '## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `LiveNames` | interface | `{}` | Describes a value. |\n',
 			},
 			'/orkestrel/beta/refs/heads/main/guides/beta.md': {
 				status: 200,
@@ -385,14 +503,72 @@ describe('surface command', () => {
 			).toBe(EXIT_DRIFT)
 			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
 				owners: [
-					{ owner: 'alpha', source: 'candidate', names: ['LiveName'] },
+					{ owner: 'alpha', source: 'candidate', names: ['LiveName', 'LiveNames'] },
 					{ owner: 'beta', source: 'live', names: ['LiveName'] },
 				],
 				provenance: { guides: 'live', record: 'live' },
 				collisions: [{ name: 'LiveName', standing: 'error', owners: ['alpha', 'beta'] }],
+				advisories: [],
 			})
 			expect(server.paths[0]).toBe('/-/org/orkestrel/package')
-			expect(server.paths).not.toContain('/orkestrel/alpha/refs/heads/main/guides/alpha.md')
+			expect(server.paths).toContain('/orkestrel/alpha/refs/heads/main/guides/alpha.md')
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('keeps the exit code when a candidate owner publishes a guide the parser refuses', async () => {
+		const workspace = createScratch({
+			files: {
+				'alpha/package.json': '{"name":"@orkestrel/alpha"}',
+				'alpha/src/core/index.ts': "export * from './types.js'\n",
+				'alpha/src/core/types.ts': 'export interface Ledgers {}\n',
+			},
+		})
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/beta': 'write' }),
+			},
+			'/orkestrel/alpha/refs/heads/main/guides/alpha.md': {
+				status: 200,
+				body: '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `Ledgers` | interface | Describes a value. |\n',
+			},
+			'/orkestrel/beta/refs/heads/main/guides/beta.md': {
+				status: 200,
+				body: '## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `Ledger` | interface | `{ entries }` | Describes a value. |\n',
+			},
+			'/orkestrel/scaffold/refs/heads/main/host.json': {
+				status: 200,
+				body: JSON.stringify(buildHostManifest({ entries: [], roots: [], surface: [] })),
+			},
+		})
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--target', join(workspace.path, 'alpha'), '--json']),
+			).toBe(EXIT_CLEAN)
+			const result: unknown = JSON.parse(requireValue(sink.output[0]))
+			expect(result).toMatchObject({
+				owners: [
+					{ owner: 'alpha', source: 'candidate', names: ['Ledgers'] },
+					{ owner: 'beta', source: 'live', names: ['Ledger'] },
+				],
+				collisions: [],
+				advisories: [
+					{
+						name: 'Ledgers',
+						owner: 'alpha',
+						peer: { name: 'Ledger', owner: 'beta' },
+						similarity: 'plural',
+					},
+				],
+			})
+			expect(JSON.stringify(result)).not.toContain('signatures')
 		} finally {
 			workspace.destroy()
 			await server.destroy()
@@ -558,6 +734,7 @@ describe('surface command', () => {
 				owners: [],
 				collisions: [],
 				conflicts: [],
+				advisories: [],
 				provenance: {},
 			})
 			expect(server.paths).toEqual([])
@@ -784,6 +961,7 @@ describe('surface command', () => {
 					],
 					collisions: [],
 					conflicts: [],
+					advisories: [],
 					provenance: {},
 				})
 			}

@@ -22,6 +22,7 @@ import type {
 	Release,
 	CompileResult,
 	Snapshot,
+	SurfaceSimilarity,
 } from '@src/core'
 import { VERB_OPTIONS, VERBS } from '../src/bin/constants.js'
 import {
@@ -2960,3 +2961,60 @@ export const MATERIALIZED_PATHS = [
 export function createTemplateElement(cooked: unknown): unknown {
 	return { type: 'TemplateElement', value: { raw: 'x', cooked } }
 }
+
+/** Lists name pairs with the spelling class `inferSurfaceSimilarity` owes each, or none. */
+export const SURFACE_SIMILARITY_CASES: ReadonlyArray<
+	readonly [name: string, other: string, similarity: SurfaceSimilarity | undefined]
+> = [
+	['Route', 'route', 'case'],
+	['ROUTER', 'Router', 'case'],
+	['Route', 'Routes', 'plural'],
+	['Routes', 'Route', 'plural'],
+	['Box', 'Boxes', 'plural'],
+	['Entry', 'Entries', 'plural'],
+	['Handler', 'Handlers', 'plural'],
+	['Router', 'Routes', 'edit'],
+	['Sesion', 'Session', 'edit'],
+	['Session', 'Sesion', 'edit'],
+	['Parser', 'Parsed', 'edit'],
+	['Timer', 'Times', undefined],
+	['Store', 'Stare', undefined],
+	['Routre', 'Router', undefined],
+	['Server', 'Sender', undefined],
+	['Session', 'Sessional', undefined],
+	['Route', 'Route', undefined],
+	['Entry', 'entries', undefined],
+]
+
+/** Lists guide `Signature` cells with whether `matchesSurfaceStructure` reads each as a structure. */
+export const SURFACE_STRUCTURE_CASES: ReadonlyArray<
+	readonly [signature: string, structure: boolean]
+> = [
+	['`{ owner, names }`', true],
+	['`{ parse(), clear() }`', true],
+	['`{ on?, error? }`', true],
+	['`{ readonly add: readonly [id: string]; }`', true],
+	['`{ path }[]`', true],
+	['`{ start } | { end }`', true],
+	['`(value: unknown) => value is AbortSignal`', false],
+	['`(path: string) => boolean`', false],
+	['`<T>(value: T) => T`', false],
+	['`2000`', false],
+	['`" "`', false],
+	['`"owner:"`', false],
+	["`'live' | 'floor'`", false],
+	['`string`', false],
+	['`unique symbol`', false],
+	['`string | number`', false],
+	['`RegExp`', false],
+	['`Guard<string>`', false],
+	['`readonly string[]`', false],
+	['`ReadonlySet<string>`', false],
+	['`Readonly<Record<string, string>>`', false],
+	['`(string | number)[]`', false],
+	['`{}`', false],
+	['`{ }`', false],
+	['{ owner, names }', false],
+	['`{ owner }` or `{ names }`', false],
+	['', false],
+]

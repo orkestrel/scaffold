@@ -572,6 +572,9 @@ export const MAX_SCRIPT_LENGTH = 4_096
 /** Caps the length of one path, matching the longest a supported filesystem accepts. */
 export const MAX_PATH_LENGTH = 32_767
 
+/** Sets the shortest name length at which a one-edit neighbor counts as a near name. */
+export const SURFACE_EDIT_LENGTH = 6
+
 /** Caps the items accepted in one public collection. */
 export const MAX_COLLECTION_ITEMS = 1_000
 

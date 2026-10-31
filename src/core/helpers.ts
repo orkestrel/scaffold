@@ -11,10 +11,13 @@ import type {
 	Ownership,
 	Plan,
 	PlanSummary,
+	SurfaceAdvisory,
 	SurfaceClaim,
 	SurfaceCollision,
 	SurfaceConflict,
+	SurfaceContract,
 	SurfaceFinding,
+	SurfaceSimilarity,
 } from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
@@ -33,10 +36,12 @@ import {
 	ORCHESTRATION_PATH_NAMES,
 	ORCHESTRATION_PATH_PREFIXES,
 	PRINT_WIDTH,
+	SURFACE_EDIT_LENGTH,
 	TAB_WIDTH,
 	VERSION_PATTERN,
 	WORKSPACE_OWNED_PATHS,
 } from './constants.js'
+import { isScaffoldError } from './errors.js'
 import { ARTIFACT_TEMPLATES } from './templates.js'
 
 /**
@@ -135,6 +140,154 @@ export function collectSurfaceConflicts(
 		.flatMap(([name, entries]) => {
 			const environments = [...new Set(entries.map(({ environment }) => environment))].sort()
 			return environments.length > 1 ? [{ name, owner, environments }] : []
+		})
+}
+
+/**
+ * Infers how two different names resemble each other by spelling.
+ *
+ * @returns The first class that holds, or `undefined` when none does or the names are equal.
+ *
+ * @remarks
+ * Reads, in order, a case-fold twin, a singular or plural form (`s`, `es`, or `y` to `ies`), and
+ * one insertion, deletion, or substitution of a code unit when both names hold at least
+ * `SURFACE_EDIT_LENGTH` characters. Never returns `signature`, which compares cells.
+ *
+ * @example
+ * ```ts
+ * import { inferSurfaceSimilarity } from '@orkestrel/scaffold'
+ *
+ * inferSurfaceSimilarity('Route', 'Routes') // 'plural'
+ * ```
+ */
+export function inferSurfaceSimilarity(name: string, other: string): SurfaceSimilarity | undefined {
+	const [short, long] = name.length <= other.length ? [name, other] : [other, name]
+	if (name === other) return undefined
+	if (name.toLowerCase() === other.toLowerCase()) return 'case'
+	if (
+		long === `${short}s` ||
+		long === `${short}es` ||
+		(short.endsWith('y') && long === `${short.slice(0, -1)}ies`)
+	)
+		return 'plural'
+	if (short.length < SURFACE_EDIT_LENGTH || long.length - short.length > 1) return undefined
+	const found = short.split('').findIndex((character, position) => character !== long[position])
+	const index = found === -1 ? short.length : found
+	const rest = long.length === short.length ? short.slice(index + 1) : short.slice(index)
+	return long.slice(index + 1) === rest ? 'edit' : undefined
+}
+
+/**
+ * Checks whether an error is the `TARGET` refusal a surface reader raises for a guide its parser
+ * refuses, which carries the parser's code in its context.
+ *
+ * @returns True if the error is that refusal; false otherwise.
+ *
+ * @example
+ * ```ts
+ * import { matchesGuideRefusal, ScaffoldError } from '@orkestrel/scaffold'
+ *
+ * matchesGuideRefusal(new ScaffoldError('TARGET', 'Refused', { code: 'header' })) // true
+ * ```
+ */
+export function matchesGuideRefusal(error: unknown): boolean {
+	return (
+		isScaffoldError(error) &&
+		error.code === 'TARGET' &&
+		isRecord(error.context) &&
+		isString(error.context.code)
+	)
+}
+
+/**
+ * Checks whether a guide `Signature` cell spells a structure rather than a literal or a type name.
+ *
+ * @returns True if the cell is one code span that opens with a member list holding at least one
+ * member, its array and union forms included; false otherwise.
+ *
+ * @remarks
+ * A literal (`2000`, `" "`, `'live' | 'floor'`), a bare primitive (`string`), a type reference
+ * (`RegExp`, `Guard<string>`, `readonly string[]`), a function type, an empty member list, and
+ * prose are no structure: two names sharing one of those share a type, not a contract.
+ *
+ * @example
+ * ```ts
+ * import { matchesSurfaceStructure } from '@orkestrel/scaffold'
+ *
+ * matchesSurfaceStructure('`{ owner, names }`') // true
+ * ```
+ */
+export function matchesSurfaceStructure(signature: string): boolean {
+	const code = /^`([^`]+)`$/u.exec(signature)?.[1]?.trim()
+	return code !== undefined && code.startsWith('{') && !/^\{\s*\}$/u.test(code)
+}
+
+/**
+ * Collects the near names and equal contracts other owners claim beside each name a candidate adds.
+ *
+ * @param candidate - The candidate owner's contract.
+ * @param published - The names the candidate owner's published guide claims; empty when none.
+ * @param contracts - Every owner's contract; the candidate owner's own entry is skipped.
+ * @returns One advisory per added name, peer, and class, sorted by added name, peer owner, and peer
+ * name, with a spelling class before `signature`.
+ *
+ * @remarks
+ * An added name is one `candidate` claims and `published` does not. A spelling class comes from
+ * `inferSurfaceSimilarity`; `signature` holds when both names carry equal cells that
+ * `matchesSurfaceStructure` accepts. A name equal to the added name is a collision, not an
+ * advisory.
+ *
+ * @example
+ * ```ts
+ * import { collectSurfaceAdvisories } from '@orkestrel/scaffold'
+ *
+ * const advisories = collectSurfaceAdvisories(
+ * 	{ owner: 'alpha', names: ['Routes'], signatures: new Map() },
+ * 	[],
+ * 	[{ owner: 'router', names: ['Route'], signatures: new Map() }],
+ * )
+ * advisories[0]?.similarity // 'plural'
+ * ```
+ */
+export function collectSurfaceAdvisories(
+	candidate: SurfaceContract,
+	published: readonly string[],
+	contracts: readonly SurfaceContract[],
+): readonly SurfaceAdvisory[] {
+	const known = new Set(published)
+	const peers = contracts
+		.filter(({ owner }) => owner !== candidate.owner)
+		.flatMap(({ owner, names, signatures }) =>
+			[...new Set(names)].map((name) => ({ name, owner, signature: signatures.get(name) })),
+		)
+		.sort(
+			(left, right) =>
+				compareValues(left.owner, right.owner) || compareValues(left.name, right.name),
+		)
+	return [...new Set(candidate.names)]
+		.filter((name) => !known.has(name))
+		.sort(compareValues)
+		.flatMap((name) => {
+			const signature = candidate.signatures.get(name)
+			const structure = signature !== undefined && matchesSurfaceStructure(signature)
+			return peers.flatMap((peer) => {
+				const classes: ReadonlyArray<SurfaceSimilarity | undefined> = [
+					inferSurfaceSimilarity(name, peer.name),
+					structure && peer.name !== name && peer.signature === signature ? 'signature' : undefined,
+				]
+				return classes.flatMap((similarity) =>
+					similarity === undefined
+						? []
+						: [
+								{
+									name,
+									owner: candidate.owner,
+									peer: { name: peer.name, owner: peer.owner },
+									similarity,
+								},
+							],
+				)
+			})
 		})
 }
 

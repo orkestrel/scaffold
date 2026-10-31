@@ -11,6 +11,7 @@ import type {
 	Question,
 	Release,
 	SetupRuntime,
+	SurfaceContract,
 } from '@src/core'
 import type {
 	MaterializeResult,
@@ -41,6 +42,7 @@ import type {
 	RepairResult,
 	SurfaceCommand,
 	SurfaceOwner,
+	SurfaceRelease,
 	SurfaceResult,
 	TargetQuestion,
 	VersionResolution,
@@ -64,6 +66,7 @@ import {
 	TREE_TEST_PATH,
 	createBlueprint,
 	Compiler,
+	collectSurfaceAdvisories,
 	collectSurfaceCollisions,
 	compareSurfaceCollisions,
 	extractRangeMajor,
@@ -74,6 +77,7 @@ import {
 	JOURNEY_CONFIG_PATH,
 	isFloorPath,
 	isScaffoldError,
+	matchesGuideRefusal,
 	manifestToDependencies,
 	manifestToName,
 	MAX_MANIFEST_BYTES,
@@ -282,31 +286,69 @@ export class CLI implements CLIInterface {
 					...names.map((name) => name.replace(/^@orkestrel\//u, '')),
 				]),
 			].sort()
-			const pending = owners.filter(
-				(owner) => !candidates.some((candidate) => candidate.owner === owner),
-			)
 			const mirrors =
 				upstream === undefined
 					? []
 					: await upstream.fetch(
-							pending.map((owner) => `@orkestrel/${owner}`),
+							owners.map((owner) => `@orkestrel/${owner}`),
 							{},
 						)
+			// A candidate owner's published guide sets only its advisory baseline, so its refusal falls through.
+			const published = new Map(
+				owners.map((owner): readonly [string, SurfaceRelease | undefined] => {
+					const tolerant = candidates.some((candidate) => candidate.owner === owner)
+					const live = mirrors.find((mirror) => mirror.name === `@orkestrel/${owner}`)
+					const read =
+						live?.lookup === 'found'
+							? attempt(() => readSurfaceGuide(live.content, owner, `live ${live.path}`))
+							: undefined
+					if (read?.success === true) return [owner, { ...read.value, source: 'live' }]
+					if (read !== undefined && !(tolerant && matchesGuideRefusal(read.error))) {
+						throw read.error
+					}
+					const fallback = attempt(() => readSurfaceFile(floor, owner, 'floor'))
+					if (fallback.success) {
+						return [
+							owner,
+							fallback.value === undefined ? undefined : { ...fallback.value, source: 'floor' },
+						]
+					}
+					if (!(tolerant && matchesGuideRefusal(fallback.error))) throw fallback.error
+					return [owner, undefined]
+				}),
+			)
+			const drafts = new Map(
+				owners.flatMap((owner): ReadonlyArray<readonly [string, SurfaceContract]> => {
+					const own = candidates.filter((candidate) => candidate.owner === owner)
+					return own.length === 0
+						? []
+						: [
+								[
+									owner,
+									{
+										owner,
+										names: [...new Set(own.flatMap((candidate) => candidate.names))].sort(),
+										signatures: new Map(own.flatMap((candidate) => [...candidate.signatures])),
+									},
+								],
+							]
+				}),
+			)
 			const claims = owners.map((owner): SurfaceOwner => {
-				const own = candidates.filter((candidate) => candidate.owner === owner)
-				if (own.length > 0) {
-					const merged = [...new Set(own.flatMap((candidate) => candidate.names))].sort()
-					return { owner, names: merged, source: 'candidate' }
-				}
-				const live = mirrors.find((mirror) => mirror.name === `@orkestrel/${owner}`)
-				if (live?.lookup === 'found') {
-					return { ...readSurfaceGuide(live.content, owner, `live ${live.path}`), source: 'live' }
-				}
-				const fallback = readSurfaceFile(floor, owner, 'floor')
-				return fallback === undefined
+				const draft = drafts.get(owner)
+				if (draft !== undefined) return { owner, names: draft.names, source: 'candidate' }
+				const release = published.get(owner)
+				return release === undefined
 					? { owner, source: 'unread' }
-					: { ...fallback, source: 'floor' }
+					: { owner, names: release.names, source: release.source }
 			})
+			const contracts = owners.flatMap((owner) => {
+				const contract = drafts.get(owner) ?? published.get(owner)
+				return contract === undefined ? [] : [contract]
+			})
+			const advisories = [...drafts.values()].flatMap((draft) =>
+				collectSurfaceAdvisories(draft, published.get(draft.owner)?.names ?? [], contracts),
+			)
 			const record =
 				inventory?.lookup === 'found'
 					? inventory.surface
@@ -329,7 +371,13 @@ export class CLI implements CLIInterface {
 							record: inventory?.lookup === 'found' ? 'live' : 'floor',
 						}
 			const conflicts = candidates.flatMap((candidate) => candidate.conflicts)
-			const result: SurfaceResult = { owners: claims, collisions, conflicts, provenance }
+			const result: SurfaceResult = {
+				owners: claims,
+				collisions,
+				conflicts,
+				advisories,
+				provenance,
+			}
 			if (command.json === true) this.#report(result)
 			else {
 				if (membership?.note !== undefined) {
@@ -358,6 +406,11 @@ export class CLI implements CLIInterface {
 				for (const conflict of conflicts) {
 					this.#say(
 						`Surface conflict ${JSON.stringify(conflict.name.slice(0, 512))}: ${JSON.stringify(conflict.owner.slice(0, 512))} exports it from ${conflict.environments.map((environment) => JSON.stringify(environment.slice(0, 512))).join(', ')}. Export it once from core, or give each environment's export a distinct name.`,
+					)
+				}
+				for (const advisory of advisories) {
+					this.#say(
+						`Surface advisory ${JSON.stringify(advisory.name.slice(0, 512))}: ${JSON.stringify(advisory.owner.slice(0, 512))} adds it beside ${JSON.stringify(advisory.peer.name.slice(0, 512))} from ${JSON.stringify(advisory.peer.owner.slice(0, 512))} (${advisory.similarity}). Rule it under fleet name ownership before the upload.`,
 					)
 				}
 				this.#say(

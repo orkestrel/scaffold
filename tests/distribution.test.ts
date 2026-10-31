@@ -791,7 +791,7 @@ describe('installed package consumer', () => {
 				"dist/src/server/index.d.ts: readSurfaceClaims('./guides') // owners and the names their guides claim",
 				"dist/src/server/index.d.ts: readSurfaceCollisions('./guides').get('Shared') // the guides claiming Shared, if it collides",
 				"dist/src/server/index.d.ts: readSurfaceFile('.', 'scaffold', 'candidate')?.names // the names the checkout's guide claims",
-				"dist/src/server/index.d.ts: readSurfaceGuide('# Sample', 'sample', 'live guides/sample.md') // { owner: 'sample', names: [] }",
+				"dist/src/server/index.d.ts: readSurfaceGuide('# Sample', 'sample', 'live guides/sample.md') // { owner: 'sample', names: [], signatures: new Map() }",
 				'dist/src/server/index.d.ts: readSurfaceRecord(resolveHostRoot()) // the bundled collision record',
 				'dist/src/server/index.d.ts: resolveHostRoot() // the checkout in source, or the installed dist/host directory',
 				"dist/src/server/index.d.ts: resolveRealPath('./packages/new/src') // the real path of `packages`, plus `new/src`",

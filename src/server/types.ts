@@ -99,7 +99,7 @@ export interface HostManifest {
  */
 export interface SurfaceModule {
 	readonly createGuide: (text: string) => {
-		readonly surface: () => ReadonlyArray<{ readonly name: string }>
+		readonly surface: () => ReadonlyArray<{ readonly name: string; readonly signature?: string }>
 	}
 	readonly createSource: (options: {
 		readonly files: Readonly<Record<string, string>>

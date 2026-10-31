@@ -3,8 +3,8 @@ import type {
 	HostFile,
 	Snapshot,
 	SurfaceCandidate,
-	SurfaceClaim,
 	SurfaceCollision,
+	SurfaceContract,
 } from '@src/core'
 import type {
 	Host,
@@ -2000,7 +2000,7 @@ export function readSurfaceModule(
  * @example
  * ```ts
  * import { readSurfaceGuide } from '@orkestrel/scaffold/server'
- * readSurfaceGuide('# Sample', 'sample', 'live guides/sample.md') // { owner: 'sample', names: [] }
+ * readSurfaceGuide('# Sample', 'sample', 'live guides/sample.md') // { owner: 'sample', names: [], signatures: new Map() }
  * ```
  */
 export function readSurfaceGuide(
@@ -2008,15 +2008,20 @@ export function readSurfaceGuide(
 	owner: string,
 	source: string,
 	loader?: SurfaceLoader,
-): SurfaceClaim {
+): SurfaceContract {
 	const guide = readSurfaceModule(loader)
-	const parsed = attempt(() =>
-		guide
-			.createGuide(text)
-			.surface()
-			.map(({ name }) => name),
-	)
-	if (parsed.success) return { owner, names: parsed.value }
+	const parsed = attempt(() => guide.createGuide(text).surface())
+	if (parsed.success) {
+		return {
+			owner,
+			names: parsed.value.map(({ name }) => name),
+			signatures: new Map(
+				parsed.value.flatMap(({ name, signature }) =>
+					isString(signature) ? [[name, signature]] : [],
+				),
+			),
+		}
+	}
 	if (!guide.isGuideError(parsed.error)) throw parsed.error
 	throw new ScaffoldError(
 		'TARGET',
@@ -2039,7 +2044,10 @@ export function readSurfaceGuide(
  * readSurfaceClaims('./guides') // owners and the names their guides claim
  * ```
  */
-export function readSurfaceClaims(root: string, loader?: SurfaceLoader): readonly SurfaceClaim[] {
+export function readSurfaceClaims(
+	root: string,
+	loader?: SurfaceLoader,
+): readonly SurfaceContract[] {
 	if (!isPhysicalDirectory(root)) {
 		throw new ScaffoldError('TARGET', `Surface guide directory is not readable at ${root}`, {
 			root,
@@ -2144,6 +2152,7 @@ export function readSurfaceCandidate(root: string, loader?: SurfaceLoader): Surf
 	return {
 		owner,
 		names: [...new Set([...(guide?.names ?? []), ...Object.values(exports).flat()])].sort(),
+		signatures: guide?.signatures ?? new Map(),
 		conflicts: collectSurfaceConflicts(owner, exports),
 	}
 }
@@ -2172,7 +2181,7 @@ export function readSurfaceFile(
 	owner: string,
 	label: string,
 	loader?: SurfaceLoader,
-): SurfaceClaim | undefined {
+): SurfaceContract | undefined {
 	const destination = `guides/${owner}.md`
 	if (!isString(root)) {
 		const hex = root.bytes[destination]
