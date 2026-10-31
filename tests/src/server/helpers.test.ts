@@ -2827,16 +2827,16 @@ describe('stageHost', () => {
 			const table =
 				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n'
 			workspace.write(
-				'checkout/guides/csv.md',
-				`${table}| \`BOM\` | const | \`string\` | Marks. |\n`,
+				'checkout/guides/lsp.md',
+				`${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n`,
 			)
 			workspace.write(
-				'checkout/guides/sse.md',
-				`${table}| \`BOM\` | const | \`string\` | Marks. |\n`,
+				'checkout/guides/mcp.md',
+				`${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n`,
 			)
 			workspace.write(
-				'checkout/guides/msg.md',
-				`${table}| \`isSuccess\` | function | \`() => boolean\` | Checks. |\n`,
+				'checkout/guides/interpret.md',
+				`${table}| \`escapeRegExp\` | function | \`(text: string) => string\` | Escapes. |\n`,
 			)
 			workspace.write(
 				'checkout/host.json',
@@ -2844,7 +2844,7 @@ describe('stageHost', () => {
 					buildStagedManifest({
 						surface: [
 							{ name: 'Another', owners: ['alpha', 'beta'] },
-							{ name: 'BOM', owners: ['csv', 'sse'] },
+							{ name: 'JSONRPCId', owners: ['lsp', 'mcp'] },
 							{ name: 'Shared', owners: ['alpha', 'beta'] },
 						],
 					}),
@@ -2854,9 +2854,9 @@ describe('stageHost', () => {
 			stageHost(checkout, host)
 			expect(readHostFloor(host).manifest.surface).toStrictEqual([
 				{ name: 'Another', owners: ['alpha', 'beta'] },
-				{ name: 'BOM', owners: ['codec', 'csv', 'sse'] },
+				{ name: 'JSONRPCId', owners: ['jsonrpc', 'lsp', 'mcp'] },
 				{ name: 'Shared', owners: ['alpha', 'beta'] },
-				{ name: 'isSuccess', owners: ['contract', 'msg'] },
+				{ name: 'escapeRegExp', owners: ['contract', 'interpret'] },
 			])
 		} finally {
 			workspace.destroy()
@@ -2869,12 +2869,12 @@ describe('stageHost', () => {
 			const checkout = createCheckout(workspace, 'checkout')
 			const table =
 				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n'
-			const rows = `${table}| \`BOM\` | const | \`string\` | Marks. |\n| \`isSuccess\` | function | \`() => boolean\` | Checks. |\n`
-			workspace.write('checkout/guides/csv.md', rows)
-			workspace.write('checkout/guides/sse.md', rows)
+			const rows = `${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n| \`escapeRegExp\` | function | \`(text: string) => string\` | Escapes. |\n`
+			workspace.write('checkout/guides/lsp.md', rows)
+			workspace.write('checkout/guides/mcp.md', rows)
 			workspace.write(
 				'checkout/guides/table.md',
-				`${table}| \`BOM\` | const | \`string\` | Marks. |\n`,
+				`${table}| \`JSONRPCId\` | type | \`string | number\` | Names. |\n`,
 			)
 			workspace.write(
 				'checkout/host.json',
@@ -2882,7 +2882,7 @@ describe('stageHost', () => {
 					buildStagedManifest({
 						surface: [
 							{ name: 'Another', owners: ['alpha', 'beta'] },
-							{ name: 'BOM', owners: ['csv', 'sse'] },
+							{ name: 'JSONRPCId', owners: ['lsp', 'mcp'] },
 							{ name: 'Shared', owners: ['alpha', 'beta'] },
 						],
 					}),
@@ -2891,7 +2891,7 @@ describe('stageHost', () => {
 			expect(captureError(() => stageHost(checkout, join(workspace.path, 'host')))).toMatchObject({
 				code: 'TARGET',
 				message:
-					'Staged Surface collisions differ from the inventory: BOM staged (codec, csv, sse, table), recorded (csv, sse), transferred to codec; isSuccess staged (contract, csv, sse), recorded (absent), transferred to contract',
+					'Staged Surface collisions differ from the inventory: JSONRPCId staged (jsonrpc, lsp, mcp, table), recorded (lsp, mcp), transferred to jsonrpc; escapeRegExp staged (contract, lsp, mcp), recorded (absent), transferred to contract',
 			})
 			expect(workspace.has('host/manifest.json')).toBe(false)
 		} finally {
@@ -2904,16 +2904,16 @@ describe('stageHost', () => {
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const row =
-				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `BOM` | const | `string` | Marks. |\n'
-			workspace.write('checkout/guides/codec.md', row)
-			workspace.write('checkout/guides/csv.md', row)
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `JSONRPCId` | type | `string | number` | Names. |\n'
+			workspace.write('checkout/guides/jsonrpc.md', row)
+			workspace.write('checkout/guides/lsp.md', row)
 			workspace.write(
 				'checkout/host.json',
 				JSON.stringify(
 					buildStagedManifest({
 						surface: [
 							{ name: 'Another', owners: ['alpha', 'beta'] },
-							{ name: 'BOM', owners: ['codec', 'csv', 'sse'] },
+							{ name: 'JSONRPCId', owners: ['jsonrpc', 'lsp', 'mcp'] },
 							{ name: 'Shared', owners: ['alpha', 'beta'] },
 						],
 					}),
@@ -2923,7 +2923,7 @@ describe('stageHost', () => {
 			stageHost(checkout, host)
 			expect(readHostFloor(host).manifest.surface).toStrictEqual([
 				{ name: 'Another', owners: ['alpha', 'beta'] },
-				{ name: 'BOM', owners: ['codec', 'csv'] },
+				{ name: 'JSONRPCId', owners: ['jsonrpc', 'lsp'] },
 				{ name: 'Shared', owners: ['alpha', 'beta'] },
 			])
 		} finally {
@@ -2940,13 +2940,13 @@ describe('stageHost', () => {
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write(
-				'checkout/guides/codec.md',
-				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `BOM` | const | `string` | Marks. |\n',
+				'checkout/guides/jsonrpc.md',
+				'## Surface\n\n| Name | Kind | Signature | Summary |\n| --- | --- | --- | --- |\n| `JSONRPCId` | type | `string | number` | Names. |\n',
 			)
 			expect(captureError(() => stageHost(checkout, join(workspace.path, 'host')))).toMatchObject({
 				code: 'TARGET',
 				message:
-					'Surface transfers are spent, so remove them from SURFACE_TRANSFERS: BOM to codec under item 80',
+					'Surface transfers are spent, so remove them from SURFACE_TRANSFERS: JSONRPCId to jsonrpc under item 81',
 			})
 			expect(workspace.has('host/manifest.json')).toBe(false)
 		} finally {

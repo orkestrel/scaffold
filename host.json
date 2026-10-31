@@ -604,7 +604,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "4ad75a62b6d394db889f1754956bbd053c2a68c5ed34b1cfae0d81841835a6f9"
+			"digest": "a463a9f55a6c113c0cc61844bc046a01fe875a0cb5fe5c403c00034c60e408ed"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -964,7 +964,7 @@
 			"storage": "guides/abort.md",
 			"destination": "guides/abort.md",
 			"executable": false,
-			"digest": "bec8bbd8ac7ef08405abda3e4c8e450bc2279045982fb28710380ecea080002b"
+			"digest": "0e4806f67d06130b9a0f1635d999f30caff87b5e64f3b043202ae826233574db"
 		},
 		{
 			"storage": "guides/agent.md",
@@ -988,7 +988,7 @@
 			"storage": "guides/budget.md",
 			"destination": "guides/budget.md",
 			"executable": false,
-			"digest": "e00376f740c0f9d78462bf4549012e4eeb154e240473afd0c10d3a831f3a7199"
+			"digest": "74385fc75a7f57289c9210e534ca9baebb446f18272468db7b99e1660ea18558"
 		},
 		{
 			"storage": "guides/capture.md",
@@ -1000,7 +1000,7 @@
 			"storage": "guides/codec.md",
 			"destination": "guides/codec.md",
 			"executable": false,
-			"digest": "8cb147a47eb934fc811e5a41e55f69f8610b42c1dadd46b2d44279ba4278ce78"
+			"digest": "6f386a2ad6b02178fb1bf1ae02e3c0d35b05b886ea1b70a14649a3ff91834afb"
 		},
 		{
 			"storage": "guides/console.md",
@@ -1012,31 +1012,31 @@
 			"storage": "guides/contract.md",
 			"destination": "guides/contract.md",
 			"executable": false,
-			"digest": "3bf2b7ad3ec46b08cbd94e368f5bb19493141a2ef2b1cf0abecf38f4f0b696b8"
+			"digest": "281ae599f1550ef1b49be4c283d160460648bbca662b079edc3d6c755bb631b3"
 		},
 		{
 			"storage": "guides/csv.md",
 			"destination": "guides/csv.md",
 			"executable": false,
-			"digest": "6593a8d8573ab43a7ab786e42e63789cdd9ad1d5b201c6337738b70ce3b896e3"
+			"digest": "5bd476cb923e658a32eb99df6ceadced84e5e5ee19107aaf302e02d577a12caf"
 		},
 		{
 			"storage": "guides/database.md",
 			"destination": "guides/database.md",
 			"executable": false,
-			"digest": "206f4bcb62cee4bd7630ca93df0dcfa28b4b8df1b8f593a997a4cf2a4392811c"
+			"digest": "dcf2bff947bb2187abe986769655225d96e887a1df88246ac3c42024a2e606d4"
 		},
 		{
 			"storage": "guides/emitter.md",
 			"destination": "guides/emitter.md",
 			"executable": false,
-			"digest": "a00d3c7509419537ea9115f2b2c16670a243bb52721a7cb10b6fa2b6a370d0f4"
+			"digest": "99131e86b16097f6edfbfb497c80111db92880a87356d3fb69bb225c1016a944"
 		},
 		{
 			"storage": "guides/form.md",
 			"destination": "guides/form.md",
 			"executable": false,
-			"digest": "cc07f605a86dc8e5ed4b09e6037021243af3421160e9f090c196431a3e3a4797"
+			"digest": "5031bdf1232418ef47c0b0be4a10d782c98e021f3eb2c6f71364951be39243b9"
 		},
 		{
 			"storage": "guides/guide.md",
@@ -1048,19 +1048,25 @@
 			"storage": "guides/html.md",
 			"destination": "guides/html.md",
 			"executable": false,
-			"digest": "9c868beacfc7e9394af790854ae8237b994d5295fab5ffd3fe9c612894bc0cbf"
+			"digest": "b587b3cd424157fd72cf01b8f28a6ae8e0048a1d07d42a9cbfd76787a16b616e"
 		},
 		{
 			"storage": "guides/indexeddb.md",
 			"destination": "guides/indexeddb.md",
 			"executable": false,
-			"digest": "f1fd7a74ce2e816cf41d724320639b2ea37a4ed17ad920c29d64530cdd8a64d9"
+			"digest": "9d1d73624585b8a2474f5db5974f35621f3f80f67d6110a20ac3f751dff48c2b"
 		},
 		{
 			"storage": "guides/interpret.md",
 			"destination": "guides/interpret.md",
 			"executable": false,
 			"digest": "2096b2c52d8551ae6689aec8d4530bb87b4da34f5bec205da31e309dab7f13b5"
+		},
+		{
+			"storage": "guides/jsonrpc.md",
+			"destination": "guides/jsonrpc.md",
+			"executable": false,
+			"digest": "58834aeb1d04c643c4b2f65a263e62cb2400af3ed9000ed4980e3d65e512b6d6"
 		},
 		{
 			"storage": "guides/lsp.md",
@@ -1072,7 +1078,7 @@
 			"storage": "guides/markdown.md",
 			"destination": "guides/markdown.md",
 			"executable": false,
-			"digest": "5d6025ba5a260d3acb17803275be49c3203bb7d41fe71410c9c722b501d34afb"
+			"digest": "231cdff62245719d4ad0191c78c0b7ad453b6bb3854754df11087ca906139a60"
 		},
 		{
 			"storage": "guides/mcp.md",
@@ -1090,13 +1096,13 @@
 			"storage": "guides/msg.md",
 			"destination": "guides/msg.md",
 			"executable": false,
-			"digest": "bcd26b7f041e2f0c8b34137f8132b81754071cf6a8889d3aea6f5b13cda457e9"
+			"digest": "813b078fc33813c6144f51b0d0a1fb6e785d38a9a0d61a9a4081f8133b4c56c5"
 		},
 		{
 			"storage": "guides/ndjson.md",
 			"destination": "guides/ndjson.md",
 			"executable": false,
-			"digest": "5e4e2039f5b93b867b4e58d95e47d9afc9063ebe571d66e4139d9c37436ee700"
+			"digest": "bc45850ac6026295fb45e41ef94e542309fbc96b2a2218f03892ef40f2e6f40c"
 		},
 		{
 			"storage": "guides/ollama.md",
@@ -1108,7 +1114,7 @@
 			"storage": "guides/pool.md",
 			"destination": "guides/pool.md",
 			"executable": false,
-			"digest": "5fc46276e54f04aff1354b4479086aa70e609200576c2f723024c8b314b90417"
+			"digest": "6104ccabe057903e4adf68d918581c3d6088585ee3d9c66a54a4415fc2ded0a9"
 		},
 		{
 			"storage": "guides/probe.md",
@@ -1120,7 +1126,7 @@
 			"storage": "guides/process.md",
 			"destination": "guides/process.md",
 			"executable": false,
-			"digest": "9711caa51f35aaa5d4102f98d7a8cfd940c6308b6351a5035824a93ca05878a9"
+			"digest": "dda5485fcbb3f1e8d661c5a6d72d8eb44446fcf4a359942d216756098cf7838d"
 		},
 		{
 			"storage": "guides/program.md",
@@ -1150,7 +1156,7 @@
 			"storage": "guides/reason.md",
 			"destination": "guides/reason.md",
 			"executable": false,
-			"digest": "31e748054261734e2881a0a85ad16fdce995274fb11317d7eaf185ad3fe095a4"
+			"digest": "f2375345ae6366516668014a8cbbdefe65c7d354370fe8ad94aa6fd5dd09a98a"
 		},
 		{
 			"storage": "guides/relation.md",
@@ -1162,7 +1168,7 @@
 			"storage": "guides/router.md",
 			"destination": "guides/router.md",
 			"executable": false,
-			"digest": "789de905998bf6b0719660c0f550838e7092cf7314d6f418b0e4aab531e055fc"
+			"digest": "527ef0697269eaf2c362cdb1316e28fcedb5bd932ceb30106d1287b8832ae5ad"
 		},
 		{
 			"storage": "guides/scaffold.md",
@@ -1186,13 +1192,13 @@
 			"storage": "guides/sqlite.md",
 			"destination": "guides/sqlite.md",
 			"executable": false,
-			"digest": "11997169616f8f5b6af58c5e25a08c7d82b1adf259fb92e87909ee63848fa8fa"
+			"digest": "1a286429c9629f96ff849b88c55d96c2272a520bddf92aa2cc1e93377a0a1079"
 		},
 		{
 			"storage": "guides/sse.md",
 			"destination": "guides/sse.md",
 			"executable": false,
-			"digest": "324dbb50b4431e1f7e619b76877875b6374a53e34bb9d71c4c46c7d72e3469ba"
+			"digest": "c2a9ea62ec6e1c1af63a7bd1214ee43589a0e46ca9e5384dd2efa17b2456aed7"
 		},
 		{
 			"storage": "guides/study.md",
@@ -1204,13 +1210,13 @@
 			"storage": "guides/table.md",
 			"destination": "guides/table.md",
 			"executable": false,
-			"digest": "bb664b8d9a5997d61563d0610e7c6887340a9649a5a91a4c8900d9b9823f17ff"
+			"digest": "d023345b8f49b31d9604ef506cd8d2658a86e535ebe3c2bfe8f928589b411de4"
 		},
 		{
 			"storage": "guides/template.md",
 			"destination": "guides/template.md",
 			"executable": false,
-			"digest": "ea734629cb3083c3dcda94e853330760fd9838aa2e952d98b410f1a671584942"
+			"digest": "ad94f2bb973a038a5bfd7555638a80b37114edb345b06be5e7e1b8704c566e7c"
 		},
 		{
 			"storage": "guides/terminal.md",
@@ -1222,19 +1228,19 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "4511b496d349e889788687e2ba293a2ebb615cd2b463299e78e847b7cc58cc44"
+			"digest": "9c0961d6cbed04ea2e738baaf483d5b111f0ea52f8754ede4e44d117eff6356c"
 		},
 		{
 			"storage": "guides/timeout.md",
 			"destination": "guides/timeout.md",
 			"executable": false,
-			"digest": "edd80ade6308fff2a8361b76bd36be1516a7c727dba34f0553d2b87bef5c15e7"
+			"digest": "0dea8cc9970bc9b78d674d0f0944dbbd3a51d8f13c6fde919724b314ad3b351d"
 		},
 		{
 			"storage": "guides/tool.md",
 			"destination": "guides/tool.md",
 			"executable": false,
-			"digest": "13bd0ba1b57b8978234f225ae67469dbd7347e3b840d56e4acba340a8d78217e"
+			"digest": "39741c15fe07299676fd414591a4b804ae4375d629f7f28476d591cf925063cb"
 		},
 		{
 			"storage": "guides/toolbox.md",
@@ -1246,7 +1252,7 @@
 			"storage": "guides/websocket.md",
 			"destination": "guides/websocket.md",
 			"executable": false,
-			"digest": "8b2abb42919dde94b59deebc8fc2a10e18dc04e323754b850fa4a57e782d2ac1"
+			"digest": "66ca6f2444b09721d3d458714052e8a872b26fec5ba443290548eca8e99c8037"
 		},
 		{
 			"storage": "guides/worker.md",
@@ -1395,33 +1401,10 @@
 			]
 		},
 		{
-			"name": "BOM",
-			"owners": [
-				"codec",
-				"csv",
-				"sse"
-			]
-		},
-		{
-			"name": "CHOICE_LIMIT",
-			"owners": [
-				"contract",
-				"form",
-				"table"
-			]
-		},
-		{
 			"name": "Check",
 			"owners": [
 				"probe",
 				"reason"
-			]
-		},
-		{
-			"name": "Color",
-			"owners": [
-				"console",
-				"test"
 			]
 		},
 		{
@@ -1436,13 +1419,6 @@
 			"owners": [
 				"brief",
 				"worker"
-			]
-		},
-		{
-			"name": "INTEGER_PATTERN",
-			"owners": [
-				"csv",
-				"form"
 			]
 		},
 		{
@@ -1557,36 +1533,6 @@
 			]
 		},
 		{
-			"name": "MAX_DEPTH",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "METHODS",
-			"owners": [
-				"guide",
-				"router"
-			]
-		},
-		{
-			"name": "NAME_LIMIT",
-			"owners": [
-				"contract",
-				"form",
-				"table"
-			]
-		},
-		{
-			"name": "NODE_LIMIT",
-			"owners": [
-				"contract",
-				"form",
-				"table"
-			]
-		},
-		{
 			"name": "Position",
 			"owners": [
 				"csv",
@@ -1594,54 +1540,10 @@
 			]
 		},
 		{
-			"name": "Row",
-			"owners": [
-				"csv",
-				"database",
-				"indexeddb"
-			]
-		},
-		{
-			"name": "STRING_LIMIT",
-			"owners": [
-				"contract",
-				"form",
-				"table"
-			]
-		},
-		{
 			"name": "ScopeInterface",
 			"owners": [
 				"agent",
 				"mcp"
-			]
-		},
-		{
-			"name": "Session",
-			"owners": [
-				"middleware",
-				"process"
-			]
-		},
-		{
-			"name": "SessionInterface",
-			"owners": [
-				"middleware",
-				"process"
-			]
-		},
-		{
-			"name": "SessionOptions",
-			"owners": [
-				"middleware",
-				"process"
-			]
-		},
-		{
-			"name": "Source",
-			"owners": [
-				"guide",
-				"reason"
 			]
 		},
 		{
@@ -1677,42 +1579,6 @@
 			"owners": [
 				"agent",
 				"server"
-			]
-		},
-		{
-			"name": "TEXT_LIMIT",
-			"owners": [
-				"contract",
-				"form",
-				"table"
-			]
-		},
-		{
-			"name": "TableEventMap",
-			"owners": [
-				"database",
-				"table"
-			]
-		},
-		{
-			"name": "TableInterface",
-			"owners": [
-				"database",
-				"table"
-			]
-		},
-		{
-			"name": "TableOptions",
-			"owners": [
-				"console",
-				"table"
-			]
-		},
-		{
-			"name": "TableSchema",
-			"owners": [
-				"database",
-				"table"
 			]
 		},
 		{
@@ -1758,13 +1624,6 @@
 			]
 		},
 		{
-			"name": "TextNode",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
 			"name": "UNSAFE_FIELD_SEGMENTS",
 			"owners": [
 				"interpret",
@@ -1786,20 +1645,6 @@
 			]
 		},
 		{
-			"name": "cloneSchema",
-			"owners": [
-				"contract",
-				"table"
-			]
-		},
-		{
-			"name": "compareValues",
-			"owners": [
-				"contract",
-				"database"
-			]
-		},
-		{
 			"name": "computeDigest",
 			"owners": [
 				"probe",
@@ -1811,20 +1656,6 @@
 			"owners": [
 				"sea",
 				"workspace"
-			]
-		},
-		{
-			"name": "createChannel",
-			"owners": [
-				"agent",
-				"test"
-			]
-		},
-		{
-			"name": "createSession",
-			"owners": [
-				"middleware",
-				"process"
 			]
 		},
 		{
@@ -1842,41 +1673,6 @@
 			]
 		},
 		{
-			"name": "decodeBase64",
-			"owners": [
-				"codec",
-				"msg"
-			]
-		},
-		{
-			"name": "decodeLatin1",
-			"owners": [
-				"codec",
-				"msg"
-			]
-		},
-		{
-			"name": "decodeUTF8",
-			"owners": [
-				"codec",
-				"msg"
-			]
-		},
-		{
-			"name": "decodeWindows1252",
-			"owners": [
-				"codec",
-				"msg"
-			]
-		},
-		{
-			"name": "encodeUTF8",
-			"owners": [
-				"codec",
-				"msg"
-			]
-		},
-		{
 			"name": "errorToMessage",
 			"owners": [
 				"brief",
@@ -1890,44 +1686,14 @@
 				"contract",
 				"guide",
 				"interpret",
-				"router",
 				"workspace"
-			]
-		},
-		{
-			"name": "extractKey",
-			"owners": [
-				"database",
-				"table"
 			]
 		},
 		{
 			"name": "failure",
 			"owners": [
 				"contract",
-				"msg",
 				"workflow"
-			]
-		},
-		{
-			"name": "filterRows",
-			"owners": [
-				"database",
-				"table"
-			]
-		},
-		{
-			"name": "findRule",
-			"owners": [
-				"qualifier",
-				"test"
-			]
-		},
-		{
-			"name": "foldNode",
-			"owners": [
-				"html",
-				"markdown"
 			]
 		},
 		{
@@ -1942,20 +1708,6 @@
 			"owners": [
 				"probe",
 				"reason"
-			]
-		},
-		{
-			"name": "isFailure",
-			"owners": [
-				"contract",
-				"msg"
-			]
-		},
-		{
-			"name": "isFile",
-			"owners": [
-				"process",
-				"workspace"
 			]
 		},
 		{
@@ -2033,73 +1785,10 @@
 			]
 		},
 		{
-			"name": "isSuccess",
-			"owners": [
-				"contract",
-				"msg"
-			]
-		},
-		{
-			"name": "isTableSchema",
-			"owners": [
-				"database",
-				"table"
-			]
-		},
-		{
 			"name": "isText",
 			"owners": [
 				"brief",
 				"workspace"
-			]
-		},
-		{
-			"name": "isTextNode",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "parseBoolean",
-			"owners": [
-				"contract",
-				"csv"
-			]
-		},
-		{
-			"name": "parseDocument",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "parseInteger",
-			"owners": [
-				"contract",
-				"csv"
-			]
-		},
-		{
-			"name": "parseProvenance",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "projectSpan",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "readRecords",
-			"owners": [
-				"csv",
-				"indexeddb"
 			]
 		},
 		{
@@ -2110,45 +1799,9 @@
 			]
 		},
 		{
-			"name": "readValue",
-			"owners": [
-				"contract",
-				"test"
-			]
-		},
-		{
-			"name": "renderHTML",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "rewriteDocument",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "scanComment",
-			"owners": [
-				"csv",
-				"html"
-			]
-		},
-		{
-			"name": "sortRows",
-			"owners": [
-				"database",
-				"table"
-			]
-		},
-		{
 			"name": "success",
 			"owners": [
 				"contract",
-				"msg",
 				"workflow"
 			]
 		},
@@ -2158,29 +1811,7 @@
 				"brief",
 				"workflow"
 			]
-		},
-		{
-			"name": "textShape",
-			"owners": [
-				"brief",
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "walkNodes",
-			"owners": [
-				"html",
-				"markdown"
-			]
-		},
-		{
-			"name": "wrapError",
-			"owners": [
-				"indexeddb",
-				"sqlite"
-			]
 		}
 	],
-	"digest": "2192f181fa53785f6e91c2e673d1ec614c0d6ec79a48d2318646f7d022e9341a"
+	"digest": "09a2d221b1982643b29a30609b3a1528af7f8fb474c3fc3d1d2c941fcd409564"
 }

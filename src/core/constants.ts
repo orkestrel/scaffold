@@ -305,20 +305,11 @@ export const HOST_INVENTORY_PATH = 'host.json'
  */
 export const SURFACE_TRANSFERS: readonly SurfaceTransfer[] = Object.freeze(
 	[
-		...['BOM'].map((name) => ({ name, keeper: 'codec', item: 80 })),
-		...[
-			'CHOICE_LIMIT',
-			'NAME_LIMIT',
-			'NODE_LIMIT',
-			'STRING_LIMIT',
-			'TEXT_LIMIT',
-			'errorToMessage',
-			'escapeRegExp',
-			'failure',
-			'isFailure',
-			'isSuccess',
-			'success',
-		].map((name) => ({ name, keeper: 'contract', item: 79 })),
+		...['errorToMessage', 'escapeRegExp', 'failure', 'success'].map((name) => ({
+			name,
+			keeper: 'contract',
+			item: 79,
+		})),
 		...[
 			'JSONRPCError',
 			'JSONRPCErrorResponse',
