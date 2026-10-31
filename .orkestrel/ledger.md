@@ -100,3 +100,5 @@
 | 2026-10-31 | Ruling: every check and gate runs on the latest Node 22 unless a package requires 24 | user | `.orkestrel/plan.md` § Rulings |
 | 2026-10-31 | transfers-seam: `HostStageOptions.transfers` and the emptied `SURFACE_TRANSFERS` | opus | scaffold `Take stageHost's transfers through an option` commit |
 | 2026-10-31 | Review of transfers-seam: every claim held; the Orchestrator reworded three token-verb sentences | reviewer | same commit |
+| 2026-10-31 | Ruling: Node 22's bundled npm is upgraded to npm 11.21.1, the floor `wave.ts` needs | user | `.orkestrel/plan.md` § Rulings |
+| 2026-10-31 | toolbox list-kind: the workspace tool's `list` case | opus | toolbox `adb4fe1` |
