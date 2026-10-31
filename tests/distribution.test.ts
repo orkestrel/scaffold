@@ -456,6 +456,7 @@ describe('installed package consumer', () => {
 			'guides/html.md',
 			'guides/indexeddb.md',
 			'guides/interpret.md',
+			'guides/jsonrpc.md',
 			'guides/lsp.md',
 			'guides/markdown.md',
 			'guides/mcp.md',
