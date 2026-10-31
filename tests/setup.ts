@@ -263,7 +263,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: 'ef1564d86d85d5b2f542792409270af1ff0d894dce142e9b63816cb346dd6aea',
+		vite: 'fd9d3f8de03de05f14ea0387fba65015da116bb3f572953df9409275ab366c42',
 		scripts: '071889913950f0001972762561061b320b755544e191dfb0436b952ad12695d9',
 	},
 ])

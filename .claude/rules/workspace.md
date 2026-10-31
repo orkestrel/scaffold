@@ -42,6 +42,11 @@ Use only the environments a project needs, and keep the root dependency model in
   found at the same name.
 - `package.json`'s `bin` key is the installed command name. The entry path is the value and does
   not carry that name.
+- Keep every ignored output at the workspace root or under `tmp/`, and write no `.gitignore`
+  pattern that reaches into a nested tracked folder. A path under a dot folder, such as
+  `.claude/worktrees/`, is exempt. When a tool writes its output inside a tracked folder by
+  default, point the tool's own setting at a directory under `tmp/`. A bare name or glob that
+  names a root-level tool output, such as `dist`, `tmp`, or `*.log`, is a root ignore.
 
 ## Aliases
 
@@ -166,6 +171,10 @@ environment axis is one project per src/app axis × environment, plus one per ex
 - Give every browser project `test.browser.commands` from `configs/commands.ts`: each root factory
   that names the Playwright provider reads the record, and a project that spreads another
   factory's `test.browser`, as `appVue` and every `journey:<variant>` project do, keeps it.
+- Give every browser project `test.browser.screenshotDirectory` from the one `screenshots`
+  binding the root configuration declares beside `browserOptions`, which resolves
+  `tmp/captures/screenshots` from the workspace root; each root factory that names the Playwright
+  provider reads it, and a project that spreads another factory's `test.browser` keeps it.
 
 The workspace-proof axis is cross-cutting. Each proof covers the whole workspace rather than
 one environment, so each is its own project:

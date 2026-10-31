@@ -217,13 +217,19 @@ For `_` bindings:
 
 ## Files and folders
 
-| Kind            | Pattern                                                                          |
-| --------------- | -------------------------------------------------------------------------------- |
-| Domain folder   | lowercase plural entity: `agents/`, `tools/`                                     |
-| Implementation  | PascalCase entity: `Agent.ts`                                                    |
-| Function module | camelCase function: `renderGrid.ts`                                              |
-| Test            | source filename without extension + `.test`: `Agent.test.ts`, `useTheme.test.ts` |
-| Guide           | lowercase domain: `agents.md`                                                    |
+| Kind            | Pattern                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain folder   | lowercase plural entity: `agents/`, `tools/`                                                                                                            |
+| Implementation  | PascalCase entity: `Agent.ts`                                                                                                                           |
+| Function module | camelCase function: `renderGrid.ts`                                                                                                                     |
+| Test            | source filename without extension + `.test`: `Agent.test.ts`, `useTheme.test.ts`                                                                        |
+| Guide           | lowercase domain: `agents.md`                                                                                                                           |
+| JSON file       | one lowercase word, with a lowercase dotted qualifier where a tool reads the stem: `host.json`, `tsconfig.core.json`                                    |
+| Fixture         | one lowercase word, else camelCase: `sourceManifest.txt`                                                                                                |
+| Other file      | one lowercase word naming its subject in its folder, with a lowercase dotted qualifier where a tool reads the stem: `deps.sh`, `vite.journey.config.ts` |
+
+- When you name a tracked file or folder, write no hyphen and use the form the preceding table fixes for its kind. A hyphen stands only where an external convention fixes the name, such as a skill directory under `.claude/rules/documentation.md` § Workflow skills or `package-lock.json`. A file a tool generates under a name the tool fixes, a vendored mirror's fetched name, and every path under `tmp/` are exempt.
+- When a path sits under a folder whose name opens with a dot, such as `.agents/`, `.claude/`, `.codex/`, or `.cursor/`, the preceding bullet does not bind it: a harness can read a file there by its name, so name it for that harness. Claude Code loads a lowercase `claude.md` as memory wherever it sits, so the Claude transport is `.agents/transports/claude-cli.md`.
 
 ## Fixed lifecycle vocabulary
 

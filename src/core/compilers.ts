@@ -1601,16 +1601,14 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 				: matchesPrintWidth(helperImport.trimEnd())
 					? helperImport
 					: `import {\n${helpers.map((helper) => `\t${helper},`).join('\n')}\n} from './configs/helpers.js'\n`,
-		// The provider options are resolved once for the whole configuration, and
-		// only a selection that emits `configs/browsers.ts` can name them. The same
-		// selection emits `configs/commands.ts`, whose record every factory that names
-		// the provider reads.
+		// Only a selection that emits `configs/browsers.ts` can name the provider options, commands, and screenshot directory.
 		browsers: machinery.browser
 			? "import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\nimport { commands } from './configs/commands.js'\n"
 			: '',
 		options:
 			(machinery.browser
-				? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n' +
+				? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n' +
+					"// Vitest writes a page.screenshot() capture beside its test file unless a directory is named.\nconst screenshots = resolveWorkspacePath('tmp/captures/screenshots')\n\n" +
 					blueprintToOptimizedDependencies(blueprint)
 				: '') +
 			(blueprint.journey && blueprint.app.includes('browser')

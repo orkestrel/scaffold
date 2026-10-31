@@ -2542,7 +2542,12 @@ Nothing is fixed except the manifest.
 - One template artifact, `configs/browsers.ts`, for a workspace selecting `browser` on either
   environment axis or in its setup runtime list.
   It resolves the Chromium the Playwright provider launches, and the root `vite.config.ts` calls it
-  once into `browserOptions` and passes that to every `playwright()` provider it configures. The
+  once into `browserOptions` and passes that to every `playwright()` provider it configures. Beside
+  it, the root configuration resolves one `screenshots` directory, `tmp/captures/screenshots` under
+  the workspace root, and every factory that configures a `playwright()` provider passes it as
+  `test.browser.screenshotDirectory`, so a `page.screenshot()` capture lands there rather than in a
+  `__screenshots__` directory beside its test file. Vitest writes a failure screenshot into its
+  attachments directory, `.vitest/attachments` at the workspace root. The
   precedence is `PLAYWRIGHT_EXECUTABLE_PATH`, `PLAYWRIGHT_WS_ENDPOINT`, `PLAYWRIGHT_CHANNEL`, the
   managed Playwright Chromium, the container's bundled Chromium, a verified system channel, then the
   platform default. Set `PLAYWRIGHT_SCROLLBARS=classic` only for runs that measure scrollbar

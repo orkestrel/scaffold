@@ -2127,7 +2127,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			expect.arrayContaining(['@orkestrel/html', 'vue', '@orkestrel/test']),
 		)
 		await expect(JSON.stringify(planned, undefined, '\t') + '\n').toMatchFileSnapshot(
-			'fixtures/app-only-toolchain.txt',
+			'fixtures/toolchain.txt',
 		)
 	})
 
@@ -2186,7 +2186,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		// The fixture covers every emitted byte, the self-pin included, so a release
 		// moves it. Regenerate it with `npm run test:src:core -- -u` and review the
 		// diff; it is the tripwire for every other byte.
-		await expect(manifest).toMatchFileSnapshot('fixtures/source-manifest.txt')
+		await expect(manifest).toMatchFileSnapshot('fixtures/sourceManifest.txt')
 	})
 })
 
@@ -2199,9 +2199,7 @@ describe('blueprintToScripts config projects', () => {
 
 		// A release moves the fixture through its floors and self-pin; regenerate it
 		// with `npm run test:src:core -- -u` and review the diff.
-		await expect(blueprintToManifest(absent)).toMatchFileSnapshot(
-			'fixtures/setup-false-manifest.txt',
-		)
+		await expect(blueprintToManifest(absent)).toMatchFileSnapshot('fixtures/setupFalseManifest.txt')
 		expect(blueprintToRootVite(absent)).not.toContain("name: { label: 'setup',")
 		expect(blueprintToScripts(absent)).not.toHaveProperty('test:setup')
 		expect(blueprintToScripts(absent).test).not.toContain('test:setup')
@@ -2865,6 +2863,7 @@ describe('blueprintToScripts config projects', () => {
 			'\t\t\t\tenabled: true,',
 			'\t\t\t\tprovider: playwright(browserOptions),',
 			'\t\t\t\tcommands,',
+			'\t\t\t\tscreenshotDirectory: screenshots,',
 			"\t\t\t\tinstances: [{ browser: 'chromium', headless: true }],",
 			'\t\t\t},',
 			'\t\t},',
@@ -3627,7 +3626,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			// Resolved once, above every factory that reads it, because a provider
 			// resolved per project would probe the filesystem once per project.
 			expect(content).toContain(
-				'\nconst browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n',
+				"\nconst browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n// Vitest writes a page.screenshot() capture beside its test file unless a directory is named.\nconst screenshots = resolveWorkspacePath('tmp/captures/screenshots')\n\n",
 			)
 		}
 		expect(published).toContain('\t\t\tprovider: playwright(browserOptions),\n')
@@ -3637,6 +3636,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		const core = blueprintToRootVite(buildBlueprint({ src: ['core'] }))
 		expect(core).not.toContain('./configs/browsers.js')
 		expect(core).not.toContain('browserOptions')
+		expect(core).not.toContain('screenshots')
 	})
 
 	it('writes each selection-dependent span the way the formatter leaves it', () => {
@@ -3842,6 +3842,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 				enabled: true,
 				provider: playwright(browserOptions),
 				commands,
+				screenshotDirectory: screenshots,
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -3999,7 +4000,7 @@ describe('browser commands', () => {
 		}
 	})
 
-	it('reads the commands record in every factory that names the browser provider', () => {
+	it('reads the commands record and the screenshot directory in every factory that names the browser provider', () => {
 		for (const blueprint of [
 			buildBlueprint({ src: ['core', 'browser'] }),
 			buildBlueprint({ src: [], app: ['browser'] }),
@@ -4025,13 +4026,19 @@ describe('browser commands', () => {
 				configuration.match(/^(\t+)provider: playwright\(browserOptions\),\n\1commands,$/gmu),
 			).toStrictEqual(providers.map((line) => `${line}\n${line.replace(/\S.*$/u, '')}commands,`))
 			expect(configuration.match(/^\t+commands,$/gmu)).toHaveLength(providers.length)
+			// The record line is followed by the one screenshot directory at the same indentation.
+			expect(
+				configuration.match(/^(\t+)commands,\n\1screenshotDirectory: screenshots,$/gmu),
+			).toHaveLength(providers.length)
+			expect(configuration.match(/^const screenshots = /gmu)).toHaveLength(1)
 		}
 		const plain = blueprintToRootVite(buildBlueprint({ src: ['core'] }))
 		expect(plain).not.toContain('configs/commands.js')
 		expect(plain).not.toMatch(/^\t+commands,$/mu)
+		expect(plain).not.toContain('screenshotDirectory')
 	})
 
-	it('gives every browser project and journey project the commands its target registers', async () => {
+	it('gives every browser project and journey project the commands its target registers and its screenshot directory', async () => {
 		const scratch = createScratch({ prefix: 'scaffold-browser-commands-' })
 		try {
 			const blueprint = createBlueprint('proof', {
@@ -4094,7 +4101,13 @@ describe('browser commands', () => {
 					isRecord(project.test.browser) &&
 					project.test.browser.enabled === true &&
 					isRecord(project.test.name)
-						? [{ label: project.test.name.label, commands: project.test.browser.commands }]
+						? [
+								{
+									label: project.test.name.label,
+									commands: project.test.browser.commands,
+									screenshots: project.test.browser.screenshotDirectory,
+								},
+							]
 						: [],
 				)
 				expect(browsers.map(({ label }) => label)).toStrictEqual([
@@ -4106,6 +4119,12 @@ describe('browser commands', () => {
 				const registered = bundle.commands
 				expect(Object.isFrozen(registered)).toBe(true)
 				expect(Object.keys(registered)).toStrictEqual(keys)
+				for (const { label, screenshots } of browsers) {
+					expect({ label, screenshots }).toStrictEqual({
+						label,
+						screenshots: resolve(scratch.path, 'proof/tmp/captures/screenshots'),
+					})
+				}
 				for (const { label, commands } of browsers) {
 					expect({
 						label,
