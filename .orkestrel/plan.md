@@ -21,6 +21,7 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - 2026-10-30, the user: one one-time code per upload batch, asked for right before it; a release commit pushes only after the registry serves its version; never push tags.
 - 2026-10-30, the user: `.orkestrel/jsonrpc-design.md`'s proposed rulings stand, mcp's error envelopes carry `id: null`, the `orkestrel/jsonrpc` repository is created, and its package publishes 0.0.1; the wave runs to completion, asking only for one-time codes.
 - 2026-10-30, the user: a name moves to the keeper a `ROADMAP.md` item names through a declared transfer, `.claude/rules/names.md` § Fleet name ownership rule 5: `SURFACE_TRANSFERS` names it, the stage admits exactly that keeper, the policy sweep grandfathers a name the installed record admits the target to, and the close empties the list; one scaffold release carries it before layer 0.
+- 2026-10-30, the user: a renamed concept carries its new term across its package's whole API in the same release: interpret's remaining template vocabulary becomes recipe, and workspace's `clampPosition` becomes `clampCaret`.
 
 ## Open decisions
 
@@ -31,7 +32,8 @@ Each package lives at `https://github.com/orkestrel/<name>`, checked out beside 
 - 2026-10-30: the fleet surface campaign retired at `e8b95e120`, leaving items 77 to 112 as this wave's units; scaffold 0.0.118 records 107 collisions.
 - 2026-10-30: contract's release visit re-pinned scaffold 0.0.118 and guide 0.0.28 and committed `Overwrite with scaffold 0.0.118` (contract `fb46eac`, unpushed), every gate green and its built output unchanged; item 81's design round returned `.orkestrel/jsonrpc-design.md`.
 - 2026-10-30: the item units for contract, jsonrpc, codec, html, indexeddb, and test are written and reviewed; contract's, codec's, and jsonrpc's policy sweeps refuse their added names until a scaffold release declares the transfers.
-- Next: § Sequence step 0, the transfer unit and scaffold's release.
+- 2026-10-30: step 0's transfer unit committed and scaffold 0.0.119's release chain passed (`Release 0.0.119`, unpublished, awaiting the user's code). On the user's authorization, dependents work ahead on local tarballs: `swap.ts --pin` holds each changed upstream's unpublished `main` in the dependent's uncommitted manifest, and each publish wave restores the pins and re-pins to the registry. The adoption census compares each changed package's mirrored guide with its checkout's guide, and finds imports of the dropped names in agent, capture, guide, lsp, mcp, ollama, probe, scaffold, and toolbox, with brief calling interpret's renamed accessors.
+- Pending dispatch: the deferred units for router, workspace, csv, form, sse, and guide with markdown's adoption; rater item 99; sea item 103; after their visits, capture, ollama, and toolbox adoptions and console item 84; after interpret's review, its deferred unit, then brief item 83 with interpret's adoption; after each in-flight unit, agent's and probe's adoptions, lsp's and mcp's item 81 adoption on a jsonrpc tarball, and scaffold item 102 with its process and contract adoption.
 
 ## Sequence
 
