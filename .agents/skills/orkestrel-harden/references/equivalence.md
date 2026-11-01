@@ -8,7 +8,8 @@ with a row for each class this contract names that the changed code admits.
 
 ## Hold the contract
 
-- When a rewrite changes traversal, membership, allocation, or materialization, compare its cost growth with the baseline on the package's realistic load and rule the measured effect under `.claude/rules/quality.md` § Performance.
+- When a rewrite changes traversal, membership, allocation, or materialization, compare its cost growth with the baseline on the package's realistic load and rule the measured effect under `.claude/rules/quality.md` § Performance. When a profile places the rewritten function on a hot path, also read its constant factor against the baseline, and rule that reading under the same section.
+- When a loop that a profile places on a hot path recomputes a result for an input it already computed within one operation, a memo under `.claude/rules/typescript.md` § Bindings **Exemptions** can hold the result, and so can `#` fields of an entity created for the call under **Per-call state** when the call's awaits or callbacks change that state. Rule the gain under `.claude/rules/quality.md` § Performance, and keep every element read and effect this contract matches.
 - Treat every value the declared parameter types admit as inside the contract: holes, entries read
   through getters (their count and order), entries that throw, an array whose `Symbol.iterator` is
   missing or replaced, and an iterator's `return()`.

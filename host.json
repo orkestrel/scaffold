@@ -274,7 +274,7 @@
 			"storage": "agents/skills/orkestrel-harden/references/bindings.md",
 			"destination": ".agents/skills/orkestrel-harden/references/bindings.md",
 			"executable": false,
-			"digest": "84fecf91e78c33cdabb98d47a34f39ab9014ef26fd12f8f45948b4e6c144b387"
+			"digest": "e6a4f62ba4e590135c2cd80f72b66184d06f7a930e054187b3627d06ee194d16"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/references/centralization.md",
@@ -298,7 +298,7 @@
 			"storage": "agents/skills/orkestrel-harden/references/equivalence.md",
 			"destination": ".agents/skills/orkestrel-harden/references/equivalence.md",
 			"executable": false,
-			"digest": "8947aaef23e2ec40ed82b7126d9167fec517d589a3a7bfdbe30bacb3d671c888"
+			"digest": "773a557b8fe54dbb6c5a56fd2f99d9b6e76924fc131ff1cf576dd993671565fe"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/references/hardening.md",
@@ -1393,5 +1393,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "355a5ad67daad0e17de1cd8aafb16931ac595e25446cc9f03d1182e652f27c56"
+	"digest": "8941d13e9dc7783e2c104716e7f45950e39b797d491537b58ebd5edaad3741b7"
 }

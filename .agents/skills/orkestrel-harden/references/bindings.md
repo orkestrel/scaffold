@@ -115,10 +115,8 @@ function describeRun(runner: Runner): string {
 }
 
 function collectEdits(tokens: readonly Token[]): readonly Edit[] {
-	return tokens.reduce<readonly Edit[]>(
-		(log, token) =>
-			token.value === undefined ? log : [...log, { start: token.index, text: token.value }],
-		[],
+	return tokens.flatMap((token) =>
+		token.value === undefined ? [] : [{ start: token.index, text: token.value }],
 	)
 }
 ```
@@ -204,10 +202,16 @@ interface Frame {
 }
 
 function collectEdits(tokens: readonly Token[]): readonly Edit[] {
-	return tokens.reduce<readonly Edit[]>((log, token) => {
-		if (log.at(-1)?.start === token.index) return log
-		return [...log, { start: token.index, text: token.text }]
-	}, [])
+	const log: Edit[] = []
+	for (const token of tokens) {
+		if (log.at(-1)?.start === token.index) continue
+		log.push({ start: token.index, text: token.text })
+	}
+	return log
+}
+
+function collectStarts(tokens: readonly Token[]): readonly number[] {
+	return collectEdits(tokens).map((edit) => edit.start)
 }
 
 function stepStack(stack: readonly Frame[], indent: number, key: string): readonly Frame[] {
@@ -344,10 +348,12 @@ Clear fixture, `logs.last.clear.ts`:
 
 ```ts
 function collectEdits(tokens: readonly Token[]): readonly Edit[] {
-	return tokens.reduce<readonly Edit[]>((log, token) => {
-		if (log.at(-1)?.start === token.index) return log
-		return [...log, { name: token.name, start: token.index }]
-	}, [])
+	const log: Edit[] = []
+	for (const token of tokens) {
+		if (log.at(-1)?.start === token.index) continue
+		log.push({ name: token.name, start: token.index })
+	}
+	return log
 }
 
 function declares(tokens: readonly Token[], name: string): boolean {
