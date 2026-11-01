@@ -3,6 +3,7 @@ import {
 	existsSync,
 	globSync,
 	lstatSync,
+	mkdirSync,
 	readFileSync,
 	renameSync,
 	symlinkSync,
@@ -10,7 +11,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { createScratch, readInventory, supportsDirectoryLinks } from '@orkestrel/test/server'
 import { CLI } from '../../../../../src/bin/CLI.js'
@@ -90,6 +91,9 @@ import {
 } from '../../../../setupServer.js'
 
 describe('wave.ts', () => {
+	beforeAll(() => {
+		mkdirSync(join(WORKSPACE_ROOT, 'tmp', 'units'), { recursive: true })
+	})
 	it.each(['same run', 'resume', 'unrelated', 'missing version', 'format failure', 'format only'])(
 		'attributes formatter rewrites from the visit evidence: %s',
 		(condition) => {
