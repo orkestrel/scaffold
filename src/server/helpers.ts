@@ -2029,13 +2029,53 @@ export function readSurfaceModule(
 	if (!loaded.success || !isSurfaceModule(loaded.value)) {
 		throw new ScaffoldError(
 			'TARGET',
-			"Surface reflection requires @orkestrel/guide with createGuide, createSource, extractSourceLines, and isGuideError. Supply that module in scaffold's resolution path.",
+			'Surface reflection requires @orkestrel/guide with createGuide, createSource, extractSourceLines, and isGuideError. Install that module where scaffold resolves it, or name a built @orkestrel/guide checkout as a surface candidate.',
 			{
 				...(!loaded.success ? { error: loaded.error } : {}),
 			},
 		)
 	}
 	return loaded.value
+}
+
+/**
+ * Resolves the guide loader one surface run passes to every reader.
+ *
+ * @param roots - The candidate checkouts the run names.
+ * @returns Node resolution from the one candidate whose manifest names `@orkestrel/guide`, so
+ * that checkout's own exports serve the module; otherwise Node resolution from this module.
+ * @throws Thrown with TARGET when two candidates name `@orkestrel/guide`, or when that
+ * candidate's own exports do not resolve because its build output is absent.
+ * @example
+ * ```ts
+ * import { readSurfaceModule, resolveSurfaceLoader } from '@orkestrel/scaffold/server'
+ * readSurfaceModule(resolveSurfaceLoader([])).createGuide('# Sample').surface() // []
+ * ```
+ */
+export function resolveSurfaceLoader(roots: readonly string[]): SurfaceLoader {
+	const guides = roots.filter((root) => {
+		const manifest = readFileText(root, 'package.json', MAX_MANIFEST_BYTES)
+		return manifest !== undefined && manifestToName(manifest) === '@orkestrel/guide'
+	})
+	if (guides.length > 1) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface candidates ${JSON.stringify(guides.map((root) => root.slice(0, 512)))} each name @orkestrel/guide, and one run loads one guide module. Name one @orkestrel/guide checkout.`,
+			{ roots: guides },
+		)
+	}
+	const root = guides[0]
+	if (root === undefined) return createRequire(import.meta.url)
+	const loader = createRequire(join(root, 'package.json'))
+	const resolved = attempt(() => loader.resolve('@orkestrel/guide'))
+	if (!resolved.success) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface candidate ${JSON.stringify(root.slice(0, 512))} is @orkestrel/guide, and its own exports do not resolve. Run npm run build in that checkout before checking its claims.`,
+			{ root, error: resolved.error },
+		)
+	}
+	return loader
 }
 
 /**

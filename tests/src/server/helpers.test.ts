@@ -83,6 +83,7 @@ import {
 	readSurfaceRecord,
 	resolveContainedPath,
 	resolveRealPath,
+	resolveSurfaceLoader,
 	stageBytes,
 	stageHost,
 	stageInventory,
@@ -123,6 +124,7 @@ import {
 	executeOllamaHook,
 	executeOllamaSetup,
 	GIT_PATH_CASES,
+	GUIDE_CHECKOUT_FILES,
 	listExecutablePaths,
 	normalizeBashPath,
 	PROTECTED_PATH_CASES,
@@ -2409,6 +2411,64 @@ describe('readSurfaceCollisions', () => {
 				code: 'TARGET',
 				message: expect.stringContaining('isGuideError'),
 			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('resolves the guide loader from the one guide candidate checkout', () => {
+		const workspace = createScratch({
+			prefix: SCRATCH_PREFIX,
+			files: { 'alpha/package.json': '{"name":"@orkestrel/alpha"}' },
+		})
+		try {
+			const alpha = join(workspace.path, 'alpha')
+			const guide = workspace.ensure('guide')
+			const second = workspace.ensure('second')
+			for (const [path, text] of Object.entries(GUIDE_CHECKOUT_FILES)) {
+				workspace.write(`guide/${path}`, text)
+				workspace.write(`second/${path}`, text)
+			}
+			expect(
+				readSurfaceModule(resolveSurfaceLoader([alpha, workspace.ensure('empty')]))
+					.createGuide('# Sample')
+					.surface(),
+			).toEqual([])
+			expect(
+				readSurfaceModule(resolveSurfaceLoader([alpha, guide]))
+					.createGuide('# Sample')
+					.surface(),
+			).toEqual([{ name: 'Checkout' }])
+			expect(captureError(() => resolveSurfaceLoader([guide, second]))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining(
+					`${JSON.stringify([guide, second])} each name @orkestrel/guide, and one run loads one guide module. Name one @orkestrel/guide checkout.`,
+				),
+			})
+			workspace.remove('guide/dist')
+			expect(captureError(() => resolveSurfaceLoader([alpha, guide]))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining(
+					`${JSON.stringify(guide)} is @orkestrel/guide, and its own exports do not resolve. Run npm run build in that checkout before checking its claims.`,
+				),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('reflects a candidate barrel through the guide module its loader serves', () => {
+		const workspace = createScratch({
+			prefix: SCRATCH_PREFIX,
+			files: {
+				...GUIDE_CHECKOUT_FILES,
+				'src/core/index.ts': "export * from './types.js'\n",
+				'src/core/types.ts': 'export interface Sourced {}\n',
+			},
+		})
+		try {
+			expect(readSurfaceCandidate(workspace.path).names).toEqual(['Sourced'])
+			expect(
+				readSurfaceCandidate(workspace.path, resolveSurfaceLoader([workspace.path])).names,
+			).toEqual(['Checkout', 'Reflected'])
 		} finally {
 			workspace.destroy()
 		}

@@ -91,6 +91,7 @@ import {
 	FLEET_MIRROR_REPLIES,
 	FLEET_RELEASE_REPLIES,
 	FLEET_UPSTREAM_PATHS,
+	GUIDE_CHECKOUT_FILES,
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
 	omitDependencies,
@@ -181,6 +182,55 @@ describe('surface command', () => {
 			expect(await new CLI(human.options).execute(args)).toBe(EXIT_CLEAN)
 			expect(human.output).toContain('1 recorded collisions, 1 closed collisions.')
 			expect(human.diagnostic).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads every guide through the own exports of a guide candidate checkout', async () => {
+		const workspace = createScratch({ files: GUIDE_CHECKOUT_FILES })
+		try {
+			workspace.write(
+				`host/${CATALOG_AGENT_PATH}`,
+				'| Package |\n| --- |\n| @orkestrel/alpha |\n| @orkestrel/guide |\n',
+			)
+			workspace.write('host/guides/alpha.md', '# alpha\n')
+			workspace.write(
+				'host/host.json',
+				JSON.stringify(buildHostManifest({ entries: [], roots: ['guides'], surface: [] })),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'surface',
+					'--from',
+					join(workspace.path, 'host'),
+					'--target',
+					workspace.path,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				owners: [
+					{ owner: 'alpha', names: ['Checkout'], source: 'floor' },
+					{ owner: 'guide', names: ['Checkout'], source: 'candidate' },
+				],
+				collisions: [{ name: 'Checkout', owners: ['alpha', 'guide'], standing: 'error' }],
+			})
+			workspace.remove('dist')
+			const unbuilt = createSink()
+			expect(
+				await new CLI(unbuilt.options).execute([
+					'surface',
+					'--from',
+					join(workspace.path, 'host'),
+					'--target',
+					workspace.path,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(unbuilt.diagnostic.join('\n')).toContain(
+				`${JSON.stringify(workspace.path)} is @orkestrel/guide, and its own exports do not resolve. Run npm run build`,
+			)
 		} finally {
 			workspace.destroy()
 		}
@@ -512,6 +562,42 @@ describe('surface command', () => {
 			})
 			expect(server.paths[0]).toBe('/-/org/orkestrel/package')
 			expect(server.paths).toContain('/orkestrel/alpha/refs/heads/main/guides/alpha.md')
+		} finally {
+			workspace.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads a live published guide through the own exports of a guide candidate checkout', async () => {
+		const workspace = createScratch({ files: GUIDE_CHECKOUT_FILES })
+		const server = await createUpstreamServer({
+			'/-/org/orkestrel/package': {
+				status: 200,
+				body: JSON.stringify({ '@orkestrel/beta': 'write' }),
+			},
+			'/orkestrel/beta/refs/heads/main/guides/beta.md': { status: 200, body: '# beta\n' },
+			'/orkestrel/guide/refs/heads/main/guides/guide.md': { status: 200, body: '# guide\n' },
+			'/orkestrel/scaffold/refs/heads/main/host.json': {
+				status: 200,
+				body: JSON.stringify(buildHostManifest({ entries: [], roots: [], surface: [] })),
+			},
+		})
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI({
+					...sink.options,
+					upstream: { registry: { base: server.base }, repository: { base: server.base } },
+				}).execute(['surface', '--target', workspace.path, '--json']),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(requireValue(sink.output[0]))).toMatchObject({
+				owners: [
+					{ owner: 'beta', source: 'live', names: ['Checkout'] },
+					{ owner: 'guide', source: 'candidate', names: ['Checkout'] },
+				],
+				collisions: [{ name: 'Checkout', standing: 'error', owners: ['beta', 'guide'] }],
+			})
+			expect(server.paths).toContain('/orkestrel/beta/refs/heads/main/guides/beta.md')
 		} finally {
 			workspace.destroy()
 			await server.destroy()

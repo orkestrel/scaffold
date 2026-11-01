@@ -105,6 +105,7 @@ import {
 	readSurfaceRecord,
 	readSurfaceGuide,
 	resolveContainedPath,
+	resolveSurfaceLoader,
 } from '@src/server'
 import { join, resolve } from 'node:path'
 import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE, PACKAGE_NAME } from './constants.js'
@@ -278,7 +279,8 @@ export class CLI implements CLIInterface {
 					...(isExactCaseFile(join(target, 'package.json')) ? [target] : []),
 				]),
 			]
-			const candidates = paths.map((path) => readSurfaceCandidate(path))
+			const loader = resolveSurfaceLoader(paths)
+			const candidates = paths.map((path) => readSurfaceCandidate(path, loader))
 			const names = membership?.entries?.map(({ name }) => name) ?? catalogToNames(floor)
 			const owners = [
 				...new Set([
@@ -300,13 +302,13 @@ export class CLI implements CLIInterface {
 					const live = mirrors.find((mirror) => mirror.name === `@orkestrel/${owner}`)
 					const read =
 						live?.lookup === 'found'
-							? attempt(() => readSurfaceGuide(live.content, owner, `live ${live.path}`))
+							? attempt(() => readSurfaceGuide(live.content, owner, `live ${live.path}`, loader))
 							: undefined
 					if (read?.success === true) return [owner, { ...read.value, source: 'live' }]
 					if (read !== undefined && !(tolerant && matchesGuideRefusal(read.error))) {
 						throw read.error
 					}
-					const fallback = attempt(() => readSurfaceFile(floor, owner, 'floor'))
+					const fallback = attempt(() => readSurfaceFile(floor, owner, 'floor', loader))
 					if (fallback.success) {
 						return [
 							owner,

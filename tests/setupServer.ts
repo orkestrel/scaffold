@@ -569,6 +569,29 @@ export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
 export const SCRATCH_PREFIX = 'orkestrel-scaffold-'
 
 /**
+ * Lists the files of a built `@orkestrel/guide` checkout whose own exports serve a guide module.
+ *
+ * @remarks
+ * Its `createGuide` claims `Checkout` for every guide text, which the installed guide parser never
+ * reads from a guide without a Surface table, and its `createSource` reflects `Reflected` from every
+ * environment, so a run tells this module apart from scaffold's.
+ */
+export const GUIDE_CHECKOUT_FILES = Object.freeze({
+	'package.json': JSON.stringify({
+		name: '@orkestrel/guide',
+		exports: { '.': { require: './dist/index.cjs' } },
+	}),
+	'guides/guide.md': '# guide\n',
+	'dist/index.cjs': [
+		"exports.createGuide = () => ({ surface: () => [{ name: 'Checkout' }] })",
+		"exports.createSource = () => ({ surface: () => [{ name: 'Reflected' }] })",
+		'exports.extractSourceLines = () => []',
+		'exports.isGuideError = () => false',
+		'',
+	].join('\n'),
+})
+
+/**
  * Names how this host launches npm, read once for every proof that spawns it.
  *
  * @remarks
