@@ -56,7 +56,8 @@ The user's current instruction wins. `references/release.md` binds every release
    § Prepare a layer.
 
 Run that sequence for every layer, from the registry reading to the registry close;
-[wave.md](references/wave.md) § Refresh the registry between layers owns the refresh.
+[wave.md](references/wave.md) § Refresh the registry between layers owns the refresh. After the
+last layer of a fleet wave serves, close the wave per [wave.md](references/wave.md) § Close the wave.
 
 ## Accept the release
 

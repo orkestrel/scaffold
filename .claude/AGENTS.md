@@ -25,7 +25,7 @@
 
 ## Wiring
 
-- `.mcp.json` registers `probe` from `node_modules/@orkestrel/probe/dist/bin/main.js`. Run `npm ci --ignore-scripts` before the first `prove` call in a fresh checkout.
+- In the `@orkestrel/scaffold` checkout, `.mcp.json` registers `probe` from `node_modules/@orkestrel/probe/dist/bin/main.js`; run `npm ci --ignore-scripts` before the first `prove` call in a fresh checkout. A target holds no `.mcp.json`, so register `probe` there per `.claude/rules/quality.md` § Instruments.
 - `.claude/settings.json` hooks: `SessionStart` runs the Cloud setup hooks under `scripts/` and the dispatch skill's `sweep.ts --report`; `Stop` runs `git diff --check`. `scripts/` holds Cloud setup hooks and nothing else.
 - `claude mcp serve` exposes this harness to a Codex- or Cursor-primary session.
 - `.claude/skills/<name>/SKILL.md` loads `.agents/skills/<name>/SKILL.md` and adds nothing.

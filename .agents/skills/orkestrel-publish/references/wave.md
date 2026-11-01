@@ -258,3 +258,20 @@ takes the self-pin sweep too, because the snapshot class moves with no bump.
   an install in that gap fails `E404`.
 - Run every visit and install that follows a publish with `npm_config_prefer_online=true`. A
   cached packument answers `notarget` for a version the registry already serves.
+
+## Close the wave
+
+After the last layer serves, re-pin the development ranges the visits left behind. A visit re-pins
+only what the registry serves when it runs, so a `devDependencies` range naming a package that a
+later layer published still names the earlier release, and the install nests older copies of that
+package's own dependencies.
+
+1. Take a registry sweep after the last window confirms. In every catalog package, list each
+   `devDependencies` range on an `@orkestrel` package that trails the release the sweep reads.
+2. In each listed package, re-pin those ranges to the caret of the served release, install, and
+   sweep the self-pins per § Sweep the self-pins, because the snapshot class moves with no bump.
+3. Run the package's gates, then rule its bump under § Rule on the bump. Commit the re-pin of a
+   package the ruling leaves unbumped as `Re-pin <names> development ranges`; prepare and publish
+   each bumped package per § Prepare a layer, in layer order.
+4. Take the sweep again after those publishes, because each release they add can leave another
+   package's development range trailing. Close the wave when a sweep lists no trailing range.
