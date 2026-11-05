@@ -4617,20 +4617,24 @@ describe('content artifact compilers', () => {
 		).toBe(true)
 	})
 
-	// A target discovers each package-facing skill through a bridge, a sidecar, and a
+	// A target discovers each canonical skill through a bridge, a sidecar, and a
 	// pointer, while the body stays in the installed package. The names are the
 	// brief's declaration, so a skill added to or dropped from the constant reddens
 	// this case rather than moving with it.
-	it('plans the skill pointer set for each package-facing skill in order', () => {
+	it('plans the skill pointer set for each canonical skill in order', () => {
 		const names = [
 			'enterprise-bootstrap',
+			'orkestrel-align',
 			'orkestrel-build',
 			'orkestrel-debrief',
+			'orkestrel-dispatch',
 			'orkestrel-falsify',
 			'orkestrel-harden',
 			'orkestrel-journey',
 			'orkestrel-parallel',
 			'orkestrel-polish',
+			'orkestrel-publish',
+			'orkestrel-scout',
 		]
 		const expected = names.flatMap((name) => [
 			{
@@ -4658,14 +4662,6 @@ describe('content artifact compilers', () => {
 		expect(skills).toStrictEqual(expected)
 		expect(artifacts.slice(-expected.length)).toStrictEqual(expected)
 		expect(artifacts.filter((artifact) => 'pointer' in artifact)).toHaveLength(names.length)
-		for (const name of [
-			'orkestrel-align',
-			'orkestrel-dispatch',
-			'orkestrel-publish',
-			'orkestrel-scout',
-		]) {
-			expect(artifacts.some(({ path }) => path.includes(`/${name}/`))).toBe(false)
-		}
 	})
 
 	// A workspace carrying the `skills` fact ships its own skill canon, so a pointer

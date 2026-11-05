@@ -4,6 +4,7 @@ import type {
 	AuditResult,
 	CatalogResult,
 	CLIOptions,
+	ErrorEnvelope,
 	NewResult,
 	OverwriteResult,
 	RepairResult,
@@ -67,6 +68,7 @@ import {
 } from '../../setup.js'
 import {
 	ALIGNED_MANIFEST_TEXT,
+	APP_SERVER_WRAPPERS,
 	AUDIT_REPLIES,
 	buildAlignedManifest,
 	buildCLIOptions,
@@ -77,6 +79,7 @@ import {
 	buildOrganization,
 	buildPackument,
 	commitFiles,
+	createBornTarget,
 	createCatalogFleet,
 	createCheckout,
 	createFleet,
@@ -95,7 +98,9 @@ import {
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
 	omitDependencies,
+	readCommitted,
 	REFUSED_MANIFEST_TEXT,
+	removeEnvironment,
 	SCRATCH_PREFIX,
 	SKILL_CANON_FILES,
 	TARGET_DEV_DEPENDENCIES,
@@ -7261,7 +7266,7 @@ describe('CLI overwrite', () => {
 		const server = await createUpstreamServer({})
 		try {
 			const fleet = createCatalogFleet(workspace)
-			workspace.write('target/.agents/skills/orkestrel-dispatch/SKILL.md', '# Dispatch\n')
+			workspace.write('target/.agents/skills/orkestrel-dispatch/references/launch.md', '# Launch\n')
 			workspace.write('target/.agents/skills/orkestrel-harden/references/brief.md', '# Brief\n')
 			createRepository(fleet.target)
 			trackFiles(fleet.target)
@@ -7282,10 +7287,10 @@ describe('CLI overwrite', () => {
 			const written = result.written.filter(
 				(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
 			)
-			expect(written).toHaveLength(24)
+			expect(written).toHaveLength(36)
 			expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
 			expect(result.removed.toSorted()).toStrictEqual([
-				'.agents/skills/orkestrel-dispatch/SKILL.md',
+				'.agents/skills/orkestrel-dispatch/references/launch.md',
 				'.agents/skills/orkestrel-harden/references/brief.md',
 			])
 			for (const name of TARGET_SKILL_NAMES) {
@@ -8186,6 +8191,431 @@ describe('CLI overwrite', () => {
 			expect(workspace.read('target/AGENTS.md')).toBe(ARTIFACT_TEMPLATES.docs.agents)
 		} finally {
 			await server.destroy()
+			workspace.destroy()
+		}
+	})
+})
+
+describe('CLI wrappers an environment leaves behind', { timeout: 60_000 }, () => {
+	it('removes the wrappers of a removed environment and prunes their directory', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			removeEnvironment(workspace, 'app', /(^|:)app(:|$)/u)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed.toSorted()).toEqual(APP_SERVER_WRAPPERS)
+			expect(workspace.has('fixture/configs/app')).toBe(false)
+			expect(result.note).toContain('The catalog step did not complete')
+			expect(result.audit.findings.filter(({ drift }) => drift === 'foreign')).toEqual([])
+			// A repeat finds nothing left to take and no planned configuration to rewrite.
+			const repeat = createSink()
+			expect(
+				await new CLI(repeat.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const repeated: OverwriteResult = JSON.parse(repeat.output[0] ?? '')
+			expect(repeated.removed).toEqual([])
+			expect(result.written).toContain('tsconfig.json')
+			expect(result.written).toContain('vite.config.ts')
+			expect(repeated.written).not.toContain('tsconfig.json')
+			expect(repeated.written).not.toContain('vite.config.ts')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports the leftovers as foreign in the audit, and repair leaves them standing', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			removeEnvironment(workspace, 'app', /(^|:)app(:|$)/u)
+			const sink = createSink()
+			expect(await new CLI(sink.options).execute(['audit', '--groups', 'configs', ...args])).toBe(
+				EXIT_DRIFT,
+			)
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			const foreign = audit.findings.filter(({ drift }) => drift === 'foreign')
+			expect(foreign.map(({ path }) => path).toSorted()).toEqual(APP_SERVER_WRAPPERS)
+			expect(foreign.map(({ group }) => group)).toEqual(['configs', 'configs', 'configs'])
+			// After repair restores every planned path, the leftovers alone hold the exit at drift.
+			const repair = createSink()
+			expect(
+				await new CLI(repair.options).execute(['repair', '--groups', 'configs', ...args]),
+			).toBe(EXIT_DRIFT)
+			const repaired: RepairResult = JSON.parse(repair.output[0] ?? '')
+			expect(repaired.removed).toEqual([])
+			expect(
+				repaired.audit.findings
+					.filter(({ drift }) => drift !== 'aligned')
+					.map(({ path }) => path)
+					.toSorted(),
+			).toEqual(APP_SERVER_WRAPPERS)
+			for (const path of APP_SERVER_WRAPPERS) {
+				expect(workspace.has(`fixture/${path}`)).toBe(true)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves an authored neighbor untouched and its directory standing', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			const authored = 'export default { mode: "demo" }\n'
+			workspace.write('fixture/configs/app/vite.demo.config.ts', authored)
+			removeEnvironment(workspace, 'app', /(^|:)app(:|$)/u)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed.toSorted()).toEqual(APP_SERVER_WRAPPERS)
+			expect(workspace.read('fixture/configs/app/vite.demo.config.ts')).toBe(authored)
+			expect(result.audit.findings.map(({ path }) => path)).not.toContain(
+				'configs/app/vite.demo.config.ts',
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps the wrappers the plan claims', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed).toEqual([])
+			expect(
+				result.audit.findings
+					.filter(({ path }) => path.startsWith('configs/app/'))
+					.map(({ path, drift }) => ({ path, drift })),
+			).toEqual(
+				['tsconfig.core.json', 'vite.server.config.ts', 'tsconfig.server.json'].map((name) => ({
+					path: `configs/app/${name}`,
+					drift: 'aligned',
+				})),
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports no leftover outside the selected groups', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			removeEnvironment(workspace, 'app', /(^|:)app(:|$)/u)
+			const scoped = createSink()
+			expect(await new CLI(scoped.options).execute(['audit', '--groups', 'tests', ...args])).toBe(
+				EXIT_CLEAN,
+			)
+			const audit: AuditResult = JSON.parse(scoped.output[0] ?? '')
+			expect(audit.findings.map(({ group }) => group)).toContain('tests')
+			expect(
+				audit.findings.map(({ path }) => path).filter((path) => path.startsWith('configs/')),
+			).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('skips an untracked wrapper and keeps reporting it', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			const untracked = 'configs/app/vite.server.config.ts'
+			const bytes = requireValue(workspace.read(`fixture/${untracked}`))
+			workspace.remove(`fixture/${untracked}`)
+			removeEnvironment(workspace, 'app', /(^|:)app(:|$)/u)
+			workspace.write(`fixture/${untracked}`, bytes)
+			const sink = createSink()
+			expect(await new CLI(sink.options).execute(['overwrite', '--dirty', ...args])).toBe(
+				EXIT_DRIFT,
+			)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			// The tracked siblings leaving in the same run prove the run reached the population.
+			expect(result.removed.filter((path) => path.startsWith('configs/app/')).toSorted()).toEqual([
+				'configs/app/tsconfig.core.json',
+				'configs/app/tsconfig.server.json',
+			])
+			expect(workspace.read(`fixture/${untracked}`)).toBe(bytes)
+			expect(
+				result.audit.findings
+					.filter(({ path }) => path.startsWith('configs/app/'))
+					.map(({ path, drift }) => ({ path, drift })),
+			).toEqual([{ path: untracked, drift: 'foreign' }])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('covers a browser face on the axis it left and keeps the axis it holds', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,browser',
+				'--app',
+				'core,browser',
+				'--extend',
+				'browser:vue',
+			])
+			removeEnvironment(
+				workspace,
+				'app/vue',
+				/^((check|test|build):app:vue|dev:vue|test:journey:vue)$/u,
+			)
+			const sink = createSink()
+			expect(await new CLI(sink.options).execute(['audit', '--groups', 'configs', ...args])).toBe(
+				EXIT_DRIFT,
+			)
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(
+				audit.findings
+					.filter(({ drift }) => drift === 'foreign')
+					.map(({ path }) => path)
+					.toSorted(),
+			).toEqual(['configs/app/tsconfig.vue.json', 'configs/app/vite.vue.config.ts'])
+			expect(
+				audit.findings
+					.filter(({ path }) => path.startsWith('configs/src/') && path.includes('.vue.'))
+					.map(({ path, drift }) => ({ path, drift })),
+			).toEqual([
+				{ path: 'configs/src/vite.vue.config.ts', drift: 'aligned' },
+				{ path: 'configs/src/tsconfig.vue.json', drift: 'aligned' },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves a named styles wrapper standing without a finding as the stated limit', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core',
+				'--styles',
+				'--extend',
+				'styles:print',
+			])
+			const wrappers = ['configs/src/tsconfig.print.json', 'configs/src/vite.print.config.ts']
+			// The control: the same paths are planned findings while the face is present.
+			const present = createSink()
+			expect(
+				await new CLI(present.options).execute(['audit', '--groups', 'configs', ...args]),
+			).toBe(EXIT_CLEAN)
+			const planned: AuditResult = JSON.parse(present.output[0] ?? '')
+			expect(planned.findings.map(({ path }) => path)).toEqual(expect.arrayContaining(wrappers))
+			removeEnvironment(workspace, 'src/print', /:src:print$/u)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed).toEqual([])
+			for (const path of wrappers) {
+				expect(workspace.has(`fixture/${path}`)).toBe(true)
+				expect(result.audit.findings.map((finding) => finding.path)).not.toContain(path)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('removes a committed journey variant list that git can still return', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core',
+				'--app',
+				'browser',
+			])
+			const wrapper = 'configs/app/vite.journey.config.ts'
+			workspace.write(`fixture/${wrapper}`, '// adopter variants\n')
+			removeEnvironment(
+				workspace,
+				'app/browser',
+				/(^|:)app(:|$)|^dev$|^journey$|^capture$|^test:journey$/u,
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute(['overwrite', '--groups', 'configs', ...args]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed).toContain(wrapper)
+			expect(workspace.has(`fixture/${wrapper}`)).toBe(false)
+			expect(readCommitted(target, wrapper)).toBe('// adopter variants\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('loses an uncommitted edit to a tracked wrapper under the dirty waiver, and refuses without it', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			removeEnvironment(workspace, 'app', /(^|:)app(:|$)/u)
+			const edited = 'configs/app/tsconfig.core.json'
+			workspace.write(`fixture/${edited}`, '{ "edited": true }\n')
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute(['overwrite', '--groups', 'configs', ...args]),
+			).toBe(EXIT_DRIFT)
+			const envelope: ErrorEnvelope = JSON.parse(refused.output[0] ?? '')
+			expect(envelope.error.message).toContain('uncommitted change')
+			expect(workspace.read(`fixture/${edited}`)).toBe('{ "edited": true }\n')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed).toContain(edited)
+			expect(workspace.has(`fixture/${edited}`)).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('removes nothing when the last environment leaves, because no plan compiles', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--app',
+				'browser',
+			])
+			const wrapper = 'configs/app/vite.journey.config.ts'
+			workspace.write(`fixture/${wrapper}`, '// adopter variants\n')
+			removeEnvironment(
+				workspace,
+				'app/browser',
+				/(^|:)app(:|$)|^dev$|^journey$|^capture$|^test:journey$/u,
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute(['overwrite', '--groups', 'configs', ...args]),
+			).toBe(EXIT_DRIFT)
+			const blocked: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(blocked.findings).toEqual([])
+			expect(blocked.questions.filter(({ blocking }) => blocking)).toMatchObject([
+				{ field: 'src', message: 'A workspace declares at least one environment on src or app.' },
+			])
+			expect(workspace.read(`fixture/${wrapper}`)).toBe('// adopter variants\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('blocks the configs group while a script still names the removed project', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+				'--app',
+				'core,server',
+			])
+			removeEnvironment(workspace, 'app', /^(?!test:app:server$)(.*:)?app(:.*)?$/u)
+			const configuration = workspace.read('fixture/tsconfig.json')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--groups',
+					'configs',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			const refused: ErrorEnvelope = JSON.parse(sink.output[0] ?? '')
+			expect(refused.error.code).toBe('TARGET')
+			expect(refused.error.message).toContain('The configs group is blocked')
+			expect(refused.error.message).toContain('app:server')
+			expect(workspace.read('fixture/tsconfig.json')).toBe(configuration)
+			for (const path of APP_SERVER_WRAPPERS) {
+				expect(workspace.has(`fixture/${path}`)).toBe(true)
+			}
+		} finally {
 			workspace.destroy()
 		}
 	})

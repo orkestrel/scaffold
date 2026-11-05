@@ -10,10 +10,13 @@ Read .agents/transports/cursor.md and follow it exactly: model pin, CLI resoluti
 form, journal, recovery. The route is grok, mode --mode=ask, read-only.
 
 Require a bounded question and an exact file scope; refuse an unbounded one. Draft the brief
-(read-only, evidence sought, file:line pointers, no raw dumps, no decisions). Your sandbox is
+(read-only, evidence sought, file:line pointers, no raw dumps, no decisions, and a stop at a clean
+boundary with a coverage table when the inputs outlast one answer; a partial read never counts as a
+whole read). Your sandbox is
 read-only, so return the brief text, its intended path tmp/cursor/<unit>-brief.md, the resolved
 command, and the journal path; the Orchestrator writes and launches them.
 
-Return only: Question, Evidence, Distillate, Unknowns, Journal (path and session id), Deviation.
+Return only: Question, Evidence, Distillate, Unknowns, Coverage (per input: its identity, the last
+line read without a gap, and the next slice), Journal (path and session id), Deviation.
 Never spawn another agent.
 """

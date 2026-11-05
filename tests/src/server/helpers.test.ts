@@ -53,6 +53,7 @@ import {
 	listDirectories,
 	listAncestors,
 	listFiles,
+	listWrapperPaths,
 	Materializer,
 	matchesAnchor,
 	matchesExpectation,
@@ -141,6 +142,7 @@ import {
 	STAGE_TRANSFERS,
 	supportsMappedLoopback,
 	WORKSPACE_ROOT,
+	WRAPPER_POPULATION,
 } from '../../setupServer.js'
 import { createScratch, supportsFileLinks, supportsMode } from '@orkestrel/test/server'
 
@@ -1508,6 +1510,96 @@ describe('listCanonPaths', () => {
 			}
 		},
 	)
+})
+
+describe('listWrapperPaths', () => {
+	it('lists exactly the wrappers scaffold names and no authored neighbor', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			for (const path of WRAPPER_POPULATION) workspace.write(path, 'export {}\n')
+			// Each control sits under a read directory or shares the configs group, so a directory
+			// listing or a group filter alone would answer it.
+			for (const path of [
+				'configs/app/vite.demo.config.ts',
+				'configs/app/other.config.ts',
+				'configs/src/vite.print.config.ts',
+				'configs/src/tsconfig.print.json',
+				'configs/agents/tsconfig.skills.json',
+				'configs/helpers.ts',
+				'configs/browsers.ts',
+				'tsconfig.json',
+				'vite.config.ts',
+			]) {
+				workspace.write(path, 'export {}\n')
+			}
+			expect(listWrapperPaths(workspace.path, ['configs']).toSorted()).toEqual(WRAPPER_POPULATION)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('lists only the wrappers a target holds, and nothing when the plan skips their group', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('configs/app/tsconfig.server.json', '{}\n')
+			workspace.write('configs/src/vite.core.config.ts', 'export {}\n')
+			expect(listWrapperPaths(workspace.path, ['configs']).toSorted()).toEqual([
+				'configs/app/tsconfig.server.json',
+				'configs/src/vite.core.config.ts',
+			])
+			expect(listWrapperPaths(workspace.path, ['tests', 'orchestration'])).toEqual([])
+			expect(listWrapperPaths(workspace.path, [])).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('answers the empty list for a target holding no wrapper and for an absent one', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.ensure('configs/app')
+			expect(listWrapperPaths(workspace.path, [...ARTIFACT_GROUPS])).toEqual([])
+			expect(listWrapperPaths(join(workspace.path, 'absent'), [...ARTIFACT_GROUPS])).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads a name only in its exact case, and a directory in place of a wrapper as no wrapper', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('configs/app/vite.Journey.config.ts', 'export {}\n')
+			workspace.ensure('configs/app/tsconfig.core.json')
+			expect(listWrapperPaths(workspace.path, ['configs'])).toEqual([])
+			// The control: the exact spelling is listed from the same directory.
+			workspace.remove('configs/app/vite.Journey.config.ts')
+			workspace.write('configs/app/vite.journey.config.ts', 'export {}\n')
+			expect(listWrapperPaths(workspace.path, ['configs'])).toEqual([
+				'configs/app/vite.journey.config.ts',
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// A directory link resolves on every host through the junction fallback, and the resolved
+	// directory sits outside the target, so the containment law decides the answer.
+	it('lists no wrapper the target reaches through a directory link out of itself', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('outside/app/tsconfig.core.json', '{}\n')
+			workspace.ensure('target')
+			const target = join(workspace.path, 'target')
+			workspace.link('target/configs', join(workspace.path, 'outside'))
+			expect(listWrapperPaths(target, ['configs'])).toEqual([])
+			// The control: the same file held inside the target is listed.
+			workspace.remove('target/configs')
+			workspace.write('target/configs/app/tsconfig.core.json', '{}\n')
+			expect(listWrapperPaths(target, ['configs'])).toEqual(['configs/app/tsconfig.core.json'])
+		} finally {
+			workspace.destroy()
+		}
+	})
 })
 
 describe('listAncestors', () => {

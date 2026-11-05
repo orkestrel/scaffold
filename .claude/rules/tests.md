@@ -51,6 +51,8 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
 - A browser case restores every runner global it changes before it ends.
 - A proof that runs before `build` in the gate chain resolves no `dist/` path; a proof that deliberately consumes the built entry loads it at run time through a resolved path and refuses a stale build.
 - When data a generator renders gains a new shape, the generator's test gains that shape before the data ships.
+- Give a negative control on a synchronous guard a bounded fixture that finishes with the guard removed and whose count differs, because a test timer on the same thread cannot interrupt it.
+- Prove a consumer migration past what compiles: cover the defaulted branches that still compile and the entries outside the check graph.
 - The revert that proves a repair reddens exactly the test that names the defect. Keep the import and collection graph valid while reverting, and confirm the named test was collected. A revert that reddens anything beyond that test broke the harness, and its count is not evidence.
 - Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every conditional skip has a narrow verifiable applicability reason. Never commit `.only` or `.skip`; `vitest/no-focused-tests` and `vitest/no-disabled-tests` refuse both.
 - Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`.
@@ -174,6 +176,8 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
   path, run its `distribution` project before accepting the change.
 - Put a study's proofs under `tests/studies/` in the `studies` project, which
   `.claude/rules/workspace.md` § Test project matrix places.
+- Keep a study's developmental selection and its untouched confirmation as separate evidence
+  populations, and withhold expected outputs and population membership from the run.
 - Put in `studies` only the proofs the `@orkestrel/study` engine drives. Place a slow end-to-end proof of
   the package's own features that no study engine drives, such as its built executable run against
   a fixture workspace, as an integration test under § Cross-cutting proofs. Place it by the scope it

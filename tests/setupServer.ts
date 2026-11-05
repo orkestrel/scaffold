@@ -18,7 +18,9 @@ import type {
 } from '@src/core'
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
+import type { ChildProcess } from 'node:child_process'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { Socket } from 'node:net'
 import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
@@ -46,6 +48,7 @@ import {
 	relative as relativePath,
 	resolve as resolvePath,
 } from 'node:path'
+import { createInterface } from 'node:readline'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { deserialize } from 'node:v8'
 import { gzipSync } from 'node:zlib'
@@ -146,6 +149,7 @@ import {
 import {
 	createLoopback,
 	createScratch,
+	destroyScratch,
 	type ScratchInterface,
 	supportsCase,
 } from '@orkestrel/test/server'
@@ -2670,6 +2674,140 @@ export function commitFiles(path: string): void {
 }
 
 /**
+ * Reads the bytes one path holds in the commit at `HEAD`, as git answers them.
+ *
+ * @param path - The repository to read.
+ * @param file - The slash-separated path inside the repository.
+ * @returns The file's text at `HEAD`.
+ * @throws Thrown when `HEAD` holds no such path.
+ */
+export function readCommitted(path: string, file: string): string {
+	return execFileSync('git', ['show', `HEAD:${file}`], {
+		cwd: path,
+		windowsHide: true,
+		encoding: 'utf8',
+	})
+}
+
+/** Lists the wrappers `new fixture --src core,server --app core,server` writes under `configs/app`. */
+export const APP_SERVER_WRAPPERS: readonly string[] = Object.freeze([
+	'configs/app/tsconfig.core.json',
+	'configs/app/tsconfig.server.json',
+	'configs/app/vite.server.config.ts',
+])
+
+/** Lists every wrapper path the widest blueprint names, written out against the compiler. */
+export const WRAPPER_POPULATION: readonly string[] = Object.freeze([
+	'configs/app/tsconfig.browser.json',
+	'configs/app/tsconfig.core.json',
+	'configs/app/tsconfig.server.json',
+	'configs/app/tsconfig.vue.json',
+	'configs/app/vite.browser.config.ts',
+	'configs/app/vite.journey.config.ts',
+	'configs/app/vite.server.config.ts',
+	'configs/app/vite.showcase.config.ts',
+	'configs/app/vite.vue.config.ts',
+	'configs/src/tsconfig.bin.json',
+	'configs/src/tsconfig.browser.json',
+	'configs/src/tsconfig.core.json',
+	'configs/src/tsconfig.server.json',
+	'configs/src/tsconfig.styles.json',
+	'configs/src/tsconfig.vue.json',
+	'configs/src/vite.bin.config.ts',
+	'configs/src/vite.browser.config.ts',
+	'configs/src/vite.core.config.ts',
+	'configs/src/vite.server.config.ts',
+	'configs/src/vite.styles.config.ts',
+	'configs/src/vite.themes.config.ts',
+	'configs/src/vite.vue.config.ts',
+])
+
+/** Describes a target `createBornTarget` wrote and committed. */
+export interface TestBornTarget {
+	readonly target: string
+	readonly args: readonly string[]
+}
+
+/**
+ * Creates a target through the real `new` verb from this checkout's staged host, and commits it.
+ *
+ * @param workspace - The temporary workspace that receives the host and the `fixture` target.
+ * @param cli - The executable that runs `new`.
+ * @param selection - The environment and extension flags the target is born with.
+ * @returns The target's absolute path and the arguments that aim a later offline JSON run at it.
+ * @throws Thrown when `new` does not exit 0.
+ */
+export async function createBornTarget(
+	workspace: ScratchInterface,
+	cli: { execute(argv: readonly string[]): Promise<number> },
+	selection: readonly string[],
+): Promise<TestBornTarget> {
+	const host = createStagedHost(workspace)
+	const target = workspace.ensure('fixture')
+	const args = ['--offline', '--from', host, '--target', target, '--json']
+	const exit = await cli.execute(['new', 'fixture', ...selection, ...args])
+	if (exit !== 0) throw new Error(`The fixture was not born: new exited ${String(exit)}.`)
+	createRepository(target)
+	trackFiles(target)
+	commitFiles(target)
+	return { target, args }
+}
+
+/**
+ * Drops every script a pattern names from a manifest, with each `npm run` link a kept script holds to one.
+ *
+ * @param text - The manifest's text.
+ * @param pattern - Matches the script names to drop; never global or sticky.
+ * @returns The manifest's tab-indented text without those scripts.
+ * @throws Thrown when the text carries no script record.
+ */
+export function omitManifestScripts(text: string, pattern: RegExp): string {
+	const parsed: unknown = JSON.parse(text)
+	if (!isRecord(parsed) || !isRecord(parsed.scripts)) {
+		throw new Error('The manifest carries no script record.')
+	}
+	const entries = Object.entries(parsed.scripts)
+	const links = new Set(
+		entries.filter(([name]) => pattern.test(name)).map(([name]) => `npm run ${name}`),
+	)
+	const scripts = entries
+		.filter(([name]) => !pattern.test(name))
+		.map(([name, command]) => [
+			name,
+			isString(command)
+				? command
+						.split(' && ')
+						.filter((part) => !links.has(part))
+						.join(' && ')
+				: command,
+		])
+	return `${JSON.stringify({ ...parsed, scripts: Object.fromEntries(scripts) }, undefined, '\t')}\n`
+}
+
+/**
+ * Takes one environment out of a born target the way an adopter does, and commits the result.
+ *
+ * @param workspace - The temporary workspace holding the `fixture` target.
+ * @param environment - The target-relative directory to remove.
+ * @param scripts - Matches the manifest scripts that leave with it.
+ * @returns Nothing.
+ */
+export function removeEnvironment(
+	workspace: ScratchInterface,
+	environment: string,
+	scripts: RegExp,
+): void {
+	workspace.remove(`fixture/${environment}`)
+	workspace.write(
+		'fixture/package.json',
+		omitManifestScripts(requireValue(workspace.read('fixture/package.json')), scripts),
+	)
+	const target = join(workspace.path, 'fixture')
+	trackFiles(target)
+	commitFiles(target)
+}
+
+/**
  * Lists the artifacts the compiler itself supplies for a plan selecting `src/core` alone.
  *
  * @remarks
@@ -5184,6 +5322,101 @@ export const TITLES_SCRIPT = '.agents/skills/orkestrel-harden/scripts/titles.ts'
 /** Names the checkout-relative path of the harden skill's `measure` script. */
 export const MEASURE_SCRIPT = '.agents/skills/orkestrel-harden/scripts/measure.ts'
 
+/** Names the checkout-relative path of the harden skill's `interleave` script. */
+export const INTERLEAVE_SCRIPT = '.agents/skills/orkestrel-harden/scripts/interleave.ts'
+
+/**
+ * Holds one sample child of the `interleave` proof, written to a scratch `.mjs` file.
+ *
+ * @remarks
+ * The child reads its position from the shared log, appends one tab-separated line (side, process
+ * identity, working directory, marker variable, extra arguments), and prints its `amount`, plus
+ * `lead` when an even position opens a round. At the position `exit` names it exits 3, and at the
+ * position `text` names it prints a line that is no number.
+ */
+export const INTERLEAVE_SAMPLE = [
+	"import { appendFileSync, existsSync, readFileSync } from 'node:fs'",
+	'const sample = JSON.parse(process.argv[2])',
+	"const logged = existsSync(sample.log) ? readFileSync(sample.log, 'utf8') : ''",
+	"const position = logged.split('\\n').filter((line) => line !== '').length",
+	'const identity = `${process.pid}:${performance.timeOrigin}`',
+	'const extra = JSON.stringify(process.argv.slice(3))',
+	"const fields = [sample.side, identity, process.cwd(), process.env.INTERLEAVE_MARK ?? '', extra]",
+	"appendFileSync(sample.log, `${fields.join('\\t')}\\n`)",
+	"if (position === sample.exit) { console.error('sample failed'); process.exit(3) }",
+	"console.log(position === sample.text ? 'twelve ms' : String(sample.amount + (position % 2 === 0 ? sample.lead : 0)))",
+].join('\n')
+
+/** Describes one side of an `interleave` fixture for the `INTERLEAVE_SAMPLE` child. */
+export interface TestInterleaveSample {
+	readonly log: string
+	readonly side: string
+	readonly amount: number
+	readonly lead: number
+	readonly exit?: number
+	readonly text?: number
+}
+
+/** Describes a plan side that runs the `INTERLEAVE_SAMPLE` child. */
+export interface TestInterleaveSide {
+	readonly command: string
+	readonly args: readonly string[]
+	readonly cwd: string | undefined
+	readonly env: Readonly<Record<string, string>>
+}
+
+/**
+ * Builds a plan side that runs the `INTERLEAVE_SAMPLE` child with the current Node binary.
+ *
+ * @param script - The absolute path the child was written to.
+ * @param sample - The child's log, side, amounts, and faults.
+ * @param extra - Arguments passed on after the child's configuration. Default: none.
+ * @returns The side, usable as a plan's JSON entry and as the script's own side value.
+ */
+export function buildInterleaveSide(
+	script: string,
+	sample: TestInterleaveSample,
+	extra: readonly string[] = [],
+): TestInterleaveSide {
+	return {
+		command: process.execPath,
+		args: [script, JSON.stringify(sample), ...extra],
+		cwd: undefined,
+		env: {},
+	}
+}
+
+/**
+ * Builds the two sides of the `interleave` control: `candidate` reads 10 more than `baseline`, and
+ * the sample that opens a round reads 4 more than the sample that closes it.
+ *
+ * @param script - The absolute path the child was written to.
+ * @param log - The absolute path of the log both sides share.
+ * @returns Each side by its name in the control.
+ */
+export function buildInterleaveControl(
+	script: string,
+	log: string,
+): Readonly<Record<'baseline' | 'candidate', TestInterleaveSide>> {
+	return {
+		baseline: buildInterleaveSide(script, { log, side: 'baseline', amount: 100, lead: 4 }),
+		candidate: buildInterleaveSide(script, { log, side: 'candidate', amount: 110, lead: 4 }),
+	}
+}
+
+/**
+ * Reads the log the `INTERLEAVE_SAMPLE` children appended.
+ *
+ * @param text - The log's text, undefined when no sample ran.
+ * @returns One list of tab-separated fields per sample, in the order the samples ran.
+ */
+export function readInterleaveLog(text: string | undefined): ReadonlyArray<readonly string[]> {
+	return (text ?? '')
+		.split(/\r\n|\n/u)
+		.filter((line) => line !== '')
+		.map((line) => line.split('\t'))
+}
+
 /** Supplies each tables with nested calls and parentheses outside code tokens. */
 export const TITLES_TABLES: readonly string[] = Object.freeze([
 	"[[Number('1')]]",
@@ -5376,6 +5609,412 @@ export const MUTATE_SCRIPT = '.agents/skills/orkestrel-falsify/scripts/mutate.ts
 
 /** Names the checkout-relative path of the parallel skill's `cases` script. */
 export const CASES_SCRIPT = '.agents/skills/orkestrel-parallel/scripts/cases.ts'
+
+/** Names the checkout-relative path of the parallel skill's `lane` script. */
+export const LANE_SCRIPT = '.agents/skills/orkestrel-parallel/scripts/lane.ts'
+
+/** Describes one line a {@link TestLaneMeter} recorded, in arrival order across its connections. */
+export interface TestLaneMark {
+	readonly event: 'enter' | 'leave' | 'drop'
+	readonly label: string
+}
+
+/**
+ * Records which fixture commands are on a real loopback socket, so a proof reads overlap as events.
+ *
+ * @remarks
+ * A fixture writes its label when it joins and exits on the byte the proof writes. A connection that
+ * ends with no `leave` line is a `drop`: a process that something killed.
+ */
+export class TestLaneMeter {
+	readonly #server = createSocketServer((socket) => this.#admit(socket))
+	readonly #sockets = new Map<string, Socket>()
+	readonly #closed = new Set<string>()
+	readonly #marks: TestLaneMark[] = []
+
+	/** Starts listening on an ephemeral loopback port. */
+	async start(): Promise<void> {
+		this.#server.listen(0, '127.0.0.1')
+		await once(this.#server, 'listening')
+	}
+
+	/** Holds the port the fixtures connect to. */
+	get port(): number {
+		const address = this.#server.address()
+		return typeof address === 'object' && address !== null ? address.port : 0
+	}
+
+	/** Holds every mark in arrival order. */
+	get marks(): readonly TestLaneMark[] {
+		return [...this.#marks]
+	}
+
+	/** Holds the labels on the meter, in the order they joined. */
+	get present(): readonly string[] {
+		return [...this.#sockets.keys()]
+	}
+
+	/**
+	 * Waits until a mark exists.
+	 *
+	 * @param event - The mark's event.
+	 * @param label - The mark's label.
+	 */
+	async reach(event: TestLaneMark['event'], label: string): Promise<void> {
+		await waitForCondition(`meter mark ${event} ${label}`, () => this.#has(event, label), {
+			budget: 45_000,
+			interval: 10,
+		})
+	}
+
+	/**
+	 * Waits until a fixture's connection has closed, which its process's end closes.
+	 *
+	 * @param label - The fixture's label.
+	 */
+	async closure(label: string): Promise<void> {
+		await waitForCondition(`meter closure ${label}`, () => this.#closed.has(label), {
+			budget: 45_000,
+			interval: 10,
+		})
+	}
+
+	/**
+	 * Writes the byte that ends a fixture.
+	 *
+	 * @param label - The fixture's label.
+	 */
+	release(label: string): void {
+		this.#sockets.get(label)?.write('x')
+	}
+
+	/** Writes the ending byte to every fixture still present. */
+	releaseAll(): void {
+		for (const socket of this.#sockets.values()) socket.write('x')
+	}
+
+	/** Closes the meter and every connection. */
+	async destroy(): Promise<void> {
+		for (const socket of this.#sockets.values()) socket.destroy()
+		await new Promise<void>((resolve) => {
+			this.#server.close(() => resolve())
+		})
+	}
+
+	#has(event: TestLaneMark['event'], label: string): boolean {
+		return this.#marks.some((mark) => mark.event === event && mark.label === label)
+	}
+
+	#admit(socket: Socket): void {
+		const lines = createInterface({ input: socket })
+		lines.on('error', () => undefined)
+		lines.on('line', (line) => {
+			const [event, label = ''] = line.split(' ')
+			if (event === 'enter') {
+				this.#sockets.set(label, socket)
+				this.#marks.push({ event: 'enter', label })
+				socket.once('close', () => {
+					const leaving = this.#sockets.get(label) === socket
+					this.#sockets.delete(label)
+					this.#closed.add(label)
+					if (leaving && !this.#has('leave', label)) this.#marks.push({ event: 'drop', label })
+				})
+			}
+			if (event === 'leave') {
+				this.#sockets.delete(label)
+				this.#marks.push({ event: 'leave', label })
+			}
+		})
+	}
+}
+
+/**
+ * Renders the CommonJS fixture that joins a meter and exits on the proof's byte.
+ *
+ * @param port - The meter's port.
+ * @param label - The fixture's label.
+ * @param grandchild - The label of a descendant to start, which joins the meter and outlives this
+ * process, or undefined for none.
+ * @returns The code for `node -e`.
+ */
+export function renderLaneFixture(port: number, label: string, grandchild?: string): string {
+	const child =
+		grandchild === undefined
+			? ''
+			: `const code=${JSON.stringify(renderLaneFixture(port, grandchild))};require('node:child_process').spawn(process.execPath,['-e',code],{stdio:'ignore',windowsHide:true,detached:process.platform==='win32'}).unref();`
+	return `${child}const s=require('node:net').connect(${String(port)},'127.0.0.1',()=>s.write('enter ${label}\\n'));s.on('data',()=>s.write('leave ${label}\\n',()=>process.exit(0)));s.on('error',()=>process.exit(3));s.on('close',()=>process.exit(3))`
+}
+
+/**
+ * Renders the arguments of one run on a scratch root.
+ *
+ * @param root - The queue root.
+ * @param journals - The directory the journal and errors files go under.
+ * @param label - The run's label.
+ * @param cap - The cap in seconds.
+ * @returns The flags before the bare `--`.
+ */
+export function renderLaneFlags(
+	root: string,
+	journals: string,
+	label: string,
+	cap = 40,
+): readonly string[] {
+	return [
+		'--label',
+		label,
+		'--journal',
+		join(journals, `${label}.jsonl`),
+		'--errors',
+		join(journals, `${label}.err`),
+		'--cap',
+		String(cap),
+		'--root',
+		root,
+	]
+}
+
+/** Holds one started `lane` child, its output, and its exit, read as a proof needs them. */
+export class TestLaneRun {
+	readonly #chunks: string[] = []
+	readonly #child: ChildProcess
+	readonly #exit: Promise<number | null>
+
+	/**
+	 * Starts the `lane` script as a child and collects its output.
+	 *
+	 * @param args - The script's arguments.
+	 * @param cwd - The child's working directory. Default: the checkout root.
+	 * @param entry - The file Node runs, or `-e` for inline code. Default: the `lane` script.
+	 */
+	constructor(args: readonly string[], cwd?: string, entry?: string) {
+		const child = spawn(process.execPath, [entry ?? join(WORKSPACE_ROOT, LANE_SCRIPT), ...args], {
+			cwd: cwd ?? WORKSPACE_ROOT,
+			env: buildEnvironment(undefined),
+			stdio: ['ignore', 'pipe', 'pipe'],
+			windowsHide: true,
+		})
+		for (const stream of [child.stdout, child.stderr]) {
+			stream.on('data', (chunk: Buffer) => this.#chunks.push(chunk.toString('utf8')))
+		}
+		this.#child = child
+		this.#exit = once(child, 'close').then(([code]) => (typeof code === 'number' ? code : null))
+	}
+
+	/** Holds the child's process id. */
+	get pid(): number {
+		return this.#child.pid ?? 0
+	}
+
+	/** Holds the child's standard output and standard error, in arrival order. */
+	get output(): string {
+		return this.#chunks.join('')
+	}
+
+	/**
+	 * Waits for the child to end.
+	 *
+	 * @returns The exit code, or null when a kill ended it.
+	 */
+	exit(): Promise<number | null> {
+		return this.#exit
+	}
+
+	/**
+	 * Waits until the child's output carries a text.
+	 *
+	 * @param text - The text.
+	 */
+	async reach(text: string): Promise<void> {
+		await waitForCondition(`lane output ${text}`, () => this.output.includes(text), {
+			budget: 45_000,
+			interval: 10,
+		})
+	}
+
+	/** Ends the child at once, without its descendants, and waits for its end. */
+	async kill(): Promise<void> {
+		this.#child.kill('SIGKILL')
+		await this.#exit
+	}
+}
+
+/** Holds one `lane` proof's scratch root, its meter, and every child it started. */
+export class TestLaneBench {
+	readonly meter = new TestLaneMeter()
+	readonly scratch = createScratch({ prefix: 'lane-' })
+	readonly #runs = new Set<TestLaneRun>()
+
+	/** Holds the queue root every run names unless it names another. */
+	get root(): string {
+		return join(this.scratch.path, 'root')
+	}
+
+	/** Holds the directory the journal and errors files go under. */
+	get journals(): string {
+		return join(this.scratch.path, 'journals')
+	}
+
+	/** Starts the meter and creates the queue root. */
+	async start(): Promise<void> {
+		this.scratch.ensure('root')
+		this.scratch.ensure('journals')
+		await this.meter.start()
+	}
+
+	/**
+	 * Starts and tracks one child.
+	 *
+	 * @param args - The arguments.
+	 * @param cwd - The child's working directory. Default: the checkout root.
+	 * @param entry - The file Node runs, or `-e` for inline code. Default: the `lane` script.
+	 * @returns The started child.
+	 */
+	spawn(args: readonly string[], cwd?: string, entry?: string): TestLaneRun {
+		const run = new TestLaneRun(args, cwd, entry)
+		this.#runs.add(run)
+		return run
+	}
+
+	/**
+	 * Renders the command of a fixture that joins the meter.
+	 *
+	 * @param label - The fixture's label.
+	 * @param grandchild - The label of a descendant that joins and outlives it, or undefined for none.
+	 * @returns The command and its arguments.
+	 */
+	command(label: string, grandchild?: string): readonly string[] {
+		return [process.execPath, '-e', renderLaneFixture(this.meter.port, label, grandchild)]
+	}
+
+	/**
+	 * Starts one lane run whose command joins the meter.
+	 *
+	 * @param label - The run's label, which its fixture joins under.
+	 * @param options - The queue root, working directory, cap, and descendant label a run overrides.
+	 * @returns The started child.
+	 */
+	lane(
+		label: string,
+		options?: {
+			readonly root?: string
+			readonly cwd?: string
+			readonly cap?: number
+			readonly grandchild?: string
+		},
+	): TestLaneRun {
+		return this.spawn(
+			[
+				...renderLaneFlags(options?.root ?? this.root, this.journals, label, options?.cap),
+				'--',
+				...this.command(label, options?.grandchild),
+			],
+			options?.cwd,
+		)
+	}
+
+	/**
+	 * Reads every file under the queue root, for a before-and-after comparison.
+	 *
+	 * @returns Each name with its text, in sorted order.
+	 */
+	listing(): ReadonlyArray<readonly [string, string | undefined]> {
+		return this.scratch.names('root').map((name) => [name, this.scratch.read(join('root', name))])
+	}
+
+	/**
+	 * Releases each holder as it joins the meter, whichever arrival that is.
+	 *
+	 * @param count - The holders left to serve.
+	 */
+	async serve(count: number): Promise<void> {
+		if (count === 0) return
+		await waitForCondition('a holder on the meter', () => this.meter.present.length > 0, {
+			budget: 45_000,
+			interval: 10,
+		})
+		const holder = this.meter.present[0] ?? ''
+		this.meter.release(holder)
+		await this.meter.reach('leave', holder)
+		await this.serve(count - 1)
+	}
+
+	/**
+	 * Runs an ES module fixture to its end under a working directory and an environment.
+	 *
+	 * @param path - The module's absolute path.
+	 * @param cwd - The child's working directory.
+	 * @param env - The variables the run adds.
+	 * @returns The finished run.
+	 */
+	module(path: string, cwd: string, env: Readonly<Record<string, string>>): TestSkillRun {
+		const result = spawnSync(process.execPath, [path], {
+			cwd,
+			encoding: 'utf8',
+			env: buildEnvironment(env),
+			windowsHide: true,
+		})
+		return buildSkillRun(result.status, result.stdout, result.stderr)
+	}
+
+	/** Closes the meter, which ends every fixture on it, then ends every child and the scratch. */
+	async destroy(): Promise<void> {
+		await this.meter.destroy()
+		await Promise.all([...this.#runs].map((run) => run.kill()))
+		this.#runs.clear()
+		await destroyScratch(this.scratch)
+	}
+}
+
+/**
+ * Starts one `lane` proof's bench.
+ *
+ * @returns The bench with its meter listening and its queue root created.
+ */
+export async function startLaneBench(): Promise<TestLaneBench> {
+	const bench = new TestLaneBench()
+	await bench.start()
+	return bench
+}
+
+/**
+ * Renders the ES module fixture that stops a real process at one step of the ticket publication.
+ *
+ * @remarks
+ * The fixture imports the script by its `file:` URL, listens on a token, writes the stage file, and
+ * either parks there or links the stage file first, printing its token when it parks, so a proof can
+ * kill it at exactly that point.
+ *
+ * @param root - The queue root.
+ * @param step - `stage` to park after the stage file; `link` to park after the link.
+ * @returns The module text.
+ */
+export function renderLanePublisher(root: string, step: 'stage' | 'link'): string {
+	const script = pathToFileURL(join(WORKSPACE_ROOT, LANE_SCRIPT)).href
+	return [
+		`import { Token, buildTicket, linkStage, renderEndpoint, writeStage } from ${JSON.stringify(script)}`,
+		`const root = ${JSON.stringify(root)}`,
+		"const id = '11111111-2222-4333-8444-555555555555'",
+		'await new Token().listen(renderEndpoint(root, id))',
+		"writeStage(root, buildTicket(id, 'publisher'))",
+		...(step === 'link' ? ['linkStage(root, id)'] : []),
+		"console.log('parked')",
+	].join('\n')
+}
+
+/**
+ * Renders the ES module fixture that prints the root a child resolves and two rejected resolvers.
+ *
+ * @returns The module text.
+ */
+export function renderLaneResolver(): string {
+	const script = pathToFileURL(join(WORKSPACE_ROOT, LANE_SCRIPT)).href
+	return [
+		`import { resolveRoot } from ${JSON.stringify(script)}`,
+		"import { tmpdir } from 'node:os'",
+		'console.log(JSON.stringify({ root: resolveRoot(), temporary: tmpdir(), working: process.cwd() }))',
+	].join('\n')
+}
 
 /** Holds the CommonJS command the `mutate` proof runs: it fails when `target.txt` holds BAD and logs each run. */
 export const MUTATE_CHECK_SCRIPT = [

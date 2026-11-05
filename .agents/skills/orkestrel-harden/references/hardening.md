@@ -40,7 +40,7 @@ protocol tests prove the protocol, and only a real client of that class proves t
 integration. Drive it end to end, record the exact commands, and record what that client
 could NOT reach as an honest limit rather than an untested assumption.
 
-Never use mocks, behavioral fakes, module replacement, or framework spies. Use recorders for callbacks and customizable data factories/stubs for inert shapes.
+`AGENTS.md` § Non-negotiable rules owns the law on mocks, fakes, and fake clocks. Use recorders for callbacks and customizable data factories/stubs for inert shapes.
 
 ## Design live-service tests
 

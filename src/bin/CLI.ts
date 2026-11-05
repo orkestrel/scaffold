@@ -810,8 +810,9 @@ export class CLI implements CLIInterface {
 						)
 			// The candidate set is re-derived from the plan and target, then held to
 			// the audit's foreign findings: the strays beneath the vendored directories
-			// this plan expands, and the superseded instruction copies the target holds
-			// inside the canon. A path the plan claims is never a deletion candidate,
+			// this plan expands, the superseded instruction copies the target holds
+			// inside the canon, and the configuration wrappers an environment left
+			// behind. A path the plan claims is never a deletion candidate,
 			// and the preceding repair has already restored the ones that were missing, so
 			// this step cannot take a file the next audit would report missing.
 			// `--dirty` is expressed here and nowhere else: the waiver clears the

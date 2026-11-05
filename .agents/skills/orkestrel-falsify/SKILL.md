@@ -29,7 +29,8 @@ Read `references/brief.md` for the claim form.
 - Derive claims from adverse conditions: cancellation, restart, concurrency, partial failure, malformed or unexpected input, resource exhaustion, orderings the happy path never reaches.
 - Limit claims to the public contract and the risky seams. A claim about a comment or a name is not a claim.
 - Supply the evidence the subject type requires: a code change carries the actual diff and `git status --porcelain`; a rendered surface carries its capture portfolio with source as corroboration; a proposal carries the proposal, the canon it must satisfy, and its motivation.
-- Name where a lane may run a probe (`tmp/probes/` through the `probe` project) and that it deletes the probe before returning.
+- Name each claim's settling row: a concrete input through a public call whose output decides the claim.
+- Name the folder under `tmp/probes/` where a lane with a shell writes its probes. It edits no source, runs each probe under `.agents/skills/orkestrel-parallel/SKILL.md` § Bound the host, and deletes the folder before returning.
 - Name the stakes: what this round decides.
 - A successor brief carries what the previous round closed and adds claims against that round's rulings.
 
@@ -37,7 +38,7 @@ Read `references/brief.md` for the claim form.
 
 - Medium: one lane, with an independent reviewer per `.agents/orchestration.md` § Engines. Large: the objective lane and the subjective lane, same claims file, each in a clean context, neither shown the other's answer before reconciliation. Add `checker` when criteria are mechanical.
 - Tell a lane when its own engine wrote the half it audits.
-- Give a lane the evidence a read-only allowlist cannot produce: run the probe yourself, record its control and output, and hand it over. Run a mutation probe with `scripts/mutate.ts`; its JSON line carries both exits.
+- Give a lane with no shell the evidence a read-only allowlist cannot produce: run the probe yourself, record its control and output, and hand it over. Run a mutation probe with `scripts/mutate.ts`; its JSON line carries both exits.
 - Auditors edit no source and spawn nothing. Their reports are immutable after they return.
 
 ## Verdict shape
@@ -55,6 +56,7 @@ Before confirming a claim about a proof, the lane names the mutation that would 
 
 Read `references/reconcile.md`.
 
+- Dispatch one settling lane, `verifier` or another lane with a shell, when a claim stays `UNRESOLVED`, with exactly the claim's settling rows. It runs each input through its public call and reports each output. It collects evidence, so it is no further judgment lane under `.agents/orchestration.md` § Parallelism, and you still rule.
 - Reproduce every `BROKEN` and every outside finding yourself before acting on it.
 - Run `node .agents/skills/orkestrel-dispatch/scripts/cite.ts <verdict>` and discard a verdict whose citation does not resolve, then sample that lane's other citations.
 - Treat lane disagreement as answers to different questions; find each question.

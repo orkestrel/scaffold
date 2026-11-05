@@ -98,13 +98,17 @@ describe('Compiler artifacts', () => {
 				'.claude/agents/orkestrel.md',
 				...[
 					'enterprise-bootstrap',
+					'orkestrel-align',
 					'orkestrel-build',
 					'orkestrel-debrief',
+					'orkestrel-dispatch',
 					'orkestrel-falsify',
 					'orkestrel-harden',
 					'orkestrel-journey',
 					'orkestrel-parallel',
 					'orkestrel-polish',
+					'orkestrel-publish',
+					'orkestrel-scout',
 				].flatMap((name) => [
 					`.claude/skills/${name}/SKILL.md`,
 					`.agents/skills/${name}/agents/openai.yaml`,
@@ -159,13 +163,17 @@ describe('Compiler artifacts', () => {
 		expect(skills.map(({ path }) => path)).toStrictEqual(
 			[
 				'enterprise-bootstrap',
+				'orkestrel-align',
 				'orkestrel-build',
 				'orkestrel-debrief',
+				'orkestrel-dispatch',
 				'orkestrel-falsify',
 				'orkestrel-harden',
 				'orkestrel-journey',
 				'orkestrel-parallel',
 				'orkestrel-polish',
+				'orkestrel-publish',
+				'orkestrel-scout',
 			].flatMap((name) => [
 				`.claude/skills/${name}/SKILL.md`,
 				`.agents/skills/${name}/agents/openai.yaml`,

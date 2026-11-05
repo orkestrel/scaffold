@@ -68,6 +68,7 @@ import {
 	isVacant,
 	listCanonPaths,
 	listFiles,
+	listWrapperPaths,
 	matchesProtectedPath,
 	pruneEmptiedDirectories,
 	readFileHex,
@@ -231,10 +232,10 @@ export class Materializer implements MaterializerInterface {
 	 * @remarks
 	 * Host directories expand before the target is read, so this method and
 	 * {@link repair} compare the same paths with the same ownership. Foreign
-	 * candidates are files beneath those expanded roots and files the target holds at
-	 * a `CANON_PATHS` member. A
-	 * file outside these populations never becomes a deletion candidate merely
-	 * because its group is selected.
+	 * candidates are files beneath those expanded roots, files the target holds at
+	 * a `CANON_PATHS` member, and the configuration wrappers `listWrapperPaths`
+	 * names. A file outside these populations never becomes a deletion candidate
+	 * merely because its group is selected.
 	 *
 	 * The canon is staged for reading rather than for a target, so a copy of one of
 	 * its paths sitting in a target is a superseded artifact and reports foreign. A
@@ -492,8 +493,8 @@ export class Materializer implements MaterializerInterface {
 	 * A tree carrying uncommitted work is refused whole for the same reason.
 	 *
 	 * The candidate list carries every foreign population {@link audit} reports. A
-	 * superseded instruction copy inside the canon and a stray beneath an owned root
-	 * therefore follow the same transaction rules.
+	 * superseded instruction copy inside the canon, a stray beneath an owned root, and
+	 * a wrapper an environment left behind therefore follow the same transaction rules.
 	 * Membership decides it, never byte identity. An untracked leftover stays in
 	 * place and remains a finding, which is the seam a maintainer uses to keep a
 	 * git-ignored file.
@@ -674,7 +675,8 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Hydrate once, extend the target snapshot beneath the vendored directories
-	// this plan expands and across the selected instruction canon, then run the core comparison.
+	// this plan expands, across the selected instruction canon, and across the configuration
+	// wrappers scaffold can write, then run the core comparison.
 	// Repair may supply the hydrated
 	// plan it already needs for writes, while the public audit lets this method own
 	// the hydration itself.
@@ -692,6 +694,7 @@ export class Materializer implements MaterializerInterface {
 				return listFiles(directory).map((name) => `${root}/${name}`)
 			}),
 			...listCanonPaths(target, plan.groups),
+			...listWrapperPaths(target, plan.groups),
 		])
 		const questions: Question[] = []
 		if (plan.groups.includes('guides')) {

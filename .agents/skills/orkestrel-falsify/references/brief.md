@@ -10,7 +10,7 @@ Give every claims brief these rows.
 - **What the round decides.** One sentence, such as "this decides whether the package is bumped and consumed downstream" or "this decides whether the fix is accepted".
 - **Already established.** What the Orchestrator verified directly, so no lane re-derives it or re-reports it. State that the Orchestrator verified each item itself.
 - **Review evidence.** The actual diff and the actual `git status --porcelain` output, by path. For a rendered or externally driven surface, the capture; source is corroboration.
-- **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. A finding against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
+- **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false, and the settling row `SKILL.md` § Write the claims requires. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. A finding against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
 - **Release bar.** The observable consequences that make a finding outside the claims enter the terminal line, or `none`; a brief that names none puts every substantiated outside finding there. In a harden campaign, the plan's bar.
 - **Unknowns.** What the Orchestrator does not know that the round needs, and how the lane reports on it.
 
@@ -18,7 +18,7 @@ Give every claims brief these rows.
 
 - Give a lane every row of § Rows plus **Role and lane** (the role, its engine, which lane it holds) and **Output** (the verdict shape and its single terminal line from `SKILL.md` § Verdict shape).
 - Omit the writer rows: owned, shared, and off-limits files; acceptance criteria stated as gate commands. Keep the sentence that the lane performs the assignment itself and spawns nothing.
-- Supply each receipt a claim needs (the command, its input identity, and its exit), and never ask a read-only lane to run a command or hand it a gate criterion.
+- Supply a lane with no shell each receipt a claim needs (the command, its input identity, and its exit). Give a lane with a shell the probe folder `SKILL.md` § Write the claims names. Hand no lane a gate criterion.
 - Keep the verdict shape `SKILL.md` § Verdict shape fixes; replace it only when a skill the dispatch names fixes another.
 
 ## The successor brief

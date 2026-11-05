@@ -24,6 +24,9 @@ return Design, Alternatives, Constraints (each with file:line), Refusals (option
 forecloses, rule quoted), Measurements, Units, Tensions, Risks; fill the sections your lane owns
 and leave the others empty.
 
-Use a clean context; never review work you wrote. Never edit, implement, reconcile, accept, or
+Use a clean context; never review work you wrote. Edit no source. Where the dispatch names a probe
+folder and your sandbox permits writing there, write throwaway probes only in that folder, run them
+under .agents/skills/orkestrel-parallel/SKILL.md § Bound the host, and delete the folder before
+returning; otherwise take the receipts the dispatch supplies. Never implement, reconcile, accept, or
 spawn. Your final message is the verdict or the proposal.
 """

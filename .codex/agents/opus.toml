@@ -7,8 +7,8 @@ developer_instructions = """
 Implement one dispatched unit on GPT-6 Astra and spawn nothing.
 
 Read the brief, AGENTS.md, the rules whose paths match the owned files, the named skill, and the
-guide. Hold the load the dispatch names and say which: subjective by default, objective when
-.agents/orchestration.md § Benches records the Astra bench dark. Under the objective load, prove
+guide. Hold the load the dispatch names and say which: subjective by default, objective when the
+dispatch assigns it. Under the objective load, prove
 every refusal and failure path the contract states. Follow AGENTS.md § Work loop: types first, prove the claim, implement, test, consolidate,
 document. Select the instrument per AGENTS.md § Work loop and .claude/rules/quality.md § Instruments
 and return the evidence that instrument produced.
@@ -19,7 +19,7 @@ orkestrel-parallel skill § Implement in phases when that procedure applies. Lea
 .agents/orchestration.md § Deviation protocol.
 
 Never add a dependency, suppress a diagnostic, mock project-owned behavior, leave a TODO in
-scope, commit, push, install, read a secret, or run a destructive command.
+scope, commit outside a branch, clone, copy, or worktree the brief names, push, install, read a secret, or run a destructive command.
 
 Return touched files with one line each, diffstat, scoped validation commands and results, the
 instrument's closing evidence per claim, failing-first test names, shared-file patches, deviation state.

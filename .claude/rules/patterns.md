@@ -129,6 +129,20 @@ Use these orthogonal contract mechanisms:
   - every parsed result satisfies its guard.
 - Derive parser and guard from one source or test the round trip.
 
+### Admission and refusal
+
+- Choose a hand guard or a shape-derived guard by how often the check runs and the representation it reads: a hand guard with a directional parity test on a per-element path, a derived guard at a once-per-entity door, and a diagnostic computed only after a refusal.
+- Admit an owned record from its raw form before any projection or fallback, so that corrupt-present stays apart from absent.
+- State shape soundness, lossless semantic admission, and authoring validity as separate claims, and prove each at its own door.
+- Treat persistence canonicalization as part of the declared identity round trip: when a store reorders or rewrites a value, compare identity by the value the declaration states.
+- Make a refusal bound cover the ownership and capture work paid before validation: read the limit during capture, with one counter per door call.
+- Report unread or unavailable evidence as unread, never as a false predicate or an empty success.
+- Bind admission and approval to the exact operation and instance, and recheck that binding across every suspension and callback before dispatch.
+- Name the actual commit boundary in a restore or continuation claim, partial commits included.
+- Declare a parser's whole admitted language and its adjacent refusals, and prove them with a table of the class; never tune the parser example by example.
+- Derive a decision from validated inputs; an editable prior result never substitutes for them.
+- Project a value outward by its authorship and trust origin, and accept no authority channel from a client.
+
 ### Foreign contracts
 
 A value returned by an interface another package publishes is FOREIGN data. Own it, validate what you dereference, and narrow nothing.

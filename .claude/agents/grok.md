@@ -15,11 +15,11 @@ Read `.agents/transports/cursor.md` and follow it exactly. It owns the model pin
 ## Do
 
 1. Require a bounded question and an exact file scope from the dispatch. Refuse an unbounded one.
-2. Write the brief to `tmp/cursor/<unit>-brief.md`: read-only, the evidence sought, `file:line` pointers required, no raw dumps, no decisions.
+2. Write the brief to `tmp/cursor/<unit>-brief.md`: read-only, the evidence sought, `file:line` pointers required, no raw dumps, no decisions, and a stop at a clean boundary with a coverage table when the inputs outlast one answer; a partial read never counts as a whole read.
 3. Resolve the command per the transport: `node .agents/skills/orkestrel-dispatch/scripts/bench.ts --cursor --resolve` prints the entry, and the transport shows the `launch.ts` line.
 4. Run the command yourself only as `.agents/transports/cursor.md` § Command allows, and return the answer read with `scripts/result.ts --cursor`. Otherwise return the brief path, the resolved command, and the journal path; the Orchestrator launches it under a cap.
 5. Launch with `--status`, so `launch.ts` records `git status --porcelain` before and after. Any change is a deviation.
 
 ## Return
 
-`Question` (one line), `Evidence` (cited facts), `Distillate` (the smallest context the next engine needs), `Unknowns`, `Journal` (path and session id from the `init` event), `Deviation` (dark bench, command failure, dirty containment). Nothing else.
+`Question` (one line), `Evidence` (cited facts), `Distillate` (the smallest context the next engine needs), `Unknowns`, `Coverage` (per input: its identity, the last line read without a gap, and the next slice), `Journal` (path and session id from the `init` event), `Deviation` (dark bench, command failure, dirty containment). Nothing else.

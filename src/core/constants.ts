@@ -403,25 +403,26 @@ export const CATALOG_START_MARKER = '<!-- orkestrel:catalog -->'
 export const CATALOG_END_MARKER = '<!-- /orkestrel:catalog -->'
 
 /**
- * Lists the package-facing skills a target receives pointers for, frozen and alphabetical.
+ * Lists every canonical skill a target receives pointers for, frozen and alphabetical.
  *
  * @remarks
  * `blueprintToHostArtifacts` plans, for each name, the Claude bridge, the Codex
  * sidecar, and the derived `SKILL.md` pointer, so every harness discovers the
  * skill while its body, references, and scripts stay in the installed package.
- * `orkestrel-align`, `orkestrel-dispatch`, `orkestrel-publish`, and
- * `orkestrel-scout` are excluded because they run from the scaffold checkout
- * and a target is not an orchestration host.
  */
 export const TARGET_SKILL_NAMES: readonly string[] = Object.freeze([
 	'enterprise-bootstrap',
+	'orkestrel-align',
 	'orkestrel-build',
 	'orkestrel-debrief',
+	'orkestrel-dispatch',
 	'orkestrel-falsify',
 	'orkestrel-harden',
 	'orkestrel-journey',
 	'orkestrel-parallel',
 	'orkestrel-polish',
+	'orkestrel-publish',
+	'orkestrel-scout',
 ])
 
 /** Names the inventory skeleton a workspace with declared service vendors is given once. */

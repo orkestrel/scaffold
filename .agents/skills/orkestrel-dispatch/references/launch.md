@@ -28,7 +28,7 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 
 - Take the child's `pid` from the spawn line `scripts/launch.ts` prints when the command starts, or from `<journal>.pid`. Never take it from a pattern match over command lines, and never run `pgrep -f` or `pkill -f`.
 - Read liveness, list descendants, and kill with the commands of `.agents/platforms/<platform>.md`: list every descendant of the recorded pid, print the list, then kill each listed id and the recorded pid.
-- Refuse a list holding PID 1, the harness shell, or an id outside the descent of the recorded pid. At the cap, `launch.ts` kills what the platform page states; kill the remaining listed descendants by hand.
+- Refuse a list holding PID 1, the harness shell, or an id outside the descent of the recorded pid. At the cap, `launch.ts` kills what the platform page states; kill the remaining listed descendants by hand. A run under `.agents/skills/orkestrel-parallel/scripts/lane.ts` kills and checks the remaining descendants itself; on its exit 70, list and kill by hand before another command starts.
 - Confirm the recorded process and every listed descendant are gone before another writer takes the files. Check owned-file mtimes before dispatching the substitute.
 - Rerun a failure alone only after the unit exits, and class the reading per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief; a unit's own rerun is never alone.
 

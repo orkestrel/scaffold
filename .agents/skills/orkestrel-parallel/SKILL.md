@@ -1,7 +1,7 @@
 ---
 name: orkestrel-parallel
 description: >-
-  Run parallel work: lanes inside one session (subagents, child tasks, background commands) and peer sessions that share a checkout, a machine, or an execution lane. Use when units can progress in parallel, when another session works on the same machine or checkout, or before the first lane on a harness. Bound the host, keep lanes visible, coordinate writers through messages with one runner for checks, and hand a shared execution lane over in one message. Each harness page records its mechanics and quirks; a harness with no page carries no writer or runner lane until its bring-up questions are answered on one.
+  Run parallel work: lanes inside one session (subagents, child tasks, background commands) and peer sessions that share a checkout, a machine, or an execution lane. Use when units can progress in parallel, when another session works on the same machine or checkout, or before the first lane on a harness. Bound the host, keep lanes visible, coordinate writers through messages with one runner for checks, and serialize a shared execution lane through one queue per host. Each harness page records its mechanics and quirks; a harness with no page carries no writer or runner lane until its bring-up questions are answered on one.
 ---
 
 # Parallel lanes
@@ -21,12 +21,13 @@ description: >-
 Run from the checkout root. The script's opening comment owns its behavior.
 
 - `scripts/cases.ts --report FILE.json [--passed NAME ...] [--failed NAME ...]` reads a Vitest `--reporter=json` report and requires every case a `--passed` name matches to have passed and every case a `--failed` name matches to have failed. A name matches a case's full name or its own title exactly; both flags repeat. A name that matches no case is missing, and a failed case no name matches is refused, as is a test file that failed with no failed case (it did not collect, or a hook threw) and a report whose `success` is false while nothing in it failed. It prints one summary line, each difference, and `ok` or `differences=N`. Exit 0 when the report matches, 3 when it does not, 2 when the report cannot be read as a Vitest report, 64 usage.
+- `scripts/lane.ts --label NAME --journal PATH --errors PATH --cap SECONDS [--root DIR] -- COMMAND [ARGS...]` runs one process-running command at a time on this host, in arrival order, across every checkout and shell of one user account: it takes a ticket, waits with no timer, runs the command through `.agents/skills/orkestrel-dispatch/scripts/launch.ts`, kills and reads the command's process tree until no member remains, and releases. `scripts/lane.ts --status [--root DIR] [--json]` prints each ticket in arrival order with its label and `live`, `dead`, or `unread`, and names the holder; it writes nothing, and an absent root reads as an empty queue. The two forms are two modes, and `--status` with a run's flag is refused. Exit: the launcher's code, 1 when a signal ended the launcher, 64 usage, 75 when the lane refused before the command ran, 70 when the command ran and its tree still reads as present or its ticket could not be removed; `--status` exits 0 on a read and 75 when the root cannot be listed. A command that itself exits 64, 70, or 75 reads like the lane's own code. The opening comment owns the limits and the migration stop.
 
 ## Bound the host
 
 The host budget counts every lane on the machine: this session's, each peer session's, and the Orchestrator's own commands.
 
-- Set the lane bound in the plan before the first dispatch. Run one process-running lane at a time on the host: count as a process-running lane every lane that runs a test, a build, a browser, a capture, or a launcher, the Orchestrator's included; an owned-file format check, lint, type check, or `policy` run that reads only its owned paths' violations runs beside it. Report to the user before a launch that would start a second. Lanes that run no shell command run beside it.
+- Set the lane bound in the plan before the first dispatch. Run one process-running command at a time on the host: a test, a build, a browser, or a capture, the Orchestrator's included, each launched through the serializer § Share an execution lane between sessions names; a bench exec, an owned-file format check, lint, type check, or `policy` run that reads only its owned paths' violations runs beside it. The bound counts commands, never a lane's whole life: while another lane's command runs, a writer keeps drafting, changes no file a live command reads, and batches its tests into one command, and a unit that needs no later unit starts at once. Report to the user before a launch that would start a process-running command outside that serializer.
 - Count running lanes and owned test processes at each launch.
 - Limit terminal launches: chain commands that do not gate each other into one launch (as a plan for `.agents/skills/orkestrel-dispatch/scripts/chain.ts`), write long output to a file and read it once, never poll with repeated short calls, never retry a run in a loop, and check once for owned leftovers before a launch.
 - Find the cause of an interrupted run before relaunching it.
@@ -40,12 +41,12 @@ The host budget counts every lane on the machine: this session's, each peer sess
 
 ## Assign lanes
 
-| Lane         | Responsibility                                           | Write boundary                                                        |
-| ------------ | -------------------------------------------------------- | --------------------------------------------------------------------- |
-| Orchestrator | Own the roster, scope, rulings, holds, and acceptance.   | Assigned coordination records and serial integration.                 |
-| Runner       | Run requested tests, checks, and builds as the verifier. | Assigned evidence and declared command outputs; never source repairs. |
-| Writer       | Implement its bounded unit under its assigned role.      | Owned files and regions.                                              |
-| Reviewer     | Independently assess the subject the size gate names.    | None; return the verdict to the Orchestrator.                         |
+| Lane         | Responsibility                                           | Write boundary                                                                                            |
+| ------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Orchestrator | Own the roster, scope, rulings, holds, and acceptance.   | Assigned coordination records and serial integration.                                                     |
+| Runner       | Run requested tests, checks, and builds as the verifier. | Assigned evidence and declared command outputs; never source repairs.                                     |
+| Writer       | Implement its bounded unit under its assigned role.      | Owned files and regions.                                                                                  |
+| Reviewer     | Independently assess the subject the size gate names.    | None on source; a named probe folder when its tools hold a shell; return the verdict to the Orchestrator. |
 
 - Keep active lanes within the harness limit and § Bound the host. Reserve capacity for the runner; queue work that does not fit.
 - Assign every editable region to one writer. Name shared regions by their declarations or sections. Serialize units that rewrite the same region.
@@ -95,9 +96,9 @@ expect: <red or green, named cases, required artifact>
 
 - Before a command, verify its input holds and exclusive resources. Hold all writers when the command reads the whole tree; otherwise hold every owner in its input closure. Do not infer that closure from the requesting writer's files alone.
 - When a conflicting process occupies a declared resource, record its owner, process id, command, and a bounded wait based on the expected work. If it remains after that wait, suspend the request for an Orchestrator ruling. Never terminate another lane's or repository's process.
-- Launch through `node .agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap grounded in prior runs, journal and error paths under `coord/runs/` carrying the request identity in each filename. Follow the `orkestrel-dispatch` skill's reference Long-running commands for ownership, process tracking, and cleanup.
+- Launch through `scripts/lane.ts`, which runs `.agents/skills/orkestrel-dispatch/scripts/launch.ts` under the host lane, or through the serializer § Share an execution lane between sessions keeps, with a cap grounded in prior runs, journal and error paths under `coord/runs/` carrying the request identity in each filename. Follow the `orkestrel-dispatch` skill's reference Long-running commands for ownership, process tracking, and cleanup.
 - State in each long command's request which line is its terminal record; that line ends the wait.
-- When the shell yields before the command exits, keep its output in the assigned file and resume its tracked session per the harness page until the terminal record arrives. Start nothing else meanwhile, and never replace the command with a second launch. Confirm owned descendants have exited before publishing completion. Escalate incomplete cleanup before releasing files or starting another command.
+- When the shell yields before the command exits, keep its output in the assigned file and resume its tracked session per the harness page until the terminal record arrives. Start no other process-running command meanwhile, and never replace the command with a second launch. Confirm owned descendants have exited before publishing completion. Escalate incomplete cleanup before releasing files or starting another command.
 - Run the commands the accepted unit and the size gate require, narrowest first, and add no standing root, guide, or entry check beyond the request. Preserve receipts and rerun checks per `.agents/orchestration.md` § Pace.
 - For a release run, follow the `orkestrel-publish` skill's reference The release wave § Prepare a layer. For other runs, stop on the first unexpected failure. Return the complete diagnostic and the owning file, and classify the failure as an assertion failure, an invocation error, a reporting failure, a cap, or an interruption. Preserve every receipt obtained before the stop. Check an `expect:` that names cases against the command's `--reporter=json` report with `scripts/cases.ts`.
 - Record the command's input identity and expected outputs before launch. When an input changes during the run, report that result as invalid and retain each result whose input set stayed stable.
@@ -116,9 +117,9 @@ expect: <red or green, named cases, required artifact>
 
 Apply this section when two sessions on one machine share the tests, checks, builds, and captures the host can run at once.
 
-- One session runs process-running commands at a time. Ask the holder for the lane in one message; the holder hands it over in one message as soon as its running command exits. Silence is no handover.
-- While another session holds the lane, edit your own files, read, and queue your commands.
-- Hand the lane over by naming the last command's exit and that none of your processes still runs. Set no clock windows and send no per-command acknowledgments.
+- Run each process-running command through `scripts/lane.ts`, which orders the commands across sessions, and send no handover message. On its exit 75 or 70, report its standard error line to the user and start no process-running command.
+- When a host's sessions run another serializer, keep using it until a scaffold release carries `scripts/lane.ts` and no command runs on the host, then move every caller in one step, because a second queue does not see the first.
+- While another session holds the lane, edit your own files, read, and queue your commands. Set no clock windows and send no per-command acknowledgments.
 - Class contention from another session per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief. Rerun the interrupted unit alone after the window clears.
 - When the user stops work, send the stop to every affected session. Withdraw queued work by its id and preserve finished evidence.
 - When no message channel reaches a peer session, coordinate through one tracked record holding owned paths and a dated log. Read its latest entry before each unit, log each landing, and delete the record when the shared work closes.

@@ -433,9 +433,8 @@ describe('the manifest builders', () => {
 		}
 	})
 
-	it('holds the three skill canon files of every package-facing skill and no other', () => {
+	it('holds the three skill canon files of every canonical skill and no other', () => {
 		expect(Object.keys(SKILL_CANON_FILES)).toHaveLength(TARGET_SKILL_NAMES.length * 3)
-		expect(SKILL_CANON_FILES['.agents/skills/orkestrel-dispatch/SKILL.md']).toBeUndefined()
 		for (const name of TARGET_SKILL_NAMES) {
 			const canonical = requireValue(SKILL_CANON_FILES[`.agents/skills/${name}/SKILL.md`])
 			const bridge = requireValue(SKILL_CANON_FILES[`.claude/skills/${name}/SKILL.md`])
@@ -457,14 +456,14 @@ describe('the manifest builders', () => {
 		}
 	})
 
-	// The directory also holds skills this checkout keeps for itself, which the registered list
-	// does not name, so the listing is read for the registered names alone.
-	it('finds a skill directory in the checkout for every registered skill name', () => {
-		const listed = readdirSync(join(WORKSPACE_ROOT, '.agents', 'skills'))
+	it('registers exactly the skill directories in the checkout, in alphabetical order', () => {
+		const listed = readdirSync(join(WORKSPACE_ROOT, '.agents', 'skills'), {
+			withFileTypes: true,
+		})
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name)
 
-		expect(listed.filter((name) => TARGET_SKILL_NAMES.includes(name)).toSorted()).toStrictEqual(
-			TARGET_SKILL_NAMES.toSorted(),
-		)
+		expect(TARGET_SKILL_NAMES).toStrictEqual(listed.toSorted())
 	})
 })
 

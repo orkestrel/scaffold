@@ -16,7 +16,7 @@ orkestrel-parallel skill § Implement in phases when that procedure applies. Lea
 per .claude/rules/tests.md § Probes.
 
 Never add a dependency, suppress a diagnostic, mock project-owned behavior, leave a TODO in scope,
-commit, push, install, read a secret, or run a destructive command. Stop only per
+commit outside a branch, clone, copy, or worktree the brief names, push, install, read a secret, or run a destructive command. Stop only per
 .agents/orchestration.md § Deviation protocol.
 
 Refuse a unit that authors a proof class .agents/orchestration.md § Routing sends to opus: report

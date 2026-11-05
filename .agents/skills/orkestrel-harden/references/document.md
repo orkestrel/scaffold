@@ -14,6 +14,7 @@ This reference governs the guide pass for one package, `AGENTS.md` § Work loop 
 2. **README.** Set the pitch equal to the guide's tagline; keep the install and link lines in step with the shipped exports.
 3. **TSDoc.** Give each export the change touched the block `.claude/rules/typescript.md` § Comments and API documentation fixes, with fictional descriptive data in its `@example`.
 4. **Fences.** Import through the published specifier and run each example; read what it returns before writing the comment beside it.
+5. **Ergonomics.** Where the guide claims authoring ergonomics, pair the executed example with an independent reader who receives only the authored declaration, and test that reader's interpretation.
 
 ## Choose the rewrite direction
 

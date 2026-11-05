@@ -33,7 +33,7 @@ These rules govern how a claim is established: the evidence read before a change
 
 ## Instruments
 
-- An instrument counts as evidence only after it has failed: pair every probe, comparison, or matrix with a negative control that must fail under the same conditions, drawn from outside the population the instrument covers.
+- An instrument counts as evidence only after it has failed: pair every probe, comparison, or matrix with a negative control that must fail under the same conditions, drawn from outside the population the instrument covers and inside the domain the claim promises. A control that leaves that domain proves nothing about the instrument; prove that behavior under its own claim.
 - When a TypeScript question can name a workspace project, a case (files plus a test), and a control (files, test, the stage it must fail at, and why), call the `prove` tool the `probe` MCP server registers. Quote its closing line (`receipt probe:<digest>:…` or `no receipt`) where the claim is reported. A `no receipt` line leaves the claim unproved; report the stage that refused.
 - When the question supplies no project, no case, or no control, write a probe per `.claude/rules/tests.md` § Probes and report the probe's control and coverage.
 - When no `probe` server is registered, register one outside the repository in the harness's user or local MCP scope, pointing at `node_modules/@orkestrel/probe/dist/bin/main.js`, and start it in the repository whose projects the question names. A scaffold target holds no `.mcp.json`.
@@ -57,6 +57,9 @@ These rules govern how a claim is established: the evidence read before a change
 - Before the run, size the fixtures, the sample count, and the threshold to the case, and state the reasoning and the result that makes the change worth keeping.
 - Read the difference between methods against each side's reported uncertainty, and record no difference smaller than the result stated before the run.
 - Report every measurement with the host's other load during the run.
+- Compare two builds interleaved in one run under one host load, with `.agents/skills/orkestrel-harden/scripts/interleave.ts`. Read a published side from the published artifact, calibrate the run with identical sides, and bar the relative change, never an absolute reading from another moment.
+- Price a cost over the caller's whole lifecycle and workload: construction, restoration, transfer, and decision beside the warm saving.
+- Derive a cost stop from what the consumer spends around the cost, and state responsiveness and throughput as separate claims.
 - Rule a cost finding advisory unless it shows its effect under a realistic load, and never carry an advisory into a fix brief as a required change; `.agents/skills/orkestrel-falsify/SKILL.md` § Verdict shape places it in a review lane's return.
 
 ## Ecosystem reuse

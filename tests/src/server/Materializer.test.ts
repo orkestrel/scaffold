@@ -2123,7 +2123,6 @@ describe('Materializer skill pointers', () => {
 						(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
 					)
 				expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
-				expect(written).not.toContain('.agents/skills/orkestrel-dispatch/SKILL.md')
 				for (const name of TARGET_SKILL_NAMES) {
 					const canonical = requireValue(SKILL_CANON_FILES[`.agents/skills/${name}/SKILL.md`])
 					const pointer = workspace.read(`project/.agents/skills/${name}/SKILL.md`)

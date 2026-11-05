@@ -83,6 +83,7 @@ A skill, a tool description, and a refusal message each teach an agent mid-task.
 
 - Put the critical path in the tool description, most important first: a worked example, the key nesting, and the reply shape. A harness abbreviates a nested schema and delivers the description intact; never leave the teaching to the schema.
 - Make every refusal orient, name, or correct: state the subject, the exact key path, the expected shape, the valid candidates, and every missing and every unexpected item, in one refusal.
+- Keep the provenance a refusal computed, its token, span, reason, and known field, and never invent the value or field the caller intended.
 - Refuse with the correction in the message. Never coerce a malformed input and never silently drop it. Encode an untrusted identifier in a diagnostic, JSON-encoded and length-capped, so malformed input cannot fake or balloon the message.
 - Acknowledge or state, never both: a mutation returns an acknowledgement and a read returns state. Say the split in both tools' descriptions so neither is polled for the other's job.
 

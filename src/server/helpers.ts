@@ -53,6 +53,8 @@ import {
 } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
+	AXES,
+	blueprintToConfigArtifacts,
 	bytesToHex,
 	CANON_PATHS,
 	CATALOG_AGENT_PATH,
@@ -60,8 +62,11 @@ import {
 	collectSurfaceCollisions,
 	collectSurfaceConflicts,
 	compareSurfaceCollisions,
+	createBlueprint,
 	DEPENDENCY_NAME_PATTERN,
+	ENVIRONMENTS,
 	EXECUTABLE_PATHS,
+	FRAMEWORKS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
 	inferArtifactGroup,
@@ -1021,6 +1026,59 @@ export function listCanonPaths(
 		if (isPhysicalFile(full)) return [member]
 		return isPhysicalDirectory(full) ? listFiles(full).map((name) => `${member}/${name}`) : []
 	}).filter((path) => groups.includes(inferArtifactGroup(path)))
+}
+
+/**
+ * Lists the configuration wrappers a target holds, filtered to a plan's groups.
+ *
+ * @param target - The directory to read.
+ * @param groups - The artifact groups the plan selects.
+ * @returns Every exact-case wrapper file the target holds, in compile order, and `[]`
+ * when the target holds none, cannot be resolved, or the plan selects no wrapper's group.
+ *
+ * @remarks
+ * The population sits under `configs/src` and `configs/app`, and the widest blueprint
+ * compiles it: every environment on both axes, `bin`, `styles`, `themes`, `showcase`,
+ * `journey`, and each framework on both axes. A wrapper the plan claims pairs with its
+ * artifact, and the rest report `foreign`, which lets the deletion verb take the wrappers
+ * an environment left behind.
+ *
+ * Every other file under those directories belongs to its author and stays unread,
+ * and so does a named styles extension's wrapper, because those names form an open
+ * set. The exact-case read keeps a case-variant name out on a case-folding host.
+ *
+ * @example
+ * ```ts
+ * import { listWrapperPaths } from '@orkestrel/scaffold/server'
+ *
+ * listWrapperPaths('vacant', ['configs']) // []
+ * ```
+ */
+export function listWrapperPaths(
+	target: string,
+	groups: readonly ArtifactGroup[],
+): readonly string[] {
+	const widest = createBlueprint('wrapper', {
+		src: ENVIRONMENTS,
+		app: ENVIRONMENTS,
+		extensions: FRAMEWORKS.map((name) => ({ surface: 'browser', name, axes: AXES })),
+		bin: true,
+		styles: true,
+		themes: true,
+		showcase: true,
+		journey: true,
+	})
+	return blueprintToConfigArtifacts(widest)
+		.filter(
+			({ path, group }) =>
+				groups.includes(group) &&
+				(path.startsWith('configs/src/') || path.startsWith('configs/app/')),
+		)
+		.map(({ path }) => path)
+		.filter((path) => {
+			const full = resolveContainedPath(target, path)
+			return full !== undefined && isExactCaseFile(full)
+		})
 }
 
 /**
