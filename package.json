@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.122",
+	"version": "0.0.123",
 	"description": "Scaffold workspaces with commands: new, audit, surface, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
@@ -111,7 +111,7 @@
 		"@orkestrel/browser": "^0.0.31",
 		"@orkestrel/guide": "^0.0.29",
 		"@orkestrel/html": "^0.0.14",
-		"@orkestrel/probe": "^0.0.27",
+		"@orkestrel/probe": "^0.0.28",
 		"@orkestrel/test": "^0.0.32",
 		"@types/node": "^24.19.2",
 		"@vitest/browser-playwright": "^5.0.5",

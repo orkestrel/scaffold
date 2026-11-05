@@ -622,7 +622,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "1744af50375aaf803b4c521210a0d688963c23a8e9a02e5a8b1139e53a7af84e"
+			"digest": "bb4f105af8e063277aaff4840db46fb20c03b766dc88e43d6327eac6fa56ffef"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -988,7 +988,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "8033eeef42443aa97b1caa6439f613fbb6425fbc0609180746a2b21572c4eb19"
+			"digest": "9dc2651a6644dd42cbc56d46b8be599e0a04a38f4bcbf5071e04567e6838c0ae"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -1120,13 +1120,13 @@
 			"storage": "guides/ndjson.md",
 			"destination": "guides/ndjson.md",
 			"executable": false,
-			"digest": "bc45850ac6026295fb45e41ef94e542309fbc96b2a2218f03892ef40f2e6f40c"
+			"digest": "abaae875dcd87c2f6e0becb742b8b99b73e06844b0d5acb98e156fd56738dd5c"
 		},
 		{
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "05a5ff5682a10094125886de461c89b92059802db132417b118c2a80f0d30888"
+			"digest": "04efd19961f79a02ab9406f7790b8eb7ac1bf7a67bb06ac74f72d9ee65055da6"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1138,7 +1138,7 @@
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "5f993a8b6b556d858d1026f82288be866ec69bcc9783a5331b2daab76607a48b"
+			"digest": "fbe5d6256e44088ed571bf64793f876b94e393ccc210a0d914b843625c52b355"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1222,7 +1222,7 @@
 			"storage": "guides/study.md",
 			"destination": "guides/study.md",
 			"executable": false,
-			"digest": "f60609cd096502cb25483d271aea7ee886a6a62e6096a904abe55014d9e74555"
+			"digest": "00e26a26df0dbc1cd1134cbb071b7db66671994055304f180c6c7a5bc5fc1eb8"
 		},
 		{
 			"storage": "guides/table.md",
@@ -1411,5 +1411,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "57feae27dddd1187763821f37e344a3636a1b928b60bf76bd971f7ddf52c7a6e"
+	"digest": "ce72dc8d9b4ccb4dd85b40d41ee4e02949e6b6166e4ef417ffeb8e2e729e171a"
 }
