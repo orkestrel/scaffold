@@ -622,7 +622,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "bb4f105af8e063277aaff4840db46fb20c03b766dc88e43d6327eac6fa56ffef"
+			"digest": "f7ea81be132d7811376e9cf54227ce83a122abe4f3aa57d55ee6ffca78a8bf35"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1030,7 +1030,7 @@
 			"storage": "guides/contract.md",
 			"destination": "guides/contract.md",
 			"executable": false,
-			"digest": "281ae599f1550ef1b49be4c283d160460648bbca662b079edc3d6c755bb631b3"
+			"digest": "839c8ee48aedbbe5cbd8bbaebf0074029c3d100256b2be3e211d31b006834ce1"
 		},
 		{
 			"storage": "guides/csv.md",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/database.md",
 			"destination": "guides/database.md",
 			"executable": false,
-			"digest": "dcf2bff947bb2187abe986769655225d96e887a1df88246ac3c42024a2e606d4"
+			"digest": "0158058d9cf571e75c26550478666a6f80b994064241b508b56a7980eb3bdbde"
 		},
 		{
 			"storage": "guides/emitter.md",
@@ -1120,7 +1120,7 @@
 			"storage": "guides/ndjson.md",
 			"destination": "guides/ndjson.md",
 			"executable": false,
-			"digest": "abaae875dcd87c2f6e0becb742b8b99b73e06844b0d5acb98e156fd56738dd5c"
+			"digest": "5887d84321439833286a2c68b501cac4694c958a1bdb00ec10dbdd9421a9c99c"
 		},
 		{
 			"storage": "guides/ollama.md",
@@ -1174,7 +1174,7 @@
 			"storage": "guides/reason.md",
 			"destination": "guides/reason.md",
 			"executable": false,
-			"digest": "f2375345ae6366516668014a8cbbdefe65c7d354370fe8ad94aa6fd5dd09a98a"
+			"digest": "318f467e7855da233b37b96ee50b667fb0e16ee42af5095d4325b3f959ef221d"
 		},
 		{
 			"storage": "guides/relation.md",
@@ -1192,7 +1192,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "c5c05d98ad7891fed3379bc18650411d9616472781eed6843a8b6b580e9c33a4"
+			"digest": "e8dd9c1130b23f4a2f284445d10b0d85797c4f2cf71005aa13e477c91badf81a"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1258,7 +1258,7 @@
 			"storage": "guides/tool.md",
 			"destination": "guides/tool.md",
 			"executable": false,
-			"digest": "39741c15fe07299676fd414591a4b804ae4375d629f7f28476d591cf925063cb"
+			"digest": "e348e37471ed8a1d995f2e83e1f701ebb6c8bb202b9b6950c656685209638788"
 		},
 		{
 			"storage": "guides/toolbox.md",
@@ -1411,5 +1411,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "ce72dc8d9b4ccb4dd85b40d41ee4e02949e6b6166e4ef417ffeb8e2e729e171a"
+	"digest": "dc9854241aa55f6dbb2c39addc40253de7303088880b51d6c1bfbfd54e39e2ff"
 }

@@ -750,7 +750,7 @@ describe('release evidence', () => {
 			development: [
 				{ name: 'oxlint', range: '^1.90.0' },
 				{ name: 'typescript', range: '^7.0.2' },
-				{ name: 'vitest', range: '^5.0.5' },
+				{ name: 'vitest', range: '^5.1.0' },
 			],
 		})
 		expect(manifestToWritableDependencies(manifest, vue, true)).toStrictEqual({
@@ -758,7 +758,7 @@ describe('release evidence', () => {
 			development: [
 				{ name: 'oxlint', range: '^1.90.0' },
 				{ name: 'typescript', range: '^6.0.3' },
-				{ name: 'vitest', range: '^5.0.5' },
+				{ name: 'vitest', range: '^5.1.0' },
 			],
 		})
 		for (const range of [
@@ -793,7 +793,7 @@ describe('release evidence', () => {
 				core,
 				true,
 			),
-		).toStrictEqual({ runtime: [], development: [{ name: 'vitest', range: '^5.0.5' }] })
+		).toStrictEqual({ runtime: [], development: [{ name: 'vitest', range: '^5.1.0' }] })
 	})
 
 	it('reports only planned lifts that reached the written dependency section', () => {

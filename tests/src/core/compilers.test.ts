@@ -192,7 +192,7 @@ describe('generated defect regressions', () => {
 				],
 			})
 			expect(JSON.parse(blueprintToManifest(blueprint))).toMatchObject({
-				devDependencies: { vite: '^8.3.5', 'vite-plugin-singlefile': '2.3.3' },
+				devDependencies: { vite: '^8.3.6', 'vite-plugin-singlefile': '2.3.3' },
 				overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
 			})
 		}
