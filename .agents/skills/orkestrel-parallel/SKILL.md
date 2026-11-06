@@ -118,6 +118,7 @@ expect: <red or green, named cases, required artifact>
 Apply this section when two sessions on one machine share the tests, checks, builds, and captures the host can run at once.
 
 - Run each process-running command through `scripts/lane.ts`, which orders the commands across sessions, and send no handover message. On its exit 75 or 70, report its standard error line to the user and start no process-running command.
+- Pass the command to `scripts/lane.ts` directly after `--`, never through `bash -c`: a background child under `bash` can survive the forced kill with a parent that names neither the launcher nor the command, and the next arrival then overlaps it.
 - When a host's sessions run another serializer, keep using it until a scaffold release carries `scripts/lane.ts` and no command runs on the host, then move every caller in one step, because a second queue does not see the first.
 - While another session holds the lane, edit your own files, read, and queue your commands. Set no clock windows and send no per-command acknowledgments.
 - Class contention from another session per `.agents/skills/orkestrel-dispatch/SKILL.md` § Write the brief. Rerun the interrupted unit alone after the window clears.

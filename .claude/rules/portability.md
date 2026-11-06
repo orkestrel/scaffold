@@ -35,6 +35,8 @@ and the form of a conditional skip.
 - Split arrived text on `/\r\n|\n/`. Never split on `\n` alone, and never split on a bare `\r`.
 - Split first, then trim each line; trimming the whole payload leaves a `\r` on every line but the
   last.
+- Split `git status --porcelain` output before reading its columns, or read the `-z` form: trimming
+  the whole output eats the first row's leading status column, and a fixed slice then cuts its path.
 - Frame a named protocol — HTTP, LSP, RFC 6455, NDJSON — with the terminator that protocol fixes,
   and leave that terminator alone.
 - Emit `\n` from code this package owns. Never emit `os.EOL`.

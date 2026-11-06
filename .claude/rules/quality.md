@@ -56,7 +56,9 @@ These rules govern how a claim is established: the evidence read before a change
 - Keep an algorithmic repair (a superlinear term, a repeated layout) when the measurement shows it.
 - Before the run, size the fixtures, the sample count, and the threshold to the case, and state the reasoning and the result that makes the change worth keeping.
 - Read the difference between methods against each side's reported uncertainty, and record no difference smaller than the result stated before the run.
-- Report every measurement with the host's other load during the run.
+- Report every measurement with the host's other load during the run, its memory and console counts included.
+- When a brief changes a hot path, name a measured cost bar at the input limit, and read the cost there before acceptance: an ordinary-length test cannot read a superlinear term.
+- Before a long measured run, rehearse it at full scale on its real inputs with the model or service taken out, and read the rehearsal's own cost, before spending the window. A review or a hand fixture does not stand in for that rehearsal.
 - Compare two builds interleaved in one run under one host load, with `.agents/skills/orkestrel-harden/scripts/interleave.ts`. Read a published side from the published artifact, calibrate the run with identical sides, and bar the relative change, never an absolute reading from another moment.
 - Price a cost over the caller's whole lifecycle and workload: construction, restoration, transfer, and decision beside the warm saving.
 - Derive a cost stop from what the consumer spends around the cost, and state responsiveness and throughput as separate claims.

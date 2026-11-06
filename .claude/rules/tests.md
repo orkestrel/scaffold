@@ -277,7 +277,9 @@ Import `waitForCondition`, `waitForEvent`, `waitForAbort`, and `retryUntil` from
 event in a test or a setup module is a defect: `waitForCondition` owns the poll, `waitForEvent`
 the deferred on an event, and `waitForAbort` the deferred on a signal. A guide fence transcribed
 byte for byte into `tests/guides.test.ts` is the consumer's code and stays as the guide shows it.
-Give each timed wait a `description` the timeout error names.
+Give each timed wait a `description` the timeout error names. When a poll fails, read what it saw
+along the way before ruling on its final reading, and let a background start's rejection reach the
+wait through its signal rather than swallowing it with an empty `catch`.
 
 ### Scratch
 

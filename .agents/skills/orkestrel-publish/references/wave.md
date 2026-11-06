@@ -19,7 +19,8 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
    blueprint plans in those sections; exclude the fixed showcase tool pair from ordinary release lookups.
    Look up fleet releases with `*`; look up foreign tools with
    a caret over the declared major when one can be extracted, otherwise with the declared range.
-   Do not treat a declared minor or patch bound as the lookup bound. Peer-only dependencies produce no release reading;
+   Do not treat a declared minor or patch bound as the lookup bound. A lookup skips a deprecated
+   version, and skips a version above `latest` when the range is `*` or sits in `latest`'s major. Peer-only dependencies produce no release reading;
    rewrite a peer range only when its name shares an audited release reading. For example, with
    peer-only `@orkestrel/peer-only: ^0.0.1`, leave that peer unchanged; with a planned tool whose
    registry serves `8.3.4`, apply `vite: ~8.2.0 -> ^8.3.4` even though the tilde excludes `8.3.4`.
@@ -139,7 +140,9 @@ moving the lockfile in place. Without the flag, the step deletes nothing.
   tree; a failed result restores the copied lockfile and moved tree and names why the step failed.
   Confirm a recoverable tree and lock backup before deleting the active tree. Attempt rollback at
   most once. If rollback fails, retain both backup paths for recovery. If completion journaling or
-  backup cleanup fails, report that failure and retain the restored or proved installation.
+  backup cleanup fails, report that failure and retain the restored or proved installation. A file a
+  process holds in the moved tree leaves the step's exit at 0 and its note names both backup paths
+  and the code; every other cleanup failure exits 1. Recycle a retained tree after its holder exits.
 - Resume a visit that stopped at the refusal with `--regenerate --from <step>`.
 
 ## Rule on the bump
@@ -175,7 +178,9 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 - In scaffold's own layer, run `scaffold catalog --all`; track each mirror it adds with `git add`; add each added mirror's path to the declared vendored inventory in `tests/distribution.test.ts`; then run `npm run build`, so `host.json` records the refreshed files' digests, and then `scaffold surface --from .`.
 - In the scaffold release that opens a transfer under `.claude/rules/names.md` § Fleet name ownership rule 5, declare it in `SURFACE_TRANSFERS` before `npm run build`. In the scaffold visit that closes it, remove the declaration before the build and confirm `host.json` no longer records the name.
 - When `scaffold surface` prints an advisory, rule it under `.claude/rules/names.md` § Fleet name ownership before the upload; an advisory never stops the upload.
-- Begin each release chain plan with the clean reinstall and the clean, whether it runs in a clone or the checkout.
+- Run each release chain through `node .agents/skills/orkestrel-publish/scripts/steps.ts --journal <dir>`, whether it runs in a clone or the checkout, and write no plan by hand. It derives the steps from `prepublishOnly`, opens with the clean reinstall and the clean, and leaves out `npm ci` when a native file under `node_modules` is held when the chain starts.
+- Name a step a host cannot run with `--omit <name>=<reason>`, and quote every line of `<dir>/omitted.txt` in the release commit.
+- Before writing a release commit, read the package's previous `Release` commit for the version stamps and host readings it carries.
 - When a writer owns a script the preparation needs, run its installed built twin and record the executable's identity.
 - Derive each release row's ruling from the measured distribution comparison and final runtime-range result under § Rule on the bump.
 - When the manifest's `engines.node` names a floor below the `DEFAULT_ENGINES` a generated workspace declares, raise it to that floor.
@@ -195,7 +200,7 @@ Prepare a published package's layer in this order, after the visit has ruled the
    preparation commit already precedes the overwrite; this install regenerates the lockfile for the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
-4. **Run `prepublishOnly` to green on the candidate commit, in a fresh clone or, where the user rules clones out, in the checkout, in the order the package's own chain fixes.** Run every release step whose inputs remain valid after a failure and report each result. Before using a serial chain that stops on failure, split aggregate commands into their component steps and record each step's prerequisites. After a failure, run the independent steps in separate chains, mark dependent steps blocked, and keep the release result failed while a required step fails or remains blocked.
+4. **Run `prepublishOnly` to green on the candidate commit, in a fresh clone or, where the user rules clones out, in the checkout, in the order the package's own chain fixes.** Run every release step whose inputs remain valid after a failure and report each result. Before using a serial chain that stops on failure, split aggregate commands into their component steps and record each step's prerequisites. After a failure, run the independent steps in separate chains, mark dependent steps blocked, and keep the release result failed while a required step fails or remains blocked. `steps.ts` stops at the first failure, so after one, rerun it under a distinct journal with `--no-ci` and `--omit <name>=<reason>` for each step already read, and run the suites of an aggregate step such as `npm test` as single commands.
    Run this chain and the visit's gates on the newest release of the lowest Node major the
    package's `engines.node` admits, on a Node whose bundled npm meets the `MINIMUM_NPM_VERSION`
    floor a generated workspace declares in `devEngines`, launched under the `PATH` the
@@ -234,6 +239,10 @@ re-pin install, not after the manifest edit.
   A canned packument in a fixture and a looked-up version in a CLI suite carry the version with no
   tripwire comment beside them, and a generated-manifest fixture carries the ranges and never the
   package's own version, so one run names both classes.
+- Trace each hit through the constants and stubs before ruling it inert: a registry stub whose served
+  version derives from the manifest ties every test workspace range aligned with it, and a version
+  table in a package's distribution test ties each consumer it composes. Report ruled hits by class,
+  never as a bare count.
 - Move a documented tripwire — a golden digest over generated output — in the same change as the
   version bump. That is what the tripwire is for.
 - Re-take a generated artifact's digest after the install, because the generated bytes can derive
@@ -252,6 +261,7 @@ name a version the registry already serves, so a dependency shipping in the same
 resolvable previous pin and takes its development-only re-pin after the window closes. That re-pin
 takes the self-pin sweep too, because the snapshot class moves with no bump.
 
+- Before waiting on an upstream release, read its deprecation notice and its dist-tags.
 - After a window confirms a release, poll its tarball URL, read with
   `npm view NAME@VERSION dist.tarball`, until it answers `200` before an install names that
   version. The registry lists a version in the packument minutes before it serves the tarball, and
@@ -268,10 +278,17 @@ package's own dependencies.
 
 1. Take a registry sweep after the last window confirms. In every catalog package, list each
    `devDependencies` range on an `@orkestrel` package that trails the release the sweep reads.
-2. In each listed package, re-pin those ranges to the caret of the served release, install, and
-   sweep the self-pins per § Sweep the self-pins, because the snapshot class moves with no bump.
+2. In each listed package, re-pin those ranges to the caret of the served release, install, run
+   `scaffold catalog` (`scaffold catalog --all` in the `@orkestrel/scaffold` checkout, per § Prepare a
+   layer) so the tracked mirrors and the table follow the re-pin, and sweep the self-pins per § Sweep
+   the self-pins, because the snapshot class moves with no bump.
 3. Run the package's gates, then rule its bump under § Rule on the bump. Commit the re-pin of a
    package the ruling leaves unbumped as `Re-pin <names> development ranges`; prepare and publish
    each bumped package per § Prepare a layer, in layer order.
 4. Take the sweep again after those publishes, because each release they add can leave another
    package's development range trailing. Close the wave when a sweep lists no trailing range.
+5. When `@orkestrel/scaffold`'s re-pin rules a bump, price the round first: that release leaves every
+   package's `@orkestrel/scaffold` range trailing, and `release.md` § The scaffold surface states what
+   each target owes. Bring the user the timing. While the release is held, commit the re-pin under a
+   subject that does not claim "no bump", state the owed release in its message, keep it unpushed,
+   and leave the wave open.

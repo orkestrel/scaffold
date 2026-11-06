@@ -4,8 +4,9 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 
 ## Processes
 
-- Before `npm ci`, list the processes holding a file under the checkout's `node_modules`: `tasklist /M <file>.node` for a loaded native module, and the `ExecutablePath` of each `Get-CimInstance Win32_Process` row for an executable such as a language server. When one is held, skip `npm ci` and recover per the following bullet.
+- Before `npm ci`, and when a chain starts rather than when its plan was written, test each `.node`, `.dll`, and `.exe` file under the checkout's `node_modules` with a write-mode open: `openSync(path, 'r+')`, closed immediately, writes no byte, and a loaded image refuses with `EBUSY` (read 2026-11-05: it refused the 2 of 5 files a live `probe` server and its `oxlint --lsp` child held, and opened the other 3). `.agents/skills/orkestrel-publish/scripts/steps.ts` runs this read. When a file refuses, skip `npm ci` and recover per the following bullet.
 - When a held file under `node_modules` blocks or interrupts an install, identify its holders, terminate no process the session did not launch, and record the partial installation state. Rebuild from the unchanged lockfile with `npm install`, verify the manifest and lockfile identities and the tree with `npm ls --all`, and report the clean-install criterion the recovery did not prove.
+- Name a holder from a process's `Modules` list, and rule nothing from it or from `tasklist /M <file>.node`: `tasklist` matches by module name across every checkout, and a module list keeps the path a file loaded from after its tree moved. A session's `probe` MCP server and its `oxlint --lsp` child hold native files in the checkout they started in.
 - Read liveness with `Get-Process -Id <pid>` in PowerShell, or under Git Bash from the output of `tasklist //FI "PID eq <pid>" //NH`: a row naming the pid means alive, and the `INFO:` line means gone. Never read liveness from `tasklist`'s exit code, `kill -0`, or `ps -eo`.
 - List descendants with `Get-CimInstance Win32_Process -Filter "ParentProcessId=<pid>"`, applied to each listed id in turn. Under Git Bash, run it through `powershell -NoProfile -Command`, and write every Windows slash option as `//`.
 - Kill a recorded tree with `taskkill /pid <pid> /T /F`. `launch.ts` kills the tree at its cap on this host.
@@ -15,6 +16,13 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 - Deliver a console Ctrl+C through `WScript.Shell` `AppActivate` then `SendKeys('^c')` after confirming activation when no computer-use tool is available.
 - A `rename` onto a freshly hard-linked file can return `EPERM` while a scanner holds it.
 - A child CLI can leak orphaned `conhost.exe` processes and open console windows. Count them with `Get-Process conhost` at each launch while such a lane is live.
+- Before designing a fan-out, measure what one dispatched child costs in consoles with `Get-Process conhost` before and after it, and size the fan-out from that reading: a Codex child held four consoles on 2026-11-05, and a long-lived session costs a fixed number.
+- Read free commit space beside the console count before a long measured run. A task's completion does not end its shell: a finished unit's PowerShell held 267 GB for 11 hours in `ConvertTo-Json -Depth 25`, leaving 1.5 GB of commit space (2026-11-05). Never run `ConvertTo-Json` over a live object graph; project the fields first.
+
+## Git Bash
+
+- Write `C:/` in every path Windows Node reads from inside a string, such as `node -e`: Git Bash translates a path argument and leaves a string alone, so `/c/Users/...` reads as `C:\c\Users\...`.
+- Chain a command that gates the next with `&&`, because the command after `;` runs on a failure.
 
 ## PowerShell 5.1
 
