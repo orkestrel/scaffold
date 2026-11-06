@@ -492,7 +492,7 @@ export interface BytesReadResult {
 export interface UpstreamInterface {
 	readonly emitter: EmitterInterface<UpstreamEventMap>
 	/**
-	 * Looks up the highest release each declared range admits.
+	 * Looks up the highest eligible release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.

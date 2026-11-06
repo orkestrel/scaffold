@@ -183,7 +183,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Looks up the highest release each declared range admits.
+	 * Looks up the highest eligible release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.
@@ -193,10 +193,14 @@ export class Upstream implements UpstreamInterface {
 	 *
 	 * @remarks
 	 * The reader selects across the packument's stable version map before any
-	 * collection bound can truncate it. It falls back to `dist-tags.latest` only
-	 * when that version satisfies the declared range. `*` requests the highest
-	 * stable version outright. The verdict's `major` field carries the stable
-	 * major from the `latest` tag when that tag can be read.
+	 * collection bound can truncate it. A version whose entry carries a non-empty
+	 * string `deprecated` field is never eligible. When `dist-tags.latest` reads as a
+	 * version, it caps `*` and every range in its own major; a range on another major
+	 * reads the top of that major. A map whose admitted versions are all ineligible
+	 * reads `unmatched`. A map holding no admitted version falls back to
+	 * `dist-tags.latest` only when that version satisfies the declared range. The
+	 * verdict's `major` field carries the stable major from the `latest` tag when
+	 * that tag can be read.
 	 *
 	 * @example
 	 * ```ts
@@ -479,7 +483,12 @@ export class Upstream implements UpstreamInterface {
 						name: dependency.name,
 						range: dependency.range,
 						lookup: outcome.lookup === 'found' ? 'unmatched' : outcome.lookup,
-						note: outcome.lookup === 'found' ? UNREADABLE_VERSION_NOTE : outcome.note,
+						note:
+							outcome.lookup !== 'found'
+								? outcome.note
+								: this.#admitted(outcome.content, dependency.range).length > 0
+									? 'every version the range admits is deprecated or above the latest tag'
+									: UNREADABLE_VERSION_NOTE,
 						...(major === undefined ? {} : { major }),
 					}
 				: {
@@ -720,24 +729,47 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// Select before any collection bound can truncate the registry's version map.
-	// A missing or pruned map falls back to the `latest` tag only when that tag is
-	// still admitted by the declaration.
+	// A map holding no version the range admits is missing or pruned for this range,
+	// and falls back to the `latest` tag only when the declaration still admits that
+	// tag. A map holding an admitted version never falls back, so an entry that marks
+	// `latest` deprecated cannot return through the tag.
 	#releaseVersion(content: string, range: string): string | undefined {
-		const parsed = parseJSON(content)
-		if (!isRecord(parsed)) return undefined
-		const versions = parsed.versions
-		const selected = isRecord(versions)
-			? Object.keys(versions)
-					.filter((version) => this.#admits(range, version))
-					.reduce<string | undefined>(
-						(highest, version) =>
-							highest === undefined || compareVersions(version, highest) > 0 ? version : highest,
-						undefined,
-					)
-			: undefined
-		if (selected !== undefined) return selected
 		const latest = this.#latest(content)
-		return latest !== undefined && this.#admits(range, latest) ? latest : undefined
+		const admitted = this.#admitted(content, range)
+		if (admitted.length === 0) {
+			return latest !== undefined && this.#admits(range, latest) ? latest : undefined
+		}
+		const ceiling = this.#ceiling(range, latest)
+		return admitted
+			.filter(
+				([version, entry]) =>
+					!(isRecord(entry) && isString(entry.deprecated) && entry.deprecated.length > 0) &&
+					(ceiling === undefined || compareVersions(version, ceiling) <= 0),
+			)
+			.reduce<string | undefined>(
+				(highest, [version]) =>
+					highest === undefined || compareVersions(version, highest) > 0 ? version : highest,
+				undefined,
+			)
+	}
+
+	// The registry's version map entries the range admits; none for a missing map.
+	#admitted(content: string, range: string): ReadonlyArray<readonly [string, unknown]> {
+		const parsed = parseJSON(content)
+		if (!isRecord(parsed)) return []
+		const versions = parsed.versions
+		return isRecord(versions)
+			? Object.entries(versions).filter(([version]) => this.#admits(range, version))
+			: []
+	}
+
+	// The `latest` tag bounds `*` and a range in the tag's major. A range on another
+	// major is a deliberate line of its own, so the tag says nothing about its top.
+	#ceiling(range: string, latest: string | undefined): string | undefined {
+		const major = latest === undefined ? undefined : extractVersion(latest)?.[0]
+		return major !== undefined && (range === '*' || extractRangeMajor(range) === major)
+			? latest
+			: undefined
 	}
 
 	// `matchesRange` owns full-version declarations. The registry reader adds the

@@ -173,7 +173,7 @@ describe('Upstream lookup', () => {
 		}
 	})
 
-	it('selects the newest published version for an unbounded range', async () => {
+	it('caps an unbounded range at the latest tag', async () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.router]: {
 				status: 200,
@@ -188,7 +188,293 @@ describe('Upstream lookup', () => {
 			const [release] = await upstream.lookup([
 				buildDependency({ name: '@orkestrel/router', range: '*' }),
 			])
-			expect(release?.latest).toBe('2.0.0')
+			expect(release?.latest).toBe('1.4.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('selects the top of the map for an unbounded range when the latest tag reads as no version', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0-rc.1' },
+					versions: { '1.0.0': {}, '2.0.0': {} },
+				}),
+			},
+			[UPSTREAM_PATHS.emitter]: {
+				status: 200,
+				body: JSON.stringify({ versions: { '1.0.0': {}, '2.0.0': {} } }),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
+			])
+			expect(releases.map((release) => release.latest)).toStrictEqual(['2.0.0', '2.0.0'])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads the release below a deprecated top version that sits above the latest tag', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.64.1' },
+					versions: {
+						'1.64.1': {},
+						'1.65.0': { deprecated: 'Broken release: the companion package is missing.' },
+					},
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1' }),
+			])
+			expect(release?.lookup).toBe('found')
+			expect(release?.latest).toBe('1.64.1')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('selects no version above the latest tag inside its major', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0' },
+					versions: { '1.0.0': {}, '1.4.0': {}, '1.5.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+			])
+			expect(release?.latest).toBe('1.4.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('leaves a range uncapped when the latest tag sits on a higher major', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '6.0.0' },
+					versions: { '4.9.0': {}, '5.1.0': {}, '5.2.0': {}, '6.0.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^5' }),
+			])
+			expect(release?.latest).toBe('5.2.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('leaves a range uncapped when the latest tag sits on a lower major', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '4.2.0' },
+					versions: { '4.2.0': {}, '5.0.0': {}, '5.3.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^5' }),
+			])
+			expect(release?.latest).toBe('5.3.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads unmatched with its cause when every admitted version is deprecated', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.1.0' },
+					versions: {
+						'0.9.0': {},
+						'1.0.0': { deprecated: 'Superseded.' },
+						'1.1.0': { deprecated: 'Superseded.' },
+						'2.0.0': {},
+					},
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+			])
+			expect(release).toStrictEqual({
+				name: '@orkestrel/router',
+				range: '^1.0.0',
+				lookup: 'unmatched',
+				note: 'every version the range admits is deprecated or above the latest tag',
+				major: 1,
+			})
+			expect(release?.latest).toBe(undefined)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads unmatched with its cause when every admitted version sits above the latest tag', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0' },
+					versions: { '1.5.0': {}, '1.6.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1' }),
+			])
+			expect(release?.lookup).toBe('unmatched')
+			expect(release?.latest).toBe(undefined)
+			expect(release?.note).toBe(
+				'every version the range admits is deprecated or above the latest tag',
+			)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('refuses a deprecated version under an exact range', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0' },
+					versions: { '1.0.0': { deprecated: 'Superseded.' }, '1.4.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '1.0.0' }),
+			])
+			expect(release?.lookup).toBe('unmatched')
+			expect(release?.latest).toBe(undefined)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads the lower eligible version when the latest tag names a deprecated release', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0' },
+					versions: { '1.0.0': {}, '1.2.0': {}, '1.4.0': { deprecated: 'Superseded.' } },
+				}),
+			},
+			[UPSTREAM_PATHS.emitter]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0' },
+					versions: { '1.0.0': {}, '1.2.0': {}, '1.4.0': { deprecated: 'Superseded.' } },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
+			])
+			expect(releases.map((release) => release.latest)).toStrictEqual(['1.2.0', '1.2.0'])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('selects a version whose deprecated field is empty or not a string', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.2.0' },
+					versions: { '1.0.0': {}, '1.2.0': { deprecated: '' } },
+				}),
+			},
+			[UPSTREAM_PATHS.emitter]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.2.0' },
+					versions: { '1.0.0': {}, '1.2.0': { deprecated: false } },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '^1.0.0' }),
+			])
+			expect(releases.map((release) => release.latest)).toStrictEqual(['1.2.0', '1.2.0'])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('falls back to the latest tag when the version map holds no admitted version', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({ 'dist-tags': { latest: '1.4.0' }, versions: {} }),
+			},
+			[UPSTREAM_PATHS.emitter]: {
+				status: 200,
+				body: JSON.stringify({ 'dist-tags': { latest: '1.4.0' }, versions: { '2.0.0': {} } }),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '^1.0.0' }),
+			])
+			expect(releases.map((release) => release.latest)).toStrictEqual(['1.4.0', '1.4.0'])
 		} finally {
 			upstream.destroy()
 			await server.destroy()
