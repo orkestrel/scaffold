@@ -1,9 +1,9 @@
 {
-	"@orkestrel/browser": "^0.0.31",
+	"@orkestrel/browser": "^0.0.32",
 	"@orkestrel/contract": "^0.0.22",
-	"@orkestrel/guide": "^0.0.29",
+	"@orkestrel/guide": "^0.0.30",
 	"@orkestrel/html": "^0.0.15",
-	"@orkestrel/probe": "^0.0.28",
+	"@orkestrel/probe": "^0.0.29",
 	"@orkestrel/scaffold": "^0.0.124",
 	"@orkestrel/test": "^0.0.33",
 	"@types/node": "^24.19.2",

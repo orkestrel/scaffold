@@ -622,7 +622,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "f7ea81be132d7811376e9cf54227ce83a122abe4f3aa57d55ee6ffca78a8bf35"
+			"digest": "0fb3f6b8e67baeae7eccd21e245419b9c8fd5390508acec561f42fe076c33de3"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -988,19 +988,19 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "9dc2651a6644dd42cbc56d46b8be599e0a04a38f4bcbf5071e04567e6838c0ae"
+			"digest": "3569c17d72479a40a9eaab4dbb335bf6ba00a4540ad637fa2929e873ae3bdd82"
 		},
 		{
 			"storage": "guides/brief.md",
 			"destination": "guides/brief.md",
 			"executable": false,
-			"digest": "392e1209e53f64a317b5aea43bad7d00d82ae8fdf7fdbbde96a327a6b7ee074b"
+			"digest": "2a9001549bf8a65eb565187b20d3c5343d33981597d52ddd3527f965c860d14e"
 		},
 		{
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "2750e69ff89ccdccf6c7c5524fe3d4d6d17cea2778a06b917ca23047a2f0cb5d"
+			"digest": "3318bdd633c6cc8b27cbed210daeeb3a7043498dd6d9eff0b2270b4297936bee"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -1078,7 +1078,7 @@
 			"storage": "guides/interpret.md",
 			"destination": "guides/interpret.md",
 			"executable": false,
-			"digest": "6b5305233e95588a235c1f04928f42b574a4c42383e1fbc61824b80a9bb3bb7c"
+			"digest": "929d903adffd015df7b1ecbe740fb8872f77a56c9742aca91b7607e5b75fdd51"
 		},
 		{
 			"storage": "guides/jsonrpc.md",
@@ -1102,7 +1102,7 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "88f6c0b6ab11b351f1c2c56d54e927f8e267bfcd43a2b1e112fb7fbdc9ec81ce"
+			"digest": "c549421c2e5257cfbe132ad3ad8744ddf3e89b11efee92abd8663cda2feb6d90"
 		},
 		{
 			"storage": "guides/middleware.md",
@@ -1126,7 +1126,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "04efd19961f79a02ab9406f7790b8eb7ac1bf7a67bb06ac74f72d9ee65055da6"
+			"digest": "75c275894ad8634eef42ebe1b9cab2769aa2c651bce38e91bc358bd83e0ae781"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1150,13 +1150,13 @@
 			"storage": "guides/program.md",
 			"destination": "guides/program.md",
 			"executable": false,
-			"digest": "9382f5a5ed2435cd03eb4171f7586d20f5b2b19061d716fc6184be2605bf4bf8"
+			"digest": "be219e2d7dad706f808a56dedafee3686593cbdef4df9289dab07e476db203c0"
 		},
 		{
 			"storage": "guides/qualifier.md",
 			"destination": "guides/qualifier.md",
 			"executable": false,
-			"digest": "6f52daa59a2041b5282c11776dcbdf47616e137d2acf8db5d6588061b0858910"
+			"digest": "aa02fef23c33fee497540d2cc85f8e8a4b0347ac9bda9730ac99a484a5d876ef"
 		},
 		{
 			"storage": "guides/queue.md",
@@ -1168,7 +1168,7 @@
 			"storage": "guides/rater.md",
 			"destination": "guides/rater.md",
 			"executable": false,
-			"digest": "8809ce4fdb5cc4bffe4ba5c27676230cc783a57681a169e54655cceb6039b5bf"
+			"digest": "9506827b46e330e56e9b3d582c96c44e2286ea95737082b6819ab52e7578b28c"
 		},
 		{
 			"storage": "guides/reason.md",
@@ -1222,7 +1222,7 @@
 			"storage": "guides/study.md",
 			"destination": "guides/study.md",
 			"executable": false,
-			"digest": "00e26a26df0dbc1cd1134cbb071b7db66671994055304f180c6c7a5bc5fc1eb8"
+			"digest": "858823ab1315d11209938fc5959bd8abe7011cee7a6d95f2fdb7ddbb97b60ddf"
 		},
 		{
 			"storage": "guides/table.md",
@@ -1264,7 +1264,7 @@
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "f0d20f9da6f3a9715ca0b737a5458e7dc39aa3b3efb5db76e1abc687932fbeb4"
+			"digest": "e9ab600c7eff85cef716da6f93bb1f7921df7c20d56806deae0a1e591274c9b0"
 		},
 		{
 			"storage": "guides/websocket.md",
@@ -1282,7 +1282,7 @@
 			"storage": "guides/workflow.md",
 			"destination": "guides/workflow.md",
 			"executable": false,
-			"digest": "fa29da8863e84aceb5c0fc9e0868df81c77a5f76e3a6353e213d33a8cf5bc875"
+			"digest": "3cb2965246fde117663d1255dcf95471ec51652629cedadb29312cf4fddd9e2f"
 		},
 		{
 			"storage": "guides/workspace.md",
@@ -1411,5 +1411,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "dc9854241aa55f6dbb2c39addc40253de7303088880b51d6c1bfbfd54e39e2ff"
+	"digest": "346da1f60351aa26d4b1268d524c9884b8cc4d249ec21697482af6ca472c65ac"
 }
