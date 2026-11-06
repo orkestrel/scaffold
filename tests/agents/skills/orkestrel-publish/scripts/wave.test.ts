@@ -1,5 +1,6 @@
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import {
+	copyFileSync,
 	existsSync,
 	globSync,
 	lstatSync,
@@ -13,6 +14,7 @@ import {
 import { join } from 'node:path'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
+import { waitForEvent } from '@orkestrel/test'
 import { createScratch, readInventory, supportsDirectoryLinks } from '@orkestrel/test/server'
 import { CLI } from '../../../../../src/bin/CLI.js'
 import {
@@ -26,6 +28,7 @@ import {
 	extractConflict,
 	failed,
 	isRecord as isScriptRecord,
+	judgeCleanup,
 	judgeOverwrite,
 	judgePin,
 	judgeVerify,
@@ -70,6 +73,7 @@ import {
 	createFleet,
 	createSink,
 	createRepository,
+	createStagedHost,
 	createUpstreamServer,
 	createWaveRecorder,
 	createWaveWorkspace,
@@ -526,6 +530,146 @@ describe('wave.ts', () => {
 		},
 		60_000,
 	)
+
+	const addon = join(
+		WORKSPACE_ROOT,
+		'node_modules/@oxlint/binding-win32-x64-msvc/oxlint.win32-x64-msvc.node',
+	)
+
+	// Loading an addon maps its image, and Windows refuses to unlink a mapped image. npm installs this
+	// addon on a win32-x64 host alone; elsewhere the judgeCleanup table carries the claim.
+	it.skipIf(!existsSync(addon))(
+		'keeps the exit of a proved regeneration when a process holds a file in the moved tree',
+		async () => {
+			const session = await createWaveSession('orkestrel-wave-held-')
+			const copy = join(session.scratch.ensure('consumer/node_modules/held'), 'held.node')
+			copyFileSync(addon, copy)
+			const holder = spawn(
+				process.execPath,
+				[
+					'-e',
+					`process.dlopen({ exports: {} }, ${JSON.stringify(copy)}); process.stdout.write('loaded\\n'); setInterval(() => {}, 1000)`,
+				],
+				{ stdio: ['ignore', 'pipe', 'inherit'], windowsHide: true },
+			)
+			try {
+				await waitForEvent<readonly [unknown]>(
+					(listener) => {
+						holder.stdout.once('data', listener)
+						return () => holder.stdout.off('data', listener)
+					},
+					'the holder loads the addon',
+					{ budget: 30_000 },
+				)
+				const run = await spawnSkillScript(
+					WAVE_SCRIPT,
+					['--visit', '--regenerate', '--to', 'pin', '--json'],
+					{ cwd: session.target, env: session.environment },
+				)
+				expect(run.status).toBe(0)
+				const steps = run.json?.steps
+				if (!isArray(steps)) throw new Error('The visit carries no steps')
+				const row = steps.find(
+					(step) => isRecord(step) && step.command === 'regenerate lock and modules',
+				)
+				if (!isRecord(row) || !isString(row.note)) throw new Error('The visit regenerated nothing')
+				expect(row.exit).toBe(0)
+				expect(row.note).toContain('proved installation retained')
+				expect(row.note).toMatch(/\b(?:EBUSY|EPERM)\b/u)
+				expect(row.note).toContain('package-lock.before.json')
+				expect(row.note).toContain('node_modules.before')
+				expect(row.note).not.toContain('backup cleanup failed')
+				expect(
+					globSync('tmp/units/wave/**/node_modules.before/held/held.node', { cwd: session.target }),
+				).toHaveLength(1)
+				expect(readInstalledRecord(join(session.target, 'node_modules', 'pr')).version).toBe(
+					'1.0.1',
+				)
+			} finally {
+				if (holder.exitCode === null) {
+					const closed = waitForEvent<readonly [unknown]>(
+						(listener) => {
+							holder.once('exit', listener)
+							return () => holder.off('exit', listener)
+						},
+						'the holder exits',
+						{ budget: 30_000 },
+					)
+					holder.kill()
+					await closed
+				}
+				await session.destroy()
+			}
+		},
+		120_000,
+	)
+
+	it('rules a removal a held file stopped apart from every other cleanup failure', () => {
+		const backup = join('wave', 'package-lock.before.json')
+		const moved = join('wave', 'node_modules.before')
+		const unsafe = new Error('unsafe wave path: wave is a link')
+		const cases: ReadonlyArray<
+			readonly [failure: unknown, removing: boolean, exit: number, named: string]
+		> = [
+			[Object.assign(new Error('EBUSY: rm'), { code: 'EBUSY' }), true, 0, 'EBUSY'],
+			[Object.assign(new Error('EPERM: rm'), { code: 'EPERM' }), true, 0, 'EPERM'],
+			[Object.assign(new Error('ENOENT: rm'), { code: 'ENOENT' }), true, 1, 'ENOENT'],
+			[unsafe, true, 1, 'unsafe wave path'],
+			['not an error', true, 1, 'not an error'],
+			[Object.assign(new Error('EPERM: lstat'), { code: 'EPERM' }), false, 1, 'EPERM'],
+			[unsafe, false, 1, 'unsafe wave path'],
+		]
+		for (const [failure, removing, exit, named] of cases) {
+			const verdict = judgeCleanup(failure, removing, backup, moved)
+			expect(verdict.exit).toBe(exit)
+			expect(verdict.note).toContain('proved installation retained')
+			expect(verdict.note).toContain(`backups: ${backup}; ${moved}`)
+			expect(verdict.note).toContain(named)
+			expect(verdict.note?.includes('backup cleanup failed')).toBe(exit === 1)
+		}
+	})
+
+	it('accepts the note the offline overwrite of this checkout prints', async () => {
+		const workspace = createScratch({ prefix: 'orkestrel-wave-note-' })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('offline-note')
+			const created = createSink()
+			expect(
+				await new CLI(buildCLIOptions(created, 'http://127.0.0.1:1')).execute([
+					'new',
+					'widget',
+					'--src',
+					'core',
+					'--offline',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(0)
+			createRepository(target)
+			trackFiles(target)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, 'http://127.0.0.1:1')).execute([
+				'overwrite',
+				'--offline',
+				'--dirty',
+				'--from',
+				host,
+				'--target',
+				target,
+				'--json',
+			])
+			expect(code).toBe(1)
+			expect(judgeOverwrite(buildSpawnResult(code, sink.output[0]), true)).toEqual({
+				exit: 0,
+				note: 'offline overwrite skipped the catalog step by design',
+			})
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
 
 	it('O2 completes the overwrite commit manually after an unrelated commit and resumes at gates', async () => {
 		const fixture = await createWaveRecorder('orkestrel-wave-manual-recovery-')
@@ -1700,10 +1844,20 @@ describe('the audit readings', () => {
 
 	it('reads the offline catalog refusal as a pass and every other overwrite exit by its code', () => {
 		const refusal = '{"note":"\'catalog\' does not take --offline"}'
-		expect(judgeOverwrite(buildSpawnResult(1, refusal), true)).toEqual({
-			exit: 0,
-			note: 'offline overwrite skipped the catalog step by design',
-		})
+		for (const answer of [
+			refusal,
+			'{"note":"The catalog step did not complete: the catalog reads upstream and --offline reads none."}',
+		])
+			expect(judgeOverwrite(buildSpawnResult(1, answer), true)).toEqual({
+				exit: 0,
+				note: 'offline overwrite skipped the catalog step by design',
+			})
+		expect(
+			judgeOverwrite(
+				buildSpawnResult(1, '{"note":"The catalog step did not complete: FETCH: refused."}'),
+				true,
+			),
+		).toEqual({ exit: 1, note: 'The catalog step did not complete: FETCH: refused.' })
 		expect(judgeOverwrite(buildSpawnResult(1, '{"note":"other"}'), true)).toEqual({
 			exit: 1,
 			note: 'other',

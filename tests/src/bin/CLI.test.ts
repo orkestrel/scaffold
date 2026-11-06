@@ -2455,7 +2455,9 @@ describe('CLI upstream baselines', () => {
 			).toBe(EXIT_DRIFT)
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.provenance).toStrictEqual({ versions: 'floor', host: 'floor' })
-			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.note).toBe(
+				'The catalog step did not complete: the catalog reads upstream and --offline reads none. Every other step ran, and a run without --offline finishes the catalog step.',
+			)
 			expect(result.membership).toBeUndefined()
 			expect(result).not.toHaveProperty('entries')
 			expect(result).not.toHaveProperty('dropped')
@@ -7062,7 +7064,7 @@ describe('CLI overwrite', () => {
 			expect(result.written.filter((path) => path === 'package.json')).toStrictEqual([
 				'package.json',
 			])
-			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.note ?? '').toContain('the catalog reads upstream and --offline reads none')
 			expect(result.audit.questions.filter(({ field }) => field === 'dependencies')).toStrictEqual(
 				[],
 			)
@@ -7435,7 +7437,7 @@ describe('CLI overwrite', () => {
 			).toBe(EXIT_DRIFT)
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			// The offline catalog note is what the code carries; nothing refused.
-			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.note ?? '').toContain('the catalog reads upstream and --offline reads none')
 			expect(result.written).toContain('vite.config.ts')
 			expect(result.audit.questions).toStrictEqual([])
 			expect(workspace.read('target/vite.config.ts')).toContain("label: 'setup:browser'")
@@ -7919,7 +7921,7 @@ describe('CLI overwrite', () => {
 			// half is refused offline and reported as a note, and that refusal is what
 			// the code carries.
 			expect(code).toBe(EXIT_DRIFT)
-			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.note ?? '').toContain('the catalog reads upstream and --offline reads none')
 			expect(result.removed).toStrictEqual([])
 			expect(workspace.read('target/.mcp.json')).toBe('{ "mcpServers": {} }\n')
 			expect(
@@ -7979,7 +7981,7 @@ describe('CLI overwrite', () => {
 			// is still refused offline, so the code separates a run that proceeded from
 			// the `EXIT_DRIFT` the refused run above earned.
 			expect(code).toBe(EXIT_DRIFT)
-			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.note ?? '').toContain('the catalog reads upstream and --offline reads none')
 			expect(result.removed).toStrictEqual([])
 			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Superseded rule\n')
 			expect(

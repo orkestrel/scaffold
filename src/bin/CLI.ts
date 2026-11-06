@@ -904,7 +904,7 @@ export class CLI implements CLIInterface {
 				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
 				...(host === undefined ? {} : { host }),
 			},
-			note: "The catalog step did not complete: USAGE: 'catalog' does not take --offline.",
+			note: 'The catalog step did not complete: the catalog reads upstream and --offline reads none. Every other step ran, and a run without --offline finishes the catalog step.',
 		}
 	}
 
@@ -1199,8 +1199,8 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Measure each fleet row against the registry's highest release and each
-	// foreign row against the highest release its declared major admits.
+	// Measure each fleet row against the registry's highest eligible release and
+	// each foreign row against the highest eligible release its declared major admits.
 	async #lookup(declared: readonly Dependency[]): Promise<readonly Release[]> {
 		if (declared.length === 0) return []
 		const upstream = new Upstream(this.#upstream)

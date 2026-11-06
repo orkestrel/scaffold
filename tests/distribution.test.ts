@@ -364,6 +364,7 @@ describe('installed package consumer', () => {
 			'.agents/skills/orkestrel-publish/references/window.md',
 			'.agents/skills/orkestrel-publish/scripts/compare.ts',
 			'.agents/skills/orkestrel-publish/scripts/pins.ts',
+			'.agents/skills/orkestrel-publish/scripts/steps.ts',
 			'.agents/skills/orkestrel-publish/scripts/swap.ts',
 			'.agents/skills/orkestrel-publish/scripts/wave.ts',
 			'.agents/skills/orkestrel-publish/scripts/window.ts',

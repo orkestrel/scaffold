@@ -5,7 +5,7 @@
 // that fails: pin (read `scaffold audit --json`, whose drift exit is the reading the pin closes, then
 // re-pin every range the audit release readings name to the registry caret and install), commit (`git commit --only` of
 // the manifest and lockfile as the preparation commit), overwrite (`scaffold overwrite --json`, then
-// `scaffold audit` exiting 0; offline, an exit of 1 whose note names the catalog refusal is
+// `scaffold audit` exiting 0; offline, an exit of 1 whose note names the skipped catalog step is
 // accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
 // is staged from that checkout), verify (`scaffold audit --json` prints the releases envelope and
 // the audit's writable dependency population matches its lookup bounds; on @orkestrel/scaffold itself an audit exit of 1 is
@@ -68,8 +68,20 @@ export const RANGE_FIELDS: readonly string[] = [...RUNTIME_FIELDS, 'devDependenc
 /** Names the agent file that carries the catalog table. */
 export const CATALOG = '.claude/agents/orkestrel.md'
 
-/** Holds the text an offline overwrite refusal names. */
-export const OFFLINE_REFUSAL = "'catalog' does not take --offline"
+/**
+ * Lists the texts that name the catalog step an offline overwrite skips.
+ *
+ * @remarks
+ * The executable is the target's installed release, so a checkout's script also reads the wording an
+ * earlier release prints.
+ */
+export const OFFLINE_NOTES: readonly string[] = [
+	'the catalog reads upstream and --offline reads none',
+	"'catalog' does not take --offline",
+]
+
+/** Lists the codes a host reports when a process holds a file a move or a removal reaches. */
+export const HELD_CODES: readonly string[] = ['EBUSY', 'EPERM']
 
 /**
  * Names the package whose checkout the vendored host is staged from.
@@ -668,14 +680,14 @@ export function judgePin(result: SpawnSyncReturns<string>): Verdict {
  * Judges the overwrite command.
  *
  * @param result - The overwrite.
- * @param offline - If `true`, an exit of 1 whose note names the catalog refusal passes; if `false`,
- * the exit alone decides.
+ * @param offline - If `true`, an exit of 1 whose note names the skipped catalog step passes; if
+ * `false`, the exit alone decides.
  * @returns The verdict.
  */
 export function judgeOverwrite(result: SpawnSyncReturns<string>, offline: boolean): Verdict {
 	if (!offline || result.status !== 1) return readVerdict(result)
 	const note = readString(parseJsonLine(result.stdout), 'note')
-	return note !== undefined && note.includes(OFFLINE_REFUSAL)
+	return note !== undefined && OFFLINE_NOTES.some((text) => note.includes(text))
 		? { exit: 0, note: 'offline overwrite skipped the catalog step by design' }
 		: { exit: 1, note: describeFailure(result) }
 }
@@ -1002,6 +1014,18 @@ export function readRegenerationRefusal(runner: Runner): string | undefined {
 }
 
 /**
+ * Extracts the code that names a held file from a thrown value.
+ *
+ * @param error - The thrown value.
+ * @returns The code when {@link HELD_CODES} lists it, else undefined.
+ */
+export function extractHeldCode(error: unknown): string | undefined {
+	return isRecord(error) && typeof error.code === 'string' && HELD_CODES.includes(error.code)
+		? error.code
+		: undefined
+}
+
+/**
  * Renames a directory, retrying while the host holds it.
  *
  * @param source - The directory to move.
@@ -1014,8 +1038,7 @@ export function moveModules(source: string, target: string, attempt = 0): void {
 	try {
 		renameSync(source, target)
 	} catch (error) {
-		if (!isRecord(error) || (error.code !== 'EBUSY' && error.code !== 'EPERM') || attempt >= 9)
-			throw error
+		if (extractHeldCode(error) === undefined || attempt >= 9) throw error
 		Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100)
 		moveModules(source, target, attempt + 1)
 	}
@@ -1092,10 +1115,15 @@ export function regenerateLock(
 		runner,
 		step,
 		'regenerate lock and modules',
-		[result.note, restored, versions === undefined ? undefined : `installed ${versions}`, cleanup]
+		[
+			result.note,
+			restored,
+			versions === undefined ? undefined : `installed ${versions}`,
+			cleanup?.note,
+		]
 			.filter((value) => value !== undefined)
 			.join('; '),
-		cleanup === undefined ? result.exit : 1,
+		cleanup?.exit ?? result.exit,
 	)
 	if (result.installed !== undefined)
 		appendResult(
@@ -1152,16 +1180,53 @@ export function regenerateTree(target: string, manifest: Buffer, before: string)
  * @param target - The target directory.
  * @param moved - The moved previous tree.
  * @param backup - The saved lock.
- * @returns Nothing on success, else the failure with the backup paths kept.
+ * @returns Exit 0 and no note on success, else the verdict {@link judgeCleanup} reaches.
  */
-export function discardBackup(target: string, moved: string, backup: string): string | undefined {
+export function discardBackup(target: string, moved: string, backup: string): Verdict {
 	try {
 		for (const path of [moved, backup, join(target, 'node_modules')]) validateWavePath(target, path)
-		removeTree(moved)
-		return undefined
 	} catch (error) {
-		return `backup cleanup failed: ${String(error)}; proved installation retained; backups: ${backup}; ${moved}`
+		return judgeCleanup(error, false, backup, moved)
 	}
+	try {
+		removeTree(moved)
+		return { exit: 0, note: undefined }
+	} catch (error) {
+		return judgeCleanup(error, true, backup, moved)
+	}
+}
+
+/**
+ * Judges a cleanup that failed after a proved regeneration.
+ *
+ * @remarks
+ * The proved installation reads nothing from the moved tree, so a file a process holds there stops
+ * neither the step nor the visit.
+ *
+ * @param failure - The thrown value.
+ * @param removing - If `true`, the removal threw and a held file's code passes; if `false`, the path
+ * validation threw and every value fails.
+ * @param backup - The saved lock.
+ * @param moved - The moved previous tree.
+ * @returns Exit 0 with a note that names the code for a held file, else exit 1; each note names both
+ * backup paths.
+ */
+export function judgeCleanup(
+	failure: unknown,
+	removing: boolean,
+	backup: string,
+	moved: string,
+): Verdict {
+	const code = removing ? extractHeldCode(failure) : undefined
+	return code === undefined
+		? {
+				exit: 1,
+				note: `backup cleanup failed: ${String(failure)}; proved installation retained; backups: ${backup}; ${moved}`,
+			}
+		: {
+				exit: 0,
+				note: `proved installation retained; a held file stopped backup cleanup (${code}): ${String(failure)}; backups: ${backup}; ${moved}`,
+			}
 }
 
 /**
