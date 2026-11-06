@@ -139,7 +139,7 @@ Use these orthogonal contract mechanisms:
 - Report unread or unavailable evidence as unread, never as a false predicate or an empty success.
 - Bind admission and approval to the exact operation and instance, and recheck that binding across every suspension and callback before dispatch.
 - Name the actual commit boundary in a restore or continuation claim, partial commits included.
-- Declare a parser's whole admitted language and its adjacent refusals, and prove them with a table of the class; never tune the parser example by example.
+- Declare a parser's whole admitted language and its adjacent refusals, and prove them with a table of the class; never tune the parser example by example. On a parser change, run a seeded differential against its parent build, and read a passing suite as no evidence of what the change moved.
 - Derive a decision from validated inputs; an editable prior result never substitutes for them.
 - Project a value outward by its authorship and trust origin, and accept no authority channel from a client.
 

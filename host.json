@@ -466,7 +466,7 @@
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
 			"destination": ".agents/skills/orkestrel-publish/SKILL.md",
 			"executable": false,
-			"digest": "fd8fa1f14ad8d163dd05bc905f046d03897d9aeb1a476a638b509dbc0db01014"
+			"digest": "616df5116346a9d71accf5bfa0388674666ac396306915529c287ee8961045c8"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/agents/openai.yaml",
@@ -484,13 +484,13 @@
 			"storage": "agents/skills/orkestrel-publish/references/release.md",
 			"destination": ".agents/skills/orkestrel-publish/references/release.md",
 			"executable": false,
-			"digest": "f2732734056ba849a6c8f31b90a3e7174d52143d16ca5afd87562caf90a10cf3"
+			"digest": "609361eb5f11295a02defbb5f8a0f9478217faefbb056a35eeefd05801531f59"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "4271c6833d3bbfb9ef9b5e2473d580959a6073582c1267f7d39b5dacdb162c80"
+			"digest": "7dae98088b423705ee15c0814cbea77e5514864f306338f598dd2014a5349381"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "0fb3f6b8e67baeae7eccd21e245419b9c8fd5390508acec561f42fe076c33de3"
+			"digest": "97ac2fea7a537e6ff396aaaedf217ba72b0bbcdc30b27c6679f3f5f554008449"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -700,7 +700,7 @@
 			"storage": "claude/rules/patterns.md",
 			"destination": ".claude/rules/patterns.md",
 			"executable": false,
-			"digest": "dff312736b6e9bc6a4e16fc26594076933502b2ba2fdb0bd2aaf1b5781e752e0"
+			"digest": "43920dca62ed88f1f117131f5830085cc709059bdb05ee98d90c807361f1d808"
 		},
 		{
 			"storage": "claude/rules/portability.md",
@@ -1084,7 +1084,7 @@
 			"storage": "guides/interpret.md",
 			"destination": "guides/interpret.md",
 			"executable": false,
-			"digest": "929d903adffd015df7b1ecbe740fb8872f77a56c9742aca91b7607e5b75fdd51"
+			"digest": "5ae8fc66bd208cb276eed279d772162ca3a55cd2670f8d3fe8e90802c679f69f"
 		},
 		{
 			"storage": "guides/jsonrpc.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "820a51778b8dcecdd12271dc3bd6884384316869a51c9aa83aa4b13522a4fd73"
+	"digest": "d8c20e658d97c0fe3dcfdf0f675bf0dc86a200de6b572ee25a4d1ad642321744"
 }
