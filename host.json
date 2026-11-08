@@ -310,7 +310,7 @@
 			"storage": "agents/skills/orkestrel-harden/references/methods.md",
 			"destination": ".agents/skills/orkestrel-harden/references/methods.md",
 			"executable": false,
-			"digest": "e2812264c941cd4f75b54b49fdf7807095d2c23e7bc669d30604e4328faf48b6"
+			"digest": "da48e2c422e2ab4107c21e2eb337662387125192b7dec9cd4a48a879087733c8"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/references/research.md",
@@ -712,7 +712,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "54ad54a53a10b331191a24c8f40e63e98d7e8d001dd8951133d99a284e6ffbae"
+			"digest": "7e66c0adcd56827ce2ed20459e50b6ecec8ccccfd2f7fdcb93eadf96e71ad625"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -724,7 +724,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "34600f482ac17c1cf2425240bdd5693c1f69479ef95dab588ab083c650f3f195"
+			"digest": "efdb94f045504c85f564826dced465bf3acecb2c085812a71e8df5080c2344e2"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "2012e56657056993afa855af90638ba219e97db8b7b47dc6bd78dd3dfe7a343b"
+	"digest": "8e4288a7a8a8c54cd189a9c25a6da337e822fda84c2b3e1f7da08a6b6ef26e83"
 }
