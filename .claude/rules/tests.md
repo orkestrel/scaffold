@@ -37,6 +37,7 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
 - Use recorders for calls/events, temporary resources for stateful boundaries, protocol-faithful fixture servers for deterministic network peers, and the real external service when its behavior is the claim.
 - Prefer inert customizable data and input stubs.
 - Allow a scripted boundary stub only when it implements the real interface or protocol minimally, to drive the system under test. It never reimplements project-owned behavior and never stands in for the integration being claimed.
+- When a dependency's release changes a wire a scripted boundary stub serves, update the stub to the wire as the dependency sends it, and keep every caller-facing assertion.
 - Bind a test fixture server to `127.0.0.1` on an ephemeral port (`listen(0)`), never to `::1` and never to a fixed port: a host without IPv6 fails `EAFNOSUPPORT`, and a fixed port flakes on occupancy.
 - Cover happy paths, error paths, empty input, boundary values, `NaN`, positive/negative zero, cycles, and Map/Set order where relevant.
 - Test observable behavior, not implementation details.
@@ -347,6 +348,7 @@ Before accepting that a behavior cannot be tested, look for the seam that would 
 
 - Treat a collaborator reached through a hard-coded global — a stream, a clock source, a spawn, a fetch — as a missing injection point, not an untestable truth.
 - An injected collaborator with a real minimal implementation is a sanctioned boundary stub, not a mock of project-owned behavior.
+- When a recording replays a wire, keep run-local identity, such as a random id or a clock reading, off it: after reading on the real peer that it treats the field as a label, send a key every run sends alike, such as the item's position, and map the answers back at the caller.
 - Add the seam rather than shipping the gap whenever the design would welcome it anyway, and whenever a sibling collaborator is already injected.
 - Record a genuinely irreducible gap where a reader meets it: what is unproven, why it cannot be driven, and what would change that. A silent untested guard reads exactly like a tested one.
 

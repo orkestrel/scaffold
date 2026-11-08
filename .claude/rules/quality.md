@@ -29,6 +29,7 @@ These rules govern how a claim is established: the evidence read before a change
 - A clean reproduction of a reported defect means your input was weaker than the reporter's; get theirs before ruling. An input the compiler rejects refutes that input, not the finding.
 - "No tests found", an empty match, or a runner that resolved nothing reports on the harness. Confirm the probe was collected before reading a result.
 - Prefer an observation to a derivation. When a measurement and an argument disagree, the argument is wrong until the measurement is shown broken.
+- When a probe compares a candidate with its base, extract the base with the `git archive` command into its own tree under `tmp/probes/`, link the checkout's `node_modules` directory into that tree, run the same probe in both trees, and read each arm from the JSON file it writes.
 - Read a gate bare. A `| tail` or `| grep` behind it hides the failing lines and reports the pipe's exit code.
 
 ## Instruments
@@ -55,6 +56,7 @@ These rules govern how a claim is established: the evidence read before a change
 - Refuse a micro optimization (hoisting a small array, caching one cheap read, shaving a constant) unless its own measurement shows a gain worth having.
 - Keep an algorithmic repair (a superlinear term, a repeated layout) when the measurement shows it.
 - Before the run, size the fixtures, the sample count, and the threshold to the case, and state the reasoning and the result that makes the change worth keeping.
+- Before setting a floor on a quality or cost reading, read the spread its setting shows under a small unrelated change, and set the floor outside that spread.
 - Read the difference between methods against each side's reported uncertainty, and record no difference smaller than the result stated before the run.
 - Report every measurement with the host's other load during the run, its memory and console counts included.
 - When a brief changes a hot path, name a measured cost bar at the input limit, and read the cost there before acceptance: an ordinary-length test cannot read a superlinear term.

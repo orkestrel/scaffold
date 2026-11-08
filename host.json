@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "521744de272a0d90483d955541191e3cbd77ad546c1859ff5aba90b80d54757d"
+			"digest": "8145f2f9f3f50c4a3b9ce82c9725ec275edc45fb579bb63968827bcf4372d08f"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-falsify/SKILL.md",
 			"destination": ".agents/skills/orkestrel-falsify/SKILL.md",
 			"executable": false,
-			"digest": "706eb21f69248cde64083723a69245479cb73f71e856e772df563710a412ffa2"
+			"digest": "e999244133b48a698810d689a8a6b67149e2bd3469b5a92f33fcfaea3d150837"
 		},
 		{
 			"storage": "agents/skills/orkestrel-falsify/agents/openai.yaml",
@@ -418,7 +418,7 @@
 			"storage": "agents/skills/orkestrel-parallel/references/codex.md",
 			"destination": ".agents/skills/orkestrel-parallel/references/codex.md",
 			"executable": false,
-			"digest": "b672b8ab420471e17f2eb88398124d90ed4278668cd55b8c8ca8427744987269"
+			"digest": "51fe3ae5592831ed7d0f44e9e9dd7b2fac8aefba5291ef3c0992e27dab6c3c0d"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/references/cursor.md",
@@ -712,7 +712,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "cc09ef3ac061daa19ed4422829199ca6ab9eedc1772406f1cc63c2b6d22b0946"
+			"digest": "54ad54a53a10b331191a24c8f40e63e98d7e8d001dd8951133d99a284e6ffbae"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -724,7 +724,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "5fda55b7acfc9291a56fd130de7076785d524d4c1a6e9edc1c451e5aec85b877"
+			"digest": "34600f482ac17c1cf2425240bdd5693c1f69479ef95dab588ab083c650f3f195"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "d8c20e658d97c0fe3dcfdf0f675bf0dc86a200de6b572ee25a4d1ad642321744"
+	"digest": "2012e56657056993afa855af90638ba219e97db8b7b47dc6bd78dd3dfe7a343b"
 }
