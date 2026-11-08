@@ -418,7 +418,7 @@
 			"storage": "agents/skills/orkestrel-parallel/references/codex.md",
 			"destination": ".agents/skills/orkestrel-parallel/references/codex.md",
 			"executable": false,
-			"digest": "51fe3ae5592831ed7d0f44e9e9dd7b2fac8aefba5291ef3c0992e27dab6c3c0d"
+			"digest": "762686283cb10358a6978d4ecb71b8367ed22f504ec5d2396e37083424a52cb5"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/references/cursor.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "8e4288a7a8a8c54cd189a9c25a6da337e822fda84c2b3e1f7da08a6b6ef26e83"
+	"digest": "d68cb2874d546bef97c9755d318338193225de054693ea23e0924951857c7a5a"
 }
