@@ -1166,7 +1166,7 @@ describe('surface creation and migration', () => {
 			const original = requireValue(workspace.read('display/package.json'))
 			createRepository(target)
 			for (const [name, range] of [
-				['vite', '^8.3.6'],
+				['vite', '^8.3.7'],
 				['vite-plugin-singlefile', '2.3.3'],
 			] as const) {
 				for (const section of ['dependencies', 'devDependencies'] as const) {
@@ -1360,7 +1360,7 @@ describe('surface creation and migration', () => {
 			).toBe(EXIT_CLEAN)
 			const original = requireValue(workspace.read('display/package.json'))
 			expect(JSON.parse(original)).toMatchObject({
-				devDependencies: { vite: '^8.3.6', 'vite-plugin-singlefile': '2.3.3' },
+				devDependencies: { vite: '^8.3.7', 'vite-plugin-singlefile': '2.3.3' },
 				overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
 			})
 			workspace.write('display/package.json', original.replace('npm:picomatch@2.3.2', 'old'))
@@ -1399,7 +1399,7 @@ describe('surface creation and migration', () => {
 				const repaired = requireValue(workspace.read('display/package.json'))
 				expect(JSON.parse(repaired)).toMatchObject({
 					dependencies: { 'vite-plugin-singlefile': '2.3.3' },
-					devDependencies: { vite: '^8.3.6', 'unrelated-exact': '1.2.3' },
+					devDependencies: { vite: '^8.3.7', 'unrelated-exact': '1.2.3' },
 					overrides: {
 						unrelated: { child: 'keep' },
 						'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' },
@@ -1490,7 +1490,7 @@ describe('surface creation and migration', () => {
 					`${name}/package.json`,
 					original
 						.replace(/\s*"vite-plugin-singlefile": "2\.3\.3",?/u, '')
-						.replace('"vite": "^8.3.6"', '"vite": "^6.0.0"')
+						.replace('"vite": "^8.3.7"', '"vite": "^6.0.0"')
 						.replace('npm:picomatch@2.3.2', 'old'),
 				)
 				workspace.write(`${name}/vite.config.ts`, 'stale config')
@@ -1507,7 +1507,7 @@ describe('surface creation and migration', () => {
 				const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 				expect(result.note).toContain('catalog step did not complete')
 				expect(JSON.parse(requireValue(workspace.read(`${name}/package.json`)))).toMatchObject({
-					devDependencies: { vite: '^8.3.6', 'vite-plugin-singlefile': '2.3.3' },
+					devDependencies: { vite: '^8.3.7', 'vite-plugin-singlefile': '2.3.3' },
 					overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
 				})
 				expect(workspace.read(`${name}/vite.config.ts`)).not.toBe('stale config')
@@ -2706,7 +2706,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.3.6 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.7 within major 8.',
 					blocking: false,
 				},
 			])
@@ -2879,7 +2879,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.3.6", "vitest": "^5.1.0",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.3.7", "vitest": "^5.1.0",`,
 					blocking: false,
 				},
 			])
@@ -5736,7 +5736,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.3.6 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.7 within major 8.',
 					blocking: false,
 				},
 			])
@@ -6556,7 +6556,7 @@ describe('CLI repair', () => {
 			expect(written).toContain(
 				'"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release && npm run verify"',
 			)
-			expect(written).toContain('"vite": "^8.3.6"')
+			expect(written).toContain('"vite": "^8.3.7"')
 			expect(workspace.read('target/vite.config.ts')).not.toBe('marker\n')
 
 			const audited = createSink()
@@ -7385,7 +7385,7 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const dependencies = { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.6' }
+			const dependencies = { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.7' }
 			const manifest = `${JSON.stringify(
 				{
 					name: '@orkestrel/sample',
@@ -8370,7 +8370,7 @@ describe('CLI overwrite', () => {
 				name: 'vite',
 				range: '~8.2.0',
 				lookup: 'found',
-				latest: '8.3.6',
+				latest: '8.3.7',
 				major: 8,
 			})
 			const manifest = workspace.read('target/package.json')
@@ -8379,7 +8379,7 @@ describe('CLI overwrite', () => {
 			expect(manifest).toContain(`"@orkestrel/scaffold": "^${published}"`)
 			// Nothing else in the manifest moved, which is the whole promise of
 			// rewriting a range in place rather than re-serializing the file.
-			expect(manifest).toContain('"vite": "^8.3.6"')
+			expect(manifest).toContain('"vite": "^8.3.7"')
 			expect(manifest).toContain('"description": "A sample workspace."')
 		} finally {
 			await server.destroy()

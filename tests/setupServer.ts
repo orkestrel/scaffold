@@ -5038,7 +5038,7 @@ export function buildAlignedManifest(
 	scripts?: unknown,
 ): string {
 	const dependenciesAligned =
-		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.6' } : dependencies
+		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.7' } : dependencies
 	const declared = development === undefined ? blueprintToDevDependencies(blueprint) : development
 	const aligned =
 		typeof declared === 'object' && declared !== null && !Array.isArray(declared)
@@ -5048,7 +5048,7 @@ export function buildAlignedManifest(
 }
 
 /** Holds the target manifest text with its toolchain range already aligned to the registry. */
-export const ALIGNED_MANIFEST_TEXT = TARGET_MANIFEST_TEXT.replace('~8.2.0', '~8.3.6')
+export const ALIGNED_MANIFEST_TEXT = TARGET_MANIFEST_TEXT.replace('~8.2.0', '~8.3.7')
 
 /**
  * Maps each registry path the audit fixture answers to the packument it serves.
