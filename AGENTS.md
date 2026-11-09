@@ -64,7 +64,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **Functional core, imperative shell.** Pure exported leaves; stateful orchestration as class methods. A method never forwards 1:1 to a helper.
 - **No superfluous wrappers.** A wrapper adds a boundary, invariant, composition, translation, lifecycle, or materially narrower contract, or it goes.
 - **Minimal public API.** Create or substantively expand a capability with its first real consumer; this gate applies at creation, never later. Expose an existing reusable capability through its environment barrel regardless of consumer count. Remove a symbol only when the capability itself must not exist. Prefer one minimal interface and one shared engine, with a native backend override only for a faster path.
-- **No compatibility shims.** Update every consumer in the same change.
+- **No compatibility shims.** Update every consumer in the same change. Fleet packages and applications are greenfield: write no alias, wrapper, or migration for a shape or for data an earlier release produced.
 - **Mechanism, not product policy.** Framework code stops before application decisions.
 - **No polling architecture.** Park idle work on events and abort signals. Yield long work cooperatively.
 

@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "3d183e5cae674592a63f5ec38deb421fab480d408d2874a3040bacf2e4d20680"
+			"digest": "b00de3b210c6a1afc13b870d687d9892e47de877cef27f27eda34e6e68bb524b"
 		},
 		{
 			"storage": "LICENSE",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "c324fe88780960514ba83afdbe775c5d09755d6c2c0dd9bf987023d78f64162d"
+	"digest": "8eaaee021a4ab162e4206e8ad1263a18c2a9e6c8592eb6f89d654df115242889"
 }
