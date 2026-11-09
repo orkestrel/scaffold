@@ -923,6 +923,58 @@ describe('manifestToWritableScripts', () => {
 	const writable = blueprintToWritableScripts(blueprint)
 	const chain = requireValue(planned.test)
 
+	it('writes an exact former publishing chain including framework journeys and trailing gates', () => {
+		for (const target of [
+			createBlueprint('sample', {
+				src: ['core'],
+				app: ['core', 'browser'],
+				journey: true,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+				setup: ['node', 'browser'],
+				guides: true,
+			}),
+			createBlueprint('sample', { styles: true, app: ['browser'], journey: true }),
+			createBlueprint('sample', { src: ['core'], app: ['server'] }),
+		]) {
+			const scripts = blueprintToScripts(target)
+			const command = requireValue(scripts.test)
+			const helpers = target.journey
+				? ` && npm run test:journey${target.extensions.length > 0 ? ' && npm run test:journey:vue' : ''}`
+				: ''
+			const former = command.replace(
+				'npm run test:src',
+				`npm run test:src && npm run test:app${helpers}`,
+			)
+			expect(
+				manifestToWritableScripts(
+					JSON.stringify({ scripts: { ...scripts, test: former } }),
+					target,
+				),
+			).toStrictEqual([
+				...blueprintToWritableScripts(target),
+				{ name: 'test', command, accepted: [former] },
+			])
+			for (const test of [
+				`${former} && npm run check`,
+				former.replaceAll(' && ', '&&'),
+				former.replace(
+					'npm run test:src && npm run test:app',
+					'npm run test:app && npm run test:src',
+				),
+			]) {
+				expect(
+					manifestToWritableScripts(JSON.stringify({ scripts: { ...scripts, test } }), target),
+				).toStrictEqual(blueprintToWritableScripts(target))
+			}
+			expect(
+				manifestToWritableScripts(
+					JSON.stringify({ private: true, scripts: { ...scripts, test: former } }),
+					target,
+				),
+			).toStrictEqual(blueprintToWritableScripts(target))
+		}
+	})
+
 	it('writes the planned test chain over a generated predecessor that predates a planned step', () => {
 		const predecessor = chain.replace(' && npm run test:setup:browser', '')
 		expect(predecessor).not.toBe(chain)
@@ -959,8 +1011,8 @@ describe('manifestToWritableScripts', () => {
 	})
 
 	it('leaves the chain with the package where the planned chain adds an aggregate the manifest lacks', () => {
-		const grown = createBlueprint('sample', { src: ['core'], app: ['core'] })
-		const born = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+		const grown = createBlueprint('sample', { app: ['core'] })
+		const born = blueprintToScripts(createBlueprint('sample'))
 		const target = requireValue(blueprintToScripts(grown).test)
 		expect(target).toContain('npm run test:app')
 		expect(born).not.toHaveProperty('test:app')
@@ -1667,6 +1719,7 @@ describe('collectScriptChain', () => {
 		)
 
 		expect([...chain.unreadable]).toStrictEqual(['first'])
+		expect(chain.readings.has('first')).toBe(false)
 		expect([...chain.visited]).toStrictEqual(['test', 'first', 'second'])
 		expect([...chain.projects]).toStrictEqual(['src:core'])
 	})
@@ -1706,6 +1759,12 @@ describe('collectScriptChain', () => {
 		)
 
 		expect([...chain.projects]).toStrictEqual(['src:core'])
+		expect([...chain.readings]).toStrictEqual([
+			[
+				'test',
+				{ projects: ['src:core'], configs: ['configs/src/vite.core.config.ts'], scripts: [] },
+			],
+		])
 	})
 })
 

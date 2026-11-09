@@ -346,7 +346,7 @@
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
 			"destination": ".agents/skills/orkestrel-journey/SKILL.md",
 			"executable": false,
-			"digest": "bfc5ae044d6c3fcb3f65bc7ea68f19b40d87a6c441ca722088cdc6f3cdb52e64"
+			"digest": "a94ef36f33c3bb1ddfbdcddded2995160d8c4b03e33ba768cce7f36e50bf73e9"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/agents/openai.yaml",
@@ -736,7 +736,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "f96144edca330b41764a55e7dc1b33a38b021f85670af0e00646786534aac6cc"
+			"digest": "8374fb51dade68150f1d1affb0c066682bc1363eb9186322f19f1ac3fc967431"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "e25466eb37cc1ca0d468790abf8c493044721a4b0e2283ab9094b2756d0ae67e"
+			"digest": "7d2ffa6d5dec9603d34a5aca8c4c600c244f4fb4141be7bb6d51196c493f9398"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "d68cb2874d546bef97c9755d318338193225de054693ea23e0924951857c7a5a"
+	"digest": "93257ab2ac5782845ffa6e983f8e250265d1364df47513de43e6093f2dcb7b9a"
 }

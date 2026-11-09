@@ -575,6 +575,10 @@ export function sheetTestToQuestion(
  * declared chain is a generated predecessor of it.
  *
  * @remarks
+ * A publishing manifest's byte-exact former generated chain also joins the writable region: the
+ * planned chain with its generated application and journey invocations after `test:src`. A chain
+ * that differs in spacing, order, or another step does not match that predecessor.
+ *
  * A declared `test` chain is a generated predecessor when it runs fewer `&&` steps than the
  * planned chain and every step it runs is a planned step, in the planned order. That is the chain
  * a birth or an earlier write left before a structural fact planned another step, such as a root
@@ -592,11 +596,23 @@ export function manifestToWritableScripts(
 	blueprint: Blueprint,
 ): readonly ManifestScript[] {
 	const writable = blueprintToWritableScripts(blueprint)
-	const planned = blueprintToScripts(blueprint).test
+	const generated = blueprintToScripts(blueprint)
+	const planned = generated.test
 	const parsed = parseJSON(manifest)
 	const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
 	const declared = scripts.test
 	if (planned === undefined || !isString(declared)) return writable
+	if (generated.prepublishOnly !== undefined && isRecord(parsed) && parsed.private !== true) {
+		const helpers = Object.keys(generated).filter(
+			(name) => name === 'test:app' || /^test:journey(:|$)/u.test(name),
+		)
+		const former = planned.replace(
+			'npm run test:src',
+			['npm run test:src', ...helpers.map((name) => `npm run ${name}`)].join(' && '),
+		)
+		if (helpers.length > 0 && declared === former)
+			return [...writable, { name: 'test', command: planned, accepted: [declared] }]
+	}
 	const steps = declared.split('&&').map((step) => step.trim())
 	const expected = planned.split('&&').map((step) => step.trim())
 	if (steps.length >= expected.length) return writable
@@ -1129,7 +1145,7 @@ export function scanScriptTokens(script: string): readonly ScriptToken[] | undef
  * Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names.
  *
  * @param script - The manifest script text to read.
- * @param wrappers - Planned wrapper paths mapped to the face projects they run.
+ * @param wrappers - Planned wrapper paths mapped to the projects they run.
  * @returns The named projects, configurations, and scripts, or `undefined` when the command
  * cannot be read literally.
  *
@@ -1227,8 +1243,8 @@ export function scriptToInvocations(
  *
  * @param gate - The script name the walk starts at.
  * @param scripts - The manifest's scripts by name; a value that is not a string names no command.
- * @param wrappers - Planned wrapper paths mapped to the face projects they run.
- * @returns The script names the walk visited, the Vitest projects those scripts name, and the
+ * @param wrappers - Planned wrapper paths mapped to the projects they run.
+ * @returns The visited script names, their readable invocations and Vitest projects, and the
  * visited scripts whose command cannot be read literally.
  *
  * @remarks
@@ -1240,8 +1256,8 @@ export function scriptToInvocations(
  * ```ts
  * import { collectScriptChain } from './helpers.js'
  *
- * collectScriptChain('test', { test: 'npm run test:src', 'test:src': 'vitest run --project src:core' }, new Map())
- * // { visited: Set { 'test', 'test:src' }, projects: Set { 'src:core' }, unreadable: Set {} }
+ * const chain = collectScriptChain('test', { test: 'npm run test:src', 'test:src': 'vitest run --project src:core' }, new Map())
+ * chain.readings.get('test:src') // { projects: ['src:core'], configs: [], scripts: [] }
  * ```
  */
 export function collectScriptChain(
@@ -1266,6 +1282,11 @@ export function collectScriptChain(
 	}
 	return {
 		visited,
+		readings: new Map(
+			reads.flatMap(({ name, invoked }): ReadonlyArray<readonly [string, ScriptInvocations]> =>
+				invoked === undefined ? [] : [[name, invoked]],
+			),
+		),
 		projects: new Set(reads.flatMap(({ invoked }) => invoked?.projects ?? [])),
 		unreadable: new Set(
 			reads.flatMap(({ name, invoked }) => (invoked === undefined ? [name] : [])),

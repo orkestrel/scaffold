@@ -592,6 +592,8 @@ export function replaceManifestOverride(
  * private workspace therefore omits it and runs a live-service proof from `test`.
  * Study proofs run on demand through `test:studies` in either workspace; no gate
  * or chain runs them.
+ * Application and journey suites run on demand in a publishing workspace,
+ * outside release gates and chains. A private workspace keeps them in `test`.
  * Integration and conformance stay in `test` because they neither pack nor
  * install the workspace and drive no external service. A conformance run may
  * start a server, but it starts its own and reaches it over loopback, so the run
@@ -602,7 +604,7 @@ export function replaceManifestOverride(
  * either matrix is a rename in both places.
  * A browser application's journey axis adds `journey` (`capture journey`) and `capture`
  * (`capture frames`) beside `test:journey`. The scoped commands take an explicit selection;
- * the whole-suite `test:journey` invocation remains in the test chain.
+ * the whole-suite `test:journey` invocation joins `test` only in a private workspace.
  *
  * @example
  * ```ts
@@ -693,8 +695,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.skills ? { 'check:skills': `tsc --noEmit -p ${SKILLS_CONFIG_PATH}` } : {}),
 		test: [
 			...(compiles ? ['npm run test:src'] : []),
-			...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
-			...(blueprint.journey && blueprint.app.includes('browser')
+			...(!publishes && blueprint.app.length > 0 ? ['npm run test:app'] : []),
+			...(!publishes && blueprint.journey && blueprint.app.includes('browser')
 				? ['npm run test:journey', ...application.map((name) => `npm run test:journey:${name}`)]
 				: []),
 			'npm run test:policy',

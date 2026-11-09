@@ -1127,7 +1127,8 @@ await new GuideCommand({
 			expect(scripts['test:journey']).toBe(command)
 			expect(scripts['test:journey:vue']).toBe(`${command} --mode vue`)
 			const chain = 'npm run test:app && npm run test:journey && npm run test:journey:vue'
-			expect(scripts.test).toContain(chain)
+			expect(scripts.test).not.toMatch(/test:(app|journey)(:|\b)/u)
+			expect(blueprintToScripts({ ...blueprint, src: [] }).test).toContain(chain)
 			const vite = blueprintToRootVite(blueprint)
 			expect(vite).toContain('\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {')
 			expect(vite).toContain('const application = resolveApplication(mode, applications)')

@@ -185,7 +185,7 @@ one environment, so each is its own project:
 | `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                                                                                                                                                                                  | `test`                                |
 | `setup`             | `tests/setup*.test.ts` other than either `setup:browser` proof | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                                                                                                                                                     | `test`                                |
 | `setup:browser`     | `tests/setupBrowser.test.ts`, `tests/setupStyles.test.ts`      | Prove browser and style setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                                                                                                                                   | `test`                                |
-| `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                                                                                             | `test` through the journey scripts    |
+| `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                                                                                             | On demand; `test` when private        |
 | `guides`            | `tests/guides.test.ts`                                         | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns                                                                                                                                                           | `test`                                |
 | `conformance`       | `tests/conformance.test.ts`                                    | Where this package drifts from the official tooling it tracks                                                                                                                                                                                                                                                                                          | `test`                                |
 | `tree`              | `tests/tree.test.ts`                                           | The laws this package states about its own real tree that no vendored proof carries                                                                                                                                                                                                                                                                    | `test`                                |
@@ -215,8 +215,8 @@ one environment, so each is its own project:
   factory, which resolves the Vite mode to `browser` or an app-side browser extension and collects
   `tests/app/<application>/integration.test.ts` for that application. The factory merges its
   `override` last, through `mergeOverride`, so an override replaces nothing it does not name. Exclude each collected suite
-  from its application project, and run `test:journey` and one `test:journey:<framework>` per
-  app-side browser extension after the application projects in `test`.
+  from its application project. Generate `test:journey` and one `test:journey:<framework>` per
+  app-side browser extension, and place them by the gate-placement paragraph that follows.
 
 Keep `conformance`, `tree`, `integration`, `distribution`, `studies`, and `service` as separate
 subjects.
@@ -230,6 +230,11 @@ parallelism in `service`. In a `private: true` workspace, never declare `prepubl
 `distribution`, reach `service` from `test`, and retain each isolated project's configuration.
 In both kinds of workspace, run `studies` on demand through `npm run test:studies` alone.
 Keep `test:studies` out of every gate and chain.
+In a publishing workspace, run application and journey suites on demand through `test:app`,
+`test:app:<environment>`, `test:app:<framework>`, `test:journey`, and
+`test:journey:<framework>`. Keep them out of every release gate and chain.
+In a `private: true` workspace, keep `test:app` in `test`, followed by `test:journey` and
+each `test:journey:<framework>` the workspace declares.
 
 One project sits on neither axis. `probe` includes `tmp/probes/**/*.test.ts` so an agent can run a
 throwaway instrument against real sources, aliases and setup. Declare no proof there. Keep the

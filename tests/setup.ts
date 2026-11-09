@@ -264,7 +264,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			skills: true,
 		},
 		vite: 'fd9d3f8de03de05f14ea0387fba65015da116bb3f572953df9409275ab366c42',
-		scripts: '071889913950f0001972762561061b320b755544e191dfb0436b952ad12695d9',
+		scripts: '74d79c31349e5f74c4da7c6325c3befeda9d03e60a9a3ff7688356259d43482a',
 	},
 ])
 

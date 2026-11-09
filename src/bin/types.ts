@@ -327,11 +327,12 @@ export interface ScriptToken {
  *
  * @remarks
  * `visited` holds every script name the walk reached, declared or not. `projects` holds the Vitest
- * projects the readable scripts among them name, and `unreadable` holds the reached scripts whose
- * command cannot be read literally.
+ * projects the readable scripts among them name. `readings` preserves each readable command's
+ * invocations by caller, and `unreadable` holds the reached scripts whose command cannot be read literally.
  */
 export interface ScriptChain {
 	readonly visited: ReadonlySet<string>
+	readonly readings: ReadonlyMap<string, ScriptInvocations>
 	readonly projects: ReadonlySet<string>
 	readonly unreadable: ReadonlySet<string>
 }

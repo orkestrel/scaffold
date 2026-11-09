@@ -549,6 +549,47 @@ describe('blueprintToProjects', () => {
 })
 
 describe('application modes', () => {
+	it('keeps publishing application and journey suites available on demand outside release gates', () => {
+		const blueprint = createBlueprint('arrival', {
+			src: ['core'],
+			app: ['core', 'browser', 'server'],
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const scripts = blueprintToScripts(blueprint)
+		expect(JSON.parse(blueprintToManifest(blueprint))).not.toHaveProperty('private')
+		expect(scripts.test).not.toMatch(/test:(app|journey)(:|\b)/u)
+		expect(scripts.prepublishOnly).toContain('npm test')
+		expect(scripts.prepublishOnly).not.toMatch(/test:(app|journey)(:|\b)/u)
+		expect(scripts['test:app']).toContain(
+			'--project app:core --project app:browser --project app:server',
+		)
+		expect(scripts['test:app']).toContain('--project app:vue')
+		expect(scripts['test:app:core']).toContain('--project app:core')
+		expect(scripts['test:app:browser']).toContain('--project app:browser')
+		expect(scripts['test:app:server']).toContain('--project app:server')
+		expect(scripts['test:app:vue']).toContain('--project app:vue')
+		expect(scripts['test:journey']).toContain('--config configs/app/vite.journey.config.ts')
+		expect(scripts['test:journey:vue']).toContain('--mode vue')
+		const sheets = { ...blueprint, src: [], styles: true }
+		expect(JSON.parse(blueprintToManifest(sheets))).not.toHaveProperty('private')
+		expect(blueprintToScripts(sheets).test).not.toMatch(/test:(app|journey)(:|\b)/u)
+	})
+
+	it('keeps private application and journey suites in the test chain', () => {
+		const blueprint = createBlueprint('arrival', {
+			app: ['browser'],
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const scripts = blueprintToScripts(blueprint)
+		expect(JSON.parse(blueprintToManifest(blueprint))).toHaveProperty('private', true)
+		expect(scripts.test).toContain(
+			'npm run test:app && npm run test:journey && npm run test:journey:vue',
+		)
+		expect(scripts).not.toHaveProperty('prepublishOnly')
+	})
+
 	it('emits scripts, mode wrappers, and arrival proofs for each occupied application', () => {
 		const blueprint = createBlueprint('arrival', {
 			src: ['core', 'browser'],
@@ -566,9 +607,6 @@ describe('application modes', () => {
 		)
 		expect(scripts['test:journey:vue']).toBe(
 			'vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --mode vue',
-		)
-		expect(scripts.test).toContain(
-			'npm run test:app && npm run test:journey && npm run test:journey:vue',
 		)
 		expect(scripts.prepublishOnly).toContain(
 			'npm run build && npm run build:showcase && npm run build:showcase:vue && npm test',

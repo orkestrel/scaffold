@@ -3395,6 +3395,282 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('keeps publishing application and journey suites outside gate coverage requirements', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--src',
+					'core',
+					'--app',
+					'browser',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			const manifest = generated
+				.replace(' && npm run test:app', '')
+				.replace(' && npm run test:journey', '')
+			workspace.write('fresh/package.json', manifest)
+			for (const verb of ['audit', 'repair']) {
+				const sink = createSink()
+				await new CLI(sink.options).execute([
+					verb,
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				])
+				const result: Audit | RepairResult = JSON.parse(sink.output[0] ?? '')
+				const audit = 'audit' in result ? result.audit : result
+				expect(audit.questions.filter(({ field }) => field === 'projects')).toStrictEqual([])
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports publishing gate chains that still reach application and journey suites', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			await new CLI(createSink().options).execute([
+				'new',
+				'sample',
+				'--src',
+				'core',
+				'--app',
+				'browser',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+			])
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			const manifest = generated.replace(
+				'"test": "',
+				'"test:helpers": "npm run test:app:browser && npm run test:journey",\n\t\t"test": "npm run test:helpers && ',
+			)
+			workspace.write('fresh/package.json', manifest)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'audit',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+				'--groups',
+				'configs',
+				'--json',
+			])
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toContainEqual({
+				field: 'projects',
+				blocking: false,
+				message: `The publishing manifest at ${target} reaches application or journey suites from test or prepublishOnly: test:app:browser, test:journey. Reached invocations: test:app:browser: vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser; test:journey: vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot. Remove their invocations from the gate chains and run them on demand.`,
+			})
+			expect(workspace.read('fresh/package.json')).toBe(manifest)
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const repair: RepairResult = JSON.parse(repaired.output[0] ?? '')
+			expect(repair.audit.questions).toContainEqual(
+				audit.questions.find(({ field }) => field === 'projects'),
+			)
+			expect(workspace.read('fresh/package.json')).toBe(manifest)
+			workspace.write(
+				'fresh/package.json',
+				generated.replace(
+					'"prepublishOnly": "',
+					'"prepublishOnly": "vitest run --config vite.config.ts --project app:browser && ',
+				),
+			)
+			const direct = createSink()
+			await new CLI(direct.options).execute([
+				'audit',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+				'--groups',
+				'configs',
+				'--json',
+			])
+			const publication: Audit = JSON.parse(direct.output[0] ?? '')
+			expect(publication.questions).toContainEqual({
+				field: 'projects',
+				blocking: false,
+				message: expect.stringContaining(
+					`The publishing manifest at ${target} reaches application or journey suites from test or prepublishOnly: test:app:browser. Reached invocations: prepublishOnly: vitest run --config vite.config.ts --project app:browser`,
+				),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports base helper wrappers with their caller and invocation in a publishing gate', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			await new CLI(createSink().options).execute([
+				'new',
+				'sample',
+				'--src',
+				'core',
+				'--app',
+				'browser',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+			])
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			for (const wrapper of ['journey', 'browser']) {
+				const invocation = `vitest run --config configs/app/vite.${wrapper}.config.ts`
+				workspace.write(
+					'fresh/package.json',
+					generated.replace(
+						'"test": "',
+						`"test:interface": ${JSON.stringify(invocation)},\n\t\t"test": "npm run test:interface && `,
+					),
+				)
+				const sink = createSink()
+				await new CLI(sink.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				])
+				const audit: Audit = JSON.parse(sink.output[0] ?? '')
+				expect.soft(audit.questions).toContainEqual(
+					expect.objectContaining({
+						field: 'projects',
+						message: expect.stringContaining(`test:interface: ${invocation}`),
+					}),
+				)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('adopts an exact former publishing chain and preserves an authored chain through writing verbs', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			await new CLI(createSink().options).execute([
+				'new',
+				'sample',
+				'--src',
+				'core',
+				'--app',
+				'browser',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+			])
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			const former = generated.replace(
+				'"test": "npm run test:src && ',
+				'"test": "npm run test:src && npm run test:app && npm run test:journey && ',
+			)
+			expect(former).not.toBe(generated)
+			createRepository(target)
+			for (const verb of ['repair', 'overwrite']) {
+				workspace.write('fresh/package.json', former)
+				const sink = createSink()
+				await new CLI(sink.options).execute([
+					verb,
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+					...(verb === 'overwrite' ? ['--dirty'] : []),
+				])
+				const result: RepairResult = JSON.parse(sink.output[0] ?? '')
+				expect(result).not.toHaveProperty('error')
+				expect(result.audit.questions.filter(({ field }) => field === 'projects')).toStrictEqual([])
+				const manifest: unknown = JSON.parse(requireValue(workspace.read('fresh/package.json')))
+				expect(manifest).toHaveProperty(
+					'scripts.test',
+					'npm run test:src && npm run test:policy && npm run test:config',
+				)
+				const authored = former.replace('"test": "', '"test": "npm run check && ')
+				workspace.write('fresh/package.json', authored)
+				const retained = createSink()
+				await new CLI(retained.options).execute([
+					verb,
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+					...(verb === 'overwrite' ? ['--dirty'] : []),
+				])
+				const outcome: RepairResult = JSON.parse(retained.output[0] ?? '')
+				expect(outcome).not.toHaveProperty('error')
+				expect(outcome.audit.questions).toContainEqual(
+					expect.objectContaining({
+						field: 'projects',
+						message: expect.stringContaining('Remove their invocations from the gate chains'),
+					}),
+				)
+				const preserved: unknown = JSON.parse(requireValue(workspace.read('fresh/package.json')))
+				expect(preserved).toHaveProperty(
+					'scripts.test',
+					'npm run check && npm run test:src && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config',
+				)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('accepts a journey invocation reached through a grouped test script', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -3856,7 +4132,10 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/studies/session.test.ts', 'export {}\n')
 			workspace.write(
 				'target/package.json',
-				buildAlignedManifest(createBlueprint('sample', { app: ['core'] })),
+				buildAlignedManifest(createBlueprint('sample', { app: ['core'] })).replace(
+					'{\n',
+					'{\n\t"private": true,\n',
+				),
 			)
 			const sink = createSink()
 			expect(
@@ -3987,7 +4266,10 @@ describe('CLI audit', () => {
 			workspace.remove('target/src')
 			workspace.ensure('target/app/core')
 			const blueprint = createBlueprint('sample', { app: ['core'] })
-			workspace.write('target/package.json', buildAlignedManifest(blueprint))
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint).replace('{\n', '{\n\t"private": true,\n'),
+			)
 			expect(
 				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
 					'repair',
@@ -7464,18 +7746,14 @@ describe('CLI overwrite', () => {
 		}
 	})
 
-	// A library born with `src` alone that later gains `app/` plans a chain adding
-	// `npm run test:app`, an aggregate outside the writable region. A selection
-	// that excludes `configs` hides the `projects` refusal, so the chain write
-	// itself has to decline rather than land a step naming a missing script.
-	it('keeps a test chain whose planned form adds an aggregate the manifest lacks', async () => {
+	it('keeps a publishing test chain when an application is added', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const grown = createBlueprint('sample', { src: ['core'], app: ['core'] })
 			const born = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
 			expect(born).not.toHaveProperty('test:app')
-			expect(blueprintToScripts(grown).test).toContain('npm run test:app')
+			expect(blueprintToScripts(grown).test).toBe(born.test)
 			workspace.ensure('target/app/core')
 			workspace.write(
 				'target/package.json',

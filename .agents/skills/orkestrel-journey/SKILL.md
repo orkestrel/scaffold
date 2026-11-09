@@ -64,11 +64,11 @@ Resolve every target and every population by ARIA role and accessible name as re
 
 ## Read the variant once
 
-A browser application born by `scaffold new` carries the journey axis: the
-`configs/app/vite.journey.config.ts` wrapper, the root `appJourney` factory, the `test:journey`
-script, and that script's place in the `test` chain. That wiring fans the journey suite out into one
-Vitest project per variant, and each project provides its own variant. Read the variant once at run
-start, and let it choose the capture destination, the matrix row, and the statechart run together.
+For a browser application born by `scaffold new`, use its journey axis: the
+`configs/app/vite.journey.config.ts` wrapper, the root `appJourney` factory, and the `test:journey`
+script. Place the script by `.claude/rules/workspace.md` § Test project matrix.
+Read the variant once at run start from the Vitest project the wrapper creates for it, and let it
+choose the capture destination, the matrix row, and the statechart run together.
 
 - Read `inject('variant')` for this run's variant name, `inject('variants')` for the declared list,
   and `inject('capture')` for whether this run writes frames.
@@ -79,16 +79,14 @@ start, and let it choose the capture destination, the matrix row, and the statec
   viewports for this application.
 - Activate the axis in a workspace born before it: write `configs/app/vite.journey.config.ts`, run
   `scaffold audit`, and add any missing planned dependencies it names before `scaffold repair`.
-  Then add `npm run test:journey` to the `test` script after `npm run test:app`.
-  The repair defines `appJourney` in the root configuration, emits `test:journey`, `journey`, and
-  `capture`, and excludes the journey suite from the ordinary `app:browser` project. It does not rewrite the `test`
-  chain, so the chain entry is yours to add. Add that entry before the repair instead where you
-  prefer: `test:journey` names a configuration rather than a project, so neither order blocks the
-  repair.
+  Check that the repair defines `appJourney` in the root configuration, emits `test:journey`,
+  `journey`, and `capture`, and excludes the journey suite from the ordinary `app:browser` project.
+  Place each script by `.claude/rules/workspace.md` § Test project matrix. When the repair preserves
+  an authored `test` chain, apply that placement to the chain yourself.
 - Name each variant per [captures.md](references/captures.md) → Variants.
 - Keep the provided variants as serializable `JourneyVariant` data: `name`, `width`, and `height`.
   Compose no callback merely to pass that data to a capture.
-- Keep `npm run test:journey` as the whole-suite gate in the `test` chain. Use the scoped commands
+- Use `npm run test:journey` for the whole suite. Use the scoped commands
   under Choosing what to run for iteration and stamped frames; keep the root configuration's
   `CAPTURE === '1'` read and its `capture` provide unchanged.
 - Keep the journeys in `tests/app/browser/integration.test.ts`, and the journeys of the `vue`
@@ -103,12 +101,14 @@ start, and let it choose the capture destination, the matrix row, and the statec
 `scaffold audit` reports a manifest and a wrapper that disagree as one of these findings. Settle the one it reports before trusting a green run.
 
 - The manifest names a Vitest configuration for `test:journey` that the plan does not emit and the target does not hold. Write the wrapper and run `scaffold repair`, or remove the `test:journey` script and its chain invocation.
-- The manifest does not invoke `npm run test:journey` from its `test` chain. Add `npm run test:journey` to the `test` script after `npm run test:app`.
+- When a private manifest does not invoke `npm run test:journey` from its `test` chain, add that invocation after `npm run test:app`.
+- When a publishing manifest's `test` chain exactly matches the former generated chain, run `scaffold repair` or `scaffold overwrite` to remove its application and journey gate invocations. When the chain differs, remove those invocations yourself. Run the helper suites on demand.
 
-`scaffold audit` reports the invocation question only when no chain from `test` reaches
-`npm run test:journey` through literal `npm run` calls, so a chain reaching it through an
-intermediate script raises none. It reports the configuration question only for a `test:*` script
-whose text names `vitest`, so a script naming another runner's configuration raises none either.
+For a private workspace's missing-invocation question, inspect literal `npm run` calls through
+intermediate scripts as well as the `test` script. For a publishing helper-suite question, inspect
+the reported caller and invocation, including literal Vitest calls through application and journey wrappers.
+For an absent-configuration question, inspect
+`test:*` scripts whose text names `vitest`.
 
 ### Choosing what to run
 
@@ -152,8 +152,7 @@ Climb this ladder using only declared owner, case, and variant names:
    before `npm run capture -- --changed HEAD`.
 3. A section or page: `npm run journey -- pages:mail:inbox` or `npm run journey -- pages:mail`.
 4. A group: `npm run journey -- pages`.
-5. `all` at the gate: `npm run journey -- all`, retaining `npm run test:journey` in the repository's
-   whole-suite test chain.
+5. The whole suite: `npm run journey -- all`.
 
 Follow a refusal's exact next commands before widening a selection. Use the matching `capture`
 script only when the work needs frames, and apply [captures.md](references/captures.md) before

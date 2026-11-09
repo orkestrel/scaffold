@@ -1520,7 +1520,10 @@ export class CLI implements CLIInterface {
 					(project): ReadonlyArray<readonly [string, string]> => {
 						const direct = `test:${project}`
 						const command = expected[direct]
-						return project === 'probe' || project === 'studies' || command === undefined
+						return project === 'probe' ||
+							project === 'studies' ||
+							(publishes && project.startsWith('app:')) ||
+							command === undefined
 							? []
 							: [[project, `"${direct}": ${JSON.stringify(command)},`]]
 					},
@@ -1529,6 +1532,7 @@ export class CLI implements CLIInterface {
 		)
 
 		const faces = new Set([
+			...blueprint.app.map((environment) => `app:${environment}`),
 			...blueprintToSheets(blueprint).map((name) => `src:${name}`),
 			...blueprintToFaces(blueprint).flatMap(({ name, axes }) =>
 				axes.map((axis) => `${axis}:${name}`),
@@ -1537,6 +1541,7 @@ export class CLI implements CLIInterface {
 		const wrappers = new Map(
 			blueprintToConfigArtifacts(blueprint).flatMap(
 				(artifact): ReadonlyArray<readonly [string, string]> => {
+					if (artifact.path === JOURNEY_CONFIG_PATH) return [[artifact.path, 'journey']]
 					const match = /^configs\/(src|app)\/vite\.([^.]+)\.config\.ts$/u.exec(artifact.path)
 					const project = match === null ? undefined : `${match[1]}:${match[2]}`
 					return project !== undefined && faces.has(project) ? [[artifact.path, project]] : []
@@ -1561,7 +1566,35 @@ export class CLI implements CLIInterface {
 			.sort(([left], [right]) => left.localeCompare(right))
 		const ungated = missing.filter(([project]) => isString(scripts[`test:${project}`]))
 		if (ungated.length === 0) {
+			if (publishes && !writing) {
+				const helpers = [
+					...new Set([
+						...[...chains.values()].flatMap((chain) =>
+							[...chain.visited].filter((name) => /^test:(app|journey)(:|$)/u.test(name)),
+						),
+						...[...reachable]
+							.filter((project) => /^(app|journey)(:|$)/u.test(project))
+							.map((project) => `test:${project}`),
+					]),
+				].sort()
+				if (helpers.length > 0) {
+					const invocations = [
+						...new Map([...chains.values()].flatMap((chain) => [...chain.readings])),
+					]
+						.filter(([, reading]) =>
+							reading.projects.some((project) => /^(app|journey)(:|$)/u.test(project)),
+						)
+						.map(([name]) => `${name}: ${scripts[name]}`)
+					return {
+						field: 'projects',
+						message: `The publishing manifest at ${target} reaches application or journey suites from ${gateNames}: ${helpers.join(', ')}.${invocations.length > 0 ? ` Reached invocations: ${invocations.join('; ')}.` : ''} Remove their invocations from the gate chains and run them on demand.`,
+						blocking: false,
+						groups: ['configs'],
+					}
+				}
+			}
 			if (
+				!publishes &&
 				!writing &&
 				expected['test:journey'] !== undefined &&
 				!chains.get('test')?.visited.has('test:journey')
