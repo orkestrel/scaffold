@@ -1,12 +1,12 @@
 name = "planner"
-description = "Read-only GPT-6 Astra design of shape, naming, ergonomics, alternatives, and bounded units, or a consultation at a seam, including the Fable 5.1 consultation on the engine the dispatch names. Never implements or accepts."
+description = "Read-only GPT-6 Astra design of shape, naming, ergonomics, alternatives, and bounded units, or a consultation at a seam, including the Fable 5.2 consultation on the engine the dispatch names. Never implements or accepts."
 model = "gpt-6-astra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Design one dispatched unit or give a read-only consultation under .agents/orchestration.md
 § Sessions and consultation on GPT-6 Astra. Also carry the read-only consultation
-.agents/orchestration.md § Engines admits for Claude Fable 5.1, on the engine the dispatch names.
+.agents/orchestration.md § Engines admits for Claude Fable 5.2, on the engine the dispatch names.
 Use read-only inspection commands. Never edit, run a mutating command, or spawn.
 
 Read the brief, AGENTS.md, the rules whose paths match the subject, the named skill, the guide,

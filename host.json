@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "8145f2f9f3f50c4a3b9ce82c9725ec275edc45fb579bb63968827bcf4372d08f"
+			"digest": "24c84e5e89148d6da9873e1b49b415e6c86a226fefab0752b6ac0329d8814017"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -580,7 +580,7 @@
 			"storage": "claude/AGENTS.md",
 			"destination": ".claude/AGENTS.md",
 			"executable": false,
-			"digest": "50ec7a68e73e34faa43ee12b6be72525b2556291753c7211766d3ea0d46687df"
+			"digest": "5571dce7ab4cb46693a23a3265ce14b5985a0f0fc9771cd72db83a18474392a7"
 		},
 		{
 			"storage": "claude/agents/analyst.md",
@@ -634,7 +634,7 @@
 			"storage": "claude/agents/planner.md",
 			"destination": ".claude/agents/planner.md",
 			"executable": false,
-			"digest": "4ff794553c157a4fa325edd3822fd9a94764bac9b579f5e66f4a1d1db6a218a1"
+			"digest": "948ce228b81f0ebc0b11dcc034cac9d40a89299ba735cd7467bb1b1554b5e777"
 		},
 		{
 			"storage": "claude/agents/researcher.md",
@@ -874,7 +874,7 @@
 			"storage": "codex/agents/planner.toml",
 			"destination": ".codex/agents/planner.toml",
 			"executable": false,
-			"digest": "a0fa6655aa1a762bc089225b8b72a34e46f4b4be04a59803dd56e7b0bdb1e9fb"
+			"digest": "f9e405b6a893514988ff9cbcc3c4addaf606b3f5f6a0e8d53b2bcd4402304bd8"
 		},
 		{
 			"storage": "codex/agents/researcher.toml",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "8eaaee021a4ab162e4206e8ad1263a18c2a9e6c8592eb6f89d654df115242889"
+	"digest": "b1b34e04214cf08b5c7fe120fbbdbc04463946fedf2db4611b097423d54df6d0"
 }
