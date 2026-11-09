@@ -40,6 +40,7 @@ import {
 	BIN_OUTPUT_PATH,
 	BROWSE_DEV_DEPENDENCIES,
 	BROWSE_UPSTREAM,
+	BROWSER_ENTRIES,
 	CAPTURE_DEV_DEPENDENCIES,
 	CAPTURE_UPSTREAM,
 	CATALOG_AGENT_PATH,
@@ -1340,9 +1341,9 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
  *
  * @remarks
  * A browser-mode run that discovers a runtime package mid-collection reloads the page, so the
- * list names the test package, its browser entry, and every Orkestrel runtime package the
- * blueprint declares or peers with, inline when the line fits the print width and stacked
- * otherwise.
+ * list names the test package, every Orkestrel runtime package the blueprint declares or peers
+ * with, and the `/browser` entry of each one {@link BROWSER_ENTRIES} lists, inline when the
+ * line fits the print width and stacked otherwise.
  *
  * @example
  * ```ts
@@ -1354,25 +1355,28 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
  * ```
  */
 export function blueprintToOptimizedDependencies(blueprint: Blueprint): string {
+	const packages = [
+		...new Set([
+			...(Object.hasOwn(blueprintToDevDependencies(blueprint), '@orkestrel/contract')
+				? ['@orkestrel/contract']
+				: []),
+			...blueprint.dependencies.map((dependency) => dependency.name),
+			...blueprint.peers.map((peer) => peer.name),
+		]),
+	]
+		.filter((name) => name.startsWith('@orkestrel/'))
+		.sort()
 	const names = [
 		'@orkestrel/test',
 		'@orkestrel/test/browser',
-		...[
-			...new Set([
-				...(Object.hasOwn(blueprintToDevDependencies(blueprint), '@orkestrel/contract')
-					? ['@orkestrel/contract']
-					: []),
-				...blueprint.dependencies.map((dependency) => dependency.name),
-				...blueprint.peers.map((peer) => peer.name),
-			]),
-		]
-			.filter((name) => name.startsWith('@orkestrel/'))
-			.sort(),
+		...packages,
+		...packages.filter((name) => BROWSER_ENTRIES.includes(name)).map((name) => `${name}/browser`),
 	]
-	const inline = `\tinclude: [${names.map((name) => `'${name}'`).join(', ')}],`
+	const includes = [...new Set(names)]
+	const inline = `\tinclude: [${includes.map((name) => `'${name}'`).join(', ')}],`
 	return matchesPrintWidth(inline)
 		? `const optimizeDeps = {\n${inline}\n}\n\n`
-		: `const optimizeDeps = {\n\tinclude: [\n${names.map((name) => `\t\t'${name}',`).join('\n')}\n\t],\n}\n\n`
+		: `const optimizeDeps = {\n\tinclude: [\n${includes.map((name) => `\t\t'${name}',`).join('\n')}\n\t],\n}\n\n`
 }
 
 /**

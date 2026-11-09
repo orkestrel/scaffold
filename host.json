@@ -736,7 +736,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "8374fb51dade68150f1d1affb0c066682bc1363eb9186322f19f1ac3fc967431"
+			"digest": "b97edfc023fd91a1435ec6c41a4d5eeae7dc2c78314b0144ad389dd724bc338b"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "14085ac48ce713036f7e68f1bce5c684a758e519e7fbb3c467305d5f8a883c9a"
+			"digest": "a069bf64362815c72fc9111388bdb97ec57a5e268ec275d11cd0030721d1607b"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "b1b34e04214cf08b5c7fe120fbbdbc04463946fedf2db4611b097423d54df6d0"
+	"digest": "b457032f76bbc0d2d3b99b90523652f36e70db911194f5f9e810995ee57afb7e"
 }

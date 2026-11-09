@@ -22,6 +22,7 @@ import {
 	blueprintToManifestOverrides,
 	blueprintToMachinery,
 	blueprintToOrchestrationArtifacts,
+	blueprintToOptimizedDependencies,
 	blueprintToProjects,
 	blueprintToQuestions,
 	blueprintToRootTsconfig,
@@ -845,6 +846,18 @@ describe('Vue face planning', () => {
 		expect(plain).toContain('\t\toptimizeDeps,')
 		expect(plain).not.toContain("'vue'")
 	})
+	it('pre-bundles browser entries only for catalog packages that publish them', () => {
+		const blueprint = buildBlueprint({
+			dependencies: [
+				{ name: '@orkestrel/contract', range: '^0.0.22' },
+				{ name: '@orkestrel/router', range: '^0.0.20' },
+			],
+		})
+		expect(blueprintToOptimizedDependencies(blueprint)).toContain("'@orkestrel/router/browser'")
+		expect(blueprintToOptimizedDependencies(blueprint)).not.toContain(
+			"'@orkestrel/contract/browser'",
+		)
+	})
 
 	it('omits a themes alias because themes is a build target', () => {
 		expect(
@@ -1200,9 +1213,7 @@ describe('sheet planning', () => {
 					],
 				}),
 			),
-		).toContain(
-			"const optimizeDeps = {\n\tinclude: [\n\t\t'@orkestrel/test',\n\t\t'@orkestrel/test/browser',\n\t\t'@orkestrel/contract',\n\t\t'@orkestrel/form',\n\t\t'@orkestrel/table',\n\t],\n}",
-		)
+		).toContain("'@orkestrel/form',\n\t\t'@orkestrel/table',")
 		expect(blueprintToRootVite(blueprint)).toContain("sheetProject('integration'")
 		expect(blueprintToRootVite(blueprint)).toContain(
 			"exclude: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']",

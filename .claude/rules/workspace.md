@@ -166,7 +166,8 @@ environment axis is one project per src/app axis × environment, plus one per ex
   the one root `sheetProject` factory, and run it through its `test:src:<face>` script, which builds
   that face first.
 - Give every browser project `optimizeDeps.include` of `@orkestrel/test`, `@orkestrel/test/browser`,
-  `@orkestrel/contract` where the manifest declares it, and `vue` where the project renders Vue.
+  `@orkestrel/contract` where the manifest declares it, the `/browser` entry of every declared
+  `@orkestrel` package that publishes one, and `vue` where the project renders Vue.
   Give a Node project no `optimizeDeps` setting.
 - Give every browser project `test.browser.commands` from `configs/commands.ts`: each root factory
   that names the Playwright provider reads the record, and a project that spreads another

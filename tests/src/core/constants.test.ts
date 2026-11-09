@@ -1,6 +1,7 @@
 import {
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
+	BROWSER_ENTRIES,
 	createBlueprint,
 	BROWSE_UPSTREAM,
 	CAPTURE_DEV_DEPENDENCIES,
@@ -15,7 +16,14 @@ import {
 	TOOLCHAIN_HOLDS,
 } from '@src/core'
 import { buildBlueprint, DEPENDENCY_TABLES, TOOLCHAIN_RANGE_PATTERN } from '../../setup.js'
-import { collectRuntimeClosure, readCheckoutRanges, selectSeededNames } from '../../setupServer.js'
+import {
+	collectRuntimeClosure,
+	readCheckoutRanges,
+	selectSeededNames,
+	WORKSPACE_ROOT,
+} from '../../setupServer.js'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('browse upstream', () => {
@@ -181,5 +189,25 @@ describe('registry read bounds', () => {
 		expect(MAX_REGISTRY_BYTES).toBeGreaterThan(8_647_138)
 		expect(MAX_TOTAL_REGISTRY_BYTES).toBe(96 * 1_024 * 1_024)
 		expect(MAX_TOTAL_REGISTRY_BYTES).toBeGreaterThan(24 * 1_024 * 1_024)
+	})
+})
+
+describe('browser entries', () => {
+	it('match the packages whose vendored guide names its own /browser entry', () => {
+		const directory = join(WORKSPACE_ROOT, 'guides')
+		const named = readdirSync(directory)
+			.filter((file) => file.endsWith('.md') && file !== 'README.md')
+			.map((file) => file.slice(0, -3))
+			.filter((name) =>
+				["'", '"', '`'].some((quote) =>
+					readFileSync(join(directory, `${name}.md`), 'utf8').includes(
+						`@orkestrel/${name}/browser${quote}`,
+					),
+				),
+			)
+			.map((name) => `@orkestrel/${name}`)
+			.sort()
+		expect(named).toContain('@orkestrel/router')
+		expect([...BROWSER_ENTRIES].sort()).toEqual(named)
 	})
 })

@@ -742,6 +742,33 @@ export const CAPTURE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object
 })
 
 /**
+ * Lists the Orkestrel packages that publish a `/browser` entry, frozen.
+ *
+ * @remarks
+ * A browser test project pre-bundles `<package>/browser` for each declared package listed here,
+ * so a first import mid-run does not reload the page. Each listed package's vendored guide names
+ * its own `/browser` specifier, and the constants test holds the list to the guide mirrors.
+ *
+ * @example
+ * ```ts
+ * import { BROWSER_ENTRIES } from '@orkestrel/scaffold'
+ *
+ * BROWSER_ENTRIES.includes('@orkestrel/router') // true
+ * ```
+ */
+export const BROWSER_ENTRIES: readonly string[] = Object.freeze([
+	'@orkestrel/browser',
+	'@orkestrel/console',
+	'@orkestrel/database',
+	'@orkestrel/form',
+	'@orkestrel/mcp',
+	'@orkestrel/router',
+	'@orkestrel/table',
+	'@orkestrel/test',
+	'@orkestrel/workflow',
+])
+
+/**
  * Lists the capture package and its fleet runtime dependency closure, frozen.
  *
  * @remarks

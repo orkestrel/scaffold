@@ -146,6 +146,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `BROWSE_DEV_DEPENDENCIES`         | const | `Readonly<Record<string, string>>`                                                                | Names the development dependency a browser or styles surface adds.                                                                                                                     |
 | `BROWSE_UPSTREAM`                 | const | `readonly string[]`                                                                               | Lists the packages `@orkestrel/browser` depends on at runtime, directly or transitively, frozen.                                                                                       |
 | `CAPTURE_DEV_DEPENDENCIES`        | const | `Readonly<Record<string, string>>`                                                                | Names the development dependency a browser application's journey axis adds.                                                                                                            |
+| `BROWSER_ENTRIES`                 | const | `readonly string[]`                                                                               | Lists the Orkestrel packages that publish a `/browser` entry, frozen.                                                                                                                  |
 | `CAPTURE_UPSTREAM`                | const | `readonly string[]`                                                                               | Lists the capture package and its fleet runtime dependency closure, frozen.                                                                                                            |
 | `CANON_PATHS`                     | const | `readonly string[]`                                                                               | Lists the instruction-canon paths staged for reading rather than for a target, frozen.                                                                                                 |
 | `CATALOG_AGENT_PATH`              | const | `".claude/agents/orkestrel.md"`                                                                   | Names the agent file whose marker-bounded package table the catalog verb alone owns.                                                                                                   |
@@ -1295,6 +1296,9 @@ carries the `vue` browser extension on an axis whose selection includes `browser
 can import and render the extension's components. A browser application without that
 extension keeps the non-Vue pipeline, and a `src/browser` selection adds no Vue plugin or
 dependency.
+
+Every browser project also pre-bundles each declared `@orkestrel` package's `/browser` entry when
+that package publishes one. Node projects keep no `optimizeDeps` setting.
 
 A structural fact is read when a verb runs, not when the file appears. Writing
 `tests/integration.test.ts` into a workspace sets the fact, but the root configuration on disk was
