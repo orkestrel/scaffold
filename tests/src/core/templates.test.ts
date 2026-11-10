@@ -2,7 +2,7 @@ import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { execute } from '@orkestrel/process/server'
@@ -3015,6 +3015,56 @@ describe('emitted distribution classifier', () => {
 			workspace.destroy()
 		}
 	})
+
+	it('merges an added variable over every inherited name it claims ignoring case', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-environment-' })
+		try {
+			const answers = driveModule(writeDistributionHarness(workspace), 'harness', [
+				`harness.mergeDistributionEnvironment({ NPM_CONFIG_CACHE: 'inherited', Path: 'bin' }, { npm_config_cache: 'scratch' })`,
+				`harness.mergeDistributionEnvironment({ Path: 'bin' }, { npm_config_cache: 'scratch' })`,
+				`harness.mergeDistributionEnvironment({ npm_config_cache: 'inherited' }, {})`,
+			])
+
+			expect(answers).toStrictEqual([
+				{ Path: 'bin', npm_config_cache: 'scratch' },
+				{ Path: 'bin', npm_config_cache: 'scratch' },
+				{ npm_config_cache: 'inherited' },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// npm reads `npm_config_` variables case-insensitively, and a Windows environment block folds
+	// names by case, so the inherited spelling must not outrank the scratch cache the run sets. A
+	// shell would expand `%NPM_ROUTE%` on Windows, so the verbatim key proves the shell-free route.
+	it('runs npm on the scratch cache over an inherited NPM_CONFIG_CACHE, passing each argument verbatim', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-npm-route-' })
+		try {
+			const harness = writeDistributionHarness(workspace)
+			workspace.write(
+				'route/package.json',
+				JSON.stringify({ name: 'route', '%NPM_ROUTE%': 'kept' }),
+			)
+			const scratch = JSON.stringify(join(workspace.path, 'scratch'))
+			const inherited = JSON.stringify(join(workspace.path, 'inherited'))
+			const [command, cache, key] = driveModule(harness, 'harness', [
+				'harness.resolveDistributionNpm()',
+				`(() => { process.env.NPM_CONFIG_CACHE = ${inherited}; const run = harness.runDistributionNpm(['config', 'get', 'cache'], ${JSON.stringify(workspace.path)}, ${scratch}); return { status: run.status, stdout: run.stdout.trim() } })()`,
+				`(() => { process.env.NPM_ROUTE = 'name'; const run = harness.runDistributionNpm(['pkg', 'get', '%NPM_ROUTE%'], ${JSON.stringify(join(workspace.path, 'route'))}, ${scratch}); return { status: run.status, stdout: run.stdout.trim() } })()`,
+			])
+			const cli = join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js')
+			const entry = { file: process.execPath, prefix: [cli], shell: false }
+			const verbatim = { status: 0, stdout: '"kept"' }
+
+			// The entry sits beside the binary in the Windows Node layout; elsewhere the shim route stands.
+			expect(existsSync(cli) ? command : entry).toStrictEqual(entry)
+			expect(cache).toStrictEqual({ status: 0, stdout: join(workspace.path, 'scratch', 'cache') })
+			expect(isRecord(command) && command.shell === false ? key : verbatim).toStrictEqual(verbatim)
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
 
 	it('resolves each runtime against its consumer declaration', async () => {
 		const workspace = createScratch({
