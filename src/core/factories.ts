@@ -75,6 +75,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		global: input?.global ?? false,
 		showcase: input?.showcase ?? false,
 		journey: input?.journey ?? false,
+		base: input?.base ?? input?.app?.includes('browser') ?? false,
 		skills: input?.skills ?? false,
 	}
 	const blueprint = parseBlueprint(parseOwnedJSONValue(candidate))

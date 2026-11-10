@@ -490,6 +490,7 @@ export class CLI implements CLIInterface {
 			themes: command.themes === true,
 			showcase: command.showcase === true,
 			journey: app.includes('browser'),
+			base: app.includes('browser'),
 			bin: command.bin === true,
 			setup: [],
 			dependencies: selectionToPackages(command.dependencies).map((name) => ({
@@ -1377,6 +1378,7 @@ export class CLI implements CLIInterface {
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
+		const browserEntry = resolveContainedPath(target, 'app/browser/main.ts')
 		const skills = resolveContainedPath(target, SKILLS_CONFIG_PATH)
 		const files = tests === undefined ? [] : listFiles(tests)
 		const studies = files.some((path) => {
@@ -1422,6 +1424,7 @@ export class CLI implements CLIInterface {
 			studies,
 			global: global !== undefined && isExactCaseFile(global),
 			journey: journey !== undefined && isExactCaseFile(journey),
+			base: browserEntry !== undefined && isExactCaseFile(browserEntry),
 			skills: skills !== undefined && isExactCaseFile(skills),
 		})
 	}

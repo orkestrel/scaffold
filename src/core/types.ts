@@ -267,7 +267,7 @@ export interface Override {
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
- * `vendors`, `studies`, `global`, `showcase`, `journey`, `styles`, `themes`, and `skills` are structural facts: each is
+ * `vendors`, `studies`, `global`, `showcase`, `journey`, `base`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
@@ -279,6 +279,7 @@ export interface Override {
  * `skills` registers the `skills` Vitest project over the mirrored proofs of the skill
  * scripts a workspace ships under each `.agents/skills/<skill>/scripts/` directory, and adds their
  * scoped typecheck.
+ * `base` selects the exact-case `app/browser/main.ts` entry of the base browser application.
  * `showcase` projects only a browser `app`. The gate answers an absent browser
  * axis with a non-blocking question, so a caller that set the flag learns it
  * emitted nothing and the compile still completes.
@@ -326,6 +327,8 @@ export interface Blueprint {
 	readonly global: boolean
 	readonly showcase: boolean
 	readonly journey: boolean
+	/** Selects the exact-case `app/browser/main.ts` entry of the base browser application. */
+	readonly base: boolean
 	readonly skills: boolean
 }
 

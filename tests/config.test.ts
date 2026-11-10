@@ -379,12 +379,16 @@ describe('selected faces', () => {
 	})
 
 	it('resolves showcase and journey modes for every occupied application', async () => {
-		const applications = [
-			'browser',
-			...collectFrameworks(POLICY_ROOT)
-				.filter((face) => face.startsWith('app/'))
-				.map((face) => face.slice(4)),
-		]
+		const faces = collectFrameworks(POLICY_ROOT)
+			.filter((face) => face.startsWith('app/'))
+			.map((face) => face.slice(4))
+		// The base application is declared by its exact-case entry alone.
+		const candidates = ['browser', ...faces]
+		const applications = candidates.filter(
+			(application) =>
+				existsSync(resolve(POLICY_ROOT, 'app', application)) &&
+				readdirSync(resolve(POLICY_ROOT, 'app', application)).includes('main.ts'),
+		)
 		const manifest = readConfigRecord(
 			JSON.parse(readFileSync(resolve(POLICY_ROOT, 'package.json'), 'utf8')),
 		)
@@ -545,6 +549,20 @@ describe('selected faces', () => {
 				'absent',
 			]),
 		).toThrow('not declared')
+		// The record names an application exactly when its exact-case entry exists.
+		const variant = { name: 'desktop', width: 1280, height: 800 }
+		for (const application of applications) {
+			expect(
+				readConfigRecord(
+					readConfigRecord(Reflect.apply(factory, undefined, [variant, [], application])).test,
+				).include,
+			).toStrictEqual([`tests/app/${application}/integration.test.ts`])
+		}
+		for (const application of candidates.filter((name) => !applications.includes(name))) {
+			expect(() => Reflect.apply(factory, undefined, [variant, [], application])).toThrow(
+				'not declared',
+			)
+		}
 	})
 
 	it('collects both browser setup proofs and optimizes every selected browser factory', async () => {

@@ -12,6 +12,11 @@ import {
 	BROWSER_RESOLVER_EXPORTS,
 	buildAudit,
 	buildBlueprint,
+	buildEmissionMatrix,
+	labelBlueprint,
+	listUndeclaredIdentifiers,
+	listUnusedIdentifiers,
+	listUnexportedImports,
 	buildCatalogEntry,
 	buildCompilerOptions,
 	buildContentArtifact,
@@ -147,6 +152,48 @@ import {
 // read the way the consuming suites read it. Production law is not restated here: a
 // case fails when a fixture stopped supplying what it declares, and the mirrored
 // suites under `tests/src` own what the guards, parsers, and helpers themselves do.
+
+describe('the root configuration identifier readers', () => {
+	it('reports a used identifier the text never declares and accepts a declared one', () => {
+		expect(listUndeclaredIdentifiers('const applications = { vue: appVue }')).toStrictEqual([
+			'appVue',
+		])
+		expect(
+			listUndeclaredIdentifiers(
+				"import { renameSync } from 'node:fs'\nexport function appVue() {}\nconst applications = { vue: appVue }\nrenameSync()",
+			),
+		).toStrictEqual([])
+		expect(listUndeclaredIdentifiers('// appVue renameSync')).toStrictEqual([])
+	})
+
+	it('reports a planned import nothing uses', () => {
+		expect(listUnusedIdentifiers("import { renameSync } from 'node:fs'")).toStrictEqual([
+			'renameSync',
+		])
+		expect(
+			listUnusedIdentifiers("import { renameSync } from 'node:fs'\nrenameSync()"),
+		).toStrictEqual([])
+	})
+
+	it('reports a wrapper import the root never exports', () => {
+		const wrapper = "import { appJourney, resolveWorkspacePath } from '../../vite.config.ts'"
+		expect(
+			listUnexportedImports(wrapper, 'export function resolveWorkspacePath() {}'),
+		).toStrictEqual(['appJourney'])
+		expect(
+			listUnexportedImports(
+				wrapper,
+				'export function resolveWorkspacePath() {}\nexport function appJourney() {}',
+			),
+		).toStrictEqual([])
+	})
+
+	it('spans every app, base, face, journey, and showcase selection once', () => {
+		const matrix = buildEmissionMatrix()
+		expect(matrix).toHaveLength(48)
+		expect(new Set(matrix.map((blueprint) => labelBlueprint(blueprint))).size).toBe(48)
+	})
+})
 
 describe('buildBlueprint', () => {
 	it('returns the minimal published workspace and replaces only the fields the caller names', () => {

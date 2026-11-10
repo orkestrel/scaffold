@@ -404,6 +404,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		global: isBoolean,
 		showcase: isBoolean,
 		journey: isBoolean,
+		base: isBoolean,
 		skills: isBoolean,
 	},
 	['description'],

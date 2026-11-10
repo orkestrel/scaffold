@@ -210,7 +210,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 		resolve,
 		optimizeDeps,
 		publicDir: false,
-		test: {
+{{vuePlugin}}		test: {
 			name: { label: name, color: 'magenta' },
 			root: resolveWorkspacePath('.'),
 			isolate: false,
@@ -306,7 +306,7 @@ export function srcBrowser(override?: UserConfig): UserConfig {
 		resolve,
 		optimizeDeps,
 		publicDir: false,
-		plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
+		plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser'){{vuePlugin}}],
 		build: {
 			emptyOutDir: true,
 			sourcemap: true,
@@ -447,7 +447,7 @@ export function srcBin(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
 		optimizeDeps,
-		plugins: [outputBoundary(output), environmentBoundary('app/browser')],
+		plugins: [outputBoundary(output), environmentBoundary('app/browser'){{vuePlugin}}],
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		build: {

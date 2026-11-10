@@ -186,7 +186,7 @@ one environment, so each is its own project:
 | `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                                                                                                                                                                                  | `test`                                |
 | `setup`             | `tests/setup*.test.ts` other than either `setup:browser` proof | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                                                                                                                                                     | `test`                                |
 | `setup:browser`     | `tests/setupBrowser.test.ts`, `tests/setupStyles.test.ts`      | Prove browser and style setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                                                                                                                                   | `test`                                |
-| `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                                                                                             | On demand; `test` when private        |
+| `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`; every browser factory that loads `setupBrowser.ts`, `srcBrowser`, `appBrowser`, and `sheetProject` included, carries `vue()` when the workspace has a Vue face.                                             | On demand; `test` when private        |
 | `guides`            | `tests/guides.test.ts`                                         | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns                                                                                                                                                           | `test`                                |
 | `conformance`       | `tests/conformance.test.ts`                                    | Where this package drifts from the official tooling it tracks                                                                                                                                                                                                                                                                                          | `test`                                |
 | `tree`              | `tests/tree.test.ts`                                           | The laws this package states about its own real tree that no vendored proof carries                                                                                                                                                                                                                                                                    | `test`                                |
@@ -216,7 +216,7 @@ one environment, so each is its own project:
   factory, which resolves the Vite mode to `browser` or an app-side browser extension and collects
   `tests/app/<application>/integration.test.ts` for that application. The factory merges its
   `override` last, through `mergeOverride`, so an override replaces nothing it does not name. Exclude each collected suite
-  from its application project. Generate `test:journey` and one `test:journey:<framework>` per
+  from its application project. Generate `test:journey` when the workspace has the base entry `app/browser/main.ts`, and one `test:journey:<framework>` per
   app-side browser extension, and place them by the gate-placement paragraph that follows.
 
 Keep `conformance`, `tree`, `integration`, `distribution`, `studies`, and `service` as separate
@@ -232,9 +232,9 @@ parallelism in `service`. In a `private: true` workspace, never declare `prepubl
 In both kinds of workspace, run `studies` on demand through `npm run test:studies` alone.
 Keep `test:studies` out of every gate and chain.
 In a publishing workspace, run application and journey suites on demand through `test:app`,
-`test:app:<environment>`, `test:app:<framework>`, `test:journey`, and
+`test:app:<environment>`, `test:app:<framework>`, `test:journey` (with the base entry), and
 `test:journey:<framework>`. Keep them out of every release gate and chain.
-In a `private: true` workspace, keep `test:app` in `test`, followed by `test:journey` and
+In a `private: true` workspace, keep `test:app` in `test`, followed by `test:journey` (with the base entry) and
 each `test:journey:<framework>` the workspace declares.
 
 One project sits on neither axis. `probe` includes `tmp/probes/**/*.test.ts` so an agent can run a
@@ -328,7 +328,7 @@ Build/check config alignment:
 | `prepublishOnly`             | Publishing workspaces only: the gate chain, then the isolated release proofs |
 | `prepack`                    | Publishing workspaces only: rebuild `dist/` so a pack ships current output   |
 
-- In a publishing workspace, `prepublishOnly` runs `build:showcase` and every
+- In a publishing workspace, `prepublishOnly` runs `build:showcase` when the workspace has the base entry, and every
   `build:showcase:<framework>` script after `npm run build`.
 - List `showcase/` and `*.min.*` in `.prettierignore`, so formatting never rewrites a committed page or a minified generated record. Give the `.min` suffix only to a record an instrument writes from an installed package in compact form (a JSON inventory over 1 MB, for example), never to authored source, and read such a record through a guarded reader. Never list a source file there; `.claude/rules/styles.md` § Prohibitions states how a pinned recreation stays formatter-stable.
 

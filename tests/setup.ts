@@ -226,9 +226,133 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		global: false,
 		showcase: false,
 		journey: false,
+		base: fields?.base ?? fields?.app?.includes('browser') ?? false,
 		skills: false,
 		...fields,
 	}
+}
+
+/** Lists the identifiers a planned root configuration must declare or import wherever it uses one. */
+export const ROOT_IDENTIFIERS: readonly string[] = Object.freeze([
+	'applications',
+	'capture',
+	'JourneyVariant',
+	'appJourney',
+	'appVue',
+	'appBrowser',
+	'renameSync',
+	'viteSingleFile',
+	'resolvePath',
+])
+
+/**
+ * Lists the planned root identifiers a root configuration uses and never declares.
+ *
+ * @param root - The text of a planned root `vite.config.ts`.
+ * @returns Each identifier of `ROOT_IDENTIFIERS` the text uses without an import, a function, or a constant.
+ *
+ * @example
+ * ```ts
+ * listUndeclaredIdentifiers('const applications = { vue: appVue }') // ['appVue']
+ * ```
+ */
+export function listUndeclaredIdentifiers(text: string): readonly string[] {
+	const root = text.replace(/^[ \t]*\/\/.*$/gmu, '')
+	const imports = root.match(/^import[\s\S]*?from '[^']*'$/gmu) ?? []
+	return ROOT_IDENTIFIERS.filter((name) => {
+		const word = new RegExp(`\\b${name}\\b`, 'gu')
+		const total = (root.match(word) ?? []).length
+		const imported = imports.reduce(
+			(sum, statement) => sum + (statement.match(word) ?? []).length,
+			0,
+		)
+		const defined = (root.match(new RegExp(`^(?:export function|const) ${name}\\b`, 'gmu')) ?? [])
+			.length
+		return total - imported - defined > 0 && imported + defined === 0
+	})
+}
+
+/**
+ * Lists the planned root identifiers a root configuration imports and never uses.
+ *
+ * @param text - The text of a planned root `vite.config.ts`.
+ * @returns Each identifier of `ROOT_IDENTIFIERS` that an import names and nothing else mentions.
+ *
+ * @example
+ * ```ts
+ * listUnusedIdentifiers("import { renameSync } from 'node:fs'") // ['renameSync']
+ * ```
+ */
+export function listUnusedIdentifiers(text: string): readonly string[] {
+	const root = text.replace(/^[ \t]*\/\/.*$/gmu, '')
+	const imports = root.match(/^import[\s\S]*?from '[^']*'$/gmu) ?? []
+	return ROOT_IDENTIFIERS.filter((name) => {
+		const word = new RegExp(`\\b${name}\\b`, 'gu')
+		const total = (root.match(word) ?? []).length
+		const imported = imports.reduce(
+			(sum, statement) => sum + (statement.match(word) ?? []).length,
+			0,
+		)
+		return imported > 0 && total === imported
+	})
+}
+
+/**
+ * Lists the names a wrapper imports from the root configuration that the root does not export.
+ *
+ * @param wrapper - The text of a planned `configs/app` wrapper.
+ * @param root - The text of the planned root `vite.config.ts`.
+ * @returns The imported names the root never exports.
+ *
+ * @example
+ * ```ts
+ * listUnexportedImports("import { appJourney } from '../../vite.config.ts'", '') // ['appJourney']
+ * ```
+ */
+export function listUnexportedImports(wrapper: string, root: string): readonly string[] {
+	const names = (wrapper.match(/import \{([^}]*)\} from '[^']*vite\.config[^']*'/u)?.[1] ?? '')
+		.split(',')
+		.map((name) => name.trim())
+		.filter((name) => name !== '')
+	return names.filter(
+		(name) => !new RegExp(`^export (?:function|const) ${name}\\b`, 'mu').test(root),
+	)
+}
+
+/** Names the selection of a blueprint that decides its root configuration, for a failure message. */
+export function labelBlueprint(blueprint: Blueprint): string {
+	return JSON.stringify([
+		blueprint.app,
+		blueprint.base,
+		blueprint.extensions.length,
+		blueprint.journey,
+		blueprint.showcase,
+	])
+}
+
+/** Lists the admitted-selection matrix the root configuration property is read over. */
+export function buildEmissionMatrix(): readonly Blueprint[] {
+	const apps: ReadonlyArray<readonly Environment[]> = [['core'], ['browser'], ['core', 'browser']]
+	const flags = [false, true]
+	return apps.flatMap((app) =>
+		flags.flatMap((base) =>
+			[[], ['app']].flatMap((axes) =>
+				flags.flatMap((journey) =>
+					flags.map((showcase) =>
+						buildBlueprint({
+							src: ['core'],
+							app: [...app],
+							base,
+							journey,
+							showcase,
+							extensions:
+								axes.length === 0 ? [] : [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+						}),
+					),
+				),
+			),
+		),
+	)
 }
 
 /** Lists dispatch-build byte pins for selections without a tree proof. */

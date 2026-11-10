@@ -61,10 +61,20 @@ import {
 } from '@src/core'
 import { loadConfigFromFile, mergeConfig } from 'vite'
 import { createVitest } from 'vitest/node'
-import { environmentBoundary, outputBoundary, resolveCompiler } from '../../../configs/helpers.js'
+import {
+	environmentBoundary,
+	outputBoundary,
+	resolveApplication,
+	resolveCompiler,
+} from '../../../configs/helpers.js'
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import {
 	buildBlueprint,
+	buildEmissionMatrix,
+	labelBlueprint,
+	listUndeclaredIdentifiers,
+	listUnusedIdentifiers,
+	listUnexportedImports,
 	TREE_EMISSION_CASES,
 	DISTRIBUTION_SELECTIONS,
 	buildContentArtifact,
@@ -947,7 +957,9 @@ describe('Vue face planning', () => {
 		expect(
 			configs.find(({ path }) => path === 'configs/app/tsconfig.browser.json')?.content,
 		).not.toContain('.vue')
-		expect(vite).toContain("plugins: [outputBoundary(output), environmentBoundary('app/browser')]")
+		expect(vite).toContain(
+			`plugins: [outputBoundary(output), environmentBoundary('app/browser')${axes.length > 0 ? ', vue()' : ''}]`,
+		)
 	})
 
 	it('rolls up declarations and externalizes published siblings without declaring a Vue peer', () => {
@@ -2852,6 +2864,329 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToScripts(disabled)).not.toHaveProperty('journey')
 		expect(blueprintToScripts(disabled)).not.toHaveProperty('capture')
 		expect(blueprintToScripts(disabled).test).not.toContain('test:journey')
+	})
+
+	it('plans a face-only browser application without its base entry', () => {
+		const blueprint = buildBlueprint({
+			src: [],
+			app: ['core', 'browser', 'server'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+			journey: true,
+			showcase: true,
+			base: false,
+		})
+		const source = [
+			...blueprintToSourceArtifacts(blueprint),
+			...blueprintToTestArtifacts(blueprint),
+		].map(({ path }) => path)
+		const config = blueprintToConfigArtifacts(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+		const root = blueprintToRootVite(blueprint)
+		expect(source).toContain('app/browser/index.ts')
+		expect(source).not.toContain('app/browser/main.ts')
+		expect(source).not.toContain('app/browser/index.html')
+		expect(source).not.toContain('tests/app/browser/integration.test.ts')
+		expect(config.map(({ path }) => path)).toContain('configs/app/vite.browser.config.ts')
+		expect(config.map(({ path }) => path)).toContain('configs/app/vite.journey.config.ts')
+		expect(config.map(({ path }) => path)).toContain('configs/app/vite.showcase.config.ts')
+		expect(scripts).not.toHaveProperty('dev')
+		expect(scripts).not.toHaveProperty('build:app:browser')
+		expect(scripts).not.toHaveProperty('showcase')
+		expect(scripts).not.toHaveProperty('build:showcase')
+		expect(scripts).not.toHaveProperty('test:journey')
+		expect(scripts).not.toHaveProperty('journey')
+		expect(scripts).not.toHaveProperty('capture')
+		expect(scripts['dev:vue']).toBe('vite --config configs/app/vite.vue.config.ts')
+		expect(scripts['build:app']).toBe('npm run build:app:server && npm run build:app:vue')
+		expect(scripts['test:journey:vue']).toContain('--mode vue')
+		expect(scripts['journey:vue']).toBe('capture journey --mode vue')
+		expect(scripts['capture:vue']).toBe('capture frames --mode vue')
+		expect(scripts.test).toContain('npm run test:journey:vue')
+		expect(scripts.test).not.toMatch(/npm run test:journey(?:\s|$)/u)
+		expect(root).toContain('const applications = {\n\tvue: appVue,\n}')
+		expect(root).not.toContain('\tbrowser: appBrowser,')
+		expect(root).toContain(
+			"plugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()]",
+		)
+	})
+
+	it('advises once on base when the browser environment has no entry or face', () => {
+		const blueprint = buildBlueprint({ src: [], app: ['browser'], base: false })
+		expect(blueprintToQuestions(blueprint)).toStrictEqual([
+			{
+				field: 'base',
+				message:
+					'No base browser entry or app-side browser face is declared, so browser scripts and arrival artifacts are omitted.',
+				blocking: false,
+			},
+		])
+	})
+
+	it('plans the base artifacts and scripts only when base is set', () => {
+		const fields = { src: [], app: ['browser'], journey: true, showcase: true } as const
+		const off = buildBlueprint({ ...fields, base: false })
+		const on = buildBlueprint({ ...fields, base: true })
+		const names = ['dev', 'build:app:browser', 'showcase', 'build:showcase', 'journey', 'capture']
+		const arrival = 'tests/app/browser/integration.test.ts'
+		for (const [blueprint, base] of [
+			[off, false],
+			[on, true],
+		] as const) {
+			const scripts = blueprintToScripts(blueprint)
+			const paths = [
+				...blueprintToSourceArtifacts(blueprint),
+				...blueprintToTestArtifacts(blueprint),
+			].map(({ path }) => path)
+			const planned = [...names, 'test:journey']
+			expect(planned.filter((name) => Object.hasOwn(scripts, name))).toStrictEqual(
+				base ? planned : [],
+			)
+			expect(scripts.test?.includes('npm run test:journey')).toBe(base)
+			const files = ['app/browser/main.ts', 'app/browser/index.html', arrival]
+			expect(files.filter((path) => paths.includes(path))).toStrictEqual(base ? files : [])
+			expect(blueprintToRootVite(blueprint).includes('browser: appBrowser')).toBe(base)
+			// The environment keeps its entry, check script, and project either way.
+			expect(paths).toContain('app/browser/index.ts')
+			expect(scripts['check:app:browser']).toBe('tsc --noEmit -p configs/app/tsconfig.browser.json')
+			expect(blueprintToProjects(blueprint)).toContain('app:browser')
+		}
+	})
+
+	it('refuses the default and browser journey modes when base is off', () => {
+		const records: ReadonlyArray<readonly [boolean, readonly string[]]> = [
+			[false, ['vue']],
+			[true, ['browser', 'vue']],
+		]
+		for (const [base, declared] of records) {
+			const root = blueprintToRootVite(
+				createBlueprint('proof', {
+					src: ['core'],
+					app: ['core', 'browser'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+					journey: true,
+					base,
+				}),
+			)
+			const body = root.match(/const applications = \{\r?\n([^}]*)\}/u)?.[1] ?? ''
+			const record = Object.fromEntries(
+				body.split(/\r\n|\n/u).flatMap((line) => {
+					const name = line.trim().split(':')[0] ?? ''
+					return name === '' ? [] : [[name, true]]
+				}),
+			)
+			expect(Object.keys(record)).toStrictEqual(declared)
+			const modes = [undefined, 'browser', 'vue'] as const
+			const accepted = modes.filter((mode) => declared.includes(mode ?? 'browser'))
+			const refused = modes.filter((mode) => !declared.includes(mode ?? 'browser'))
+			for (const mode of accepted) {
+				expect(resolveApplication(mode, record)).toBe(mode ?? 'browser')
+			}
+			for (const mode of refused) {
+				expect(() => resolveApplication(mode, record)).toThrow('not declared')
+			}
+		}
+	})
+
+	it('gives srcBrowser, appBrowser, and their projects the Vue plugin only in a Vue workspace', () => {
+		const fields = {
+			src: ['core', 'browser'],
+			app: ['core', 'browser'],
+			journey: true,
+			showcase: true,
+		} as const
+		const vue = blueprintToRootVite(
+			buildBlueprint({
+				...fields,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			}),
+		)
+		const plain = blueprintToRootVite(buildBlueprint(fields))
+		for (const plugins of [
+			"plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser'), vue()],",
+			"plugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],",
+		]) {
+			expect(vue).toContain(plugins)
+			expect(plain).toContain(plugins.replace(', vue()', ''))
+		}
+		expect(plain).not.toContain('vue()')
+		expect(plain).not.toContain('@vitejs/plugin-vue')
+	})
+
+	it('plans no journey axis when base is off and no app-side browser face exists', () => {
+		const fields = { src: [], app: ['browser'], journey: true } as const
+		const off = buildBlueprint({ ...fields, base: false })
+		const on = buildBlueprint({ ...fields, base: true })
+		for (const [blueprint, planned] of [
+			[off, false],
+			[on, true],
+		] as const) {
+			const root = blueprintToRootVite(blueprint)
+			const config = blueprintToConfigArtifacts(blueprint).map(({ path }) => path)
+			const scripts = blueprintToScripts(blueprint)
+			expect([
+				root.includes('appJourney'),
+				root.includes('JourneyVariant'),
+				root.includes('const capture ='),
+				config.includes('configs/app/vite.journey.config.ts'),
+				Object.hasOwn(scripts, 'test:journey'),
+			]).toStrictEqual([planned, planned, planned, planned, planned])
+		}
+		expect(blueprintToQuestions(off)).toContainEqual({
+			field: 'journey',
+			message:
+				'journey projects a browser application, and this workspace declares neither a base entry nor an app-side browser face, so it emits nothing.',
+			blocking: false,
+		})
+		expect(blueprintToQuestions(on).map(({ field }) => field)).not.toContain('journey')
+	})
+
+	it('builds the application faces whenever the base build is absent', () => {
+		const faces = [{ surface: 'browser', name: 'vue', axes: ['app'] }] as const
+		for (const app of [['browser'], ['core', 'browser']] as const) {
+			const scripts = blueprintToScripts(
+				buildBlueprint({ src: [], app, extensions: faces, base: false }),
+			)
+			expect(scripts['build:app']).toBe('npm run build:app:vue')
+			expect(scripts['build:app:vue']).toBe('vite build --config configs/app/vite.vue.config.ts')
+		}
+		const bare = blueprintToScripts(buildBlueprint({ src: [], app: ['browser'], base: false }))
+		expect(bare['build:app']).toBe('npm run check:app:browser')
+		expect(bare['check:app:browser']).toBeDefined()
+		const core = blueprintToScripts(buildBlueprint({ src: [], app: ['core'] }))
+		expect(core['build:app']).toBe('npm run check:app:core')
+		expect(core['check:app:core']).toBeDefined()
+	})
+
+	it('names build:showcase in prepublishOnly only for a base application', () => {
+		const fields = {
+			src: ['core'],
+			app: ['browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+			showcase: true,
+		} as const
+		const off = blueprintToScripts(buildBlueprint({ ...fields, base: false })).prepublishOnly
+		const on = blueprintToScripts(buildBlueprint({ ...fields, base: true })).prepublishOnly
+		expect(off).toContain('npm run build:showcase:vue')
+		expect(off).not.toMatch(/npm run build:showcase(?! *:)/u)
+		expect(on).toContain('npm run build && npm run build:showcase && npm run build:showcase:vue')
+	})
+
+	it('writes the face journey and capture scripts through repair', () => {
+		const blueprint = buildBlueprint({
+			src: [],
+			app: ['core', 'browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+			journey: true,
+			base: false,
+		})
+		const region = blueprintToWritableScripts(blueprint)
+		const names = region.map(({ name }) => name)
+		expect(names).toContain('journey:vue')
+		expect(names).toContain('capture:vue')
+		const lacking = JSON.stringify({ scripts: { 'dev:vue': 'x' } }, null, '\t')
+		const written = replaceManifestScripts(lacking, region)
+		expect(written).toContain('"journey:vue": "capture journey --mode vue"')
+		expect(written).toContain('"capture:vue": "capture frames --mode vue"')
+		const plain = JSON.stringify({ scripts: {} }, null, '\t')
+		const faceless = replaceManifestScripts(
+			plain,
+			blueprintToWritableScripts(
+				buildBlueprint({ src: [], app: ['core', 'browser'], journey: true, base: true }),
+			),
+		)
+		expect(faceless).toContain('"journey": "capture journey"')
+		expect(faceless).toContain('"capture": "capture frames"')
+		expect(faceless).not.toContain('"journey:')
+		expect(faceless).not.toContain('"capture:')
+	})
+
+	it('gives the sheet projects the Vue plugin only in a Vue workspace', () => {
+		const fields = { src: ['core'], styles: true, setup: ['browser'], integration: true } as const
+		const vue = blueprintToRootVite(
+			buildBlueprint({
+				...fields,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+				src: ['core', 'browser'],
+			}),
+		)
+		const plain = blueprintToRootVite(buildBlueprint(fields))
+		const head = 'export function sheetProject(name: string, override?: UserConfig): UserConfig {'
+		const openVue = vue.slice(vue.indexOf(head), vue.indexOf(head) + 400)
+		const openPlain = plain.slice(plain.indexOf(head), plain.indexOf(head) + 400)
+		expect(openVue).toContain('\t\tplugins: [vue()],\n\t\ttest: {')
+		expect(openPlain).toContain('\t\tpublicDir: false,\n\t\ttest: {')
+		expect(openPlain).not.toContain('plugins:')
+		expect(plain).not.toContain('vue()')
+	})
+
+	it('declares every planned identifier the root configuration uses across the admitted matrix', () => {
+		const admitted = buildEmissionMatrix().filter((blueprint) =>
+			blueprintToQuestions(blueprint).every(({ blocking }) => !blocking),
+		)
+		expect(admitted.length).toBeGreaterThan(0)
+		const undeclared = admitted.flatMap((blueprint) =>
+			listUndeclaredIdentifiers(blueprintToRootVite(blueprint)).map(
+				(name) => `${labelBlueprint(blueprint)} ${name}`,
+			),
+		)
+		expect(undeclared).toStrictEqual([])
+		const unused = admitted.flatMap((blueprint) =>
+			listUnusedIdentifiers(blueprintToRootVite(blueprint)).map(
+				(name) => `${labelBlueprint(blueprint)} ${name}`,
+			),
+		)
+		expect(unused).toStrictEqual([])
+		const unexported = admitted.flatMap((blueprint) => {
+			const artifacts = blueprintToConfigArtifacts(blueprint)
+			const root = artifacts.find(({ path }) => path === 'vite.config.ts')?.content ?? ''
+			return artifacts
+				.filter(({ path }) => path.startsWith('configs/app/vite.') && path.endsWith('.config.ts'))
+				.flatMap(({ path, content }) =>
+					listUnexportedImports(content ?? '', root).map(
+						(name) => `${labelBlueprint(blueprint)} ${path} ${name}`,
+					),
+				)
+		})
+		expect(unexported).toStrictEqual([])
+	})
+
+	it('plans no browser application where the app axis holds no browser environment', () => {
+		const face = [{ surface: 'browser', name: 'vue', axes: ['app'] }] as const
+		const base = buildBlueprint({ src: ['core'], app: ['core'], base: true, showcase: true })
+		const faced = buildBlueprint({
+			src: ['core'],
+			app: ['core'],
+			extensions: face,
+			journey: true,
+			showcase: true,
+		})
+		const scripts = blueprintToScripts(base)
+		expect(
+			['dev', 'showcase', 'build:showcase'].filter((name) => Object.hasOwn(scripts, name)),
+		).toStrictEqual([])
+		expect(blueprintToRootVite(base).includes('browser: appBrowser')).toBe(false)
+		const paths = blueprintToConfigArtifacts(faced).map(({ path }) => path)
+		expect(paths).not.toContain('configs/app/vite.journey.config.ts')
+		expect(paths).not.toContain('configs/app/vite.showcase.config.ts')
+		const root = blueprintToRootVite(faced)
+		expect(
+			['appJourney', 'JourneyVariant', 'appVue'].filter((name) => root.includes(name)),
+		).toStrictEqual([])
+	})
+
+	it('writes no face script for a base journey workspace without a face', () => {
+		const blueprint = buildBlueprint({
+			src: [],
+			app: ['core', 'browser'],
+			journey: true,
+			base: true,
+		})
+		const names = blueprintToWritableScripts(blueprint).map(({ name }) => name)
+		expect(names).toContain('journey')
+		expect(names).toContain('capture')
+		expect(
+			names.filter((name) => name.startsWith('journey:') || name.startsWith('capture:')),
+		).toStrictEqual([])
 	})
 
 	it('advises a journey selection without a browser application', () => {
@@ -5411,7 +5746,9 @@ describe('compilers over a caller-supplied list with a hole', () => {
 	it('refuses a hole in app when planning the config artifacts', () => {
 		const app = buildTrailingHole<Environment>('core')
 
-		expect(() => blueprintToConfigArtifacts(buildBlueprint({ app }))).toThrow(TypeError)
+		expect(() => blueprintToConfigArtifacts(buildBlueprint({ app, base: false }))).toThrow(
+			TypeError,
+		)
 	})
 
 	it('plans a hole in src as an undefined environment among the source artifacts', () => {
@@ -5424,7 +5761,9 @@ describe('compilers over a caller-supplied list with a hole', () => {
 
 	it('plans a hole in app as an undefined environment among the source artifacts', () => {
 		const app = buildTrailingHole<Environment>('core')
-		const paths = blueprintToSourceArtifacts(buildBlueprint({ app })).map(({ path }) => path)
+		const paths = blueprintToSourceArtifacts(buildBlueprint({ app, base: false })).map(
+			({ path }) => path,
+		)
 
 		expect(paths).toContain('app/undefined/index.ts')
 		expect(paths).toContain('app/core/index.ts')
@@ -5441,7 +5780,9 @@ describe('compilers over a caller-supplied list with a hole', () => {
 
 	it('plans a hole in app as an undefined environment among the test artifacts', () => {
 		const app = buildTrailingHole<Environment>('core')
-		const artifacts = blueprintToTestArtifacts(buildBlueprint({ app, integration: true }))
+		const artifacts = blueprintToTestArtifacts(
+			buildBlueprint({ app, base: false, integration: true }),
+		)
 		const integration = artifacts.find(({ path }) => path === INTEGRATION_TEST_PATH)
 
 		expect(artifacts.map(({ path }) => path)).toContain('tests/app/undefined/index.test.ts')
@@ -5626,7 +5967,7 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 				readLazily<Environment>(
 					shape,
 					() => 'core',
-					(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+					(app) => blueprintToConfigArtifacts(buildBlueprint({ app, base: false })),
 					refuseText,
 				),
 			{
@@ -5648,21 +5989,27 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 				readLazily<Environment>(
 					shape,
 					() => 'browser',
-					(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+					(app) => blueprintToConfigArtifacts(buildBlueprint({ app, base: true })),
 					refuseText,
 				),
 			{
-				hole: { outcome: 'TypeError', reads: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+				hole: {
+					outcome: 'TypeError',
+					reads: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				},
 				refused: { outcome: 'RangeError', reads: [1] },
 				refusal: {
 					outcome: 'TypeError',
 					reads: [
-						0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+						0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0,
+						0, 1, 0,
 					],
 				},
 				dense: {
 					outcome: 'return',
-					reads: [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+					reads: [
+						0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
+					],
 				},
 			},
 		),
@@ -5683,7 +6030,7 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 				readLazily<Environment>(
 					shape,
 					() => 'core',
-					(app) => blueprintToSourceArtifacts(buildBlueprint({ app })),
+					(app) => blueprintToSourceArtifacts(buildBlueprint({ app, base: false })),
 					refuseText,
 				),
 			{ hole: { outcome: 'return', reads: [1] }, refused: { outcome: 'RangeError', reads: [1] } },
@@ -5710,7 +6057,7 @@ describe('compilers over a caller-supplied list read one entry at a time', () =>
 				readLazily<Environment>(
 					shape,
 					() => 'core',
-					(app) => blueprintToTestArtifacts(buildBlueprint({ app })),
+					(app) => blueprintToTestArtifacts(buildBlueprint({ app, base: false })),
 					refuseText,
 				),
 			{
@@ -5862,7 +6209,7 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 		buildMissingCase(
 			'the app a script plan is read over',
 			(): Environment => 'core',
-			(app) => blueprintToScripts(buildBlueprint({ app })),
+			(app) => blueprintToScripts(buildBlueprint({ app, base: false })),
 			[0, 1],
 		),
 		// The config plan reads each list through its index methods many times before the iterator.
@@ -5875,14 +6222,14 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 		buildMissingCase(
 			'the app a config plan is read over',
 			(): Environment => 'core',
-			(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
+			(app) => blueprintToConfigArtifacts(buildBlueprint({ app, base: false })),
 			[0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
 		),
 		buildMissingCase(
 			'the app a browser config plan is read over',
 			(): Environment => 'browser',
-			(app) => blueprintToConfigArtifacts(buildBlueprint({ app })),
-			[0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+			(app) => blueprintToConfigArtifacts(buildBlueprint({ app, base: true })),
+			[0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
 		),
 		buildMissingCase(
 			'the src a source plan is read over',
@@ -5892,7 +6239,7 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 		buildMissingCase(
 			'the app a source plan is read over',
 			(): Environment => 'core',
-			(app) => blueprintToSourceArtifacts(buildBlueprint({ app })),
+			(app) => blueprintToSourceArtifacts(buildBlueprint({ app, base: false })),
 		),
 		buildMissingCase(
 			'the src a test plan is read over',
@@ -5903,7 +6250,7 @@ describe('compilers over a list without an iterator refuse it as the loop did', 
 		buildMissingCase(
 			'the app a test plan is read over',
 			(): Environment => 'core',
-			(app) => blueprintToTestArtifacts(buildBlueprint({ app })),
+			(app) => blueprintToTestArtifacts(buildBlueprint({ app, base: false })),
 			[0, 1, 0, 1, 0, 1],
 		),
 	])('refuses $label after the reads it names', ({ read, reads }) => {
@@ -5924,7 +6271,7 @@ describe('compilers over a list that serves one iterator read it where the loops
 		],
 		[
 			'app',
-			(app: Environment[]) => blueprintToScripts(buildBlueprint({ app })),
+			(app: Environment[]) => blueprintToScripts(buildBlueprint({ app, base: false })),
 			['get:0', 'get:1', 'iter', 'next', 'get:0', 'next', 'get:1', 'next', 'iter'],
 		],
 	])(

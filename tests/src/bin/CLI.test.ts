@@ -3224,7 +3224,7 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.ensure('target/app/browser')
+			workspace.write('target/app/browser/main.ts', 'export {}\n')
 			const preserved: string[] = []
 			for (const state of ['absent', 'wrong', 'node', 'browser', 'styles', 'present']) {
 				workspace.remove('target/tests')
@@ -3287,6 +3287,48 @@ describe('CLI audit', () => {
 				}
 			}
 			expect(preserved).toStrictEqual(['// adopter variants\n'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads the base browser application from the exact-case app/browser/main.ts entry', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			for (const state of ['present', 'absent', 'folded']) {
+				workspace.remove('target/app')
+				workspace.remove('target/configs/app')
+				workspace.ensure('target/app/browser')
+				workspace.ensure('target/app/vue')
+				if (state === 'present') workspace.write('target/app/browser/main.ts', 'export {}\n')
+				if (state === 'folded') workspace.write('target/app/browser/Main.ts', 'export {}\n')
+				workspace.write('target/configs/app/vite.journey.config.ts', '// adopter variants\n')
+				const blueprint = createBlueprint('sample', {
+					src: ['core'],
+					app: ['browser'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+					journey: true,
+					base: state === 'present',
+				})
+				workspace.write('target/package.json', buildAlignedManifest(blueprint))
+				const sink = createSink()
+				const exit = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				])
+				expect(exit, `${state}: ${sink.diagnostic.join('\n')}`).toBe(EXIT_CLEAN)
+				const root = requireValue(workspace.read('target/vite.config.ts'))
+				expect([state, root.includes('browser: appBrowser')]).toStrictEqual([
+					state,
+					state === 'present',
+				])
+			}
 		} finally {
 			workspace.destroy()
 		}
@@ -3892,7 +3934,7 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/tree.test.ts', 'export {}\n')
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/tests/setupGlobal.ts', 'export {}\n')
-			workspace.ensure('target/app/browser')
+			workspace.write('target/app/browser/main.ts', 'export {}\n')
 			workspace.write('target/configs/app/vite.showcase.config.ts', 'export {}\n')
 			const blueprint = createBlueprint('sample', {
 				src: ['core'],

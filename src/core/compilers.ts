@@ -353,7 +353,11 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 			]),
 		),
 		...(rendered && !BROWSE_UPSTREAM.includes(own) ? BROWSE_DEV_DEPENDENCIES : {}),
-		...(blueprint.journey && blueprint.app.includes('browser') && !CAPTURE_UPSTREAM.includes(own)
+		...(blueprint.journey &&
+		blueprint.app.includes('browser') &&
+		(blueprint.base ||
+			blueprintToFaces(blueprint).some((extension) => extension.axes.includes('app'))) &&
+		!CAPTURE_UPSTREAM.includes(own)
 			? CAPTURE_DEV_DEPENDENCIES
 			: {}),
 		...(sheets ? STYLES_DEV_DEPENDENCIES : {}),
@@ -623,13 +627,16 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	const application = blueprintToFaces(blueprint).flatMap((extension) =>
 		extension.surface === 'browser' && extension.axes.includes('app') ? [extension.name] : [],
 	)
+	const base = blueprint.base && blueprint.app.includes('browser')
 	const sheets = blueprintToSheets(blueprint)
 	const targets = [...sheets, ...(blueprint.themes && !blueprint.styles ? ['themes'] : [])]
 	const checker = application.includes('vue') ? FRAMEWORK_MATRIX.vue.checker : 'tsc'
 	const publishes = blueprint.src.length > 0 || targets.length > 0
 	const integrates = blueprint.integration
 	const compiles = publishes || blueprint.bin
-	const runtime = blueprint.app.filter((environment) => environment !== 'core')
+	const runtime = blueprint.app.filter(
+		(environment) => environment !== 'core' && (environment !== 'browser' || base),
+	)
 	const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'
 	const checks = [...blueprint.src, ...source, ...sheets, ...(blueprint.bin ? ['bin'] : [])].map(
 		(name) => `npm run check:src:${name}`,
@@ -697,8 +704,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		test: [
 			...(compiles ? ['npm run test:src'] : []),
 			...(!publishes && blueprint.app.length > 0 ? ['npm run test:app'] : []),
-			...(!publishes && blueprint.journey && blueprint.app.includes('browser')
-				? ['npm run test:journey', ...application.map((name) => `npm run test:journey:${name}`)]
+			...(!publishes && blueprint.journey && (base || application.length > 0)
+				? [
+						...(base ? ['npm run test:journey'] : []),
+						...application.map((name) => `npm run test:journey:${name}`),
+					]
 				: []),
 			'npm run test:policy',
 			'npm run test:config',
@@ -779,13 +789,19 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.setup.includes('browser')
 			? { 'test:setup:browser': `${vitest} --project setup:browser` }
 			: {}),
-		...(blueprint.journey && blueprint.app.includes('browser')
+		...(blueprint.journey && (base || application.length > 0)
 			? {
-					'test:journey': journey,
-					journey: 'capture journey',
-					capture: 'capture frames',
+					...(base
+						? { 'test:journey': journey, journey: 'capture journey', capture: 'capture frames' }
+						: {}),
 					...Object.fromEntries(
 						application.map((name) => [`test:journey:${name}`, `${journey} --mode ${name}`]),
+					),
+					...Object.fromEntries(
+						application.map((name) => [`journey:${name}`, `capture journey --mode ${name}`]),
+					),
+					...Object.fromEntries(
+						application.map((name) => [`capture:${name}`, `capture frames --mode ${name}`]),
 					),
 				}
 			: {}),
@@ -851,11 +867,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.app.length > 0
 			? {
 					'build:app':
-						runtime.length > 0
+						runtime.length + application.length > 0
 							? [...runtime, ...application]
 									.map((environment) => `npm run build:app:${environment}`)
 									.join(' && ')
-							: 'npm run check:app:core',
+							: `npm run check:app:${blueprint.app.includes('core') ? 'core' : 'browser'}`,
 					...Object.fromEntries(
 						[...runtime, ...application].map((environment) => [
 							`build:app:${environment}`,
@@ -864,28 +880,30 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 					),
 				}
 			: {}),
-		...(blueprint.app.includes('browser')
+		...(base
 			? {
 					dev: 'vite --config configs/app/vite.browser.config.ts',
-					...Object.fromEntries(
-						application.map((name) => [
-							`dev:${name}`,
-							`vite --config configs/app/vite.${name}.config.ts`,
-						]),
-					),
 					...(blueprint.showcase
 						? {
 								showcase,
 								'build:showcase': buildShowcase,
-								...Object.fromEntries(
-									application.flatMap((name): ReadonlyArray<readonly [string, string]> => [
-										[`showcase:${name}`, `${showcase} --mode ${name}`],
-										[`build:showcase:${name}`, `${buildShowcase} --mode ${name}`],
-									]),
-								),
 							}
 						: {}),
 				}
+			: {}),
+		...Object.fromEntries(
+			application.map((name) => [
+				`dev:${name}`,
+				`vite --config configs/app/vite.${name}.config.ts`,
+			]),
+		),
+		...(blueprint.showcase
+			? Object.fromEntries(
+					application.flatMap((name): ReadonlyArray<readonly [string, string]> => [
+						[`showcase:${name}`, `${showcase} --mode ${name}`],
+						[`build:showcase:${name}`, `${buildShowcase} --mode ${name}`],
+					]),
+				)
 			: {}),
 		...(blueprint.app.includes('server')
 			? {
@@ -900,7 +918,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 						'npm run format:check && npm run lint:check && npm run check && npm run build',
 						...(blueprint.showcase && blueprint.app.includes('browser')
 							? [
-									'npm run build:showcase',
+									...(base ? ['npm run build:showcase'] : []),
 									...application.map((name) => `npm run build:showcase:${name}`),
 								]
 							: []),
@@ -926,7 +944,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication lifecycle scripts.
  * Sheet and framework faces add their check and build scripts, application frameworks add dev scripts,
  * and selected showcases and journeys add their mode scripts.
- * A browser application's journey axis also adds `journey` and `capture`. Their generated
+ * A base browser application's journey axis also adds `journey` and `capture`, and each
+ * app-side browser face adds `journey:<name>` and `capture:<name>`. Their generated
  * commands are writable and have no predecessor forms; customized values remain caller-owned.
  * Aggregate test scripts and
  * maintainer-owned gate chains stay outside the region.
@@ -971,7 +990,10 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 					(axis) =>
 						name === `check:${axis}:${extension.name}` ||
 						name === `build:${axis}:${extension.name}` ||
-						(axis === 'app' && name === `dev:${extension.name}`),
+						(axis === 'app' &&
+							(name === `dev:${extension.name}` ||
+								name === `journey:${extension.name}` ||
+								name === `capture:${extension.name}`)),
 				),
 		)
 		const showcase =
@@ -1188,7 +1210,10 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
 			hosted ||
 			blueprintToSheets(blueprint).length > 0 ||
 			blueprint.themes,
-		showcase: blueprint.showcase && blueprint.app.includes('browser'),
+		showcase:
+			blueprint.showcase &&
+			((blueprint.base && blueprint.app.includes('browser')) ||
+				blueprintToFaces(blueprint).some((extension) => extension.axes.includes('app'))),
 	}
 }
 
@@ -1402,6 +1427,11 @@ export function blueprintToOptimizedDependencies(blueprint: Blueprint): string {
 export function blueprintToRootVite(blueprint: Blueprint): string {
 	const machinery = blueprintToMachinery(blueprint)
 	const planned = new Set(blueprintToProjects(blueprint))
+	const applicationFaces = blueprintToFaces(blueprint).filter((extension) =>
+		extension.axes.includes('app'),
+	)
+	const base = blueprint.base && blueprint.app.includes('browser')
+	const journeyed = blueprint.journey && (base || applicationFaces.length > 0)
 	const sheets = blueprintToSheets(blueprint)
 	const styled = sheets.length > 0 || blueprint.themes
 	// A browser test runs in the browser, so it cannot start a Node fixture for
@@ -1447,13 +1477,20 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 `,
 				]
 			: []),
-		...(styled ? [CONFIG_TEMPLATES.factories.sheet] : []),
+		...(styled
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.sheet, {
+						vuePlugin: machinery.frameworks.includes('vue') ? '\t\tplugins: [vue()],\n' : '',
+					}),
+				]
+			: []),
 		...(planned.has('src:core') ? [CONFIG_TEMPLATES.factories.src.core] : []),
 		// Each of the two source factories asks the axis for core once, where it renders.
 		...(planned.has('src:browser')
 			? [blueprint.src.includes('core')].map((core) =>
 					fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
 						external,
+						vuePlugin: machinery.frameworks.includes('vue') ? ', vue()' : '',
 						output: core
 							? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
 							: '\t\t\t\toutput: {},',
@@ -1490,18 +1527,20 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		...(planned.has('app:browser')
 			? [
 					fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
+						vuePlugin: machinery.frameworks.includes('vue') ? ', vue()' : '',
 						showcaseFactory: machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : '',
-						journeyFactory: blueprint.journey ? CONFIG_TEMPLATES.factories.app.journey : '',
-						journeyExclude: blueprint.journey
-							? "\t\t\texclude: ['tests/app/browser/integration.test.ts'],\n"
-							: '',
+						journeyFactory: journeyed ? CONFIG_TEMPLATES.factories.app.journey : '',
+						journeyExclude:
+							blueprint.journey && base
+								? "\t\t\texclude: ['tests/app/browser/integration.test.ts'],\n"
+								: '',
 					}),
 				]
 			: []),
 		...(planned.has('app:vue')
 			? [
 					fillTemplate(CONFIG_TEMPLATES.factories.app.vue, {
-						journeyExclude: blueprint.journey
+						journeyExclude: journeyed
 							? "\t\t\texclude: ['tests/app/vue/integration.test.ts'],\n"
 							: '\t\t\texclude: [],\n',
 					}),
@@ -1596,10 +1635,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	].filter((helper) => body.includes(helper))
 	const helperImport = `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
-		journey:
-			blueprint.journey && blueprint.app.includes('browser')
-				? "import type { JourneyVariant } from '@orkestrel/test'\n"
-				: '',
+		journey: journeyed ? "import type { JourneyVariant } from '@orkestrel/test'\n" : '',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
 		helpers:
 			helpers.length === 0
@@ -1617,14 +1653,9 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 					"// Vitest writes a page.screenshot() capture beside its test file unless a directory is named.\nconst screenshots = resolveWorkspacePath('tmp/captures/screenshots')\n\n" +
 					blueprintToOptimizedDependencies(blueprint)
 				: '') +
-			(blueprint.journey && blueprint.app.includes('browser')
-				? "const capture = process.env.CAPTURE === '1'\n\n"
-				: '') +
-			((blueprint.journey || blueprint.showcase) && blueprint.app.includes('browser')
-				? `const applications = {\n\tbrowser: appBrowser,\n${blueprintToFaces(blueprint)
-						.filter(
-							(extension) => extension.surface === 'browser' && extension.axes.includes('app'),
-						)
+			(journeyed ? "const capture = process.env.CAPTURE === '1'\n\n" : '') +
+			((blueprint.journey || blueprint.showcase) && (base || applicationFaces.length > 0)
+				? `const applications = {\n${base ? '\tbrowser: appBrowser,\n' : ''}${applicationFaces
 						.map(
 							(extension) =>
 								`\t${extension.name}: app${extension.name[0]?.toUpperCase()}${extension.name.slice(1)},\n`,
@@ -1652,6 +1683,10 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
  * ```
  */
 export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artifact[] {
+	const applicationFaces = blueprintToFaces(blueprint).filter((extension) =>
+		extension.axes.includes('app'),
+	)
+	const base = blueprint.base && blueprint.app.includes('browser')
 	const roots: readonly Artifact[] = [
 		{
 			path: 'tsconfig.json',
@@ -1883,7 +1918,7 @@ ${paths.join('\n')}
 		}),
 	)
 	const showcase: readonly Artifact[] =
-		blueprint.showcase && blueprint.app.includes('browser')
+		blueprint.showcase && (base || applicationFaces.length > 0)
 			? [
 					{
 						path: SHOWCASE_CONFIG_PATH,
@@ -1896,7 +1931,7 @@ ${paths.join('\n')}
 				]
 			: []
 	const journey: readonly Artifact[] =
-		blueprint.journey && blueprint.app.includes('browser')
+		blueprint.journey && (base || applicationFaces.length > 0)
 			? [
 					{
 						path: JOURNEY_CONFIG_PATH,
@@ -2001,27 +2036,29 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 				content: ARTIFACT_TEMPLATES.source.empty,
 			}
 			if (environment === 'browser') {
-				return [
-					entry,
-					{
-						path: 'app/browser/main.ts',
-						group: 'source',
-						ownership: 'birth',
-						origin: 'template',
-						environment,
-						content: fillTemplate(ARTIFACT_TEMPLATES.source.main, {
-							heading: `${matchesPrintWidth(`\t.appendChild(document.createElement('h1')).textContent = ${serializeTypeScriptString(blueprint.name)}`) ? ' ' : '\n\t'}${serializeTypeScriptString(blueprint.name)}`,
-						}),
-					},
-					{
-						path: 'app/browser/index.html',
-						group: 'source',
-						ownership: 'birth',
-						origin: 'template',
-						environment,
-						content: ARTIFACT_TEMPLATES.source.browser,
-					},
-				]
+				const base: readonly ContentArtifact[] = blueprint.base
+					? [
+							{
+								path: 'app/browser/main.ts',
+								group: 'source',
+								ownership: 'birth',
+								origin: 'template',
+								environment,
+								content: fillTemplate(ARTIFACT_TEMPLATES.source.main, {
+									heading: `${matchesPrintWidth(`\t.appendChild(document.createElement('h1')).textContent = ${serializeTypeScriptString(blueprint.name)}`) ? ' ' : '\n\t'}${serializeTypeScriptString(blueprint.name)}`,
+								}),
+							},
+							{
+								path: 'app/browser/index.html',
+								group: 'source',
+								ownership: 'birth',
+								origin: 'template',
+								environment,
+								content: ARTIFACT_TEMPLATES.source.browser,
+							},
+						]
+					: []
+				return [entry, ...base]
 			}
 			return environment === 'server'
 				? [
@@ -2241,10 +2278,15 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				},
 			]
 		: []
+	const base = blueprint.base && blueprint.app.includes('browser')
 	const journeys: readonly ContentArtifact[] =
-		blueprint.journey && blueprint.app.includes('browser')
+		blueprint.journey &&
+		(base ||
+			blueprintToFaces(blueprint).some(
+				(extension) => extension.surface === 'browser' && extension.axes.includes('app'),
+			))
 			? [
-					'browser',
+					...(base ? ['browser'] : []),
 					...blueprintToFaces(blueprint).flatMap((extension) =>
 						extension.surface === 'browser' && extension.axes.includes('app')
 							? [extension.name]
@@ -3551,28 +3593,46 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					},
 				]
 			: []),
-		...ENVIRONMENTS.flatMap((environment) => [
-			...(blueprint.src.filter((declared) => declared === environment).length > 1
-				? [
-						{
-							field: 'src',
-							message: `src declares ${environment} more than once.`,
-							blocking: true,
-							candidates: ENVIRONMENTS,
-						},
-					]
-				: []),
-			...(blueprint.app.filter((declared) => declared === environment).length > 1
-				? [
-						{
-							field: 'app',
-							message: `app declares ${environment} more than once.`,
-							blocking: true,
-							candidates: ENVIRONMENTS,
-						},
-					]
-				: []),
-		]),
+		...ENVIRONMENTS.flatMap((environment) => {
+			const selected = blueprint.app.filter((declared) => declared === environment).length
+			return [
+				...(blueprint.src.filter((declared) => declared === environment).length > 1
+					? [
+							{
+								field: 'src',
+								message: `src declares ${environment} more than once.`,
+								blocking: true,
+								candidates: ENVIRONMENTS,
+							},
+						]
+					: []),
+				...(selected > 1
+					? [
+							{
+								field: 'app',
+								message: `app declares ${environment} more than once.`,
+								blocking: true,
+								candidates: ENVIRONMENTS,
+							},
+						]
+					: []),
+				...(environment === 'browser' &&
+				selected > 0 &&
+				blueprint.base === false &&
+				blueprint.extensions.every(
+					(extension) => extension.surface !== 'browser' || !extension.axes.includes('app'),
+				)
+					? [
+							{
+								field: 'base',
+								message:
+									'No base browser entry or app-side browser face is declared, so browser scripts and arrival artifacts are omitted.',
+								blocking: false,
+							},
+						]
+					: []),
+			]
+		}),
 		// An extension's own questions are read with the extension, and the repeat of an earlier
 		// selection is judged after every extension has been read.
 		...Iterator.from(blueprint.extensions)
@@ -3675,12 +3735,18 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					},
 				]
 			: []),
-		...(blueprint.journey && !blueprint.app.includes('browser')
+		...(blueprint.journey &&
+		(!blueprint.app.includes('browser') ||
+			(!blueprint.base &&
+				blueprint.extensions.every(
+					(extension) => extension.surface !== 'browser' || !extension.axes.includes('app'),
+				)))
 			? [
 					{
 						field: 'journey',
-						message:
-							'journey projects a browser app, and this workspace declares none, so it emits nothing.',
+						message: blueprint.app.includes('browser')
+							? 'journey projects a browser application, and this workspace declares neither a base entry nor an app-side browser face, so it emits nothing.'
+							: 'journey projects a browser app, and this workspace declares none, so it emits nothing.',
 						blocking: false,
 					},
 				]
