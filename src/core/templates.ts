@@ -672,6 +672,37 @@ export function appServer(override?: UserConfig): UserConfig {
 	}
 }
 `,
+			barrel: `function resolveBarrelExternal(id: string): boolean {
+	if (id.startsWith('node:')) return true
+	if (id.startsWith('@app/') || id.startsWith('@src/') || id.startsWith('.') || id.startsWith('/'))
+		return false
+	return /^(?:@[\\w.~-]+\\/)?[\\w.~-]+(?:\\/|$)/u.test(id)
+}
+
+export function appBarrel(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		publicDir: false,
+		plugins: [outputBoundary('dist/app/server'), environmentBoundary('app/server')],
+		build: {
+			emptyOutDir: false,
+			lib: {
+				entry: resolveWorkspacePath('app/server/index.ts'),
+				formats: ['es'],
+				fileName: () => 'index.js',
+			},
+			outDir: resolveWorkspacePath('dist/app/server'),
+			target: 'node22',
+			rolldownOptions: {
+				onLog: enforceBuildLog,
+				external: resolveBarrelExternal,
+				output: { codeSplitting: false },
+			},
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
 		}),
 		policy: `export function policy(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
@@ -1261,6 +1292,11 @@ export default defineConfig(appBrowser())
 import { appServer } from '../../vite.config.ts'
 
 export default defineConfig(appServer())
+`,
+			barrel: `import { defineConfig } from 'vite'
+import { appBarrel } from '../../vite.config.ts'
+
+export default defineConfig(appBarrel())
 `,
 			showcase: `import { defineConfig } from 'vite'
 import { appShowcase } from '../../vite.config.ts'

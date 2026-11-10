@@ -139,6 +139,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `ARTIFACT_GROUPS`                 | const | `readonly ArtifactGroup[]`                                                                        | Lists the `ArtifactGroup` values in plan order, frozen.                                                                                                                                |
 | `ARTIFACT_TEMPLATES`              | const | `ArtifactTemplateSet`                                                                             | Holds formatter-stable template text for source, test, document, guide, and service artifacts.                                                                                         |
 | `AXES`                            | const | `readonly Axis[]`                                                                                 | Lists the axes a browser extension may occupy, frozen.                                                                                                                                 |
+| `BARREL_CONFIGS`                  | const | `readonly string[]`                                                                               | Lists the configuration file a workspace with studies and a server application adds, frozen.                                                                                           |
 | `BASE_DEV_DEPENDENCIES`           | const | `Readonly<Record<string, string>>`                                                                | Holds the baseline tooling versions, before framework holds apply.                                                                                                                     |
 | `BIN_CONFIGS`                     | const | `readonly string[]`                                                                               | Lists the configuration files a workspace that ships its own executable adds, frozen.                                                                                                  |
 | `BIN_ENTRY_PATH`                  | const | `"src/bin/main.ts"`                                                                               | Names the executable entry whose presence makes a workspace `bin`.                                                                                                                     |
@@ -297,6 +298,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `manifestToDependencies`           | function | `(manifest: string) => ManifestDependencySet`                                                                                                      | Projects a package manifest's text to the `@orkestrel/*` packages each dependency section declares. |
 | `manifestToName`                   | function | `(manifest: string) => string \| undefined`                                                                                                        | Projects a package manifest's text to its own name.                                                 |
 | `matchesArtifactDriftReachability` | function | `(ownership: Ownership, finding: ArtifactFinding) => boolean`                                                                                      | Tests whether `inferArtifactDrift` could have produced a finding for an ownership.                  |
+| `matchesBarrel`                    | function | `(blueprint: Blueprint) => boolean`                                                                                                                | Tests whether a workspace plans the application server barrel build.                                |
 | `matchesEngines`                   | function | `(engines: string) => boolean`                                                                                                                     | Tests whether a declared engines floor is at or above the supported minimum.                        |
 | `matchesOrchestrationPath`         | function | `(path: string) => boolean`                                                                                                                        | Tests whether a path instructs or wires an agent rather than the toolchain.                         |
 | `matchesPrintWidth`                | function | `(line: string) => boolean`                                                                                                                        | Tests whether one emitted line fits the vendored formatter width.                                   |
@@ -1686,6 +1688,19 @@ scratch entry through the real wrapper in each target that holds `app/server`, r
 and splits it under a control. Scaffold's `tests/src/core/templates.test.ts` runs the emitted file in a staged
 server root, builds explicit output lists through the factory parameter, and runs the vendored case
 in staged server targets under a mutation of the factory and of the control.
+
+A workspace that selects `studies` and the `server` application also builds the server's barrel,
+`app/server/index.ts`, because `@orkestrel/study` loads the package under study as ES modules. The
+`appBarrel` factory, the content-owned `configs/app/vite.barrel.config.ts` wrapper, and the
+`build:app:barrel` script exist only under that condition, and `build:app` runs the script after
+`build:app:server`. The build emits the single file `dist/app/server/index.js` with `@app/*` and
+`@src/*` specifiers and relative imports inlined, and `node:` and every installed package specifier
+left external. It sets `emptyOutDir` to `false`, so `main.cjs` stays byte-identical. A workspace
+without both conditions plans none of the three. Scaffold's `tests/src/core/templates.test.ts` builds both entries in a
+staged root, compares the `main.cjs` digest across the barrel step, builds the barrel twice for one
+`index.js` digest, imports the file in Node, and holds each claim under a control. The vendored
+`tests/config.test.ts` repeats the externals, digest, and `main.cjs` readings in each target that
+plans the barrel.
 
 ### The migration guard
 

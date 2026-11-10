@@ -1,5 +1,6 @@
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -1018,6 +1019,149 @@ describe('emitted workspaces under their own gates', () => {
 		// suite run is contention rather than work.
 	}, 30_000)
 
+	// A study loads the app server's barrel as ESM, so a studies-and-server workspace
+	// builds `app/server/index.ts` into `dist/app/server/index.js` after `main.cjs`.
+	// The staged chain builds the server wrapper, records the bytes of `main.cjs`, then
+	// builds the barrel wrapper. Each claim has a control that fails under the same
+	// conditions: the barrel wrapper with `emptyOutDir` on deletes `main.cjs`, an
+	// `external` that returns false for a bare package inlines it, and a changed source
+	// changes the digest. The emitted file is imported by a Node child as ESM.
+	it('builds the barrel after the server entry and leaves main.cjs untouched', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-barrel-' })
+		const root = workspace.ensure('server')
+		try {
+			const blueprint = createBlueprint('sample', { app: ['core', 'server'], studies: true })
+			stageRootConfig(blueprint, workspace, 'server')
+			for (const path of [
+				'configs/app/vite.server.config.ts',
+				'configs/app/vite.barrel.config.ts',
+			]) {
+				const wrapper = requireValue(
+					blueprintToConfigArtifacts(blueprint).find((artifact) => artifact.path === path),
+				)
+				if (wrapper.origin === 'host') throw new Error('Expected a Vite wrapper')
+				workspace.write(`server/${path}`, wrapper.content)
+			}
+			workspace.write('server/app/core/index.ts', "export const greeting = 'hello'\n")
+			workspace.write(
+				'server/app/server/main.ts',
+				"process.stdout.write('entry\\n')\nvoid import('./lazy.js')\n",
+			)
+			workspace.write('server/app/server/lazy.ts', 'export const lazy = true\n')
+			// A dynamically imported module proves the barrel stays one file with splitting off.
+			workspace.write('server/app/server/later.ts', 'export const later = 1\n')
+			const source = [
+				"import { join } from 'node:path'",
+				"import { isString } from '@orkestrel/contract'",
+				"import { greeting } from '@app/core'",
+				"import { lazy } from './lazy.js'",
+				'export const served: string = String(isString(greeting)) + String(join(greeting, "x").length) + String(lazy)',
+				"export const pending = (): Promise<unknown> => import('./later.js')",
+				'',
+			].join('\n')
+			workspace.write('server/app/server/index.ts', source)
+			const stages = [
+				{ name: 'server', wrapper: 'server', index: source, inline: false, empty: false },
+				{ name: 'barrel', wrapper: 'barrel', index: source, inline: false, empty: false },
+				{ name: 'again', wrapper: 'barrel', index: source, inline: false, empty: false },
+				{
+					name: 'changed',
+					wrapper: 'barrel',
+					index: `${source}export const extra = 1\n`,
+					inline: false,
+					empty: false,
+				},
+				{ name: 'inlined', wrapper: 'barrel', index: source, inline: true, empty: false },
+				{ name: 'emptying', wrapper: 'barrel', index: source, inline: false, empty: true },
+			]
+			const dist = join(root, 'dist/app/server')
+			const readings: Array<{
+				readonly name: string
+				readonly roster: readonly string[]
+				readonly cjs: string | undefined
+				readonly digest: string | undefined
+				readonly text: string
+			}> = []
+			for (const { name, wrapper, index, inline, empty } of stages) {
+				workspace.write('server/app/server/index.ts', index)
+				const loaded = requireValue(
+					await loadConfigFromFile(
+						{ command: 'build', mode: 'production' },
+						join(root, `configs/app/vite.${wrapper}.config.ts`),
+						root,
+					),
+				)
+				await build({
+					...loaded.config,
+					root,
+					configFile: false,
+					logLevel: 'warn',
+					build: {
+						...loaded.config.build,
+						...(empty ? { emptyOutDir: true } : {}),
+						rolldownOptions: {
+							...loaded.config.build?.rolldownOptions,
+							...(inline ? { external: /^node:/u } : {}),
+						},
+					},
+				})
+				const roster = readdirSync(dist).toSorted()
+				const text = roster.includes('index.js') ? readFileSync(join(dist, 'index.js'), 'utf8') : ''
+				readings.push({
+					name,
+					roster,
+					cjs: roster.includes('main.cjs')
+						? createHash('sha256')
+								.update(readFileSync(join(dist, 'main.cjs')))
+								.digest('hex')
+						: undefined,
+					digest: roster.includes('index.js')
+						? createHash('sha256').update(text).digest('hex')
+						: undefined,
+					text,
+				})
+			}
+			const [server, barrel, again, changed, inlined, emptying] = readings
+			// The barrel step adds `index.js` and leaves the bytes of `main.cjs` alone.
+			expect(server?.roster).toStrictEqual(['main.cjs'])
+			expect(barrel?.roster).toStrictEqual(['index.js', 'main.cjs'])
+			expect(server?.cjs).toBeDefined()
+			expect(barrel?.cjs).toBe(server?.cjs)
+			// Bare packages stay bare and `@app/` specifiers are inlined.
+			expect(barrel?.text).toMatch(/from ["']@orkestrel\/contract["']/u)
+			expect(barrel?.text).toMatch(/from ["']node:path["']/u)
+			expect(barrel?.text).not.toContain('@app/')
+			expect(barrel?.text).not.toMatch(/from ["']\.\/lazy/u)
+			expect(barrel?.text).toContain('"hello"')
+			// Determinism, with a changed source as its control.
+			expect(again?.digest).toBe(barrel?.digest)
+			expect(changed?.digest).not.toBe(barrel?.digest)
+			// Control for the externals: an `external` that returns false inlines the package.
+			expect(inlined?.text).not.toMatch(/from ["']@orkestrel\/contract["']/u)
+			// Control for `main.cjs`: the barrel wrapper with `emptyOutDir` on deletes it.
+			expect(emptying?.roster).toStrictEqual(['index.js'])
+
+			// The emitted file imports in Node as ESM and exposes the barrel's export.
+			const url = pathToFileURL(join(dist, 'index.js')).href
+			expect(
+				execFileSync(
+					process.execPath,
+					[
+						'--input-type=module',
+						'-e',
+						`import(${JSON.stringify(url)}).then((m) => process.stdout.write(JSON.stringify(m)))`,
+					],
+					{ stdio: 'pipe', encoding: 'utf8', windowsHide: true, timeout: 15_000 },
+				),
+			).toBe('{"served":"true7true"}')
+		} finally {
+			workspace.destroy()
+		}
+		// Seven real Rolldown builds and one Node child, predicted under ten seconds
+		// together; the budget carries slack because the cost under a full suite run is
+		// contention rather than work.
+	}, 60_000)
+
 	// An override's output list merges with the factory's configuration before the
 	// default applies, so the default has to fill the members the caller wrote and add no
 	// output of its own. Each row reaches the factory through its real parameter and is
@@ -1335,6 +1479,96 @@ export default appServer(override)
 		// cap and the case carries room for all five, because the cost under a full suite
 		// run is contention rather than work.
 	}, 480_000)
+
+	// This checkout holds no `app/server` and no studies, so the vendored barrel case takes
+	// its absence branch here. The case stages a target with both, copies the real vendored
+	// files and runs the barrel case through a nested Vitest. Two further staged copies
+	// carry one mutation each: a factory whose `emptyOutDir` is on and a factory whose
+	// `external` inlines bare packages. Each has to fail at its own assertion, so a pass
+	// cannot be a run that reached none.
+	it('runs the vendored barrel proof in a staged target and fails under mutation', async () => {
+		const title = 'builds the application server barrel to bare externals beside main.cjs'
+		expect(readFileSync(resolve('tests/config.test.ts'), 'utf8')).toContain(title)
+		const cases = [
+			{ prefix: 'present', edits: [], code: 0, text: '1 passed' },
+			{
+				prefix: 'emptying',
+				edits: [
+					{
+						from: "emptyOutDir: false,\n\t\t\tlib: {\n\t\t\t\tentry: resolveWorkspacePath('app/server/index.ts')",
+						to: "emptyOutDir: true,\n\t\t\tlib: {\n\t\t\t\tentry: resolveWorkspacePath('app/server/index.ts')",
+					},
+				],
+				code: 1,
+				text: 'expected true to be false',
+			},
+			{
+				prefix: 'inlining',
+				edits: [
+					{
+						from: 'external: resolveBarrelExternal,',
+						to: "external: (id: string) => id.startsWith('node:'),",
+					},
+				],
+				code: 1,
+				text: 'bare: false',
+			},
+		]
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-barrel-vendored-',
+		})
+		try {
+			for (const { prefix, edits, code, text } of cases) {
+				const blueprint = createBlueprint('sample', { app: ['core', 'server'], studies: true })
+				stageRootConfig(blueprint, workspace, prefix)
+				workspace.link(`${prefix}/node_modules/@orkestrel/scaffold`, resolve('.'))
+				for (const artifact of [
+					...blueprintToConfigArtifacts(blueprint),
+					...blueprintToSourceArtifacts(blueprint),
+					...blueprintToTestArtifacts(blueprint),
+				]) {
+					if (artifact.origin !== 'host')
+						workspace.write(`${prefix}/${artifact.path}`, artifact.content)
+				}
+				workspace.write(`${prefix}/tests/studies/adapter.test.ts`, '')
+				for (const path of ['tests/config.test.ts', 'tests/setupPolicy.ts', 'configs/policy.ts']) {
+					workspace.write(`${prefix}/${path}`, readFileSync(resolve(path), 'utf8'))
+				}
+				for (const { from, to } of edits) {
+					const before = requireValue(workspace.read(`${prefix}/vite.config.ts`))
+					expect(before).toContain(from)
+					workspace.write(`${prefix}/vite.config.ts`, before.replace(from, to))
+				}
+				const staged = join(workspace.path, prefix)
+				expect(existsSync(join(staged, 'configs/app/vite.barrel.config.ts'))).toBe(true)
+				const result = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'run',
+							'--config',
+							'vite.config.ts',
+							'--project',
+							'config',
+							'tests/config.test.ts',
+							'-t',
+							title,
+						],
+					},
+					{ workspace: staged, timeout: 90_000, strict: false },
+				)
+				expect(`${result.stdout}${result.stderr}`).toContain(text)
+				expect(result.code).toBe(code)
+			}
+		} finally {
+			workspace.destroy()
+		}
+		// Three nested Vitest runs, each loading the staged configuration, the vendored
+		// policy modules and four real Rolldown builds; the budget carries room for all
+		// three because the cost under a full suite run is contention rather than work.
+	}, 360_000)
 
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)

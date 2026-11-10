@@ -35,6 +35,7 @@ import {
 	APP_SERVER_DEV_DEPENDENCIES,
 	AXES,
 	BASE_DEV_DEPENDENCIES,
+	BARREL_CONFIGS,
 	BIN_CONFIGS,
 	BIN_ENTRY_PATH,
 	BIN_OUTPUT_PATH,
@@ -86,6 +87,7 @@ import {
 	computeHash,
 	computeTotal,
 	inferArtifactGroup,
+	matchesBarrel,
 	matchesEngines,
 	matchesPrintWidth,
 	scanManifestTokens,
@@ -638,6 +640,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		(environment) => environment !== 'core' && (environment !== 'browser' || base),
 	)
 	const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'
+	// The barrel pass follows the server pass: it empties nothing, so `main.cjs` survives it.
+	const built = [...runtime, ...application].flatMap((environment) =>
+		environment === 'server' && matchesBarrel(blueprint) ? [environment, 'barrel'] : [environment],
+	)
 	const checks = [...blueprint.src, ...source, ...sheets, ...(blueprint.bin ? ['bin'] : [])].map(
 		(name) => `npm run check:src:${name}`,
 	)
@@ -868,12 +874,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			? {
 					'build:app':
 						runtime.length + application.length > 0
-							? [...runtime, ...application]
-									.map((environment) => `npm run build:app:${environment}`)
-									.join(' && ')
+							? built.map((environment) => `npm run build:app:${environment}`).join(' && ')
 							: `npm run check:app:${blueprint.app.includes('core') ? 'core' : 'browser'}`,
 					...Object.fromEntries(
-						[...runtime, ...application].map((environment) => [
+						built.map((environment) => [
 							`build:app:${environment}`,
 							`vite build --config configs/app/vite.${environment}.config.ts`,
 						]),
@@ -1547,6 +1551,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 				]
 			: []),
 		...(planned.has('app:server') ? [CONFIG_TEMPLATES.factories.app.server] : []),
+		...(matchesBarrel(blueprint) ? [CONFIG_TEMPLATES.factories.app.barrel] : []),
 		CONFIG_TEMPLATES.factories.policy,
 		CONFIG_TEMPLATES.factories.config,
 		...(planned.has('setup') ? [CONFIG_TEMPLATES.factories.setup] : []),
@@ -1802,6 +1807,16 @@ ${paths.join('\n')}
 						: fillTemplate(CONFIG_TEMPLATES.vites.bin, { paths: renderedPaths }),
 			}))
 		: []
+	const barrels: readonly Artifact[] = matchesBarrel(blueprint)
+		? BARREL_CONFIGS.map((path): Artifact => ({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment: 'server',
+				content: CONFIG_TEMPLATES.vites.app.barrel,
+			}))
+		: []
 	const includeSuffixes = ['cts', 'mts', 'ts', 'tsx']
 	// Each browser and server tsconfig asks the application axis for core where it renders its own
 	// include list, so the axis is read once per such config and never for another.
@@ -1961,6 +1976,7 @@ ${paths.join('\n')}
 		...sources,
 		...bins,
 		...applications,
+		...barrels,
 		...faces,
 		...showcase,
 		...journey,

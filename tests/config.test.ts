@@ -5,6 +5,7 @@ import type { InlineConfig, UserConfig } from 'vite'
 import type { PolicyComment, PolicyDiagnostic, PolicyExpression } from '../configs/policy.js'
 import type { PolicyProject } from './setupPolicy.js'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import {
 	closeSync,
 	existsSync,
@@ -1447,6 +1448,101 @@ describe('root configuration', () => {
 			expect(split).toContain('main.cjs')
 			expect(split?.length).toBeGreaterThan(1)
 		} finally {
+			scratch.destroy()
+		}
+	})
+
+	// A workspace with studies and an `app/server` also builds the server's barrel to the
+	// single ES file `index.js` beside `main.cjs`, which a study loads as ESM. The real
+	// wrapper's configuration builds a scratch entry into a scratch output directory that
+	// already holds a `main.cjs`, four times: as declared twice, with an `external` that
+	// inlines bare packages, and with `emptyOutDir` on. The first build keeps `main.cjs` and
+	// leaves the bare import in place, the second repeats its digest, and the two controls
+	// show the declared options carry the result: the inlined build drops the bare import
+	// and the emptying build deletes `main.cjs`. A workspace without the conditions has no
+	// wrapper, and the assertion classifies the absence.
+	it('builds the application server barrel to bare externals beside main.cjs', async () => {
+		const wrapper = resolve(POLICY_ROOT, 'configs/app/vite.barrel.config.ts')
+		const planned =
+			collectStudies(POLICY_ROOT).length > 0 && existsSync(resolve(POLICY_ROOT, 'app/server'))
+		expect(existsSync(wrapper)).toBe(planned)
+		if (!planned) return
+		const scratch = createPolicyScratch({
+			parent: resolve(POLICY_ROOT, 'app/server'),
+			prefix: 'config-barrel-entry-',
+		})
+		const out = createPolicyScratch({ prefix: 'config-barrel-out-' })
+		try {
+			scratch.write(
+				'index.ts',
+				"import { join } from 'node:path'\nimport { peer } from 'barrel-peer'\nexport const served: string = join(peer, 'x')\n",
+			)
+			scratch.write(
+				'node_modules/barrel-peer/package.json',
+				'{ "name": "barrel-peer", "version": "1.0.0", "type": "module", "main": "index.js" }\n',
+			)
+			scratch.write('node_modules/barrel-peer/index.js', "export const peer = 'peer'\n")
+			const readings: Array<{
+				readonly variant: string
+				readonly kept: boolean
+				readonly bare: boolean
+				readonly digest: string
+			}> = []
+			for (const variant of ['declared', 'repeated', 'inlined', 'emptying']) {
+				out.write('main.cjs', 'main\n')
+				const loaded = await loadConfigFromFile(
+					{ command: 'build', mode: 'production', isSsrBuild: false, isPreview: false },
+					wrapper,
+					POLICY_ROOT,
+					'silent',
+				)
+				if (loaded === null) throw new Error('The barrel wrapper did not load')
+				const rolldown = loaded.config.build?.rolldownOptions
+				expect(loaded.config.build?.emptyOutDir).toBe(false)
+				await build({
+					...loaded.config,
+					root: POLICY_ROOT,
+					configFile: false,
+					logLevel: 'silent',
+					// The output boundary pins the real output directory, which the scratch directory replaces.
+					plugins: (loaded.config.plugins ?? []).filter(
+						(plugin) =>
+							typeof plugin !== 'object' ||
+							plugin === null ||
+							Object.getOwnPropertyDescriptor(plugin, 'name')?.value !==
+								'orkestrel-output-boundary',
+					),
+					build: {
+						...loaded.config.build,
+						outDir: out.path,
+						...(variant === 'emptying' ? { emptyOutDir: true } : {}),
+						lib: {
+							entry: resolve(scratch.path, 'index.ts'),
+							formats: ['es'],
+							fileName: () => 'index.js',
+						},
+						rolldownOptions: {
+							...rolldown,
+							...(variant === 'inlined' ? { external: /^node:/u } : {}),
+						},
+					},
+				})
+				const text = readFileSync(resolve(out.path, 'index.js'), 'utf8')
+				readings.push({
+					variant,
+					kept: existsSync(resolve(out.path, 'main.cjs')),
+					bare: /from ["']barrel-peer["']/u.test(text),
+					digest: createHash('sha256').update(text).digest('hex'),
+				})
+			}
+			const [declared, repeated, inlined, emptying] = readings
+			expect(declared).toMatchObject({ kept: true, bare: true })
+			expect(repeated?.digest).toBe(declared?.digest)
+			expect(inlined).toMatchObject({ kept: true, bare: false })
+			expect(inlined?.digest).not.toBe(declared?.digest)
+			expect(emptying).toMatchObject({ kept: false, bare: true })
+		} finally {
+			out.destroy()
 			scratch.destroy()
 		}
 	})

@@ -837,6 +837,7 @@ export interface ConfigTemplateSet {
 			readonly journey: string
 			readonly showcase: string
 			readonly server: string
+			readonly barrel: string
 		}
 		readonly policy: string
 		readonly config: string
@@ -873,6 +874,7 @@ export interface ConfigTemplateSet {
 			readonly vue: string
 			readonly browser: string
 			readonly server: string
+			readonly barrel: string
 			readonly showcase: string
 			readonly journey: string
 		}

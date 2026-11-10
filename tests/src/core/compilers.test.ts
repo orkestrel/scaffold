@@ -2910,6 +2910,41 @@ describe('blueprintToScripts config projects', () => {
 		)
 	})
 
+	it('plans the application server barrel only when studies and the server application are both selected', () => {
+		const planned = createBlueprint('sample', { app: ['core', 'server'], studies: true })
+		const paths = blueprintToConfigArtifacts(planned).map(({ path }) => path)
+		const scripts = blueprintToScripts(planned)
+		const root = blueprintToRootVite(planned)
+		expect(paths).toContain('configs/app/vite.barrel.config.ts')
+		expect(scripts['build:app:barrel']).toBe(
+			'vite build --config configs/app/vite.barrel.config.ts',
+		)
+		expect(scripts['build:app']).toBe('npm run build:app:server && npm run build:app:barrel')
+		expect(scripts.build).toContain('npm run build:app')
+		expect(root).toContain('export function appBarrel(')
+		const wrapper = blueprintToConfigArtifacts(planned).find(
+			({ path }) => path === 'configs/app/vite.barrel.config.ts',
+		)
+		expect(wrapper?.origin === 'host' ? undefined : wrapper?.content).toContain(
+			'defineConfig(appBarrel())',
+		)
+		// Controls: each missing condition plans nothing of the barrel.
+		const bare = [
+			createBlueprint('sample', { app: ['core', 'server'] }),
+			createBlueprint('sample', { app: ['core', 'browser'], studies: true }),
+			createBlueprint('sample', { app: ['core'], studies: true }),
+		]
+		for (const blueprint of bare) {
+			expect(blueprintToConfigArtifacts(blueprint).map(({ path }) => path)).not.toContain(
+				'configs/app/vite.barrel.config.ts',
+			)
+			expect(blueprintToScripts(blueprint)).not.toHaveProperty('build:app:barrel')
+			expect(blueprintToScripts(blueprint)['build:app'] ?? '').not.toContain('barrel')
+			expect(blueprintToRootVite(blueprint)).not.toContain('appBarrel')
+		}
+		expect(blueprintToScripts(bare[0] ?? planned)['build:app']).toBe('npm run build:app:server')
+	})
+
 	it('advises once on base when the browser environment has no entry or face', () => {
 		const blueprint = buildBlueprint({ src: [], app: ['browser'], base: false })
 		expect(blueprintToQuestions(blueprint)).toStrictEqual([

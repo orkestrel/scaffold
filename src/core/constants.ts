@@ -170,6 +170,11 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 	'configs/src/tsconfig.bin.json',
 ])
 
+/** Lists the configuration file a workspace with studies and a server application adds, frozen. */
+export const BARREL_CONFIGS: readonly string[] = Object.freeze([
+	'configs/app/vite.barrel.config.ts',
+])
+
 /** Names the executable entry whose presence makes a workspace `bin`. */
 export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 

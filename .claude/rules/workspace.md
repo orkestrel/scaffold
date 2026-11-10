@@ -119,20 +119,20 @@ Environment rules:
 
 ## Build outputs
 
-| Output                        | Content                          | Format                    |
-| ----------------------------- | -------------------------------- | ------------------------- |
-| `dist/src/core`               | Core library + declarations      | ES and CJS                |
-| `dist/src/browser`            | Browser library + declarations   | ES                        |
-| `dist/src/server`             | Server library + declarations    | ES and CJS                |
-| `dist/src/vue`                | Vue face + declarations          | ES                        |
-| `dist/src/styles`             | Compiled `index.css`             | CSS                       |
-| `dist/src/styles/themes`      | Compiled themes `index.css`      | CSS                       |
-| `dist/src/<name>`             | Compiled `index.css`             | CSS                       |
-| `dist/bin`                    | Optional executable `main.js`    | ES with shebang           |
-| `dist/app/browser`            | Browser application              | target-defined            |
-| `dist/app/vue`                | Vue application                  | target-defined            |
-| `dist/app/server`             | Server application               | CJS                       |
-| `showcase/<application>.html` | Single-file page per application | self-contained, committed |
+| Output                        | Content                          | Format                                                  |
+| ----------------------------- | -------------------------------- | ------------------------------------------------------- |
+| `dist/src/core`               | Core library + declarations      | ES and CJS                                              |
+| `dist/src/browser`            | Browser library + declarations   | ES                                                      |
+| `dist/src/server`             | Server library + declarations    | ES and CJS                                              |
+| `dist/src/vue`                | Vue face + declarations          | ES                                                      |
+| `dist/src/styles`             | Compiled `index.css`             | CSS                                                     |
+| `dist/src/styles/themes`      | Compiled themes `index.css`      | CSS                                                     |
+| `dist/src/<name>`             | Compiled `index.css`             | CSS                                                     |
+| `dist/bin`                    | Optional executable `main.js`    | ES with shebang                                         |
+| `dist/app/browser`            | Browser application              | target-defined                                          |
+| `dist/app/vue`                | Vue application                  | target-defined                                          |
+| `dist/app/server`             | Server application               | CJS runtime entry; ES barrel when `studies` is selected |
+| `showcase/<application>.html` | Single-file page per application | self-contained, committed                               |
 
 - Roll up each published TypeScript face's declarations in its Vite wrapper. A face that imports `@src/core` or `@src/browser` rewrites those specifiers to the published subpaths in its emitted declarations.
 - A sheet face ships CSS, not declarations, and its JavaScript build stub stays out of `files`.

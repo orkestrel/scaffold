@@ -1,5 +1,6 @@
 import type {
 	Artifact,
+	Blueprint,
 	CatalogEntry,
 	Dependency,
 	ManifestDependencySet,
@@ -732,6 +733,23 @@ export function nameToGuide(name: string): string {
  */
 export function matchesPrintWidth(line: string): boolean {
 	return line.replaceAll('\t', ' '.repeat(TAB_WIDTH)).length <= PRINT_WIDTH
+}
+
+/**
+ * Tests whether a workspace plans the application server barrel build.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns True if the workspace selects `studies` and the `server` application; false otherwise.
+ *
+ * @example
+ * ```ts
+ * import { createBlueprint, matchesBarrel } from '@orkestrel/scaffold'
+ *
+ * matchesBarrel(createBlueprint('crm', { app: ['core', 'server'], studies: true })) // true
+ * ```
+ */
+export function matchesBarrel(blueprint: Blueprint): boolean {
+	return blueprint.studies && blueprint.app.includes('server')
 }
 
 /**
