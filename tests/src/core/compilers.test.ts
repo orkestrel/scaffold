@@ -2058,12 +2058,12 @@ describe('blueprintToDevDependencies capture runner', () => {
 	it('adds the capture seed to private and published browser application journeys', () => {
 		expect(
 			blueprintToDevDependencies(buildBlueprint({ src: [], app: ['browser'], journey: true })),
-		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+		).toHaveProperty('@orkestrel/capture', '^0.0.5')
 		expect(
 			blueprintToDevDependencies(
 				buildBlueprint({ src: ['core'], app: ['browser'], journey: true }),
 			),
-		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+		).toHaveProperty('@orkestrel/capture', '^0.0.5')
 	})
 
 	it('requires both the journey axis and a browser application', () => {
@@ -2095,7 +2095,7 @@ describe('blueprintToDevDependencies capture runner', () => {
 			blueprintToDevDependencies(
 				buildBlueprint({ name: 'inbox', src: ['core'], app: ['browser'], journey: true }),
 			),
-		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+		).toHaveProperty('@orkestrel/capture', '^0.0.5')
 	})
 
 	it('keeps an unscoped application distinct from a fleet runtime dependency', () => {
@@ -2103,7 +2103,7 @@ describe('blueprintToDevDependencies capture runner', () => {
 			blueprintToDevDependencies(
 				buildBlueprint({ name: 'contract', src: [], app: ['browser'], journey: true }),
 			),
-		).toHaveProperty('@orkestrel/capture', '^0.0.1')
+		).toHaveProperty('@orkestrel/capture', '^0.0.5')
 	})
 
 	it('does not duplicate a capture runtime declaration', () => {

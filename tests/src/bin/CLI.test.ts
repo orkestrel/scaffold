@@ -3402,7 +3402,7 @@ describe('CLI audit', () => {
 			const generated = requireValue(workspace.read('fresh/package.json'))
 			expect(generated).toContain('"journey": "capture journey"')
 			expect(generated).toContain('"capture": "capture frames"')
-			expect(generated).toContain('"@orkestrel/capture": "^0.0.1"')
+			expect(generated).toContain('"@orkestrel/capture": "^0.0.5"')
 			const customized = generated
 				.replace('"journey": "capture journey"', '"journey": "capture journey pages:mail"')
 				.replaceAll(/\t\t"capture": .*\n/gu, '')
@@ -3430,7 +3430,7 @@ describe('CLI audit', () => {
 			const repaired = requireValue(workspace.read('fresh/package.json'))
 			expect(repaired).toContain('"journey": "capture journey pages:mail"')
 			expect(repaired).toContain('"capture": "capture frames"')
-			expect(repaired).toContain('"@orkestrel/capture": "^0.0.1"')
+			expect(repaired).toContain('"@orkestrel/capture": "^0.0.5"')
 			expect(repaired).toContain('npm run test:app && npm run test:journey')
 		} finally {
 			workspace.destroy()

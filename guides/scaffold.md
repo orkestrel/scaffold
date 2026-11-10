@@ -2221,8 +2221,9 @@ row entering or leaving the manifest moves a test rather than passing unnoticed.
 of `STYLES_DEV_DEPENDENCIES`, is a seed as well: it carries the `^1.105.1` range the
 `@orkestrel/veneer` checkout declared on 2026-09-30, and that test names it in the seeded set.
 
-`CAPTURE_DEV_DEPENDENCIES` seeds `@orkestrel/capture` at `^0.0.1` only when the blueprint's
-`journey` axis is enabled and its `app` includes `browser`. `CAPTURE_UPSTREAM` withholds that
+`CAPTURE_DEV_DEPENDENCIES` seeds `@orkestrel/capture` at `^0.0.5`, the first release whose commands
+take `--mode`, only when the blueprint plans a journey: the `journey` axis with the base entry or
+an app-side browser face. `CAPTURE_UPSTREAM` withholds that
 seed from capture itself and its fleet runtime closure: `@orkestrel/contract`,
 `@orkestrel/emitter`, `@orkestrel/process`, and `@orkestrel/timeout`. The frozen, sorted list
 follows dependencies and peers from capture's installed manifests and moves with the capture
@@ -2261,7 +2262,7 @@ The dependency tables select these floors:
 | Vitest                       | `^5.1.0`   | Every workspace                                                |
 | `@vitest/browser-playwright` | `^5.1.0`   | Browser tooling                                                |
 | `oxlint`                     | `^1.93.0`  | Every workspace                                                |
-| `oxfmt`                      | `^0.77.0`  | Every workspace                                                |
+| `oxfmt`                      | `^0.78.0`  | Every workspace                                                |
 | `@microsoft/api-extractor`   | `^7.60.1`  | Declaration builds; uses its bundled TypeScript 6.0.3 engine   |
 | `playwright`                 | `^1.64.1`  | Browser tooling                                                |
 | Vite                         | `^8.3.7`   | Every workspace                                                |

@@ -734,11 +734,11 @@ export const BROWSE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.
  * ```ts
  * import { CAPTURE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'
  *
- * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.1'
+ * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.5'
  * ```
  */
 export const CAPTURE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/capture': '^0.0.1',
+	'@orkestrel/capture': '^0.0.5',
 })
 
 /**

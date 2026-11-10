@@ -78,7 +78,7 @@ describe('seed guide paths', () => {
 
 describe('shared dependency tables', () => {
 	it('keeps the capture seed frozen at its initial release floor', () => {
-		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.1' })
+		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.5' })
 		expect(Object.isFrozen(CAPTURE_DEV_DEPENDENCIES)).toBe(true)
 	})
 
