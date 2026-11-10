@@ -1171,7 +1171,19 @@ describe('root configuration', () => {
 	})] },
 }\n`,
 		)
-		const journeys: object[][] = []
+		const journeys: Array<{ readonly application: string; readonly tests: readonly object[] }> = []
+		// A face-only workspace declares no base application, so each declared application loads the
+		// journey wrapper under its own Vite mode, and the default mode stands for the base entry.
+		const occupied = [
+			'browser',
+			...collectFrameworks(POLICY_ROOT)
+				.filter((face) => face.startsWith('app/'))
+				.map((face) => face.slice(4)),
+		].filter(
+			(application) =>
+				existsSync(resolve(POLICY_ROOT, 'app', application)) &&
+				readdirSync(resolve(POLICY_ROOT, 'app', application)).includes('main.ts'),
+		)
 		const targets = [
 			...required.map((wrapper) => ({ wrapper, directory: POLICY_ROOT })),
 			{ wrapper: journey, directory: planted.path },
@@ -1194,45 +1206,66 @@ describe('root configuration', () => {
 					if (axis === undefined || environment === undefined) {
 						throw new Error(`${wrapper} carries no target`)
 					}
-					const loaded = await loadConfigFromFile(
-						{ command: 'build', mode: 'test', isSsrBuild: false, isPreview: false },
-						resolve(directory, wrapper),
-						directory,
-						'silent',
-					)
-					if (loaded === null) throw new Error(`${wrapper} did not load`)
 					if (environment === 'journey') {
-						const projects = loaded.config.test?.projects
-						if (!Array.isArray(projects) || projects.length === 0) {
-							throw new Error(`${wrapper} carries no journey projects`)
+						const applications = directory === planted.path ? ['browser'] : occupied
+						if (applications.length === 0)
+							throw new Error(`${wrapper} has no declared application to load`)
+						for (const application of applications) {
+							const mode = application === 'browser' ? 'test' : application
+							const loaded = await loadConfigFromFile(
+								{ command: 'build', mode, isSsrBuild: false, isPreview: false },
+								resolve(directory, wrapper),
+								directory,
+								'silent',
+							)
+							if (loaded === null) throw new Error(`${wrapper} did not load`)
+							const projects = loaded.config.test?.projects
+							if (!Array.isArray(projects) || projects.length === 0) {
+								throw new Error(`${wrapper} carries no journey projects`)
+							}
+							const tests: object[] = []
+							for (const factory of projects) {
+								if (typeof factory !== 'function')
+									throw new Error(`${wrapper} carries no project factory`)
+								const project: unknown = await Reflect.apply(factory, undefined, [
+									{ command: 'serve', mode },
+								])
+								if (typeof project !== 'object' || project === null)
+									throw new Error('A journey project is not a configuration')
+								const test: unknown = Object.getOwnPropertyDescriptor(project, 'test')?.value
+								if (typeof test !== 'object' || test === null)
+									throw new Error('A journey project carries no test block')
+								tests.push(test)
+							}
+							journeys.push({ application, tests })
 						}
-						const tests: object[] = []
-						for (const factory of projects) {
-							if (typeof factory !== 'function')
-								throw new Error(`${wrapper} carries no project factory`)
-							const project: unknown = await Reflect.apply(factory, undefined, [
-								{ command: 'serve', mode: 'test' },
-							])
-							if (typeof project !== 'object' || project === null)
-								throw new Error('A journey project is not a configuration')
-							const test: unknown = Object.getOwnPropertyDescriptor(project, 'test')?.value
-							if (typeof test !== 'object' || test === null)
-								throw new Error('A journey project carries no test block')
-							tests.push(test)
-						}
-						journeys.push(tests)
 						continue
 					}
-					const output = loaded.config.build?.outDir
-					if (output === undefined) throw new Error(`${wrapper} carries no output`)
-					const expected =
-						environment === 'bin'
-							? 'dist/bin'
-							: environment === 'showcase'
-								? 'showcase'
-								: `dist/${axis}/${environment}`
-					if (resolve(POLICY_ROOT, output) !== resolve(POLICY_ROOT, expected)) {
-						throw new Error(`${wrapper} resolves to the wrong output`)
+					// The showcase selects its application by Vite mode as the journey does.
+					const modes =
+						environment === 'showcase'
+							? occupied.map((application) => (application === 'browser' ? 'test' : application))
+							: ['test']
+					if (modes.length === 0) throw new Error(`${wrapper} has no declared application to load`)
+					for (const mode of modes) {
+						const loaded = await loadConfigFromFile(
+							{ command: 'build', mode, isSsrBuild: false, isPreview: false },
+							resolve(directory, wrapper),
+							directory,
+							'silent',
+						)
+						if (loaded === null) throw new Error(`${wrapper} did not load`)
+						const output = loaded.config.build?.outDir
+						if (output === undefined) throw new Error(`${wrapper} carries no output`)
+						const expected =
+							environment === 'bin'
+								? 'dist/bin'
+								: environment === 'showcase'
+									? 'showcase'
+									: `dist/${axis}/${environment}`
+						if (resolve(POLICY_ROOT, output) !== resolve(POLICY_ROOT, expected)) {
+							throw new Error(`${wrapper} resolves to the wrong output`)
+						}
 					}
 					continue
 				}
@@ -1279,10 +1312,10 @@ describe('root configuration', () => {
 					expect(() => expect(control).toStrictEqual(expectedTypes)).toThrow('expected')
 				}
 			}
-			for (const tests of journeys) {
+			for (const { application, tests } of journeys) {
 				const names = tests.map((test) => {
 					expect(Object.getOwnPropertyDescriptor(test, 'include')?.value).toStrictEqual([
-						'tests/app/browser/integration.test.ts',
+						`tests/app/${application}/integration.test.ts`,
 					])
 					expect(Object.getOwnPropertyDescriptor(test, 'exclude')?.value).toStrictEqual([])
 					expect(Object.getOwnPropertyDescriptor(test, 'setupFiles')?.value).toStrictEqual([

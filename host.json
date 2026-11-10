@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "ebc2324d33011a86561178f6a7adf6816428d333de97ea2f64befaa1638e8357"
+			"digest": "bf15132fd375ab310ff11a010481d86796b8348fd03b9e4a2585415492707eec"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "664d3df4388798e628106f295f165a347149ef14326bcbc035385b5e999091f2"
+	"digest": "d1a5f0511d2c0188ff1675956e68e3403bd0b8e4ddb05c47cf80cc897f9961e8"
 }
