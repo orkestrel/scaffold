@@ -1584,7 +1584,7 @@ describe('replaceManifestOverride', () => {
 })
 
 describe('blueprintToWritableScripts', () => {
-	it('owns the application server barrel script and lands serve:build over its predecessor', () => {
+	it('owns the application server barrel script, and lands serve:build for every server workspace', () => {
 		const planned = createBlueprint('sample', { app: ['core', 'server'], studies: true })
 		const region = blueprintToWritableScripts(planned)
 		expect(region).toContainEqual({
@@ -1594,7 +1594,7 @@ describe('blueprintToWritableScripts', () => {
 		})
 		expect(region).toContainEqual({
 			name: 'serve:build',
-			command: 'npm run build:app:server && npm run build:app:barrel && npm run serve',
+			command: 'npm run build && npm run serve',
 			accepted: ['npm run build:app:server && npm run serve'],
 		})
 		// The aggregate chain stays outside the blueprint region; the manifest decides it.
@@ -1605,8 +1605,20 @@ describe('blueprintToWritableScripts', () => {
 		]) {
 			const names = blueprintToWritableScripts(blueprint).map(({ name }) => name)
 			expect(names).not.toContain('build:app:barrel')
-			expect(names).not.toContain('serve:build')
 		}
+		// serve:build follows the server application, whether or not the barrel is planned.
+		expect(
+			blueprintToWritableScripts(createBlueprint('sample', { app: ['core', 'server'] })),
+		).toContainEqual({
+			name: 'serve:build',
+			command: 'npm run build && npm run serve',
+			accepted: ['npm run build:app:server && npm run serve'],
+		})
+		expect(
+			blueprintToWritableScripts(
+				createBlueprint('sample', { app: ['core', 'browser'], studies: true }),
+			).map(({ name }) => name),
+		).not.toContain('serve:build')
 	})
 
 	it('writes scoped journey commands and preserves customized selections', () => {
@@ -2945,10 +2957,8 @@ describe('blueprintToScripts config projects', () => {
 			'vite build --config configs/app/vite.barrel.config.ts',
 		)
 		expect(scripts['build:app']).toBe('npm run build:app:server && npm run build:app:barrel')
-		// The server pass empties dist/app/server, so serve:build rebuilds the barrel after it.
-		expect(scripts['serve:build']).toBe(
-			'npm run build:app:server && npm run build:app:barrel && npm run serve',
-		)
+		// build covers the barrel and every browser face the server can serve.
+		expect(scripts['serve:build']).toBe('npm run build && npm run serve')
 		expect(scripts.build).toContain('npm run build:app')
 		expect(root).toContain('export function appBarrel(')
 		const wrapper = blueprintToConfigArtifacts(planned).find(
@@ -2973,7 +2983,7 @@ describe('blueprintToScripts config projects', () => {
 		}
 		expect(blueprintToScripts(bare[0] ?? planned)['build:app']).toBe('npm run build:app:server')
 		expect(blueprintToScripts(bare[0] ?? planned)['serve:build']).toBe(
-			'npm run build:app:server && npm run serve',
+			'npm run build && npm run serve',
 		)
 	})
 

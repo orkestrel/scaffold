@@ -4600,9 +4600,7 @@ describe('CLI audit', () => {
 			expect(written.scripts['build:app']).toBe(
 				'npm run build:app:server && npm run build:app:barrel',
 			)
-			expect(written.scripts['serve:build']).toBe(
-				'npm run build:app:server && npm run build:app:barrel && npm run serve',
-			)
+			expect(written.scripts['serve:build']).toBe('npm run build && npm run serve')
 
 			const after = createSink()
 			expect(

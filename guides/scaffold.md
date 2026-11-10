@@ -993,8 +993,8 @@ and `prepublishOnly`. Each sheet face adds its `check:src:<face>` and `build:src
 Each occupied framework face adds `check:<axis>:vue` and `build:<axis>:vue`; the application face also adds `dev:vue`.
 Selected showcase pages add `showcase`, `showcase:<framework>`, `build:showcase`, and `build:showcase:<framework>`; application journeys add `test:journey:<framework>`.
 A workspace that plans the application server barrel adds `build:app:barrel`, which has no
-predecessor form, and `serve:build`, which accepts `npm run build:app:server && npm run serve` as
-its generated predecessor.
+predecessor form. A workspace with the server application adds `serve:build`, which runs `build`
+before `serve` and accepts `npm run build:app:server && npm run serve` as its generated predecessor.
 Its `test:src:<face>` script accepts, as its generated predecessor, the command that ran the project
 without building the face first, and `build:src:styles` accepts the styles-only build as the
 predecessor of the chain that builds themes after it. A publishing `test` chain joins the region when
@@ -1698,8 +1698,9 @@ A workspace that selects `studies` and the `server` application also builds the 
 `app/server/index.ts`, because `@orkestrel/study` loads the package under study as ES modules. The
 `appBarrel` factory, the content-owned `configs/app/vite.barrel.config.ts` wrapper, and the
 `build:app:barrel` script exist only under that condition, and `build:app` runs the script after
-`build:app:server`. `serve:build` runs it between `build:app:server` and `serve`, because the
-server build empties `dist/app/server` and deletes `index.js`. The build emits the single file `dist/app/server/index.js` with `@app/*` and
+`build:app:server`. `serve:build` runs `build` before `serve`, so the barrel, which the server
+build's emptied `dist/app/server` would otherwise lose, and every browser face the server serves are
+rebuilt. The build emits the single file `dist/app/server/index.js` with `@app/*` and
 `@src/*` specifiers and relative imports inlined, and `node:` and every installed package specifier
 left external. It sets `emptyOutDir` to `false`, so `main.cjs` stays byte-identical. A workspace
 without both conditions plans none of the three. Scaffold's `tests/src/core/templates.test.ts` builds both entries in a

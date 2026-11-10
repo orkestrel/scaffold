@@ -1064,7 +1064,7 @@ describe('manifestToWritableScripts', () => {
 		// The serve:build predecessor rides the blueprint region as an accepted value.
 		expect(region).toContainEqual({
 			name: 'serve:build',
-			command: 'npm run build:app:server && npm run build:app:barrel && npm run serve',
+			command: 'npm run build && npm run serve',
 			accepted: ['npm run build:app:server && npm run serve'],
 		})
 	})

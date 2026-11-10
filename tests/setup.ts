@@ -376,7 +376,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 	{
 		fields: { src: [], app: ['server'] },
 		vite: 'fd370c9326dda6b1ee1e1b7d4c8e07e7f077f421f5b2e097b50880b8dd3ab060',
-		scripts: '4814438798adb095f63268bba8e97f1ec17520a37a9d09d78fb44a40dc387014',
+		scripts: '7751581f6d6f8190ebe6b80a9973eca22fed3e0bcb7d2572543d22df61e8666c',
 	},
 	{
 		fields: {
