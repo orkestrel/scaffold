@@ -4540,6 +4540,81 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('lands the application server barrel scripts over a manifest that predates them', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', {
+				src: ['core'],
+				app: ['core', 'server'],
+				studies: true,
+			})
+			workspace.ensure('target/app/core')
+			workspace.ensure('target/app/server')
+			workspace.write('target/tests/studies/adapter.test.ts', '')
+			const planned = blueprintToScripts(blueprint)
+			const scripts: Record<string, string> = {
+				...planned,
+				'build:app': 'npm run build:app:server',
+				'serve:build': 'npm run build:app:server && npm run serve',
+			}
+			delete scripts['build:app:barrel']
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint, undefined, undefined, scripts),
+			)
+			// Offline, so the registry fixture's release evidence decides no exit here.
+			const args = [
+				'--groups',
+				'manifest',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--offline',
+				'--json',
+			]
+
+			const before = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...before.options }).execute(['audit', ...args]),
+			).toBe(EXIT_CLEAN)
+			const initial: Audit = JSON.parse(before.output[0] ?? '')
+			expect(initial.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} does not declare a planned script: build:app:barrel. Add this exact script line to package.json: "build:app:barrel": "vite build --config configs/app/vite.barrel.config.ts",`,
+					blocking: false,
+				},
+			])
+
+			const repaired = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute(['repair', ...args]),
+			).toBe(EXIT_CLEAN)
+			const written: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			if (!isRecord(written) || !isRecord(written.scripts)) throw new Error('Expected scripts')
+			expect(written.scripts['build:app:barrel']).toBe(
+				'vite build --config configs/app/vite.barrel.config.ts',
+			)
+			expect(written.scripts['build:app']).toBe(
+				'npm run build:app:server && npm run build:app:barrel',
+			)
+			expect(written.scripts['serve:build']).toBe(
+				'npm run build:app:server && npm run build:app:barrel && npm run serve',
+			)
+
+			const after = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...after.options }).execute(['audit', ...args]),
+			).toBe(EXIT_CLEAN)
+			const terminal: Audit = JSON.parse(after.output[0] ?? '')
+			expect(terminal.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('appends absent scripts while retaining and reporting a differing html script', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

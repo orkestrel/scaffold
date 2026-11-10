@@ -162,6 +162,13 @@ export interface TestPurityCase {
 	readonly inputs: readonly unknown[]
 }
 
+/** Describes one blueprint selection and whether it plans the application server barrel. */
+export interface TestBarrelCase {
+	readonly label: string
+	readonly fields: Partial<Blueprint>
+	readonly planned: boolean
+}
+
 /** Describes one declared range measured against a reported version. */
 export interface TestRangeCase {
 	readonly range: string
@@ -387,7 +394,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: 'fd9d3f8de03de05f14ea0387fba65015da116bb3f572953df9409275ab366c42',
+		vite: '2e2e5ca0da90c9b5021771f9b1319910a4823e52999331163bf0f321be913cdb',
 		scripts: '74d79c31349e5f74c4da7c6325c3befeda9d03e60a9a3ff7688356259d43482a',
 	},
 ])
@@ -1679,6 +1686,18 @@ export const POLICY_FILENAMES: readonly string[] = Object.freeze([
 	'src/literal%20name.ts',
 ])
 
+/** Lists the selections the barrel predicate decides, with the verdict each owes. */
+export const BARREL_CASES: readonly TestBarrelCase[] = Object.freeze([
+	{ label: 'studies with server', fields: { app: ['server'], studies: true }, planned: true },
+	{ label: 'studies without server', fields: { app: ['core'], studies: true }, planned: false },
+	{ label: 'server without studies', fields: { app: ['server'], studies: false }, planned: false },
+	{
+		label: 'studies with core and server',
+		fields: { app: ['core', 'server'], studies: true },
+		planned: true,
+	},
+])
+
 /** Lists every declared range measured against a reported version, with the verdict it owes. */
 export const RANGE_CASES: readonly TestRangeCase[] = [
 	{ range: '^0.0.5', latest: '0.0.5', satisfied: true },
@@ -2460,6 +2479,7 @@ export const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'app/core/index.ts': 64,
 	'app/server/index.ts': 64,
 	'app/server/main.ts': 64,
+	'configs/app/vite.barrel.config.ts': 32,
 	'configs/app/vite.browser.config.ts': 64,
 	'configs/app/vite.server.config.ts': 64,
 	'configs/app/vite.showcase.config.ts': 32,
@@ -2678,6 +2698,7 @@ export function buildSelections(): readonly Blueprint[] {
 							tree: true,
 							global: true,
 							showcase: true,
+							studies: true,
 						}),
 					],
 		),

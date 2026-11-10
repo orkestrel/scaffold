@@ -83,6 +83,7 @@ import { readdirSync } from 'node:fs'
 import { normalize } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
+	CHAIN_SCRIPTS,
 	COMMAND_OPTIONS,
 	EXECUTABLE_NAME,
 	EXIT_CLEAN,
@@ -571,18 +572,20 @@ export function sheetTestToQuestion(
  *
  * @param manifest - The target manifest text.
  * @param blueprint - The workspace shape that supplies the planned scripts.
- * @returns The blueprint's writable scripts, followed by the planned `test` chain when the
- * declared chain is a generated predecessor of it.
+ * @returns The blueprint's writable scripts, followed by the planned `test` and `build:app` chains
+ * where each declared chain is a generated predecessor of its planned chain.
  *
  * @remarks
- * A publishing manifest's byte-exact former generated chain also joins the writable region: the
- * planned chain with its generated application and journey invocations after `test:src`. A chain
- * that differs in spacing, order, or another step does not match that predecessor.
+ * A publishing manifest's byte-exact former generated `test` chain also joins the writable
+ * region: the planned chain with its generated application and journey invocations after
+ * `test:src`. A chain that differs in spacing, order, or another step does not match that
+ * predecessor.
  *
- * A declared `test` chain is a generated predecessor when it runs fewer `&&` steps than the
- * planned chain and every step it runs is a planned step, in the planned order. That is the chain
- * a birth or an earlier write left before a structural fact planned another step, such as a root
- * `tests/setupBrowser.test.ts` proof planning `npm run test:setup:browser`, so the write lands the
+ * A declared `test` or `build:app` chain is a generated predecessor when it runs fewer `&&` steps
+ * than the planned chain and every step it runs is a planned step, in the planned order. That is
+ * the chain a birth or an earlier write left before a structural fact planned another step, such as
+ * a root `tests/setupBrowser.test.ts` proof planning `npm run test:setup:browser`, or studies
+ * beside the server application planning `npm run build:app:barrel`, so the write lands the
  * planned chain in its place. A chain running a step the plan does not generate, or running the
  * planned steps in another order, is one the package owns, and no entry names it.
  *
@@ -597,36 +600,44 @@ export function manifestToWritableScripts(
 ): readonly ManifestScript[] {
 	const writable = blueprintToWritableScripts(blueprint)
 	const generated = blueprintToScripts(blueprint)
-	const planned = generated.test
 	const parsed = parseJSON(manifest)
 	const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
-	const declared = scripts.test
-	if (planned === undefined || !isString(declared)) return writable
-	if (generated.prepublishOnly !== undefined && isRecord(parsed) && parsed.private !== true) {
-		const helpers = Object.keys(generated).filter(
-			(name) => name === 'test:app' || /^test:journey(:|$)/u.test(name),
-		)
-		const former = planned.replace(
-			'npm run test:src',
-			['npm run test:src', ...helpers.map((name) => `npm run ${name}`)].join(' && '),
-		)
-		if (helpers.length > 0 && declared === former)
-			return [...writable, { name: 'test', command: planned, accepted: [declared] }]
-	}
-	const steps = declared.split('&&').map((step) => step.trim())
-	const expected = planned.split('&&').map((step) => step.trim())
-	if (steps.length >= expected.length) return writable
-	// Each declared step must appear in the planned order, so every search resumes
-	// where the previous match stopped.
-	const resumed = expected.values()
-	if (!steps.every((step) => resumed.some((entry) => entry === step))) return writable
 	const supplied = new Set(writable.map(({ name }) => name))
-	for (const step of expected) {
-		if (steps.includes(step)) continue
-		const name = /^npm run (\S+)$/.exec(step)?.[1]
-		if (name === undefined || (!supplied.has(name) && !isString(scripts[name]))) return writable
-	}
-	return [...writable, { name: 'test', command: planned, accepted: [declared] }]
+	const chains = CHAIN_SCRIPTS.flatMap((chain): readonly ManifestScript[] => {
+		const planned = generated[chain]
+		const declared = scripts[chain]
+		if (planned === undefined || !isString(declared)) return []
+		const landed = [{ name: chain, command: planned, accepted: [declared] }]
+		if (
+			chain === 'test' &&
+			generated.prepublishOnly !== undefined &&
+			isRecord(parsed) &&
+			parsed.private !== true
+		) {
+			const helpers = Object.keys(generated).filter(
+				(name) => name === 'test:app' || /^test:journey(:|$)/u.test(name),
+			)
+			const former = planned.replace(
+				'npm run test:src',
+				['npm run test:src', ...helpers.map((name) => `npm run ${name}`)].join(' && '),
+			)
+			if (helpers.length > 0 && declared === former) return landed
+		}
+		const steps = declared.split('&&').map((step) => step.trim())
+		const expected = planned.split('&&').map((step) => step.trim())
+		if (steps.length >= expected.length) return []
+		// Each declared step must appear in the planned order, so every search resumes
+		// where the previous match stopped.
+		const resumed = expected.values()
+		if (!steps.every((step) => resumed.some((entry) => entry === step))) return []
+		const reachable = expected.every((step) => {
+			if (steps.includes(step)) return true
+			const name = /^npm run (\S+)$/.exec(step)?.[1]
+			return name !== undefined && (supplied.has(name) || isString(scripts[name]))
+		})
+		return reachable ? landed : []
+	})
+	return [...writable, ...chains]
 }
 
 /**

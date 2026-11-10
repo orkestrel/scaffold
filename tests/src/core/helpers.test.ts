@@ -42,6 +42,7 @@ import {
 	manifestToDependencies,
 	manifestToName,
 	matchesArtifactDriftReachability,
+	matchesBarrel,
 	matchesEngines,
 	matchesOrchestrationPath,
 	matchesPrintWidth,
@@ -232,6 +233,7 @@ describe('surface claims', () => {
 	})
 })
 import {
+	BARREL_CASES,
 	buildBlueprint,
 	buildCatalogEntry,
 	buildContentArtifact,
@@ -610,6 +612,14 @@ describe('nameToGuide', () => {
 		expect(nameToGuide('@orkestrel/router')).toBe('guides/router.md')
 		expect(nameToGuide('scaffold')).toBe('guides/scaffold.md')
 	})
+})
+
+describe('matchesBarrel', () => {
+	for (const barrelCase of BARREL_CASES) {
+		it(`${barrelCase.planned ? 'plans' : 'omits'} the barrel for ${barrelCase.label}`, () => {
+			expect(matchesBarrel(buildBlueprint(barrelCase.fields))).toBe(barrelCase.planned)
+		})
+	}
 })
 
 describe('matchesPrintWidth', () => {

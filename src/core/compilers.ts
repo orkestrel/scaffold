@@ -912,7 +912,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.app.includes('server')
 			? {
 					serve: 'node dist/app/server/main.cjs',
-					'serve:build': 'npm run build:app:server && npm run serve',
+					// The server pass empties dist/app/server, so the barrel is rebuilt after it.
+					'serve:build': matchesBarrel(blueprint)
+						? 'npm run build:app:server && npm run build:app:barrel && npm run serve'
+						: 'npm run build:app:server && npm run serve',
 				}
 			: {}),
 		...(publishes
@@ -951,6 +954,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * A base browser application's journey axis also adds `journey` and `capture`, and each
  * app-side browser face adds `journey:<name>` and `capture:<name>`. Their generated
  * commands are writable and have no predecessor forms; customized values remain caller-owned.
+ * A workspace that plans the application server barrel adds `build:app:barrel`, which has no
+ * predecessor form, and `serve:build`, which rebuilds the barrel after the server pass.
  * Aggregate test scripts and
  * maintainer-owned gate chains stay outside the region.
  *
@@ -961,8 +966,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * existed. The pack hook accepts the build chain emitted before it
  * delegated to `build`. The publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. No accepted publication chain carries a study
- * step. The value being written is always writable, so
- * it is not repeated there. Any other value is a script the workspace author
+ * step. The barrel's `serve:build` accepts its planned chain without the barrel
+ * step. The value being written is always writable, so it is not repeated there. Any other value is a script the workspace author
  * customized, and {@link replaceManifestScripts} retains it while writing the
  * other named scripts independently.
  *
@@ -1006,7 +1011,9 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 			name === 'build:showcase' ||
 			name.startsWith('build:showcase:')
 		const capture = name === 'journey' || name === 'capture'
-		if (!direct && !sheet && !framework && !showcase && !capture) return []
+		const barrel =
+			matchesBarrel(blueprint) && (name === 'build:app:barrel' || name === 'serve:build')
+		if (!direct && !sheet && !framework && !showcase && !capture && !barrel) return []
 		return [
 			{
 				name,
@@ -1020,7 +1027,9 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 								? ['vite build --config configs/src/vite.styles.config.ts']
 								: sheets.some((face) => name === `test:src:${face}`)
 									? [command.slice(command.indexOf(' && ') + 4)]
-									: [],
+									: name === 'serve:build'
+										? [command.replace(' && npm run build:app:barrel', '')]
+										: [],
 			},
 		]
 	})

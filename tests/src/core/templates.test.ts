@@ -290,6 +290,7 @@ describe('configuration templates', () => {
 					showcase: true,
 				}),
 				createBlueprint('unshowcased', { app: ['core', 'browser', 'server'] }),
+				createBlueprint('studied', { app: ['core', 'server'], studies: true }),
 				createBlueprint('journeyed', {
 					app: ['core', 'browser'],
 					journey: true,
@@ -1030,7 +1031,11 @@ describe('emitted workspaces under their own gates', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-barrel-' })
 		const root = workspace.ensure('server')
 		try {
-			const blueprint = createBlueprint('sample', { app: ['core', 'server'], studies: true })
+			const blueprint = createBlueprint('sample', {
+				src: ['core'],
+				app: ['core', 'server'],
+				studies: true,
+			})
 			stageRootConfig(blueprint, workspace, 'server')
 			for (const path of [
 				'configs/app/vite.server.config.ts',
@@ -1043,6 +1048,7 @@ describe('emitted workspaces under their own gates', () => {
 				workspace.write(`server/${path}`, wrapper.content)
 			}
 			workspace.write('server/app/core/index.ts', "export const greeting = 'hello'\n")
+			workspace.write('server/src/core/index.ts', "export const origin = 'library'\n")
 			workspace.write(
 				'server/app/server/main.ts',
 				"process.stdout.write('entry\\n')\nvoid import('./lazy.js')\n",
@@ -1053,9 +1059,10 @@ describe('emitted workspaces under their own gates', () => {
 			const source = [
 				"import { join } from 'node:path'",
 				"import { isString } from '@orkestrel/contract'",
+				"import { origin } from '@src/core'",
 				"import { greeting } from '@app/core'",
 				"import { lazy } from './lazy.js'",
-				'export const served: string = String(isString(greeting)) + String(join(greeting, "x").length) + String(lazy)',
+				'export const served: string = String(isString(greeting)) + String(join(greeting, "x").length) + String(lazy) + origin',
 				"export const pending = (): Promise<unknown> => import('./later.js')",
 				'',
 			].join('\n')
@@ -1127,10 +1134,12 @@ describe('emitted workspaces under their own gates', () => {
 			expect(barrel?.roster).toStrictEqual(['index.js', 'main.cjs'])
 			expect(server?.cjs).toBeDefined()
 			expect(barrel?.cjs).toBe(server?.cjs)
-			// Bare packages stay bare and `@app/` specifiers are inlined.
+			// Bare packages stay bare and `@app/` and `@src/` specifiers are inlined.
 			expect(barrel?.text).toMatch(/from ["']@orkestrel\/contract["']/u)
 			expect(barrel?.text).toMatch(/from ["']node:path["']/u)
 			expect(barrel?.text).not.toContain('@app/')
+			expect(barrel?.text).not.toContain('@src/')
+			expect(barrel?.text).toContain('"library"')
 			expect(barrel?.text).not.toMatch(/from ["']\.\/lazy/u)
 			expect(barrel?.text).toContain('"hello"')
 			// Determinism, with a changed source as its control.
@@ -1153,7 +1162,7 @@ describe('emitted workspaces under their own gates', () => {
 					],
 					{ stdio: 'pipe', encoding: 'utf8', windowsHide: true, timeout: 15_000 },
 				),
-			).toBe('{"served":"true7true"}')
+			).toBe('{"served":"true7truelibrary"}')
 		} finally {
 			workspace.destroy()
 		}
@@ -1814,6 +1823,14 @@ export default appServer(override)
 			)
 			expect(emitted).toContain('const unsplit = { codeSplitting: false }')
 			expect(checkTypes(root)).toBe('')
+			// A studies-and-server selection adds the barrel factory to the same root configuration.
+			stageRootConfig(
+				createBlueprint('sample', { app: ['core', 'server'], studies: true }),
+				workspace,
+				'studied',
+			)
+			expect(workspace.read('studied/vite.config.ts')).toContain('export function appBarrel(')
+			expect(checkTypes(workspace.ensure('studied'))).toBe('')
 
 			const control = emitted.replace('codeSplitting: false', "codeSplitting: 'never'")
 			expect(control).not.toBe(emitted)
@@ -1830,10 +1847,10 @@ export default appServer(override)
 		} finally {
 			workspace.destroy()
 		}
-		// A real `tsc` invocation, measured at about nine seconds for the browser
-		// configuration. The budget carries slack over that because the cost is
-		// contention, not work.
-	}, 30_000)
+		// Three real `tsc` invocations, each measured at about nine seconds for the
+		// browser configuration. The budget carries slack over that because the cost
+		// is contention, not work.
+	}, 60_000)
 
 	it('typechecks the Vue factories and their wrappers on each axis', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-vue-types-' })

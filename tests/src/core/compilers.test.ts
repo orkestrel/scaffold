@@ -1584,6 +1584,31 @@ describe('replaceManifestOverride', () => {
 })
 
 describe('blueprintToWritableScripts', () => {
+	it('owns the application server barrel script and lands serve:build over its predecessor', () => {
+		const planned = createBlueprint('sample', { app: ['core', 'server'], studies: true })
+		const region = blueprintToWritableScripts(planned)
+		expect(region).toContainEqual({
+			name: 'build:app:barrel',
+			command: 'vite build --config configs/app/vite.barrel.config.ts',
+			accepted: [],
+		})
+		expect(region).toContainEqual({
+			name: 'serve:build',
+			command: 'npm run build:app:server && npm run build:app:barrel && npm run serve',
+			accepted: ['npm run build:app:server && npm run serve'],
+		})
+		// The aggregate chain stays outside the blueprint region; the manifest decides it.
+		expect(region.map(({ name }) => name)).not.toContain('build:app')
+		for (const blueprint of [
+			createBlueprint('sample', { app: ['core', 'server'] }),
+			createBlueprint('sample', { app: ['core', 'browser'], studies: true }),
+		]) {
+			const names = blueprintToWritableScripts(blueprint).map(({ name }) => name)
+			expect(names).not.toContain('build:app:barrel')
+			expect(names).not.toContain('serve:build')
+		}
+	})
+
 	it('writes scoped journey commands and preserves customized selections', () => {
 		const blueprint = buildBlueprint({ src: [], app: ['browser'], journey: true })
 		const region = blueprintToWritableScripts(blueprint).filter(
@@ -2920,6 +2945,10 @@ describe('blueprintToScripts config projects', () => {
 			'vite build --config configs/app/vite.barrel.config.ts',
 		)
 		expect(scripts['build:app']).toBe('npm run build:app:server && npm run build:app:barrel')
+		// The server pass empties dist/app/server, so serve:build rebuilds the barrel after it.
+		expect(scripts['serve:build']).toBe(
+			'npm run build:app:server && npm run build:app:barrel && npm run serve',
+		)
 		expect(scripts.build).toContain('npm run build:app')
 		expect(root).toContain('export function appBarrel(')
 		const wrapper = blueprintToConfigArtifacts(planned).find(
@@ -2943,6 +2972,9 @@ describe('blueprintToScripts config projects', () => {
 			expect(blueprintToRootVite(blueprint)).not.toContain('appBarrel')
 		}
 		expect(blueprintToScripts(bare[0] ?? planned)['build:app']).toBe('npm run build:app:server')
+		expect(blueprintToScripts(bare[0] ?? planned)['serve:build']).toBe(
+			'npm run build:app:server && npm run serve',
+		)
 	})
 
 	it('advises once on base when the browser environment has no entry or face', () => {
@@ -3915,7 +3947,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 
 		const studied = blueprintToRootVite(buildBlueprint({ studies: true }))
 		expect(studied).toContain(
-			'// Run these @orkestrel/study proofs on demand with npm run test:studies; no gate or chain runs them.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
+			'// Run these @orkestrel/study proofs on demand with npm run test:studies;\n// no gate or chain runs them.\nexport function studies(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
 		)
 		expect(studied).toContain("name: { label: 'studies', color: 'red' },")
 		expect(studied).toContain("include: ['tests/studies/**/*.test.ts'],")

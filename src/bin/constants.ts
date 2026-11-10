@@ -78,6 +78,9 @@ export const FAILED_CODE = 'FAILED'
 /** Holds what the failure envelope says when the raised value carried no message. */
 export const FAILED_MESSAGE = 'The command failed for an unrecognized reason'
 
+/** Names the gate chains a writing verb lands over a generated predecessor. */
+export const CHAIN_SCRIPTS: readonly string[] = Object.freeze(['test', 'build:app'])
+
 /**
  * Names the workspace argument the creation verb takes, as usage writes it.
  *

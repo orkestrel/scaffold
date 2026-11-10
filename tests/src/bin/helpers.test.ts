@@ -1028,6 +1028,47 @@ describe('manifestToWritableScripts', () => {
 		).toStrictEqual({ name: 'test', command: target, accepted: [born.test] })
 	})
 
+	it('writes the planned build:app chain over a generated predecessor', () => {
+		const barrel = createBlueprint('sample', {
+			app: ['browser', 'server'],
+			base: false,
+			studies: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const scripts = blueprintToScripts(barrel)
+		const command = 'npm run build:app:server && npm run build:app:barrel && npm run build:app:vue'
+		expect(scripts['build:app']).toBe(command)
+		const declared = 'npm run build:app:server && npm run build:app:vue'
+		const region = blueprintToWritableScripts(barrel)
+		expect(
+			manifestToWritableScripts(
+				JSON.stringify({ scripts: { ...scripts, 'build:app': declared } }),
+				barrel,
+			),
+		).toStrictEqual([...region, { name: 'build:app', command, accepted: [declared] }])
+		for (const owned of [
+			// A step the plan does not generate.
+			'npm run build:app:server && npm run build:app:docs',
+			`${command} && npm run check`,
+			// The planned steps out of order.
+			'npm run build:app:vue && npm run build:app:server',
+			command,
+		]) {
+			expect(
+				manifestToWritableScripts(
+					JSON.stringify({ scripts: { ...scripts, 'build:app': owned } }),
+					barrel,
+				),
+			).toStrictEqual(region)
+		}
+		// The serve:build predecessor rides the blueprint region as an accepted value.
+		expect(region).toContainEqual({
+			name: 'serve:build',
+			command: 'npm run build:app:server && npm run build:app:barrel && npm run serve',
+			accepted: ['npm run build:app:server && npm run serve'],
+		})
+	})
+
 	it('answers the blueprint scripts for a manifest with no readable test chain', () => {
 		for (const manifest of [
 			'{}',
