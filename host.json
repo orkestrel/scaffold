@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "5500ab7df2a61f862ddf9e3cf24c7256f5d2aaf86ee4d9e9afcbe663ba17f235"
+			"digest": "1be5cdaf870a89eae3a0521450ef470c6dfb1877bf2b5737df294660b0b4c692"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1018,7 +1018,7 @@
 			"storage": "guides/capture.md",
 			"destination": "guides/capture.md",
 			"executable": false,
-			"digest": "3687c8cf8601ec1564f5ad6ae39e519c44eb32f2e5ef01ec40348d4a11ee6f38"
+			"digest": "f19b7ea5ea06958756a20422518ace1078fe87bea4eeb89345b12401a0110d58"
 		},
 		{
 			"storage": "guides/codec.md",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/database.md",
 			"destination": "guides/database.md",
 			"executable": false,
-			"digest": "0158058d9cf571e75c26550478666a6f80b994064241b508b56a7980eb3bdbde"
+			"digest": "f7cb2796e7c1d4fe78ab54ebe04b80feb411a07891c04c7168fc1f48cfa0af61"
 		},
 		{
 			"storage": "guides/emitter.md",
@@ -1186,7 +1186,7 @@
 			"storage": "guides/relation.md",
 			"destination": "guides/relation.md",
 			"executable": false,
-			"digest": "03f97521e4d6057529bec4ca140ca707cdfe4cd1239dce54d4dbb8da01b63538"
+			"digest": "47380b35b42129f9a0f132744c1e0ad06bf51bfe58aa95e93e7733a8eedeb37a"
 		},
 		{
 			"storage": "guides/router.md",
@@ -1270,7 +1270,7 @@
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "07e306b640592d88848e638d1dd6060712ff22ea686a70a503286543368cb256"
+			"digest": "d052fea933416ea959d259db6eba39fdecc37b07e127e2adb3f1f9c648fbcc8e"
 		},
 		{
 			"storage": "guides/websocket.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "55ef9cb5b08b30f4e39cb56952ccffb8d0876aaf22b4caa6573bef745b17ecf5"
+	"digest": "3058bfaf91e31377f77c2332976c45721ce92144586170005fa4fd35256cb680"
 }
