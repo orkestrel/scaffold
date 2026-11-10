@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "24c84e5e89148d6da9873e1b49b415e6c86a226fefab0752b6ac0329d8814017"
+			"digest": "67e49a59459fba935c1948d26c9b9fa48001e96d3b0fe0cee194ed724ea96c35"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -430,7 +430,7 @@
 			"storage": "agents/skills/orkestrel-parallel/references/t3.md",
 			"destination": ".agents/skills/orkestrel-parallel/references/t3.md",
 			"executable": false,
-			"digest": "52b9f7b2f6c9505feffdd599442221a030b646d6fa9a1afef0ace04db6eb8ff2"
+			"digest": "1669a45b33f53b6b560a65e64c0a13929e2703c4c907b87789518edf4c1b9a95"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/scripts/cases.ts",
@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "a7517e676232471f4d4442b2ff7ad7fdeb5f4b2f5385888b16812495c0e3d07b"
+			"digest": "e6f261104a09bb01690031878c76254a83428ce2686b502b4a3d4cedaf4ec938"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1018,7 +1018,7 @@
 			"storage": "guides/capture.md",
 			"destination": "guides/capture.md",
 			"executable": false,
-			"digest": "f19b7ea5ea06958756a20422518ace1078fe87bea4eeb89345b12401a0110d58"
+			"digest": "07c53b0e17c49a01d9d71546bebf0890f3d340f6cb3a86f8c99a7eafe8edb2bf"
 		},
 		{
 			"storage": "guides/codec.md",
@@ -1114,7 +1114,7 @@
 			"storage": "guides/middleware.md",
 			"destination": "guides/middleware.md",
 			"executable": false,
-			"digest": "d4196f5768d1ff129d530ea0bc123f03a4b73fc206700ea7d8cc54815c85ca70"
+			"digest": "dad75159938cd6179cc542a480b85e758043ba36d3f94a966f2bb42c3adb4049"
 		},
 		{
 			"storage": "guides/msg.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "40949d1d08e62f8022e42f51a9bb712b29c6c4d3eb91b55a9661c78671e28e19"
+	"digest": "330a0fb610a98e81c08d3eec813975d3fd59ee6a22db45d3381df695245e0079"
 }
