@@ -13,6 +13,7 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 - Detach a run from the session's process tree with WMI: `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '<command>' }`. The run starts under `WmiPrvSE.exe`, outside the session's job and process tree (verified 2026-10-16). It receives the user's registry environment, not the caller's, so pass each value it needs on its command line. Record its journal and pid-file paths before the launch.
 - Spawn npm without a shell through its JavaScript entry: `node <node directory>/node_modules/npm/bin/npm-cli.js <arguments>`. A `.cmd` shim cannot start without a shell, and `launch.ts` reports exit `127`.
 - `cmd /c` keeps a trailing space inside `set VAR=value && …`; write `set "VAR=value"`.
+- When a file name would carry a script name such as `test:app`, write `-` for each `:`: NTFS reads `name:stream` as an alternate data stream, so the write lands in a stream of `name` and no file of the intended name appears.
 - Deliver a console Ctrl+C through `WScript.Shell` `AppActivate` then `SendKeys('^c')` after confirming activation when no computer-use tool is available.
 - A `rename` onto a freshly hard-linked file can return `EPERM` while a scanner holds it.
 - A child CLI can leak orphaned `conhost.exe` processes and open console windows. Count them with `Get-Process conhost` at each launch while such a lane is live.

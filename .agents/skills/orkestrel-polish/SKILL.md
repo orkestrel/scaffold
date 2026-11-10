@@ -88,6 +88,7 @@ Every verdict returns:
 - one line per item, in the brief's numbering:
   - `RENDERED-PROVEN(<capture>)` — the artifact shows it;
   - `REGRESSED(<capture>, <what regressed>)` — the artifact shows it is now worse;
+  - `REFUTED(<capture>, <what it shows>)` — the artifact shows a seeded candidate is false;
   - `NOT-EVIDENCED(<what the portfolio lacks>)` — the portfolio cannot decide it;
 - referrals to another lane, each with the specific evidence and no verdict attached;
 - exactly one final line: `CONVERGED` or `ANOTHER ROUND(<item list>)`.
