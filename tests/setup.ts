@@ -394,7 +394,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: '2e2e5ca0da90c9b5021771f9b1319910a4823e52999331163bf0f321be913cdb',
+		vite: '0aea95a309489fb30aaf66fe16aa727544fa03cf2233b0b00849f440f26258b6',
 		scripts: '74d79c31349e5f74c4da7c6325c3befeda9d03e60a9a3ff7688356259d43482a',
 	},
 ])

@@ -3800,9 +3800,11 @@ describe('blueprintToRootVite fixed proofs', () => {
 		for (const isolated of [distribution, service, studies]) {
 			expect(isolated).toContain('testTimeout: 120_000,')
 			expect(isolated).toContain('hookTimeout: 120_000,')
-			expect(isolated).toContain('fileParallelism: false,')
 			expect(isolated).toContain('sequence: { groupOrder: 1 },')
 		}
+		for (const serial of [distribution, service])
+			expect(serial).toContain('fileParallelism: false,')
+		expect(studies).not.toContain('fileParallelism')
 		expect(studies).not.toContain('pool:')
 		expect(studies).not.toContain('isolate:')
 	})
@@ -3962,7 +3964,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(studied).toContain("name: { label: 'studies', color: 'red' },")
 		expect(studied).toContain("include: ['tests/studies/**/*.test.ts'],")
 		expect(studied).toContain(
-			"setupFiles: ['./tests/setup.ts'],\n\t\t\tenvironment: 'node',\n\t\t\tbrowser: { enabled: false },\n\t\t\ttestTimeout: 120_000,\n\t\t\thookTimeout: 120_000,\n\t\t\tfileParallelism: false,\n\t\t\tsequence: { groupOrder: 1 },\n",
+			"setupFiles: ['./tests/setup.ts'],\n\t\t\tenvironment: 'node',\n\t\t\tbrowser: { enabled: false },\n\t\t\ttestTimeout: 120_000,\n\t\t\thookTimeout: 120_000,\n\t\t\tsequence: { groupOrder: 1 },\n",
 		)
 		expect(studied).not.toContain('setupStudy')
 		expect(studied).toContain('projects: [srcCore, policy, config, studies, distribution, probe]')
