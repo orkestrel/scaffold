@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "a434e7b16e375549de56a078da62f14663dfd0b5da5749b3f5099b3e4975bb6e"
+			"digest": "60026f0e737170d18d68ddaa390d687e504a7fee645bfe8904d55c3a21b2354d"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -724,7 +724,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "efdb94f045504c85f564826dced465bf3acecb2c085812a71e8df5080c2344e2"
+			"digest": "b11db5dd67c3dcd71ee8525e3511f61bdc59a079b239837c95b67b62f120de9e"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "226166ccc0bf247428a82035e08915bf36a9c9fe92a053c08d744e99a2c904eb"
+	"digest": "2c7d2010238aa82ade5489fc4d6b4029ab1e3408e192cb11ed8b61daca697ebb"
 }

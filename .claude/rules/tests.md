@@ -180,6 +180,9 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
   `.claude/rules/workspace.md` § Test project matrix places.
 - Keep a study's developmental selection and its untouched confirmation as separate evidence
   populations, and withhold expected outputs and population membership from the run.
+- Keep the `studies` project short enough to run with every unit that touches a study: drive it from
+  seeded, replayed, or scripted runs, and move a full-schedule rehearsal out of it into an on-demand
+  script outside every chain, per `.claude/rules/quality.md` § Performance.
 - Put in `studies` only the proofs the `@orkestrel/study` engine drives. Place a slow end-to-end proof of
   the package's own features that no study engine drives, such as its built executable run against
   a fixture workspace, as an integration test under § Cross-cutting proofs. Place it by the scope it
