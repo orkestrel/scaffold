@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "67e49a59459fba935c1948d26c9b9fa48001e96d3b0fe0cee194ed724ea96c35"
+			"digest": "a6f70bc30b493b24e3fdf00d7827da1a4bf3a9df72fd0339dab059ea209d46dd"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -910,7 +910,7 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "39e3d9607e51ece06a2fb7f1a71bfef75141e89a0c7785481a78913c1c0ff8a3"
+			"digest": "316a70bb0e3eb51d9831dad144b613e86092fc82c6288b9ce428d2bb0cc93ba0"
 		},
 		{
 			"storage": "configs/policy.ts",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "5f0feb333edeb7269b433fc1ea573a153aa35b47107f9ca0ffef48204d8f8986"
+			"digest": "f164d7ae0a443b1373798c09c14772fd5e097cfad7959f27e7eb2d3aea6a30d6"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "76a071e6da224c1cfef62b9e73f4f08e16b7cf91ff8a68b9a2464da95eaed082"
+	"digest": "bca810ef8016b4b5eaf34e43c2c5a5f1ac3295731f86ddf032d844c0a2536b9e"
 }

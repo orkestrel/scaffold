@@ -91,18 +91,18 @@ The harness's own engine orchestrates: Claude Fable 5.2 or Claude Opus 5.5 in Cl
 - When no acceptance check reads a run's result anymore, stop the run.
 - When a verifier lane fails in its harness rather than in the gate, run the gate once yourself and read its exit code; write no comparator, snapshot, or retry chain to obtain evidence.
 - Keep valid receipts. Re-run a check only when a change to its inputs, configuration, environment, or claim could alter what it proved, and then run the narrowest check that covers the change. Never repeat a passing check to collect another receipt or to have every suite pass in one command; name the receipt that covers each check a brief does not rerun.
-- Ask the user only for a decision that is theirs: scope, the spend ceiling and stop line § Hold the plan names, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Decide routine matters yourself, such as time and lane allowances, retries, and order, and report them, with time in whole minutes.
+- Ask the user only for a decision that is theirs: scope, a product decision, a conflicting ruling, a credential, publication, or a commit or push the law reserves. Never ask the user to agree an estimate, a spend ceiling, a stop line, or a time allowance. Decide those yourself, with time and lane allowances, retries, and order, and report them in status, with time in whole minutes.
 - Never end a turn with work pending and nothing that will wake the session: run the work as a tracked background command or a child whose completion notifies, or schedule a wake. While a lane runs, continue independent work.
 - When nobody is awake to answer and a session waits on a child, arm a keep-alive and a limit on the wait, and name a peer session as the watchdog.
 
 ## Hold the plan
 
-- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, agree with the user the estimate, the spend ceiling, and the stop line: how much lane time the work can take, and the point at which work stops and reports. Derive an estimate or a process cap from a measurement of the same command, execution shape, and toolchain, and state that measurement beside the figure, or state that none exists.
+- Open with the goal and acceptance criteria per `AGENTS.md` § Work loop, then estimate the scope: the units, the review and evidence each needs, and what stays out. When the estimate is large, set the spend ceiling and the stop line yourself, sized to what the work's quality and performance need: how much lane time the work can take, and the point at which work stops and reports. Report all three in status. Derive an estimate or a process cap from a measurement of the same command, execution shape, and toolchain, and state that measurement beside the figure, or state that none exists.
 - When a measurement has more than one arm, price each arm in lane hours before ruling it in, and put that table first in the report that asks for the ruling.
 - Before each unit, name the plan step it serves. Cut a unit no step needs; set an unplanned idea aside in the plan and return to the step.
 - Add a tracked file only where the request, the plan, or a rule names it.
 - After every unit return, unexpected result, or user message, compare the work with the plan: mark what is done, restate the next step, and set aside what no longer serves the goal.
-- When the work outgrows its estimate, stop, re-estimate, and bring the user the choice to cut, defer, or extend before continuing.
+- When the work outgrows its estimate, re-estimate, then cut, defer, or extend by what the goal's quality and performance need, and report the choice in status.
 - When the user questions the plan, test it against the evidence in hand: reopen it where the evidence disagrees and report what changed; where the evidence holds, answer with that evidence.
 - Answer a status question before dispatching more work, and close every report the same way: the goal, what is done against it, what is measured, what remains, and the next step.
 
