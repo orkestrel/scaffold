@@ -21,8 +21,8 @@
 // exits when its stdin closes, and writes one record per run under `<root>/history/<key>/`, keyed by
 // the working directory and the command, keeping the latest runs. The command's kind seeds the
 // reading: a format check, a lint check, a type check, and a scoped test run read light until a
-// record breaches; a full suite, an install, a release chain, a journey, a study, a capture, and a
-// live-service run read heavy; any other command reads light only when its latest runs each sit
+// record breaches; a full suite, a run of several projects, an install, a pack-and-install suite, a
+// release chain, a journey, a study, a capture, and a live-service run read heavy; any other command reads light only when its latest runs each sit
 // inside the threshold, none capped and none ending 69 or 70.
 // `--status` prints each ticket in arrival order with its label, `live`, `dead`, or `unread`, its
 // lane, and `holding` for a holder, and names the heavy holder and every light holder. It writes
@@ -43,7 +43,7 @@
 // owner closes that connection, because a connection its synchronous allocation left unaccepted
 // would otherwise stay parked on a process that waits behind it. A light waiter writes `h` to an
 // earlier light ticket that did not hold yet, and that owner closes the connection when it holds,
-// so the waiter decides again. The protocol stays 1: the `light` and `solo` ticket fields are
+// so the waiter decides again; a byte that reaches an owner that is releasing parks until it ends. The protocol stays 1: the `light` and `solo` ticket fields are
 // optional, a ticket without them reads as heavy, and a process of the first release holds only as
 // the earliest ticket.
 // Limits:
@@ -243,6 +243,24 @@ export const HEAVY_VERBS: readonly string[] = [
 	'test',
 	't',
 ]
+
+/**
+ * Lists the package scripts a seed reads heavy: the full suite, the aggregates that build and run
+ * several projects, the pack-and-install suite, and the live-service suite.
+ */
+export const HEAVY_SCRIPTS: readonly string[] = [
+	'test',
+	'test:src',
+	'test:app',
+	'test:distribution',
+	'test:service',
+]
+
+/** Lists the Vitest projects a seed reads heavy: the pack-and-install project and the live-service project. */
+export const HEAVY_PROJECTS: readonly string[] = ['distribution', 'service']
+
+/** Matches a dotted flag such as `--outputFile.json`, whose separate value a seed skips. */
+export const DOTTED_FLAG = /^--[^=.]+\.[^=]+$/u
 
 /** Lists the package managers whose verbs and scripts a seed reads. */
 export const MANAGERS: readonly string[] = ['npm', 'pnpm', 'yarn', 'bun']
@@ -469,6 +487,11 @@ export class Token {
 	hold(): void {
 		this.#holding = true
 		for (const socket of this.#waiters) socket.destroy()
+	}
+
+	/** Marks the process as leaving, so a hold waiter that arrives later parks until the process ends. */
+	leave(): void {
+		this.#holding = false
 	}
 
 	/**
@@ -1183,14 +1206,17 @@ export function readTool(command: readonly string[]): readonly string[] {
  *
  * @param args - The arguments.
  * @param valueFlags - The flags that take a separate value.
- * @returns The arguments that are neither a flag nor a flag's value.
+ * @returns The arguments that are neither a flag nor the value of a listed or dotted flag.
  */
 export function readOperands(
 	args: readonly string[],
 	valueFlags: readonly string[],
 ): readonly string[] {
 	return args.filter(
-		(argument, index) => !argument.startsWith('-') && !valueFlags.includes(args[index - 1] ?? ''),
+		(argument, index) =>
+			!argument.startsWith('-') &&
+			!valueFlags.includes(args[index - 1] ?? '') &&
+			!DOTTED_FLAG.test(args[index - 1] ?? ''),
 	)
 }
 
@@ -1198,11 +1224,11 @@ export function readOperands(
  * Reads the lane a package script's name seeds.
  *
  * @param name - The script's name.
- * @returns `heavy` for the full suite, `light` for a type, format, or lint check and a scoped suite,
- * and undefined for any other script.
+ * @returns `heavy` for a script {@link HEAVY_SCRIPTS} names, `light` for a type, format, or lint
+ * check and any other `test:` suite, and undefined for any other script.
  */
 export function readScriptSeed(name: string): Seed | undefined {
-	if (name === 'test') return 'heavy'
+	if (HEAVY_SCRIPTS.includes(name)) return 'heavy'
 	return CHECK_SCRIPT.test(name) || SCOPED_SCRIPT.test(name) ? 'light' : undefined
 }
 
@@ -1210,8 +1236,9 @@ export function readScriptSeed(name: string): Seed | undefined {
  * Reads the lane a Vitest command seeds.
  *
  * @param args - The arguments after `vitest`.
- * @returns `light` for a run of named files or one project, `heavy` for a run of every project, and
- * undefined for any other mode.
+ * @returns `heavy` for a run of every project, of several projects, or of a project
+ * {@link HEAVY_PROJECTS} names; `light` for a run of named test files or one project; undefined for
+ * any other run or mode.
  */
 export function readVitestSeed(args: readonly string[]): Seed | undefined {
 	const [mode, ...operands] = readOperands(args, VITEST_VALUE_FLAGS)
@@ -1220,7 +1247,10 @@ export function readVitestSeed(args: readonly string[]): Seed | undefined {
 		if (argument.startsWith('--project=')) return [argument.slice('--project='.length)]
 		return args[index - 1] === '--project' ? [argument] : []
 	})
-	const files = operands.filter((operand) => /[/\\]|\.(?:test|spec)\./u.test(operand))
+	if (projects.length > 1 || projects.some((project) => HEAVY_PROJECTS.includes(project))) {
+		return 'heavy'
+	}
+	const files = operands.filter((operand) => /\.(?:test|spec)\./u.test(operand))
 	if (files.length > 0 || projects.length === 1) return 'light'
 	return projects.length === 0 && operands.length === 0 ? 'heavy' : undefined
 }
@@ -2125,8 +2155,8 @@ export class Sampler {
  * @param launcher - The launcher's path.
  * @param sequence - This process's sequence.
  * @param measure - What a measured holder needs, or undefined when no limits apply.
- * @param held - Called after the run record exists, which wakes a light waiter that waits for this
- * process to hold.
+ * @param token - This process's endpoint, which holds after the run record exists and leaves before
+ * the run record is removed.
  * @returns The launcher's code; 1 when a signal ended it; 69 when a light run passed its threshold;
  * 70 when the tree still reads as present or the ticket could not be removed; 75 when the launcher
  * could not start or the priority could not be lowered.
@@ -2136,7 +2166,7 @@ export async function runHolder(
 	launcher: string,
 	sequence: number,
 	measure?: Measure,
-	held?: () => void,
+	token?: Token,
 ): Promise<number> {
 	const { root } = options
 	if (measure?.light !== undefined && !lowerPriority(process.pid)) {
@@ -2146,7 +2176,7 @@ export async function runHolder(
 	}
 	const started = Date.now()
 	writeRun(root, sequence, { started, launcher: undefined, command: undefined })
-	held?.()
+	token?.hold()
 	const child = startLauncher(launcher, options)
 	const id = child.pid
 	if (id === undefined) {
@@ -2203,6 +2233,7 @@ export async function runHolder(
 		await stopped
 		return HELD_CODE
 	}
+	token?.leave()
 	const refusal = releaseTicket(root, sequence)
 	await stopped
 	if (refusal !== undefined) {
@@ -2277,7 +2308,7 @@ export async function enterLane(
 		const refusal = await waitForTurn(root, sequence, tokenId, measure?.limits)
 		unwatch()
 		if (refusal === undefined) {
-			return await runHolder(options, launcher, sequence, measure, () => token.hold())
+			return await runHolder(options, launcher, sequence, measure, token)
 		}
 		removeFile(join(root, renderTicketName(sequence)))
 		console.error(`lane: ${refusal}`)

@@ -1006,6 +1006,21 @@ describe('lane.ts', () => {
 			['a journey project', [...VITEST, '--project', 'journey'], 'heavy'],
 			['a capture', [...NPM, 'run', 'test:capture'], 'heavy'],
 			['a live-service run', [...NPM, 'run', 'test:live'], 'heavy'],
+			['the live-service project script', [...NPM, 'run', 'test:service'], 'heavy'],
+			['the pack-and-install script', [...NPM, 'run', 'test:distribution'], 'heavy'],
+			['the source aggregate script', [...NPM, 'run', 'test:src'], 'heavy'],
+			['the application aggregate script', [...NPM, 'run', 'test:app'], 'heavy'],
+			['the live-service project', [...VITEST, '--project', 'service'], 'heavy'],
+			[
+				'a full run with a dotted report flag',
+				[...VITEST, '--reporter=json', '--outputFile.json', 'tmp/r.json'],
+				'heavy',
+			],
+			[
+				'a report path beside one project',
+				[...VITEST, '--project', 'skills', '--outputFile', 'tmp/r.json'],
+				'light',
+			],
 			['the full suite through Vitest', [...VITEST], 'heavy'],
 			['a format check', [...NPM, 'run', 'format:check'], 'light'],
 			['a lint check', [...NPM, 'run', 'lint:check'], 'light'],
@@ -1022,7 +1037,9 @@ describe('lane.ts', () => {
 			['an oxlint run', ['node', 'node_modules/oxlint/bin/oxlint', '.'], 'light'],
 			['a build', [...NPM, 'run', 'build'], undefined],
 			['a lint fix', ['oxlint', '--fix', '.'], undefined],
-			['two projects', [...VITEST, '--project', 'skills', '--project', 'policy'], undefined],
+			['two projects', [...VITEST, '--project', 'skills', '--project', 'policy'], 'heavy'],
+			['a directory filter', [...VITEST, 'tests/agents/'], undefined],
+			['one project of the source aggregate', [...NPM, 'run', 'test:src:core'], 'light'],
 			['inline code', ['node', '-e', 'process.exit(0)'], undefined],
 			['a checkout path that holds a heavy word', ['/live/node', '/live/oxlint', '.'], 'light'],
 		])('seeds %s', (_name, command, expected) => {
@@ -1121,6 +1138,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const token = new Token()
+			onTestFinished(() => token.destroy())
 			const endpoint = renderEndpoint(bench.root, FIRST_TOKEN)
 			await token.listen(endpoint)
 			token.publish()
@@ -1137,6 +1155,24 @@ describe('lane.ts', () => {
 			).toBe('open')
 			await token.destroy()
 			expect(await leave).toBeUndefined()
+		})
+
+		it('parks a hold waiter that arrives after the ticket leaves until the process ends', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const token = new Token()
+			onTestFinished(() => token.destroy())
+			const endpoint = renderEndpoint(bench.root, FIRST_TOKEN)
+			await token.listen(endpoint)
+			token.publish()
+			token.hold()
+			token.leave()
+			const late = parkOn(endpoint, false, () => undefined, undefined, true)
+			expect(
+				await Promise.race([late.then(() => 'closed'), waitForDelay(200).then(() => 'open')]),
+			).toBe('open')
+			await token.destroy()
+			expect(await late).toBeUndefined()
 		})
 
 		it.each([
@@ -1330,6 +1366,47 @@ describe('lane.ts', () => {
 			expect(await Promise.all([one.exit(), sole.exit(), two.exit()])).toStrictEqual([0, 0, 0])
 		})
 
+		it('admits a light waiter on the hold of an earlier light ticket that stays live', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			const token = new Token()
+			onTestFinished(() => token.destroy())
+			await token.listen(renderEndpoint(bench.root, FIRST_TOKEN))
+			writeStage(bench.root, buildTicket(FIRST_TOKEN, 'planted', USAGE))
+			linkStage(bench.root, FIRST_TOKEN)
+			bench.scratch.remove(join('root', `${FIRST_TOKEN}.stage`))
+			token.publish()
+			const two = bench.lane('two')
+			await two.reach('lane: waiting behind "planted"')
+			await waitForDelay(200)
+			expect(bench.meter.marks).toStrictEqual([])
+			writeRun(bench.root, 1, { started: Date.now(), launcher: undefined, command: undefined })
+			token.hold()
+			await bench.meter.reach('enter', 'two')
+			bench.meter.release('two')
+			expect(await two.exit()).toBe(0)
+			expect(readSequences(readNames(bench.root))).toStrictEqual([1])
+		})
+
+		it('reclaims a dead light ticket a light waiter parks on, and enters', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			bench.scratch.write(
+				join('root', renderTicketName(1)),
+				JSON.stringify(buildTicket(THIRD_TOKEN, 'dead', USAGE)),
+			)
+			const two = bench.lane('two')
+			await bench.meter.reach('enter', 'two')
+			expect(readSequences(readNames(bench.root))).toStrictEqual([2])
+			bench.meter.release('two')
+			expect(await two.exit()).toBe(0)
+			expect(readSequences(readNames(bench.root))).toStrictEqual([])
+		})
+
 		it('reads a ticket of the first release as heavy', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
@@ -1468,8 +1545,10 @@ describe('lane.ts', () => {
 			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
 			const runs = [bench.lane('alpha')]
 			await bench.meter.reach('enter', 'alpha')
-			runs.push(bench.lane('one'), bench.lane('two'))
-			await Promise.all([bench.meter.reach('enter', 'one'), bench.meter.reach('enter', 'two')])
+			runs.push(bench.lane('one'))
+			await bench.meter.reach('enter', 'one')
+			runs.push(bench.lane('two'))
+			await bench.meter.reach('enter', 'two')
 			runs.push(bench.lane('beta'))
 			await runs[3]?.reach('lane: waiting behind "alpha"')
 			await waitForCondition(
