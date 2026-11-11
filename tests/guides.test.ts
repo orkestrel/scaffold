@@ -84,7 +84,7 @@ await new GuideCommand({
 			const manifest = blueprintToManifest(blueprint)
 			expect(replaceManifestOverrides(manifest, overrides)).toBe(manifest)
 			expect(JSON.parse(manifest)).toMatchObject({
-				devDependencies: { vite: '^8.3.7', 'vite-plugin-singlefile': '2.3.3' },
+				devDependencies: { vite: '^8.3.8', 'vite-plugin-singlefile': '2.3.3' },
 				overrides,
 			})
 		})
