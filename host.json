@@ -724,7 +724,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "b11db5dd67c3dcd71ee8525e3511f61bdc59a079b239837c95b67b62f120de9e"
+			"digest": "3af5f4c5104a7846d0ee4dfb40bc8f4940d90f4a00bee3bee0c4e6d4bf6980ac"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "2c7d2010238aa82ade5489fc4d6b4029ab1e3408e192cb11ed8b61daca697ebb"
+	"digest": "3b982492a3c6876d597a68b51257d8ff86f5e027d49f5ff46a89af600d7c1b8c"
 }

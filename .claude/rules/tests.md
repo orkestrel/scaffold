@@ -183,6 +183,8 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 - Keep the `studies` project short enough to run with every unit that touches a study: drive it from
   seeded, replayed, or scripted runs, and move a full-schedule rehearsal out of it into an on-demand
   script outside every chain, per `.claude/rules/quality.md` § Performance.
+- In a study test file, record each sealed result once, before its cases, and read it from every
+  case that needs it; never record a result per case.
 - Put in `studies` only the proofs the `@orkestrel/study` engine drives. Place a slow end-to-end proof of
   the package's own features that no study engine drives, such as its built executable run against
   a fixture workspace, as an integration test under § Cross-cutting proofs. Place it by the scope it
