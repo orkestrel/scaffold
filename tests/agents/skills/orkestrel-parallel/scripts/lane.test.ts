@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
@@ -6,6 +6,7 @@ import { waitForCondition, waitForDelay } from '@orkestrel/test'
 import {
 	LAUNCH_SCRIPT,
 	LANE_SCRIPT,
+	readProcessPriority,
 	renderLaneFlags,
 	renderLanePublisher,
 	renderLaneResolver,
@@ -14,39 +15,60 @@ import {
 	WORKSPACE_ROOT,
 } from '../../../../setupServer.js'
 import {
+	BREACH_CODE,
+	buildOutcome,
 	buildTicket,
+	classifyLight,
 	decideTurn,
+	fitsBudget,
 	FLAGS,
+	HISTORY_DIRECTORY,
+	isBreach,
 	isGone,
+	isLimits,
+	isTicket,
 	KILL_BUDGET,
 	killMembers,
 	linkStage,
+	measurePeak,
 	parkOn,
+	parseGauges,
 	parseRows,
+	RECENT_RUNS,
 	quote,
 	readCommandId,
+	readLimits,
 	readMissingFlags,
 	readNames,
 	readOption,
+	readOutcomeNames,
+	readOutcomes,
 	readPositionals,
 	readQueue,
 	readRun,
+	readSeed,
 	readSequences,
+	readSnapshot,
 	readStatus,
 	readTree,
 	readUnknownFlags,
 	reclaimTicket,
 	renderEndpoint,
+	renderKey,
+	renderOutcomeName,
 	renderRunName,
 	renderStatus,
 	renderTicketName,
 	resolveLauncher,
 	resolveRoot,
+	Sampler,
 	selectMembers,
 	sweepTree,
+	tallySample,
 	Token,
 	TOKEN_PATTERN,
 	VALUE_FLAGS,
+	writeOutcome,
 	writeRun,
 	writeStage,
 } from '../../../../../.agents/skills/orkestrel-parallel/scripts/lane.ts'
@@ -57,6 +79,16 @@ const THIRD_TOKEN = '33333333-3333-4333-8333-333333333333'
 const PUBLISHER_STAGE = '11111111-2222-4333-8444-555555555555.stage'
 const DEFAULT_ROOT = join(userInfo().homedir, '.orkestrel', 'lane')
 const DEFAULT_PRESENT = existsSync(DEFAULT_ROOT)
+const GIB = 1024 ** 3
+const LIMITS = {
+	slots: 3,
+	budget: { cores: 64, memory: 64 * GIB, processes: 1000 },
+	threshold: { duration: 600_000, cores: 16, memory: 8 * GIB, processes: 100 },
+}
+const CLEAN = { duration: 1000, cpu: 100, memory: 50_000_000, processes: 3, code: 0 }
+const USAGE = { cores: 1, memory: 100_000_000, processes: 4 }
+const NPM = ['node', 'C:/scoop/apps/nodejs22/node_modules/npm/bin/npm-cli.js']
+const VITEST = ['node', 'node_modules/vitest/vitest.mjs', 'run', '--config', 'vite.config.ts']
 
 describe('lane.ts', () => {
 	describe('command line', () => {
@@ -902,6 +934,570 @@ describe('lane.ts', () => {
 			])
 			expect(run.status).toBe(75)
 			expect(run.stderr).toContain('cannot be read')
+		})
+
+		it('refuses --solo as a run flag', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const root = join(bench.scratch.path, 'refused')
+			const run = runSkillScript(LANE_SCRIPT, ['--status', '--solo', '--root', root])
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('two modes')
+			expect(existsSync(root)).toBe(false)
+		})
+	})
+
+	describe('the light reading', () => {
+		it('reads a command with no records, a capped run, an exit 70, and a breach as heavy', () => {
+			expect(classifyLight(undefined, [], LIMITS)).toBeUndefined()
+			expect(classifyLight(undefined, [CLEAN, CLEAN], LIMITS)).toBeUndefined()
+			expect(
+				classifyLight(undefined, [CLEAN, CLEAN, { ...CLEAN, code: 124 }], LIMITS),
+			).toBeUndefined()
+			expect(
+				classifyLight(undefined, [CLEAN, CLEAN, { ...CLEAN, code: 70 }], LIMITS),
+			).toBeUndefined()
+			expect(
+				classifyLight(undefined, [CLEAN, CLEAN, { ...CLEAN, code: 69 }], LIMITS),
+			).toBeUndefined()
+			expect(classifyLight(undefined, [CLEAN, CLEAN, undefined], LIMITS)).toBeUndefined()
+			for (const breach of [
+				{ ...CLEAN, duration: LIMITS.threshold.duration + 1 },
+				{ ...CLEAN, cpu: CLEAN.duration * (LIMITS.threshold.cores + 1) },
+				{ ...CLEAN, memory: LIMITS.threshold.memory + 1 },
+				{ ...CLEAN, processes: LIMITS.threshold.processes + 1 },
+			]) {
+				expect(isBreach(breach, LIMITS.threshold)).toBe(true)
+				expect(classifyLight(undefined, [CLEAN, CLEAN, breach], LIMITS)).toBeUndefined()
+			}
+			// The control: the same records with no breach read light, with their peaks.
+			expect(isBreach(CLEAN, LIMITS.threshold)).toBe(false)
+			expect(
+				classifyLight(undefined, [CLEAN, CLEAN, { ...CLEAN, memory: 7 }], LIMITS),
+			).toStrictEqual({
+				cores: CLEAN.cpu / CLEAN.duration,
+				memory: CLEAN.memory,
+				processes: CLEAN.processes,
+			})
+			expect(RECENT_RUNS).toBe(3)
+		})
+
+		it('seeds by kind: light before any record and demoted by a breach, heavy whatever the records', () => {
+			const { cores, memory, processes } = LIMITS.threshold
+			expect(classifyLight('light', [], LIMITS)).toStrictEqual({ cores, memory, processes })
+			expect(classifyLight('light', [CLEAN], LIMITS)).toStrictEqual({ cores, memory, processes })
+			expect(
+				classifyLight('light', [CLEAN, { ...CLEAN, processes: processes + 1 }], LIMITS),
+			).toBeUndefined()
+			expect(classifyLight('heavy', [CLEAN, CLEAN, CLEAN], LIMITS)).toBeUndefined()
+			expect(measurePeak([CLEAN, { ...CLEAN, memory: CLEAN.memory * 2 }])).toStrictEqual({
+				cores: CLEAN.cpu / CLEAN.duration,
+				memory: CLEAN.memory * 2,
+				processes: CLEAN.processes,
+			})
+		})
+
+		it.each([
+			['an install', [...NPM, 'ci', '--ignore-scripts'], 'heavy'],
+			['the full suite through npm', [...NPM, 'test'], 'heavy'],
+			['the release chain', [...NPM, 'run', 'prepublishOnly'], 'heavy'],
+			['the release steps', ['node', 'scripts/steps.ts'], 'heavy'],
+			['a study', ['node', 'dist/bin/main.js', 'study', 'run'], 'heavy'],
+			['a journey project', [...VITEST, '--project', 'journey'], 'heavy'],
+			['a capture', [...NPM, 'run', 'test:capture'], 'heavy'],
+			['a live-service run', [...NPM, 'run', 'test:live'], 'heavy'],
+			['the full suite through Vitest', [...VITEST], 'heavy'],
+			['a format check', [...NPM, 'run', 'format:check'], 'light'],
+			['a lint check', [...NPM, 'run', 'lint:check'], 'light'],
+			['a type check through npm', [...NPM, 'run', 'check'], 'light'],
+			[
+				'a type check through tsc',
+				['npx.cmd', '--yes', 'tsc', '--noEmit', '-p', 'x.json'],
+				'light',
+			],
+			['one project', [...NPM, 'run', 'test:skills'], 'light'],
+			['named files', [...VITEST, '--project', 'skills', 'tests/a/lane.test.ts'], 'light'],
+			['one project in the equals form', ['npx', 'vitest', 'run', '--project=skills'], 'light'],
+			['an oxfmt check', ['oxfmt.exe', '--check', '.'], 'light'],
+			['an oxlint run', ['node', 'node_modules/oxlint/bin/oxlint', '.'], 'light'],
+			['a build', [...NPM, 'run', 'build'], undefined],
+			['a lint fix', ['oxlint', '--fix', '.'], undefined],
+			['two projects', [...VITEST, '--project', 'skills', '--project', 'policy'], undefined],
+			['inline code', ['node', '-e', 'process.exit(0)'], undefined],
+			['a checkout path that holds a heavy word', ['/live/node', '/live/oxlint', '.'], 'light'],
+		])('seeds %s', (_name, command, expected) => {
+			expect(readSeed(command)).toBe(expected)
+		})
+
+		it('fits the slots and each budget, and the boundary fits', () => {
+			const usage = { cores: 1, memory: 100, processes: 10 }
+			const limits = { ...LIMITS, slots: 2, budget: { cores: 2, memory: 200, processes: 20 } }
+			expect(fitsBudget([usage, usage], limits)).toBe(true)
+			expect(fitsBudget([usage, usage, { cores: 0, memory: 0, processes: 0 }], limits)).toBe(false)
+			expect(fitsBudget([usage, { ...usage, cores: 1.5 }], limits)).toBe(false)
+			expect(fitsBudget([usage, { ...usage, memory: 101 }], limits)).toBe(false)
+			expect(fitsBudget([usage, { ...usage, processes: 11 }], limits)).toBe(false)
+		})
+
+		it('reads limits.json as absent, unread, or limits', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			expect(readLimits(bench.root)).toBe('absent')
+			bench.limit({ ...LIMITS, slots: 0 })
+			expect(readLimits(bench.root)).toBe('unread')
+			bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, duration: -1 } })
+			expect(readLimits(bench.root)).toBe('unread')
+			bench.limit(LIMITS)
+			expect(readLimits(bench.root)).toStrictEqual(LIMITS)
+			expect(isLimits(LIMITS)).toBe(true)
+		})
+
+		it('keys a command by the real working directory and the arguments', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const command = [process.execPath, '-e', '']
+			const key = renderKey(realpathSync(WORKSPACE_ROOT), command)
+			expect(join('root', HISTORY_DIRECTORY, key)).toBe(bench.history(command))
+			expect(renderKey(realpathSync(WORKSPACE_ROOT), [...command, 'x'])).not.toBe(key)
+		})
+
+		it('writes each record once, lands two records of one key and one millisecond, and prunes', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const key = 'k'
+			for (const [index, token] of [FIRST_TOKEN, SECOND_TOKEN, THIRD_TOKEN].entries()) {
+				writeOutcome(bench.root, key, renderOutcomeName(index, token), CLEAN)
+			}
+			const same = renderOutcomeName(10, FIRST_TOKEN)
+			writeOutcome(bench.root, key, same, { ...CLEAN, code: 1 })
+			writeOutcome(bench.root, key, renderOutcomeName(10, SECOND_TOKEN), { ...CLEAN, code: 2 })
+			expect(readOutcomeNames(bench.root, key)).toStrictEqual([
+				renderOutcomeName(2, THIRD_TOKEN),
+				same,
+				renderOutcomeName(10, SECOND_TOKEN),
+			])
+			expect(readOutcomes(bench.root, key).map((outcome) => outcome?.code)).toStrictEqual([0, 1, 2])
+			expect(() => writeOutcome(bench.root, key, same, CLEAN)).toThrow('EEXIST')
+			bench.scratch.write(
+				join('root', HISTORY_DIRECTORY, key, renderOutcomeName(11, THIRD_TOKEN)),
+				'{',
+			)
+			expect(readOutcomes(bench.root, key).at(-1)).toBeUndefined()
+		})
+
+		it('reads a ticket without the optional fields as heavy and refuses malformed ones', () => {
+			const ticket = buildTicket(FIRST_TOKEN, 'plain')
+			expect('light' in ticket || 'solo' in ticket).toBe(false)
+			expect(isTicket(ticket)).toBe(true)
+			expect(isTicket({ ...ticket, light: { cores: 1 } })).toBe(false)
+			expect(isTicket({ ...ticket, solo: 'yes' })).toBe(false)
+			const light = buildTicket(FIRST_TOKEN, 'light', USAGE, true)
+			expect(light).toMatchObject({ light: USAGE, solo: true })
+			expect(isTicket(light)).toBe(true)
+		})
+
+		it('tallies samples by member and peak and builds the record', () => {
+			const gauges = parseGauges('10 1 1000 20000 300; 11 10 1001 10000 200;bad')
+			expect(gauges).toStrictEqual([
+				{ pid: 10, parent: 1, created: 1000, cpu: 2, memory: 300 },
+				{ pid: 11, parent: 10, created: 1001, cpu: 1, memory: 200 },
+			])
+			const first = tallySample({ cpu: new Map(), memory: 0, processes: 0 }, gauges)
+			const second = tallySample(first, parseGauges('10 1 1000 50000 100'))
+			expect(second.memory).toBe(500)
+			expect(second.processes).toBe(2)
+			expect(buildOutcome(second, 1000, 0)).toStrictEqual({
+				duration: 1000,
+				cpu: 6,
+				memory: 500,
+				processes: 2,
+				code: 0,
+			})
+		})
+	})
+
+	describe('the light admission rule', () => {
+		it('wakes a hold waiter when the ticket holds, before and after, and keeps a leave waiter', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const token = new Token()
+			const endpoint = renderEndpoint(bench.root, FIRST_TOKEN)
+			await token.listen(endpoint)
+			token.publish()
+			const parked = Promise.withResolvers<void>()
+			const early = parkOn(endpoint, false, parked.resolve, undefined, true)
+			const leave = parkOn(endpoint, false, () => undefined)
+			await parked.promise
+			await waitForDelay(100)
+			token.hold()
+			expect(await early).toBeUndefined()
+			expect(await parkOn(endpoint, false, () => undefined, undefined, true)).toBeUndefined()
+			expect(
+				await Promise.race([leave.then(() => 'closed'), waitForDelay(200).then(() => 'open')]),
+			).toBe('open')
+			await token.destroy()
+			expect(await leave).toBeUndefined()
+		})
+
+		it.each([
+			['a light ticket behind a light ticket that does not hold', ['light'], [], 'queued'],
+			['a light ticket beside a light holder that fits', ['light'], [1], 'holder'],
+			['a light ticket beside a heavy holder', ['heavy'], [1], 'holder'],
+			['a light ticket behind a solo ticket', ['solo'], [], 'queued'],
+			['a light ticket past the slots', ['light', 'light', 'light'], [1, 2, 3], 'queued'],
+			['a heavy ticket beside light holders', ['light', 'light'], [1, 2], 'holder'],
+			['a heavy ticket behind a heavy ticket', ['light', 'heavy'], [1], 'behind'],
+			['a solo ticket behind a light holder', ['light'], [1], 'behind'],
+		])('decides %s', async (name, earlier, holding, expected) => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const own = name.startsWith('a light')
+				? buildTicket(SECOND_TOKEN, 'own', USAGE)
+				: buildTicket(SECOND_TOKEN, 'own', undefined, name.startsWith('a solo'))
+			for (const [index, lane] of [...earlier, own].entries()) {
+				const ticket =
+					typeof lane === 'string'
+						? buildTicket(
+								`${String(index).repeat(8)}-1111-4111-8111-111111111111`,
+								lane,
+								lane === 'light' ? USAGE : undefined,
+								lane === 'solo',
+							)
+						: lane
+				writeStage(bench.root, ticket)
+				linkStage(bench.root, ticket.token)
+				bench.scratch.remove(join('root', `${ticket.token}.stage`))
+			}
+			for (const sequence of holding) {
+				writeRun(bench.root, sequence, { started: 0, launcher: undefined, command: undefined })
+			}
+			const limits = { ...LIMITS, slots: 3 }
+			expect(decideTurn(bench.root, earlier.length + 1, SECOND_TOKEN, limits).state).toBe(expected)
+		})
+	})
+
+	// The sampler reads `Win32_Process` through PowerShell, which only Windows serves; on any other host
+	// `readMeasure` returns undefined and every ticket is heavy.
+	describe.runIf(process.platform === 'win32')('light lanes, driven as processes', () => {
+		it('runs every ticket heavy without limits.json and writes no record', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const two = bench.lane('two')
+			await two.reach('lane: waiting behind "one"')
+			expect(bench.meter.present).toStrictEqual(['one'])
+			bench.meter.release('one')
+			await bench.meter.reach('enter', 'two')
+			bench.meter.release('two')
+			expect(await Promise.all([one.exit(), two.exit()])).toStrictEqual([0, 0])
+			expect(bench.scratch.names(bench.history(bench.command('one')))).toHaveLength(3)
+			expect(bench.scratch.names('root')).toStrictEqual([HISTORY_DIRECTORY])
+		})
+
+		it('runs every ticket heavy on a malformed limits.json and says so', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.scratch.write(join('root', 'limits.json'), '{"slots":')
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const two = bench.lane('two')
+			await two.reach('lane: waiting behind "one"')
+			expect(two.output).toContain('cannot be read as limits')
+			bench.meter.releaseAll()
+			await bench.meter.reach('enter', 'two')
+			bench.meter.release('two')
+			expect(await Promise.all([one.exit(), two.exit()])).toStrictEqual([0, 0])
+		})
+
+		it('overlaps a heavy ticket and light tickets, and never two heavy tickets', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			const alpha = bench.lane('alpha')
+			await bench.meter.reach('enter', 'alpha')
+			const one = bench.lane('one')
+			const two = bench.lane('two')
+			await Promise.all([bench.meter.reach('enter', 'one'), bench.meter.reach('enter', 'two')])
+			const beta = bench.lane('beta')
+			await beta.reach('lane: waiting behind "alpha"')
+			expect(bench.meter.present.toSorted()).toStrictEqual(['alpha', 'one', 'two'])
+			bench.meter.release('alpha')
+			await bench.meter.reach('enter', 'beta')
+			expect(bench.meter.present.toSorted()).toStrictEqual(['beta', 'one', 'two'])
+			bench.meter.releaseAll()
+			expect(await Promise.all([alpha.exit(), one.exit(), two.exit(), beta.exit()])).toStrictEqual([
+				0, 0, 0, 0,
+			])
+			expect(bench.scratch.names('root')).toStrictEqual([HISTORY_DIRECTORY, 'limits.json'])
+		})
+
+		it('waits in neither lane behind the other', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const alpha = bench.lane('alpha')
+			await bench.meter.reach('enter', 'alpha')
+			const two = bench.lane('two')
+			await bench.meter.reach('enter', 'two')
+			expect(bench.meter.present).toStrictEqual(['one', 'alpha', 'two'])
+			expect(one.output + alpha.output + two.output).not.toContain('waiting')
+			bench.meter.releaseAll()
+			expect(await Promise.all([one.exit(), alpha.exit(), two.exit()])).toStrictEqual([0, 0, 0])
+		})
+
+		it('holds the slots, and wakes a light waiter on the first earlier light ticket to leave', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit({ ...LIMITS, slots: 2 })
+			for (const label of ['one', 'two', 'three']) {
+				bench.record(bench.command(label), [CLEAN, CLEAN, CLEAN])
+			}
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const two = bench.lane('two')
+			await bench.meter.reach('enter', 'two')
+			const three = bench.lane('three')
+			await three.reach('lane: waiting behind "one", "two"')
+			expect(bench.meter.present).toStrictEqual(['one', 'two'])
+			bench.meter.release('two')
+			await bench.meter.reach('enter', 'three')
+			expect(bench.meter.present).toStrictEqual(['one', 'three'])
+			bench.meter.releaseAll()
+			expect(await Promise.all([one.exit(), two.exit(), three.exit()])).toStrictEqual([0, 0, 0])
+		})
+
+		it('runs light tickets first in, first out, past a later ticket the budget would admit', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const unit = CLEAN.memory
+			bench.limit({ ...LIMITS, budget: { ...LIMITS.budget, memory: unit * 3.5 } })
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			const big = { ...CLEAN, memory: unit * 3 }
+			bench.record(bench.command('big'), [big, big, big])
+			bench.record(bench.command('small'), [CLEAN, CLEAN, CLEAN])
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const large = bench.lane('big')
+			await large.reach('lane: waiting behind "one"')
+			const small = bench.lane('small')
+			await small.reach('lane: waiting behind "one", "big"')
+			expect(bench.meter.present).toStrictEqual(['one'])
+			bench.meter.release('one')
+			await bench.meter.reach('enter', 'big')
+			// The head of the light lane always fits; big and small together do not.
+			await small.reach('lane: waiting behind "big"')
+			expect(bench.meter.present).toStrictEqual(['big'])
+			bench.meter.release('big')
+			await bench.meter.reach('enter', 'small')
+			bench.meter.release('small')
+			expect(await Promise.all([one.exit(), large.exit(), small.exit()])).toStrictEqual([0, 0, 0])
+			expect(
+				bench.meter.marks.filter((mark) => mark.event === 'enter').map((mark) => mark.label),
+			).toStrictEqual(['one', 'big', 'small'])
+		})
+
+		it('isolates a --solo run from every light ticket', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('sole'), [CLEAN, CLEAN, CLEAN])
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const sole = bench.lane('sole', { solo: true })
+			await sole.reach('lane: waiting behind "one"')
+			const two = bench.lane('two')
+			await two.reach('lane: waiting behind "one", "sole"')
+			expect(bench.meter.present).toStrictEqual(['one'])
+			bench.meter.release('one')
+			await bench.meter.reach('enter', 'sole')
+			expect(bench.meter.present).toStrictEqual(['sole'])
+			bench.meter.release('sole')
+			await bench.meter.reach('enter', 'two')
+			bench.meter.release('two')
+			expect(await Promise.all([one.exit(), sole.exit(), two.exit()])).toStrictEqual([0, 0, 0])
+		})
+
+		it('reads a ticket of the first release as heavy', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			const token = new Token()
+			await token.listen(renderEndpoint(bench.root, FIRST_TOKEN))
+			writeStage(bench.root, buildTicket(FIRST_TOKEN, 'planted'))
+			linkStage(bench.root, FIRST_TOKEN)
+			bench.scratch.remove(join('root', `${FIRST_TOKEN}.stage`))
+			writeRun(bench.root, 1, { started: Date.now(), launcher: undefined, command: undefined })
+			const one = bench.lane('one')
+			await bench.meter.reach('enter', 'one')
+			const alpha = bench.lane('alpha')
+			await alpha.reach('lane: waiting behind "planted"')
+			expect(bench.meter.present).toStrictEqual(['one'])
+			bench.scratch.remove(join('root', renderRunName(1)))
+			bench.scratch.remove(join('root', renderTicketName(1)))
+			await token.destroy()
+			await bench.meter.reach('enter', 'alpha')
+			bench.meter.releaseAll()
+			expect(await Promise.all([one.exit(), alpha.exit()])).toStrictEqual([0, 0])
+		})
+
+		it('ends a light run past its threshold with exit 69, and its next arrival queues heavy', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+			const command = bench.command('wide', 'branch')
+			const narrow = { ...CLEAN, processes: 2 }
+			bench.record(command, [narrow, narrow, narrow])
+			const breached = bench.lane('wide', { grandchild: 'branch' })
+			expect(await breached.exit()).toBe(BREACH_CODE)
+			expect(breached.output).toContain('passed the light threshold')
+			const records = readOutcomes(bench.root, renderKey(realpathSync(WORKSPACE_ROOT), command))
+			expect(records.at(-1)).toMatchObject({ code: BREACH_CODE })
+			expect(records.at(-1)?.processes).toBeGreaterThan(2)
+			await Promise.all([bench.meter.closure('wide'), bench.meter.closure('branch')])
+			const alpha = bench.lane('alpha')
+			await bench.meter.reach('enter', 'alpha')
+			const again = bench.lane('wide', { grandchild: 'branch' })
+			await again.reach('lane: waiting behind "alpha"')
+			bench.meter.release('alpha')
+			await bench.meter.reach('leave', 'alpha')
+			await waitForCondition(
+				'the second wide run joins the meter',
+				() => bench.meter.present.includes('wide'),
+				{ budget: 45_000, interval: 10 },
+			)
+			bench.meter.releaseAll()
+			expect(await Promise.all([alpha.exit(), again.exit()])).toStrictEqual([0, 0])
+		})
+
+		it('lands both records of two concurrent runs of one command, with the sampled tree', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const command = [process.execPath, '-e', 'setTimeout(() => undefined, 3000)']
+			bench.record(command, [CLEAN, CLEAN, CLEAN])
+			const runs = ['first', 'second'].map((label) =>
+				bench.spawn([...renderLaneFlags(bench.root, bench.journals, label), '--', ...command]),
+			)
+			expect(await Promise.all(runs.map((run) => run.exit()))).toStrictEqual([0, 0])
+			const names = bench.scratch.names(bench.history(command))
+			expect(names).toHaveLength(RECENT_RUNS)
+			expect(names[0]).toBe(`${String(3).padStart(15, '0')}-seeded.json`)
+			const key = renderKey(realpathSync(WORKSPACE_ROOT), command)
+			for (const outcome of readOutcomes(bench.root, key).slice(1)) {
+				expect(outcome?.code).toBe(0)
+				expect(outcome?.duration).toBeGreaterThanOrEqual(3000)
+				expect(outcome?.processes).toBeGreaterThanOrEqual(2)
+				expect(outcome?.memory).toBeGreaterThan(0)
+			}
+		})
+
+		it('runs a light command at below-normal priority and a heavy one at normal', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			const one = bench.lane('one')
+			const alpha = bench.lane('alpha')
+			await Promise.all([bench.meter.reach('enter', 'one'), bench.meter.reach('enter', 'alpha')])
+			const [light, heavy] = ['one', 'alpha'].map((label) =>
+				Number(readFileSync(`${join(bench.journals, `${label}.jsonl`)}.pid`, 'utf8').trim()),
+			)
+			expect(readProcessPriority(light ?? 0)).toBe(6)
+			expect(readProcessPriority(heavy ?? 0)).toBe(8)
+			bench.meter.releaseAll()
+			expect(await Promise.all([one.exit(), alpha.exit()])).toStrictEqual([0, 0])
+		})
+
+		it('ends the sampler with the lane, and with its own stdin', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const holder = bench.lane('holder')
+			await bench.meter.reach('enter', 'holder')
+			await waitForCondition(
+				'the run record names the launcher',
+				() => {
+					const run = readRun(bench.root, 1)
+					return typeof run === 'object' && run.launcher !== undefined
+				},
+				{ budget: 45_000, interval: 10 },
+			)
+			const run = readRun(bench.root, 1)
+			const launcher = typeof run === 'object' ? run.launcher : undefined
+			await waitForCondition(
+				'the sampler is a child of the lane',
+				() =>
+					readSnapshot()?.some((row) => row.parent === holder.pid && row.pid !== launcher) === true,
+				{ budget: 45_000, interval: 10 },
+			)
+			const sampler = readSnapshot()?.find(
+				(row) => row.parent === holder.pid && row.pid !== launcher,
+			)?.pid
+			expect(sampler).toBeDefined()
+			await holder.kill()
+			await waitForCondition(
+				'the sampler is gone',
+				() => readSnapshot()?.every((row) => row.pid !== sampler) === true,
+				{ budget: 45_000, interval: 10 },
+			)
+			const own = new Sampler(Date.now(), undefined, () => undefined)
+			const pid = own.pid
+			await own.stop()
+			expect(readSnapshot()?.some((row) => row.pid === pid)).toBe(false)
+		})
+
+		it('names each ticket lane and every holder in --status', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+			const runs = [bench.lane('alpha')]
+			await bench.meter.reach('enter', 'alpha')
+			runs.push(bench.lane('one'), bench.lane('two'))
+			await Promise.all([bench.meter.reach('enter', 'one'), bench.meter.reach('enter', 'two')])
+			runs.push(bench.lane('beta'))
+			await runs[3]?.reach('lane: waiting behind "alpha"')
+			await waitForCondition(
+				'every holder has its run record',
+				() =>
+					[1, 2, 3].every((sequence) => bench.scratch.has(join('root', renderRunName(sequence)))),
+				{ budget: 45_000, interval: 10 },
+			)
+			const json = runSkillScript(LANE_SCRIPT, ['--status', '--root', bench.root, '--json'])
+			const text = runSkillScript(LANE_SCRIPT, ['--status', '--root', bench.root])
+			expect(JSON.parse(json.stdout)).toMatchObject({
+				holder: { label: 'alpha' },
+				tickets: [
+					{ label: 'alpha', light: false, solo: false, holding: true },
+					{ label: 'one', light: true, holding: true },
+					{ label: 'two', light: true, holding: true },
+					{ label: 'beta', light: false, holding: false, state: 'live' },
+				],
+			})
+			expect(text.stdout).toContain('holder: "alpha"')
+			expect(text.stdout).toContain('light: "one", "two"')
+			expect(text.stdout).toContain('live heavy holding "alpha"')
+			expect(text.stdout).toContain('live light holding "one"')
+			expect(text.stdout).toContain('live heavy "beta"')
+			bench.meter.releaseAll()
+			await bench.meter.reach('enter', 'beta')
+			bench.meter.release('beta')
+			expect(await Promise.all(runs.map((run) => run.exit()))).toStrictEqual([0, 0, 0, 0])
 		})
 	})
 })
