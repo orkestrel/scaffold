@@ -6088,6 +6088,15 @@ export const MUTATE_CHECK_SCRIPT = [
 	"process.exit(fs.readFileSync('target.txt', 'utf8').includes('BAD') ? 1 : 0)",
 ].join('\n')
 
+/** Holds the CommonJS command the `mutate` log proof runs: each run prints a line only that run can print, on both streams. */
+export const MUTATE_CASES_SCRIPT = [
+	"const fs = require('node:fs')",
+	"const broken = fs.readFileSync('target.txt', 'utf8').includes('BAD')",
+	"console.log(broken ? 'case-load: ok' : 'case-load: ok; case-save: ok')",
+	"if (broken) console.error('case-save: FAILED under the mutation')",
+	'process.exit(broken ? 1 : 0)',
+].join('\n')
+
 /** Holds the edit file that turns GOOD into BAD in `target.txt`. */
 export const MUTATE_BREAK_EDIT = renderEditFile([
 	{ path: 'target.txt', reason: 'break it', before: 'GOOD', after: 'BAD' },
