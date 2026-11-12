@@ -72,6 +72,7 @@ export const STYLES_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.
 export const RESERVED_SHEET_NAMES: readonly string[] = Object.freeze([
 	...ENVIRONMENTS,
 	'bin',
+	'reporter',
 	'styles',
 	'themes',
 	...FRAMEWORKS,
@@ -170,6 +171,12 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 	'configs/src/tsconfig.bin.json',
 ])
 
+/** Lists the configuration files a workspace that publishes a Vitest reporter adds, frozen. */
+export const REPORTER_CONFIGS: readonly string[] = Object.freeze([
+	'configs/src/vite.reporter.config.ts',
+	'configs/src/tsconfig.reporter.json',
+])
+
 /** Lists the configuration file a workspace with studies and a server application adds, frozen. */
 export const BARREL_CONFIGS: readonly string[] = Object.freeze([
 	'configs/app/vite.barrel.config.ts',
@@ -180,6 +187,12 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 
 /** Names the built executable a bin workspace's manifest command runs. */
 export const BIN_OUTPUT_PATH = 'dist/bin/main.js'
+
+/** Names the reporter entry whose presence makes a workspace `reporter`. */
+export const REPORTER_ENTRY_PATH = 'src/reporter/main.ts'
+
+/** Names the built reporter module a reporter workspace's `./reporter` export loads. */
+export const REPORTER_OUTPUT_PATH = 'dist/reporter/main.js'
 
 /**
  * Lists the paths a target receives from the vendored data root, frozen.

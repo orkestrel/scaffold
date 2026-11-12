@@ -393,6 +393,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		engines: isString,
 		overrides: andOf(isCollection, arrayOf(isOverride)),
 		bin: isBoolean,
+		reporter: isBoolean,
 		setup: andOf(isCollection, arrayOf(literalOf('node', 'browser'))),
 		guides: isBoolean,
 		integration: isBoolean,

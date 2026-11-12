@@ -16,30 +16,37 @@ Use only the environments a project needs, and keep the root dependency model in
 
 ## Environments
 
-| Path           | Purpose                                                            |
-| -------------- | ------------------------------------------------------------------ |
-| `src/core/`    | Published host-independent library                                 |
-| `src/browser/` | Published browser-only library                                     |
-| `src/server/`  | Published Node-only library                                        |
-| `src/styles/`  | Optional styles surface: the base sheet face producing `index.css` |
-| `src/<name>/`  | Styles extension: a named sheet face beside `src/styles/`          |
-| `src/vue/`     | Browser extension: the published `vue` face over `src/browser/`    |
-| `src/bin/`     | Optional executable; `main.ts` entry, never a public barrel        |
-| `app/core/`    | Shared application logic with an `index.ts` barrel                 |
-| `app/browser/` | Browser app; `main.ts` entry, not a barrel                         |
-| `app/vue/`     | Browser extension: the Vue app beside `app/browser/`; `main.ts`    |
-| `app/server/`  | Node server app; `main.ts` entry                                   |
-| `tests/`       | Mirrors src/app environments; root holds cross-cutting proofs      |
-| `configs/`     | Thin target wrappers around root configs                           |
+| Path            | Purpose                                                            |
+| --------------- | ------------------------------------------------------------------ |
+| `src/core/`     | Published host-independent library                                 |
+| `src/browser/`  | Published browser-only library                                     |
+| `src/server/`   | Published Node-only library                                        |
+| `src/styles/`   | Optional styles surface: the base sheet face producing `index.css` |
+| `src/<name>/`   | Styles extension: a named sheet face beside `src/styles/`          |
+| `src/vue/`      | Browser extension: the published `vue` face over `src/browser/`    |
+| `src/bin/`      | Optional executable; `main.ts` entry, never a public barrel        |
+| `src/reporter/` | Optional Vitest reporter; `main.ts` entry, never a barrel          |
+| `app/core/`     | Shared application logic with an `index.ts` barrel                 |
+| `app/browser/`  | Browser app; `main.ts` entry, not a barrel                         |
+| `app/vue/`      | Browser extension: the Vue app beside `app/browser/`; `main.ts`    |
+| `app/server/`   | Node server app; `main.ts` entry                                   |
+| `tests/`        | Mirrors src/app environments; root holds cross-cutting proofs      |
+| `configs/`      | Thin target wrappers around root configs                           |
 
 - Dependency direction is the root project model in `AGENTS.md` and is not restated here; this file governs where the environments live and how they are configured.
 - Typical browser-app domains: `components/`, `pages/`, `composables/`, `controllers/`, `services/`, `stores/`.
 - Typical server-app domains: `handlers.ts`, `middlewares.ts`, `routes.ts`.
 - A sheet face (`src/styles/` and each `src/<name>/` styles extension) builds from `sheet.ts`, which imports `./index.scss` alone; its `index.ts` star-exports `./sheet.js`. The themes target builds from `src/styles/themes/sheet.ts` the same way.
-- Name a styles extension with a name the `NAME_PATTERN` constant admits, and never `core`, `browser`, `server`, `bin`, `styles`, `themes`, or `vue`.
+- Name a styles extension with a name the `NAME_PATTERN` constant admits, and never `core`, `browser`, `server`, `bin`, `reporter`, `styles`, `themes`, or `vue`.
 - `src/bin/main.ts` is the executable entry, built to `dist/bin/main.js`. The name is fixed, as it
   is for `app/browser/main.ts` and `app/server/main.ts`, so every runtime entry in a workspace is
   found at the same name.
+- `src/reporter/main.ts` is the Vitest reporter entry, one per package, built to
+  `dist/reporter/main.js` and published as the `./reporter` export. Its body is two statements:
+  an import of the reporter class from `@src/server`, then `export default` of that class. That
+  body is the one exception to `.claude/rules/architecture.md` § Barrel exports, and the vendored
+  `.oxlintrc.json` exempts that one path from `import/no-default-export`. Keep the class in
+  `src/server`, exported by name through the server barrel.
 - `package.json`'s `bin` key is the installed command name. The entry path is the value and does
   not carry that name.
 - Keep every ignored output at the workspace root or under `tmp/`, and write no `.gitignore`
@@ -65,9 +72,9 @@ Use only the environments a project needs, and keep the root dependency model in
 
 Give every selected environment and every face an alias: `src/styles`, each `src/<name>` styles extension, and each axis the `vue` extension occupies. Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compilerOptions.paths`; keep both aligned.
 
-Import a sibling environment through its alias. In `src/browser`, `src/server`, `src/vue`, and `src/bin`, a
-relative path to `src/core`, to `src/browser` from `src/vue`, or to `src/server` from `src/bin` bundles a
-private copy of that environment into the face, so the vendored `.oxlintrc.json` refuses it with a message naming the alias.
+Import a sibling environment through its alias. In `src/browser`, `src/server`, `src/vue`, `src/bin`, and
+`src/reporter`, a relative path to `src/core`, to `src/browser` from `src/vue`, or to `src/server` from
+`src/bin` or `src/reporter` bundles a private copy of that environment into the face, so the vendored `.oxlintrc.json` refuses it with a message naming the alias.
 
 ## Configuration authority
 
@@ -76,7 +83,7 @@ private copy of that environment into the face, so the vendored `.oxlintrc.json`
 - `*/types.ts`: public API contracts.
 - `configs/agents/tsconfig.skills.json`: the scoped typecheck of the skill scripts; its presence selects the `skills` blueprint fact.
 - `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
-  `configs/src/*bin*` files. Shared logic remains in root configs.
+  `configs/src/*bin*` and `configs/src/*reporter*` files. Shared logic remains in root configs.
 - `configs/helpers.ts`, `configs/browsers.ts`, `configs/commands.ts`, and `configs/policy.ts`: the
   only permitted leaves under `configs/`. Each imports nothing from the workspace, which is what
   keeps it a leaf, so no `configs/types.ts` exists for one to import: each keeps its own types,
@@ -129,12 +136,16 @@ Environment rules:
 | `dist/src/styles/themes`      | Compiled themes `index.css`      | CSS                                                     |
 | `dist/src/<name>`             | Compiled `index.css`             | CSS                                                     |
 | `dist/bin`                    | Optional executable `main.js`    | ES with shebang                                         |
+| `dist/reporter`               | Vitest reporter + `main.d.ts`    | ES                                                      |
 | `dist/app/browser`            | Browser application              | target-defined                                          |
 | `dist/app/vue`                | Vue application                  | target-defined                                          |
 | `dist/app/server`             | Server application               | CJS runtime entry; ES barrel when `studies` is selected |
 | `showcase/<application>.html` | Single-file page per application | self-contained, committed                               |
 
 - Roll up each published TypeScript face's declarations in its Vite wrapper. A face that imports `@src/core` or `@src/browser` rewrites those specifiers to the published subpaths in its emitted declarations.
+- Build the reporter entry ES only with `@src/*` external, rewritten through `output.paths` to
+  `../src/<environment>/index.js`, and roll up `dist/reporter/main.d.ts` with
+  `rewriteServerSpecifier` rewriting `@src/server` to `../src/server/index.js`.
 - A sheet face ships CSS, not declarations, and its JavaScript build stub stays out of `files`.
 - Build each sheet face with `cssMinify: false`, bounded to its own output directory.
 - Build `dist/src/styles/themes` after `dist/src/styles`; the themes build empties only its own directory.
@@ -148,19 +159,20 @@ Environment rules:
 `vite.config.ts` defines Vitest projects on an environment axis and a workspace-proof axis. The
 environment axis is one project per src/app axis × environment, plus one per extension face:
 
-| Project       | Files                  | Environment                           | Setup                                                        |
-| ------------- | ---------------------- | ------------------------------------- | ------------------------------------------------------------ |
-| `src:core`    | `tests/src/core/**`    | Node                                  | `setup.ts`                                                   |
-| `src:browser` | `tests/src/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
-| `src:vue`     | `tests/src/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
-| `src:server`  | `tests/src/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                                 |
-| `src:styles`  | `tests/src/styles/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` when present |
-| `src:<name>`  | `tests/src/<name>/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` when present |
-| `src:bin`     | `tests/src/bin/**`     | Node                                  | `setup.ts`, `setupServer.ts`                                 |
-| `app:core`    | `tests/app/core/**`    | Node                                  | `setup.ts`                                                   |
-| `app:browser` | `tests/app/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
-| `app:vue`     | `tests/app/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
-| `app:server`  | `tests/app/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                                 |
+| Project        | Files                   | Environment                           | Setup                                                        |
+| -------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `src:core`     | `tests/src/core/**`     | Node                                  | `setup.ts`                                                   |
+| `src:browser`  | `tests/src/browser/**`  | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `src:vue`      | `tests/src/vue/**`      | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `src:server`   | `tests/src/server/**`   | Node                                  | `setup.ts`, `setupServer.ts`                                 |
+| `src:styles`   | `tests/src/styles/**`   | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` when present |
+| `src:<name>`   | `tests/src/<name>/**`   | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` when present |
+| `src:bin`      | `tests/src/bin/**`      | Node                                  | `setup.ts`, `setupServer.ts`                                 |
+| `src:reporter` | `tests/src/reporter/**` | Node                                  | `setup.ts`, `setupServer.ts`                                 |
+| `app:core`     | `tests/app/core/**`     | Node                                  | `setup.ts`                                                   |
+| `app:browser`  | `tests/app/browser/**`  | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `app:vue`      | `tests/app/vue/**`      | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                                |
+| `app:server`   | `tests/app/server/**`   | Node                                  | `setup.ts`, `setupServer.ts`                                 |
 
 - Compose every sheet-face project (`src:styles` and each `src:<name>`) in its own wrapper through
   the one root `sheetProject` factory, and run it through its `test:src:<face>` script, which builds
@@ -273,8 +285,8 @@ then runs the configured scoped checks that prove environment isolation.
 
 - Use plain `tsc` for a TypeScript-only tree.
 - Use `vue-tsc` only for a scope containing `.vue` internals.
-- `check:src` mirrors configured `src:*` test projects; optional `src:bin` is its
-  own scope.
+- `check:src` mirrors configured `src:*` test projects; optional `src:bin` and `src:reporter`
+  are each their own scope.
 - `check:app` mirrors configured `app:*` projects.
 - `check:skills` typechecks `.agents/skills/*/scripts/*.ts` through `configs/agents/tsconfig.skills.json` wherever that wrapper is present: the root project's wildcard never enters a dot-prefixed directory, so the scripts need their own scope.
 - The `build:skills` script emits a `.js` twin of every `.agents/skills/*/scripts/*.ts` script into the `dist/agents/skills/` tree through the same wrapper, rewrites each relative import to `.js`, and copies `.agents/templates/brief.md` into the `dist/agents/templates/` directory; the `build` chain runs it after `build:host`, and `dist/agents` ships in the package.

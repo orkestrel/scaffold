@@ -352,7 +352,7 @@ await new GuideCommand({
 			const surfaces = [isSurface('browser'), isSurface('styles'), isSurface('themes')]
 			expect(surfaces).toStrictEqual([true, true, false])
 			expect(FRAMEWORKS).toStrictEqual(['vue'])
-			const reserved = ['core', 'browser', 'server', 'bin', 'styles', 'themes', 'vue']
+			const reserved = ['core', 'browser', 'server', 'bin', 'reporter', 'styles', 'themes', 'vue']
 			expect(RESERVED_SHEET_NAMES).toStrictEqual(reserved)
 			const names = [isSheetName('print'), isSheetName('styles'), isSheetName('Print')]
 			expect(names).toStrictEqual([true, false, false])
