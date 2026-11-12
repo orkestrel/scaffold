@@ -18,7 +18,6 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 - A `rename` onto a freshly hard-linked file can return `EPERM` while a scanner holds it.
 - A child CLI can leak orphaned `conhost.exe` processes and open console windows. Count them with `Get-Process conhost` at each launch while such a lane is live.
 - Before designing a fan-out, measure what one dispatched child costs in consoles with `Get-Process conhost` before and after it, and size the fan-out from that reading: a Codex child held four consoles on 2026-11-05, and a long-lived session costs a fixed number.
-- Pin an installed tool that a study profile or a hold script runs, such as `ollama.exe`, by its version and its executable's SHA-256 at scoop's versioned folder (`scoop\apps\<app>\<version>\`), never through `current` and never by a copy: the versioned folder survives an update and leaves only on `scoop cleanup`, and Study and `createOllamaDaemon` refuse a changed binary. Run no `scoop cleanup <app>` while a profile pins one of its versions.
 - Read free commit space beside the console count before a long measured run. A task's completion does not end its shell: a finished unit's PowerShell held 267 GB for 11 hours in `ConvertTo-Json -Depth 25`, leaving 1.5 GB of commit space (2026-11-05). Never run `ConvertTo-Json` over a live object graph; project the fields first.
 
 ## Git Bash
