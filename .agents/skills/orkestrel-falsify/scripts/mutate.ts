@@ -6,10 +6,14 @@
 // `new:` texts, where each `old` text must occur exactly once in its file after the earlier edits to
 // that file. The script resolves every edit before it touches a file, saves each file's original
 // bytes under `tmp/probes/mutate/`, writes the mutated files, runs the command with no shell and
-// its output sent to this script's standard error, restores the original bytes and proves each
-// file's SHA-256 digest equals the original, runs the command again, and prints one JSON line:
-// `{"edits":N,"files":[{"path":"...","digest":"..."}],"mutatedExit":N,"restoredExit":N,"restored":true}`.
-// The saved bytes are deleted once the restore is proven. Edits that spell one file two ways
+// its standard output and standard error written together, in order, to `<edits>.mutated.log`
+// beside the edit file, prints the last 40 lines of that log to standard error, restores the
+// original bytes and proves each file's SHA-256 digest equals the original, runs the command again
+// with its output in `<edits>.restored.log`, and prints one JSON line:
+// `{"edits":N,"files":[{"path":"...","digest":"..."}],"mutatedExit":N,"restoredExit":N,"mutatedLog":"<edits>.mutated.log","restoredLog":"<edits>.restored.log","restored":true}`.
+// Each log path is the edit file's path as the caller gave it plus the suffix; a later run over the
+// same edit file overwrites both logs, and the script deletes neither. The saved bytes are deleted
+// once the restore is proven. Edits that spell one file two ways
 // (`a.ts` and `./a.ts`, or a case-only difference on a host that folds case) apply to it in order,
 // each against the text the earlier ones left. A mutation that leaves the suite uncollected also
 // reads as a failing run, so read the command's own test count on standard error.
@@ -21,14 +25,16 @@
 // The script refuses a flag it does not read before the bare `--`, the `--flag=value` form included,
 // and names an unknown flag before a flag given with no value.
 // Exit 0 when the mutated run failed and the restored run passed (or a `--restore` is proven), 3
-// when either did not, 2 when a restore is not proven or the command cannot start, 64 on usage, an
-// edit that does not resolve, or a run directory an earlier run left.
+// when either did not, 2 when a restore is not proven or the command cannot start or a log cannot
+// be opened, 64 on usage, an edit that does not resolve, or a run directory an earlier run left.
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
+	closeSync,
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	openSync,
 	readdirSync,
 	readFileSync,
 	realpathSync,
@@ -56,6 +62,15 @@ export const RUN_PREFIX = 'run-'
 
 /** Holds the name of the manifest file a run directory keeps beside its saved bytes. */
 export const MANIFEST = 'manifest.json'
+
+/** Holds how many of the last lines of the mutated run's log the script prints to standard error. */
+export const TAIL_LINES = 40
+
+/** Holds the suffix that names the mutated run's log beside the edit file. */
+export const MUTATED_SUFFIX = '.mutated.log'
+
+/** Holds the suffix that names the restored run's log beside the edit file. */
+export const RESTORED_SUFFIX = '.restored.log'
 
 /** Matches one edit block with its path, reason, and fenced old and new texts. */
 export const EDIT_BLOCK =
@@ -330,22 +345,65 @@ export function resolveMutations(root: string, edits: readonly Edit[]): Resoluti
 }
 
 /**
- * Runs the command with no shell, its output sent to this process's standard error.
+ * Opens a log file for writing, creating or emptying it.
+ *
+ * @param log - The path of the log file.
+ * @returns The file descriptor, or the host's refusal message when the file cannot be opened.
+ */
+export function openLog(log: string): number | string {
+	try {
+		return openSync(log, 'w')
+	} catch (error) {
+		return error instanceof Error ? error.message : String(error)
+	}
+}
+
+/**
+ * Runs the command with no shell, its standard output and standard error written together, in
+ * order, to a log file that the run creates or overwrites.
  *
  * @param command - The executable to run.
  * @param args - The arguments after the executable.
- * @returns The exit code, or undefined with the reason when the command cannot start or a signal
- * ended it.
+ * @param log - The path of the log file.
+ * @returns The exit code, or undefined with the reason when the log cannot be opened, the command
+ * cannot start, or a signal ended it.
  */
-export function runCommand(command: string, args: readonly string[]): Finish {
-	const result = spawnSync(command, args, {
-		stdio: ['ignore', 2, 2],
-		windowsHide: true,
-		shell: false,
-	})
-	const error =
-		result.error?.message ?? (result.signal === null ? undefined : `ended by ${result.signal}`)
-	return { exit: error === undefined ? (result.status ?? undefined) : undefined, error }
+export function runCommand(command: string, args: readonly string[], log: string): Finish {
+	const descriptor = openLog(log)
+	if (typeof descriptor === 'string') return { exit: undefined, error: descriptor }
+	try {
+		const result = spawnSync(command, args, {
+			stdio: ['ignore', descriptor, descriptor],
+			windowsHide: true,
+			shell: false,
+		})
+		const error =
+			result.error?.message ?? (result.signal === null ? undefined : `ended by ${result.signal}`)
+		return { exit: error === undefined ? (result.status ?? undefined) : undefined, error }
+	} finally {
+		closeSync(descriptor)
+	}
+}
+
+/**
+ * Reads the last lines of a log file.
+ *
+ * @param log - The path of the log file.
+ * @param count - How many trailing lines to keep.
+ * @returns The last `count` lines, each ending in a line break, or an empty text when the file
+ * cannot be read.
+ */
+export function readTail(log: string, count: number): string {
+	try {
+		const lines = readFileSync(log, 'utf8').split(/\r\n|\n/u)
+		if (lines.at(-1) === '') lines.pop()
+		return lines
+			.slice(-count)
+			.map((line) => `${line}\n`)
+			.join('')
+	} catch {
+		return ''
+	}
 }
 
 /**
@@ -396,6 +454,7 @@ export function digestFile(path: string): string | undefined {
  * @param mutations - The mutations to apply.
  * @param command - The executable to run.
  * @param args - The arguments after the executable.
+ * @param log - The path of the log file the run writes its output to.
  * @returns How the mutated run ended.
  */
 export function runMutated(
@@ -403,10 +462,11 @@ export function runMutated(
 	mutations: readonly Mutation[],
 	command: string,
 	args: readonly string[],
+	log: string,
 ): Finish {
 	try {
 		for (const mutation of mutations) writeFileSync(resolve(root, mutation.path), mutation.mutated)
-		return runCommand(command, args)
+		return runCommand(command, args, log)
 	} catch (error) {
 		return { exit: undefined, error: error instanceof Error ? error.message : String(error) }
 	}
@@ -661,7 +721,12 @@ export function main(argv: readonly string[]): number {
 	}
 	const saved = saveOriginals(root, resolution.mutations)
 	console.error(`mutate: originals saved under ${saved}`)
-	const mutated = runMutated(root, resolution.mutations, executable, command.slice(1))
+	const mutatedLog = `${source}${MUTATED_SUFFIX}`
+	const restoredLog = `${source}${RESTORED_SUFFIX}`
+	const mutated = runMutated(root, resolution.mutations, executable, command.slice(1), mutatedLog)
+	console.error(
+		`mutate: last ${String(TAIL_LINES)} lines of ${mutatedLog}:\n${readTail(mutatedLog, TAIL_LINES)}`,
+	)
 	const refusal = tryRestore(root, resolution.mutations)
 	const drift = readDrift(root, resolution.mutations)
 	if (refusal !== undefined || drift.length > 0) {
@@ -675,7 +740,7 @@ export function main(argv: readonly string[]): number {
 		console.error(`mutate: the command did not exit: ${mutated.error ?? 'unknown'}`)
 		return 2
 	}
-	const restored = runCommand(executable, command.slice(1))
+	const restored = runCommand(executable, command.slice(1), restoredLog)
 	rmSync(saved, { recursive: true, force: true })
 	if (restored.exit === undefined) {
 		console.error(`mutate: the restored run did not exit: ${restored.error ?? 'unknown'}`)
@@ -690,6 +755,8 @@ export function main(argv: readonly string[]): number {
 			})),
 			mutatedExit: mutated.exit,
 			restoredExit: restored.exit,
+			mutatedLog,
+			restoredLog,
 			restored: true,
 		}),
 	)

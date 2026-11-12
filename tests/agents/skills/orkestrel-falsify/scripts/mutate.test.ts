@@ -1,14 +1,17 @@
+import { closeSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import {
 	MUTATE_BREAK_EDIT,
+	MUTATE_CASES_SCRIPT,
 	MUTATE_CHECK_SCRIPT,
 	MUTATE_SCRIPT,
 	renderEditFile,
 	runSkillScript,
 } from '../../../../setupServer.js'
 import {
+	TAIL_LINES,
 	applyEdits,
 	countOccurrences,
 	digestBytes,
@@ -17,6 +20,7 @@ import {
 	isInside,
 	isManifestEntry,
 	keyEdit,
+	openLog,
 	parseEdits,
 	quote,
 	readDrift,
@@ -26,6 +30,7 @@ import {
 	readOption,
 	readPositionals,
 	readStrays,
+	readTail,
 	readUnknownFlags,
 	resolveMutations,
 	restoreFiles,
@@ -167,12 +172,37 @@ describe('mutate.ts', () => {
 	it('runs a command with no shell and reports a refused write or a missing command as a run that never exited', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-mutate-run-' })
 		try {
-			expect(runCommand(process.execPath, ['-e', 'process.exit(4)'])).toStrictEqual({
+			const log = join(scratch.path, 'run.log')
+			expect(runCommand(process.execPath, ['-e', 'process.exit(4)'], log)).toStrictEqual({
 				exit: 4,
 				error: undefined,
 			})
-			expect(runCommand(process.execPath, ['-e', '0']).exit).toBe(0)
-			const missing = runCommand('orkestrel-no-such-command', [])
+			expect(runCommand(process.execPath, ['-e', '0'], log).exit).toBe(0)
+			expect(
+				runCommand(process.execPath, ['-e', "console.log('to-out'); console.error('to-err')"], log)
+					.exit,
+			).toBe(0)
+			expect(scratch.read('run.log')).toContain('to-out')
+			expect(scratch.read('run.log')).toContain('to-err')
+			const unwritable = runCommand(
+				process.execPath,
+				['-e', '0'],
+				join(scratch.path, 'gone', 'x.log'),
+			)
+			expect(typeof openLog(join(scratch.path, 'gone', 'x.log'))).toBe('string')
+			const opened = openLog(join(scratch.path, 'opened.log'))
+			expect(typeof opened).toBe('number')
+			if (typeof opened === 'number') closeSync(opened)
+			expect(scratch.has('opened.log')).toBe(true)
+			expect(unwritable.exit).toBeUndefined()
+			expect(unwritable.error).toBeDefined()
+			expect(readTail(join(scratch.path, 'gone', 'x.log'), TAIL_LINES)).toBe('')
+			scratch.write('three.log', ['a', 'b', 'c', ''].join('\n'))
+			expect(readTail(join(scratch.path, 'three.log'), 2)).toBe(['b', 'c', ''].join('\n'))
+			expect(readTail(join(scratch.path, 'three.log'), TAIL_LINES)).toBe(
+				['a', 'b', 'c', ''].join('\n'),
+			)
+			const missing = runCommand('orkestrel-no-such-command', [], log)
 			expect(missing.exit).toBeUndefined()
 			expect(missing.error).toContain('ENOENT')
 			scratch.write('a.txt', 'one')
@@ -182,7 +212,7 @@ describe('mutate.ts', () => {
 			)
 			scratch.remove('a.txt')
 			scratch.ensure('a.txt')
-			const refused = runMutated(scratch.path, mutations, process.execPath, ['-e', '0'])
+			const refused = runMutated(scratch.path, mutations, process.execPath, ['-e', '0'], log)
 			expect(refused.exit).toBeUndefined()
 			expect(refused.error).toBeDefined()
 		} finally {
@@ -207,6 +237,8 @@ describe('mutate.ts', () => {
 				files: [{ path: 'target.txt', digest: digestBytes(Buffer.from('GOOD\n')) }],
 				mutatedExit: 1,
 				restoredExit: 0,
+				mutatedLog: 'edits.md.mutated.log',
+				restoredLog: 'edits.md.restored.log',
 				restored: true,
 			})
 			expect(scratch.read('target.txt')).toBe('GOOD\n')
@@ -214,6 +246,73 @@ describe('mutate.ts', () => {
 			expect(run.stderr).toContain('child-ran --verbose')
 			expect(run.stderr).toContain('originals saved under')
 			expect(scratch.names('tmp/probes/mutate')).toStrictEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('writes each run’s output to its own log beside the edit file and names both logs in the receipt', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-logs-' })
+		try {
+			scratch.write('target.txt', 'GOOD\n')
+			scratch.write('cases.cjs', MUTATE_CASES_SCRIPT)
+			scratch.write('edits.md', MUTATE_BREAK_EDIT)
+			const run = runSkillScript(
+				MUTATE_SCRIPT,
+				['--edits', 'edits.md', '--', process.execPath, 'cases.cjs'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({
+				mutatedExit: 1,
+				restoredExit: 0,
+				mutatedLog: 'edits.md.mutated.log',
+				restoredLog: 'edits.md.restored.log',
+			})
+			expect(scratch.has('edits.md.mutated.log')).toBe(true)
+			expect(scratch.has('edits.md.restored.log')).toBe(true)
+			const mutatedLog = scratch.read('edits.md.mutated.log')
+			const restoredLog = scratch.read('edits.md.restored.log')
+			expect(mutatedLog).toContain('case-save: FAILED under the mutation')
+			expect(mutatedLog).toContain('case-load: ok\n')
+			expect(mutatedLog).not.toContain('case-save: ok')
+			expect(restoredLog).toContain('case-load: ok; case-save: ok')
+			expect(restoredLog).not.toContain('FAILED')
+			expect(run.stderr).toContain('case-save: FAILED under the mutation')
+			expect(run.stderr).not.toContain('case-save: ok')
+			expect(scratch.read('target.txt')).toBe('GOOD\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('overwrites the logs of an earlier run and cuts the printed tail of the mutated run to its last lines', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-tail-' })
+		try {
+			scratch.write('target.txt', 'GOOD\n')
+			scratch.write('edits.md', MUTATE_BREAK_EDIT)
+			scratch.write('edits.md.mutated.log', 'stale mutated\n')
+			scratch.write('edits.md.restored.log', 'stale restored\n')
+			const total = TAIL_LINES * 2
+			const run = runSkillScript(
+				MUTATE_SCRIPT,
+				[
+					'--edits',
+					'edits.md',
+					'--',
+					process.execPath,
+					'-e',
+					`for (let i = 1; i <= ${String(total)}; i++) console.log('line-' + i)\nprocess.exit(require('node:fs').readFileSync('target.txt', 'utf8').includes('BAD') ? 1 : 0)`,
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(scratch.read('edits.md.mutated.log')).not.toContain('stale')
+			expect(scratch.read('edits.md.restored.log')).not.toContain('stale')
+			expect(scratch.read('edits.md.mutated.log')).toContain('line-1\n')
+			expect(run.stderr).toContain(`line-${String(total)}\n`)
+			expect(run.stderr).toContain(`line-${String(total - TAIL_LINES + 1)}\n`)
+			expect(run.stderr).not.toContain(`line-${String(total - TAIL_LINES)}\n`)
 		} finally {
 			scratch.destroy()
 		}
