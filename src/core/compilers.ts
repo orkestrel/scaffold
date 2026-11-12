@@ -2471,6 +2471,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 						origin: 'template',
 						content: fillTemplate(distribution.module, {
 							types: browser ? distribution.types : '',
+							events: browser ? distribution.events : '',
 							transport: browser ? distribution.transport : '',
 							launcher: browser ? distribution.launcher : '',
 							helpers: browser ? distribution.helpers : '',

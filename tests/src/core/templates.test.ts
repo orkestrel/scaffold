@@ -3034,6 +3034,41 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
+	// The harness binds port 0 on the loopback address, so no port can be taken in advance and a
+	// listen refusal is unreachable without replacing `node:net`; the proof here reads the emitted
+	// form, and the format and lint sweeps over `MODULE_EMITTERS` read the emitted browser module.
+	it('imports once from node:events in the browser harness alone and awaits listening through it', () => {
+		for (const browser of [false, true]) {
+			const artifacts = blueprintToTestArtifacts(
+				createBlueprint('proof', { src: browser ? ['browser'] : ['core'] }),
+			)
+			const module = requireValue(
+				artifacts.find(({ path }) => path === 'tests/setupDistribution.ts'),
+			)
+			const parsed = parseSync('setupDistribution.ts', module.content)
+			expect(parsed.errors).toEqual([])
+			const imports = parsed.program.body.flatMap((statement) =>
+				statement.type === 'ImportDeclaration'
+					? [
+							[
+								statement.source.value,
+								statement.specifiers.map((specifier) => specifier.local.name),
+							] as const,
+						]
+					: [],
+			)
+			const nodeSources = imports
+				.map(([source]) => source)
+				.filter((source) => source.startsWith('node:'))
+			expect(nodeSources).toStrictEqual(nodeSources.toSorted())
+			expect(imports.filter(([source]) => source === 'node:events')).toStrictEqual(
+				browser ? [['node:events', ['once']]] : [],
+			)
+			expect(module.content.includes("await once(server, 'listening')")).toBe(browser)
+			expect(module.content).not.toContain('(settle)')
+		}
+	})
+
 	it('emits each distribution proof byte for byte from the newest frozen release', () => {
 		const [, proofs] = requireValue(
 			Object.entries(DISTRIBUTION_PROOF_TEXTS)

@@ -1975,7 +1975,7 @@ describe('reporter entry', () => {
 import type { TestContext } from 'vitest'
 import { arrayOf, isArray, isRecord, isString } from '@orkestrel/contract'
 import { spawnSync } from 'node:child_process'
-import {
+{{events}}import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
@@ -3626,7 +3626,7 @@ export function buildDistributionCases(
 					},
 					expected: {
 						undeclared: [],
-						partitioned: [...stage.subpaths].sort(),
+						partitioned: stage.subpaths.toSorted(),
 						unreachable: [],
 						untypable: [],
 					},
@@ -3773,6 +3773,8 @@ describe('installed package consumer', () => {
 	}
 {{guard}}{{drive}}})
 `,
+			events: `import { once } from 'node:events'
+`,
 			transport: `import { createServer } from 'node:http'
 `,
 			types: `import type { PlaywrightProviderOptions } from '@vitest/browser-playwright'
@@ -3900,9 +3902,8 @@ export async function readDistributionBrowserExports(
 		response.end(readFileSync(path))
 	})
 	try {
-		await new Promise<void>((settle) => {
-			server.listen(0, '127.0.0.1', settle)
-		})
+		server.listen(0, '127.0.0.1')
+		await once(server, 'listening')
 		const address = server.address()
 		if (address === null || typeof address === 'string') {
 			throw new Error('The bundle server bound no port')
