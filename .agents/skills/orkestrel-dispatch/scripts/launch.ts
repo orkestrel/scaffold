@@ -12,11 +12,12 @@
 // removed before the spawn, so neither appears when the command cannot start. The summary line
 // prints last, after the command exits, and the errors file ends with `exit=<code>`. At the cap,
 // Windows kills the process tree; any other host kills the command alone, not its descendants.
-// The launcher's own flags are read before `--` alone, and it refuses a flag it does not read there,
-// the `--flag=value` form included. Exit: the command's code; 124 when capped;
+// The launcher reads its own flags before the first bare `--` with `parseArgs` in strict mode, and
+// passes every argument after it to the command. Exit: the command's code; 124 when capped;
 // 127 when the command could not start (the errors file names why); 64 on usage, including a
 // journal and errors path that are the same file and a cap that is not a number of seconds from 0
 // to 2147483.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { ChildProcess } from 'node:child_process'
 import { spawn, spawnSync } from 'node:child_process'
 import {
@@ -29,6 +30,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { dirname } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /**
  * Holds the longest cap in whole seconds.
@@ -39,70 +41,56 @@ import { dirname } from 'node:path'
  */
 export const MAX_CAP_SECONDS = 2_147_483
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--journal', '--errors', '--cap']
+/** Holds the usage line printed when a call names no journal, no errors file, or no command. */
+export const USAGE =
+	'usage: launch.ts --journal PATH --errors PATH [--cap SECONDS] [--status] -- COMMAND [ARGS...]'
 
-/** Lists every flag the launcher reads before the separator, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--status']
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	journal: Object.freeze({ type: 'string' }),
+	errors: Object.freeze({ type: 'string' }),
+	cap: Object.freeze({ type: 'string' }),
+	status: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes how the command ended: its code, its signal, or the reason it could not start. */
 export interface Exit {
 	readonly code: number | null
 	readonly signal: NodeJS.Signals | null
 	readonly error: string | undefined
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--journal`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan, so the command after it keeps every argument.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
 }
 
 /**
@@ -213,39 +201,38 @@ export function waitForExit(child: ChildProcess): Promise<Exit> {
  */
 export async function main(argv: readonly string[]): Promise<number> {
 	const separator = argv.indexOf('--')
-	// The launcher's own flags end at the separator; everything after it belongs to the command.
-	const own = separator === -1 ? argv : argv.slice(0, separator)
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`launch: ${unknown.join(', ')} is not a flag this launcher reads before --; flags: ${FLAGS.join(' ')}`,
-		)
+	const parsed = parseArguments(separator === -1 ? argv : argv.slice(0, separator))
+	if (!parsed.success) {
+		console.error(`launch: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const journal = readOption(own, '--journal')
-	const errors = readOption(own, '--errors')
-	const cap =
-		readMissingFlags(own, ['--cap']).length > 0
-			? Number.NaN
-			: Number(readOption(own, '--cap') ?? '0')
+	const { values } = parsed.value
+	const journal = typeof values.journal === 'string' ? values.journal : undefined
+	const errors = typeof values.errors === 'string' ? values.errors : undefined
+	const text = typeof values.cap === 'string' ? values.cap : '0'
+	const cap = Number(text)
 	const [command, ...args] = separator === -1 ? [] : argv.slice(separator + 1)
 	if (
 		separator === -1 ||
 		journal === undefined ||
 		errors === undefined ||
-		journal === errors ||
-		!Number.isFinite(cap) ||
-		cap < 0 ||
-		cap > MAX_CAP_SECONDS ||
 		command === undefined ||
 		command === ''
 	) {
+		console.error(USAGE)
+		return 64
+	}
+	if (journal === errors) {
+		console.error(`launch: --journal and --errors name the same file; ${USAGE}`)
+		return 64
+	}
+	if (text === '' || !Number.isFinite(cap) || cap < 0 || cap > MAX_CAP_SECONDS) {
 		console.error(
-			`usage: launch.ts --journal PATH --errors PATH --cap SECONDS [--status] -- COMMAND [ARGS...]; the journal and the errors file differ, and the cap is a number of seconds from 0 to ${String(MAX_CAP_SECONDS)} (0 for none)`,
+			`launch: --cap takes a number of seconds from 0 to ${String(MAX_CAP_SECONDS)} (0 for none), not ${JSON.stringify(text)}; ${USAGE}`,
 		)
 		return 64
 	}
-	const status = own.includes('--status')
+	const status = values.status === true
 	const capMilliseconds = cap > 0 ? computeCapMilliseconds(cap) : undefined
 	mkdirSync(dirname(journal), { recursive: true })
 	mkdirSync(dirname(errors), { recursive: true })

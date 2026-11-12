@@ -3,13 +3,15 @@
 //   node .agents/skills/orkestrel-dispatch/scripts/cite.ts PATH [--root DIR] [--json]
 // A citation resolves when its path exists under the root (a path relative to the root resolves
 // first, and a backslash reads as a slash) and the line is within the file, where a trailing line
-// break ends the last line. A citation naming a bare filename that no root-relative
-// file matches resolves when exactly one file under the root carries that name, outside
-// node_modules, dist, tmp, .git, .orkestrel, and .idea. The summary lists every citation that does
-// not resolve, with the reason. The script refuses a flag it does not read, the `--flag=value` form
-// included. Exit 0 when all resolve, 3 when any does not, 64 on usage.
+// break ends the last line. A citation naming a bare filename that no root-relative file matches
+// resolves when exactly one file under the root carries that name, outside node_modules, dist, tmp,
+// .git, .orkestrel, and .idea. The summary lists every citation that does not resolve, with the
+// reason. The script reads its flags with `parseArgs` in strict mode. Exit 0 when all resolve, 3
+// when any does not, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { basename, join, relative, resolve } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /** Matches one `file:line` or `file:line-line` citation in a text. */
 export const CITATION =
@@ -25,14 +27,47 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 	'.idea',
 ])
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--root']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--json']
-
 /** Holds the usage line printed when a call names no report. */
 export const USAGE = 'usage: cite.ts PATH [--root DIR] [--json]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	root: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: true,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes one citation that did not resolve and why. */
 export interface Unresolved {
@@ -61,66 +96,13 @@ export interface WalkedFile {
 }
 
 /**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--root`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
  * Normalizes a host path to forward slashes.
  *
  * @param path - A host path.
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -214,6 +196,7 @@ export function countLines(path: string): number {
  */
 export function resolveDirect(root: string, file: string): string | undefined {
 	const direct = resolve(root, normalizeSlashes(file))
+	// The path comes from report text, and existsSync answers false where a stat would throw.
 	return existsSync(direct) && statSync(direct).isFile() ? direct : undefined
 }
 
@@ -280,21 +263,15 @@ export function judgeLines(
  * @returns The exit code: 0 when every citation resolves, 3 when one does not, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`cite: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`cite: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`cite: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const root = readOption(argv, '--root') ?? process.cwd()
-	const path = argv.find(
-		(argument, position) => !argument.startsWith('--') && argv[position - 1] !== '--root',
-	)
-	if (path === undefined || !existsSync(path)) {
+	const { values, positionals } = parsed.value
+	const root = typeof values.root === 'string' ? values.root : process.cwd()
+	const [path, ...extra] = positionals
+	if (path === undefined || extra.length > 0 || !existsSync(path)) {
 		console.error(USAGE)
 		return 64
 	}
@@ -320,7 +297,7 @@ export function main(argv: readonly string[]): number {
 				: judgeLines(resolved.path, entry.line, entry.end, counts)
 		return reason === undefined ? [] : [{ citation: entry.citation, reason }]
 	})
-	if (argv.includes('--json')) {
+	if (values.json === true) {
 		console.log(JSON.stringify({ path, root, citations, unresolved }))
 	} else {
 		console.log(`cite: ${citations} citation(s) in ${path}, ${unresolved.length} unresolved`)

@@ -3,22 +3,25 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createRecorder, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import { isProcessRunning, runSkillScript, LOGIN_SCRIPT } from '../../../../setupServer.js'
 import {
+	isProcessRunning,
+	runSkillScript,
+	LOGIN_SCRIPT,
+	runFlagRefusals,
+} from '../../../../setupServer.js'
+import {
+	OPTIONS,
 	CODE_PATTERN,
 	loginClaude,
 	MAX_CAP_SECONDS,
 	STATUS_GRACE_MS,
 	loginCodex,
+	parseArguments,
 	parseCap,
 	pollLogin,
 	readLoginStatus,
-	readMissingFlags,
-	readOption,
-	readUnknownFlags,
 	terminateTree,
 	URL_PATTERN,
-	waitFor,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/login.ts'
 import type { Flow } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/login.ts'
 
@@ -65,20 +68,47 @@ function buildFlow(directory: string, completes: boolean): Flow {
 describe('login.ts', () => {
 	it('refuses a call that names no bench, two benches, or a cap with no value', () => {
 		expect(runSkillScript(LOGIN_SCRIPT, []).status).toBe(64)
-		expect(runSkillScript(LOGIN_SCRIPT, ['--codex', '--claude']).status).toBe(64)
-		expect(runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap']).status).toBe(64)
+		const two = runSkillScript(LOGIN_SCRIPT, ['--codex', '--claude'])
+		expect(two.status).toBe(64)
+		expect(two.stderr).toContain('--codex and --claude are two modes')
+		const bare = runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap'])
+		expect(bare.status).toBe(64)
+		expect(bare.stderr).toContain("'--cap")
 	})
 
-	it('refuses an unknown flag and the equals form before it starts anything', () => {
+	it('refuses an unknown flag with the parseArgs message before it starts anything', () => {
 		const dark = { PATH: '', Path: '' }
 		const unknown = runSkillScript(LOGIN_SCRIPT, ['--claude', '--bogus'], { env: dark })
 		expect(unknown.status).toBe(64)
-		expect(unknown.stderr).toContain('--bogus')
+		expect(unknown.stderr).toContain("'--bogus'")
+		expect(unknown.stderr).toContain('usage: login.ts')
 		expect(unknown.stdout).toBe('')
-		const equals = runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap=5'], { env: dark })
-		expect(equals.status).toBe(64)
-		expect(equals.stderr).toContain('--cap=5')
-		expect(equals.stdout).toBe('')
+	})
+
+	it('reads the --flag=value form alike with --flag value', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-login-equals-' })
+		try {
+			const dark = { PATH: '', Path: '' }
+			const equals = runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap=5'], {
+				cwd: scratch.path,
+				env: dark,
+			})
+			expect(equals.status).toBe(3)
+			expect(equals.json).toMatchObject({ bench: 'codex', live: false })
+			const refused = runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap=soon'], {
+				cwd: scratch.path,
+				env: dark,
+			})
+			expect(refused.status).toBe(64)
+			expect(refused.stderr).toContain('--cap takes a number of seconds above 0')
+			expect(refused.stderr).toContain('not "soon"')
+			expect(parseArguments(['--codex', '--cap=5'])).toEqual({
+				success: true,
+				value: { values: { codex: true, cap: '5' }, positionals: [] },
+			})
+		} finally {
+			scratch.destroy()
+		}
 	})
 
 	it('refuses a cap that is not a number of seconds above 0 before any spawn', () => {
@@ -86,12 +116,13 @@ describe('login.ts', () => {
 		try {
 			const dark = { PATH: '', Path: '' }
 			for (const cap of ['abc', '0', '-5', '', 'Infinity', '1e306', String(MAX_CAP_SECONDS + 1)]) {
-				const run = runSkillScript(LOGIN_SCRIPT, ['--codex', '--cap', cap], {
+				const run = runSkillScript(LOGIN_SCRIPT, ['--codex', `--cap=${cap}`], {
 					cwd: scratch.path,
 					env: dark,
 				})
 				expect({ cap, status: run.status }).toEqual({ cap, status: 64 })
 				expect(run.stderr).toContain('--cap takes a number of seconds above 0')
+				expect(run.stderr).toContain(`not ${JSON.stringify(cap)}`)
 				expect(run.stdout).toBe('')
 			}
 			expect(scratch.has('tmp')).toBe(false)
@@ -341,12 +372,6 @@ describe('the status reader and the poll', () => {
 		}
 	}, 30_000)
 
-	it('waits the given milliseconds and resolves', async () => {
-		const before = Date.now()
-		await waitFor(20)
-		expect(Date.now() - before).toBeGreaterThanOrEqual(15)
-	})
-
 	it('ends the process tree and tolerates a process that is already gone', async () => {
 		const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 20000)'], {
 			stdio: 'ignore',
@@ -417,22 +442,8 @@ describe('the status reader and the poll', () => {
 	})
 })
 
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['--codex', '--cap', '5']
-		expect(readOption(argv, '--cap')).toBe('5')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--cap', '--codex'], '--cap')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readMissingFlags(['--codex', '--cap'], ['--cap'])).toEqual(['--cap'])
-		expect(readMissingFlags(argv, ['--cap'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(['--codex', '--cap=5', '--bogus'], ['--codex', '--cap', '--claude']),
-		).toEqual(['--cap=5', '--bogus'])
-		expect(readUnknownFlags(['--cap', '5', '--', '--watch'], ['--cap'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(LOGIN_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

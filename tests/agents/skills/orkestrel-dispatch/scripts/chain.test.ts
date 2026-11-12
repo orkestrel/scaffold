@@ -1,19 +1,18 @@
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
-import { CHAIN_SCRIPT, runSkillScript } from '../../../../setupServer.js'
+import { CHAIN_SCRIPT, runSkillScript, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	formatStep,
 	isStringArray,
 	isStringRecord,
 	mergeEnv,
+	parseArguments,
 	parseJson,
 	parsePlan,
-	readMissingFlags,
-	readOption,
 	readStep,
 	readStepProblems,
-	readUnknownFlags,
 	runStep,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/chain.ts'
 
@@ -66,13 +65,6 @@ describe('chain.ts', () => {
 		expect(isStringRecord(['x'])).toBe(false)
 		expect(parseJson('[1]')).toStrictEqual([1])
 		expect(parseJson('[')).toBeUndefined()
-		expect(readOption(['--plan', 'p.json'], '--plan')).toBe('p.json')
-		expect(readOption(['--plan', '--journal'], '--plan')).toBeUndefined()
-		expect(readMissingFlags(['--plan'], ['--plan', '--journal'])).toStrictEqual(['--plan'])
-		expect(readUnknownFlags(['--plan', 'p', '--plan=x', '--no'], ['--plan'])).toStrictEqual([
-			'--plan=x',
-			'--no',
-		])
 	})
 
 	it('formats a finished step with its exit and duration, or with the reason it never exited', () => {
@@ -181,6 +173,30 @@ describe('chain.ts', () => {
 		}
 	})
 
+	it('reads the --flag=value form alike with --flag value', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-chain-equals-' })
+		try {
+			scratch.write(
+				'plan.json',
+				JSON.stringify([
+					{ name: 'only', command: process.execPath, args: ['-e', "console.log('E')"] },
+				]),
+			)
+			const run = runSkillScript(CHAIN_SCRIPT, ['--plan=plan.json', '--journal=j'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			expect(scratch.read('j/only.txt')?.trim()).toBe('E')
+			expect(parseArguments(['--plan=p.json', '--journal', 'j'])).toEqual({
+				success: true,
+				value: { values: { plan: 'p.json', journal: 'j' }, positionals: [] },
+			})
+			expect(parseArguments(['--plan']).success).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('stops at the first failing step, exits with its code, and writes no later journal', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-chain-stop-' })
 		try {
@@ -226,7 +242,7 @@ describe('chain.ts', () => {
 		}
 	})
 
-	it('refuses a missing plan or journal, an invalid plan, an unknown flag, and the --flag=value form', () => {
+	it('refuses a missing plan or journal, an invalid plan, an unknown flag, and a flag with no value', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-chain-usage-' })
 		try {
 			scratch.write('plan.json', JSON.stringify([{ name: 'a b', command: '', args: 1 }]))
@@ -249,19 +265,32 @@ describe('chain.ts', () => {
 				cwd,
 			)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--no-such-flag')
-			const joined = runSkillScript(CHAIN_SCRIPT, ['--plan=plan.json', '--journal', 'j'], cwd)
-			expect(joined.status).toBe(64)
-			expect(joined.stderr).toContain('--plan=plan.json')
+			expect(unknown.stderr).toContain("'--no-such-flag'")
+			expect(unknown.stderr).toContain('usage: chain.ts')
 			const bare = runSkillScript(CHAIN_SCRIPT, ['--plan', '--journal', 'j'], cwd)
 			expect(bare.status).toBe(64)
-			expect(bare.stderr).toContain('--plan given with no value')
+			expect(bare.stderr).toContain("'--plan'")
+			const last = runSkillScript(CHAIN_SCRIPT, ['--journal', 'j', '--plan'], cwd)
+			expect(last.status).toBe(64)
+			expect(last.stderr).toContain("'--plan")
 			const both = runSkillScript(CHAIN_SCRIPT, ['--plan', '--journal=out'], cwd)
 			expect(both.status).toBe(64)
-			expect(both.stderr).toContain('--journal=out')
 			expect(scratch.has('out')).toBe(false)
+			const stray = runSkillScript(
+				CHAIN_SCRIPT,
+				['--plan', 'plan.json', '--journal', 'j', 'x'],
+				cwd,
+			)
+			expect(stray.status).toBe(64)
+			expect(stray.stderr).toContain("'x'")
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(CHAIN_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

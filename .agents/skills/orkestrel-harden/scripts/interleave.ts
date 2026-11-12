@@ -21,21 +21,58 @@
 // absent when that median is 0). It rules nothing: it carries no bar and no verdict.
 // Print text by default or one JSON line with `--json`; `--out` writes `.json` or `.txt`
 // independently. Launch the script through `launch.ts` from the dispatch skill for a cap. The script
-// refuses a flag it does not read, the `--flag=value` form included, and every positional argument.
+// reads its flags with `parseArgs` in strict mode and refuses every positional argument.
 // Exit 0 when every sample read, 2 when a sample failed or `--out` could not be written, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { dirname, extname, resolve } from 'node:path'
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--plan', '--rounds', '--out']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--json']
+import { parseArgs } from 'node:util'
 
 /** Holds the usage line printed when a call names no plan or no round count. */
 export const USAGE =
 	'usage: interleave.ts --plan FILE.json --rounds N [--json] [--out FILE.json|FILE.txt]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	plan: Object.freeze({ type: 'string' }),
+	rounds: Object.freeze({ type: 'string' }),
+	out: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Caps the characters of an untrusted text a diagnostic echoes. */
 export const QUOTE_LIMIT = 200
@@ -112,78 +149,6 @@ export interface Report {
 	readonly candidate: Summary
 	readonly difference: number
 	readonly relative: number | undefined
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--plan`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads the arguments the script has no place for: a positional, or a bare `--`, which would open a
- * command this script does not pass on.
- *
- * @param argv - The arguments after the script path.
- * @param valueFlags - The flags that take a value.
- * @returns Each such argument in order.
- */
-export function readStrayArguments(
-	argv: readonly string[],
-	valueFlags: readonly string[],
-): readonly string[] {
-	return argv.filter(
-		(argument, index) =>
-			(argument === '--' || !argument.startsWith('--')) &&
-			!valueFlags.includes(argv[index - 1] ?? ''),
-	)
 }
 
 /**
@@ -464,7 +429,7 @@ export function runSchedule(sides: Sides, schedule: readonly Slot[]): Run {
  */
 export function computeMedian(values: readonly number[]): number {
 	if (values.length === 0) throw new Error('interleave: a median needs at least one number')
-	const sorted = [...values].sort((left, right) => left - right)
+	const sorted = values.toSorted((left, right) => left - right)
 	const middle = sorted.slice(
 		Math.floor((sorted.length - 1) / 2),
 		Math.floor(sorted.length / 2) + 1,
@@ -598,36 +563,27 @@ export function writeOutput(path: string, text: string): string | undefined {
  * written, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`interleave: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`interleave: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`interleave: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const stray = readStrayArguments(argv, VALUE_FLAGS)
-	if (stray.length > 0) {
-		console.error(`interleave: ${stray.map(quote).join(', ')} is not an argument; ${USAGE}`)
-		return 64
-	}
-	const path = readOption(argv, '--plan')
-	const count = readOption(argv, '--rounds')
-	const out = readOption(argv, '--out')
+	const { values } = parsed.value
+	const path = typeof values.plan === 'string' ? values.plan : undefined
+	const count = typeof values.rounds === 'string' ? values.rounds : undefined
+	const out = typeof values.out === 'string' ? values.out : undefined
 	if (path === undefined || count === undefined) {
 		console.error(USAGE)
 		return 64
 	}
 	if (out !== undefined && !['.json', '.txt'].includes(extname(out))) {
-		console.error(`interleave: --out takes a .json or .txt file, got ${quote(out)}`)
+		console.error(`interleave: --out takes a .json or .txt file, not ${quote(out)}; ${USAGE}`)
 		return 64
 	}
 	const rounds = parseRounds(count)
 	if (rounds === undefined) {
 		console.error(
-			`interleave: --rounds takes an even whole number of at least 2, got ${quote(count)}`,
+			`interleave: --rounds takes an even whole number of at least 2, not ${quote(count)}; ${USAGE}`,
 		)
 		return 64
 	}
@@ -650,7 +606,7 @@ export function main(argv: readonly string[]): number {
 	const report = computeReport(run.readings)
 	const json = JSON.stringify(report)
 	const rendered = renderReport(report)
-	console.log(argv.includes('--json') ? json : rendered)
+	console.log(values.json === true ? json : rendered)
 	const refusal =
 		out === undefined ? undefined : writeOutput(out, extname(out) === '.json' ? json : rendered)
 	if (refusal !== undefined) {

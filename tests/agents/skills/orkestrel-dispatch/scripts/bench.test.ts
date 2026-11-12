@@ -1,21 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import { isString } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, BENCH_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, BENCH_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	DEFAULT_CAP,
 	MAX_CAP_SECONDS,
 	isLive,
+	parseArguments,
 	parseCap,
 	parseJsonLine,
 	probeClaude,
 	probeCodex,
 	quote,
-	readMissingFlags,
 	readNumber,
-	readOption,
 	readString,
-	readUnknownFlags,
 	readVersion,
 	runRoundTrip,
 	SANDBOX_MODES,
@@ -28,29 +27,46 @@ describe('bench.ts', () => {
 		expect(runSkillScript(BENCH_SCRIPT, ['--codex', '--model']).status).toBe(64)
 	})
 
-	it('refuses an unknown flag, the equals form, and two benches before any probe runs', () => {
+	it('refuses an unknown flag with the parseArgs message and two benches before any probe runs', () => {
 		const dark = { PATH: '', Path: '' }
 		const unknown = runSkillScript(BENCH_SCRIPT, ['--claude', '--bogus'], { env: dark })
 		expect(unknown.status).toBe(64)
-		expect(unknown.stderr).toContain('--bogus')
+		expect(unknown.stderr).toContain("'--bogus'")
+		expect(unknown.stderr).toContain('usage: bench.ts')
 		expect(unknown.stdout).toBe('')
-		const equals = runSkillScript(BENCH_SCRIPT, ['--claude', '--model=opus'], { env: dark })
-		expect(equals.status).toBe(64)
-		expect(equals.stderr).toContain('--model=opus')
-		expect(equals.stdout).toBe('')
 		const two = runSkillScript(BENCH_SCRIPT, ['--claude', '--codex'], { env: dark })
 		expect(two.status).toBe(64)
+		expect(two.stderr).toContain('usage: bench.ts')
 		expect(two.stdout).toBe('')
+	})
+
+	it('reads the --flag=value form alike with --flag value', () => {
+		const dark = { PATH: '', Path: '' }
+		const equals = runSkillScript(BENCH_SCRIPT, ['--claude', '--model=opus', '--cap=5'], {
+			env: dark,
+		})
+		expect(equals.status).toBe(3)
+		expect(equals.json).toMatchObject({ bench: 'claude', live: false })
+		const parsed = parseArguments(['--codex', '--sandbox=read-only', '--cap', '5'])
+		expect(parsed).toEqual({
+			success: true,
+			value: { values: { codex: true, sandbox: 'read-only', cap: '5' }, positionals: [] },
+		})
+		expect(parseArguments(['--claude', 'stray']).success).toBe(false)
 	})
 
 	it('refuses a cap that is not a number of seconds above 0 as a usage fault, not as a dark bench', () => {
 		const dark = { PATH: '', Path: '' }
 		for (const cap of ['abc', '0', '-5', '', 'Infinity', String(MAX_CAP_SECONDS + 1)]) {
-			const run = runSkillScript(BENCH_SCRIPT, ['--claude', '--cap', cap], { env: dark })
+			const run = runSkillScript(BENCH_SCRIPT, ['--claude', `--cap=${cap}`], { env: dark })
 			expect({ cap, status: run.status }).toEqual({ cap, status: 64 })
-			expect(run.stderr).toContain('--cap takes a number of seconds')
+			expect(run.stderr).toContain(`--cap takes a number of seconds above 0 and at most`)
+			expect(run.stderr).toContain(`not ${JSON.stringify(cap)}`)
 			expect(run.stdout).toBe('')
 		}
+		const negative = runSkillScript(BENCH_SCRIPT, ['--claude', '--cap', '-5'], { env: dark })
+		expect(negative.status).toBe(64)
+		expect(negative.stderr).toContain("'--cap'")
 		expect(runSkillScript(BENCH_SCRIPT, ['--claude', '--cap', '5'], { env: dark }).status).toBe(3)
 	})
 
@@ -143,21 +159,21 @@ describe('bench.ts', () => {
 // program reads them from `process.argv.slice(1)`.
 describe('the Claude probe', () => {
 	it.each([
-		{ answer: 'READY', argv: [], model: 'opus', exit: 0, live: true },
+		{ answer: 'READY', values: {}, model: 'opus', exit: 0, live: true },
 		{
 			answer: 'I cannot help with that.',
-			argv: ['--model', 'sonnet'],
+			values: { model: 'sonnet' },
 			model: 'sonnet',
 			exit: 3,
 			live: false,
 		},
 	])(
 		'reports live $live for a CLI that streams the answer $answer through launch and result',
-		({ answer, argv, model, exit, live }) => {
+		({ answer, values, model, exit, live }) => {
 			const scratch = createScratch({ prefix: 'orkestrel-bench-claude-' })
 			try {
 				const program = `if (process.argv[1] === '--version') { process.stdout.write('9.9.9 (fixture)\\n') } else { process.stdout.write(JSON.stringify({ type: 'system', subtype: 'init', session_id: 'fixture-session' }) + '\\n'); process.stdout.write(JSON.stringify({ type: 'result', result: ${JSON.stringify(answer)}, duration_ms: 7 }) + '\\n') }`
-				const probe = probeClaude([process.execPath, '-e', program, '--'], argv, 60, scratch.path)
+				const probe = probeClaude([process.execPath, '-e', program, '--'], values, 60, scratch.path)
 				expect(probe.exit).toBe(exit)
 				expect(probe.report).toMatchObject({
 					bench: 'claude',
@@ -183,7 +199,7 @@ describe('the Claude probe', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-bench-claude-args-' })
 		try {
 			const program = `if (process.argv[1] === '--version') { process.stdout.write('1.0.0\\n') } else { process.stdout.write(JSON.stringify({ type: 'system', subtype: 'init', session_id: 's' }) + '\\n'); process.stdout.write(JSON.stringify({ type: 'result', result: process.argv.slice(1).join(' '), duration_ms: 1 }) + '\\n') }`
-			const probe = probeClaude([process.execPath, '-e', program, '--'], [], 60, scratch.path)
+			const probe = probeClaude([process.execPath, '-e', program, '--'], {}, 60, scratch.path)
 			expect(probe.report.answer).toBe(
 				'-p Reply with the single word READY and nothing else. --output-format stream-json --verbose --model opus',
 			)
@@ -198,7 +214,7 @@ describe('the Claude probe', () => {
 		try {
 			const probe = probeClaude(
 				[process.execPath, '-e', 'process.exitCode = 1', '--'],
-				[],
+				{},
 				60,
 				scratch.path,
 			)
@@ -217,7 +233,7 @@ describe('the Codex probe', () => {
 			const program = `const args = process.argv.slice(1); if (args[0] === '--version') { process.stdout.write('codex 9.9.9\\n') } else if (args[0] === 'login' && args[1] === 'status') { process.stdout.write('Logged in using the fixture\\n') } else if (args[0] === 'exec') { require('node:fs').writeFileSync(args[args.indexOf('--output-last-message') + 1], 'READY'); process.stdout.write(JSON.stringify({ type: 'thread.started', thread_id: 'thread-1' }) + '\\n') } else { process.exitCode = 2 }`
 			const probe = probeCodex(
 				[process.execPath, '-e', program, '--'],
-				['--model', 'm', '--sandbox', 'read-only'],
+				{ model: 'm', sandbox: 'read-only' },
 				60,
 				scratch.path,
 			)
@@ -244,7 +260,7 @@ describe('the Codex probe', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-bench-codex-out-' })
 		try {
 			const program = `if (process.argv[1] === '--version') { process.stdout.write('codex 9.9.9\\n') } else { process.stderr.write('Not logged in\\n'); process.exitCode = 1 }`
-			const probe = probeCodex([process.execPath, '-e', program, '--'], [], 60, scratch.path)
+			const probe = probeCodex([process.execPath, '-e', program, '--'], {}, 60, scratch.path)
 			expect(probe.exit).toBe(3)
 			expect(probe.report).toEqual({
 				bench: 'codex',
@@ -261,7 +277,7 @@ describe('the Codex probe', () => {
 	it('reports an empty command as dark', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-bench-codex-empty-' })
 		try {
-			expect(probeCodex([], [], 60, scratch.path)).toEqual({
+			expect(probeCodex([], {}, 60, scratch.path)).toEqual({
 				report: { bench: 'codex', version: undefined, login: '', live: false },
 				exit: 3,
 			})
@@ -343,33 +359,6 @@ describe('the version reader', () => {
 	})
 })
 
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['--model', 'opus', '--cap', '5', '--claude']
-		expect(readOption(argv, '--model')).toBe('opus')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--claude'], '--claude')).toBeUndefined()
-		expect(readOption(['--cap', '--claude', 'x'], '--cap')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(
-			readMissingFlags(['--model', '--cap', '5', '--sandbox'], ['--model', '--cap', '--sandbox']),
-		).toEqual(['--model', '--sandbox'])
-		expect(readMissingFlags(['--cap', '5'], ['--model'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(
-				['--model=opus', '--claude', '--cap', '5', '--bogus'],
-				['--model', '--claude', '--cap'],
-			),
-		).toEqual(['--model=opus', '--bogus'])
-		expect(readUnknownFlags(['--cap', '5', '--', 'node', '--watch'], ['--cap'])).toEqual([])
-		expect(readUnknownFlags(['--cap', '5', 'path', '-x'], ['--cap'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
-	})
-})
-
 describe('the quoter', () => {
 	it('encodes an untrusted text as JSON and cuts a long one inside the quotes', () => {
 		expect(quote('a"b')).toBe('"a\\"b"')
@@ -393,5 +382,11 @@ describe('the record readers', () => {
 		expect(readNumber({ a: Number.NaN }, 'a')).toBeUndefined()
 		expect(readNumber({ a: Number.POSITIVE_INFINITY }, 'a')).toBeUndefined()
 		expect(readNumber({ a: '1' }, 'a')).toBeUndefined()
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(BENCH_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

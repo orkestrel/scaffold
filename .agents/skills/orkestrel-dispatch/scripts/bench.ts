@@ -14,12 +14,14 @@
 // script runs launch.ts and result.ts as child processes beside it and imports neither. The JSON
 // summary carries the command, the version, the session id, the answer, and `live`. --cap is a
 // number of seconds above 0 and at most 2147483, checked before any probe runs. Name one bench per
-// run; the script refuses a flag it does not read, the `--flag=value` form included. Exit 0 when the
-// bench answered READY, 3 when it is dark, 64 on usage.
+// run; the script reads its flags with `parseArgs` in strict mode. Exit 0 when the bench answered
+// READY, 3 when it is dark, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { dirname, extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
 /** Names the directory this script runs from, which holds the launch and result siblings. */
 export const SCRIPTS = dirname(fileURLToPath(import.meta.url))
@@ -52,18 +54,53 @@ export const SANDBOX_MODES: readonly string[] = [
 	'danger-full-access',
 ]
 
-/** Lists the flags that each select one bench. */
-export const BENCH_FLAGS: readonly string[] = ['--cursor', '--codex', '--claude']
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--model', '--cap', '--sandbox']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...BENCH_FLAGS, '--resolve', ...VALUE_FLAGS]
-
 /** Holds the usage line printed when a call names no bench or more than one. */
 export const USAGE =
 	'usage: bench.ts --cursor [--resolve] [--model ID] [--cap SECONDS] | --codex [--model ID] [--sandbox MODE] [--cap SECONDS] | --claude [--model ALIAS] [--cap SECONDS]; name one bench'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	cursor: Object.freeze({ type: 'boolean' }),
+	codex: Object.freeze({ type: 'boolean' }),
+	claude: Object.freeze({ type: 'boolean' }),
+	resolve: Object.freeze({ type: 'boolean' }),
+	model: Object.freeze({ type: 'string' }),
+	cap: Object.freeze({ type: 'string' }),
+	sandbox: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Names one bench a probe can run against. */
 export type Bench = 'cursor' | 'codex' | 'claude'
@@ -88,59 +125,6 @@ export interface Summary {
 export interface Probe {
 	readonly report: Record<string, unknown>
 	readonly exit: number
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--cap`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
 }
 
 /**
@@ -243,7 +227,7 @@ export function resolveCursor(): Entry {
 	if (local === undefined)
 		return { command: [], version: undefined, error: 'LOCALAPPDATA is not set' }
 	const versions = join(local, 'cursor-agent', 'versions')
-	if (!existsSync(versions) || !statSync(versions).isDirectory()) {
+	if (statSync(versions, { throwIfNoEntry: false })?.isDirectory() !== true) {
 		return { command: [], version: undefined, error: `${versions} is not a directory` }
 	}
 	const newest = readdirSync(versions, { withFileTypes: true })
@@ -333,18 +317,18 @@ export function isLive(summary: Summary): boolean {
 /**
  * Probes the Cursor bench, or prints its entry when the call names `--resolve`.
  *
- * @param argv - The arguments after the script path.
+ * @param values - The flag values `parseArgs` read.
  * @param cap - The validated cap in seconds.
  * @param root - The directory the round trip runs in.
  * @returns Exit 0 when live or resolved, 3 when dark, with the report to print.
  */
-export function probeCursor(argv: readonly string[], cap: number, root: string): Probe {
+export function probeCursor(values: Arguments['values'], cap: number, root: string): Probe {
 	const entry = resolveCursor()
-	const model = readOption(argv, '--model') ?? CURSOR_MODEL
+	const model = typeof values.model === 'string' ? values.model : CURSOR_MODEL
 	if (entry.error !== undefined || entry.version === undefined) {
 		return { report: { bench: 'cursor', ...entry, live: false }, exit: 3 }
 	}
-	if (argv.includes('--resolve')) {
+	if (values.resolve === true) {
 		return {
 			report: { bench: 'cursor', command: entry.command, version: entry.version },
 			exit: 0,
@@ -385,14 +369,14 @@ export function probeCursor(argv: readonly string[], cap: number, root: string):
  * Probes the Codex bench: its version, its login, and one bounded exec.
  *
  * @param command - The executable and the arguments that precede the Codex arguments, such as `['codex']`.
- * @param argv - The arguments after the script path.
+ * @param values - The flag values `parseArgs` read.
  * @param cap - The validated cap in seconds.
  * @param root - The directory the round trip runs in.
  * @returns Exit 0 when live, 3 when dark, with the report to print.
  */
 export function probeCodex(
 	command: readonly string[],
-	argv: readonly string[],
+	values: Arguments['values'],
 	cap: number,
 	root: string,
 ): Probe {
@@ -402,10 +386,13 @@ export function probeCodex(
 		file === undefined
 			? undefined
 			: spawnSync(file, [...prefix, 'login', 'status'], { encoding: 'utf8', windowsHide: true })
-	const model = readOption(argv, '--model') ?? CODEX_MODEL
+	const model = typeof values.model === 'string' ? values.model : CODEX_MODEL
 	const sandbox =
-		readOption(argv, '--sandbox') ??
-		(process.platform === 'win32' ? 'danger-full-access' : 'read-only')
+		typeof values.sandbox === 'string'
+			? values.sandbox
+			: process.platform === 'win32'
+				? 'danger-full-access'
+				: 'read-only'
 	const status = login === undefined ? '' : `${login.stdout ?? ''}${login.stderr ?? ''}`.trim()
 	if (version === undefined || login?.status !== 0) {
 		return { report: { bench: 'codex', version, login: status, live: false }, exit: 3 }
@@ -451,19 +438,19 @@ export function probeCodex(
  * Probes the Claude bench: its version and one bounded print-mode prompt.
  *
  * @param command - The executable and the arguments that precede the Claude arguments, such as `['claude']`.
- * @param argv - The arguments after the script path.
+ * @param values - The flag values `parseArgs` read.
  * @param cap - The validated cap in seconds.
  * @param root - The directory the round trip runs in.
  * @returns Exit 0 when live, 3 when dark, with the report to print.
  */
 export function probeClaude(
 	command: readonly string[],
-	argv: readonly string[],
+	values: Arguments['values'],
 	cap: number,
 	root: string,
 ): Probe {
 	const version = readVersion(command)
-	const model = readOption(argv, '--model') ?? CLAUDE_MODEL
+	const model = typeof values.model === 'string' ? values.model : CLAUDE_MODEL
 	if (version === undefined) {
 		return { report: { bench: 'claude', version, live: false }, exit: 3 }
 	}
@@ -490,15 +477,15 @@ export function probeClaude(
 /**
  * Runs the probe the call names, against the real `codex` or `claude` command.
  *
- * @param argv - The arguments after the script path, which name one bench.
+ * @param values - The flag values `parseArgs` read, which name one bench.
  * @param cap - The validated cap in seconds.
  * @param root - The directory the round trip runs in.
  * @returns What the probe decided.
  */
-export function selectProbe(argv: readonly string[], cap: number, root: string): Probe {
-	if (argv.includes('--cursor')) return probeCursor(argv, cap, root)
-	if (argv.includes('--codex')) return probeCodex(['codex'], argv, cap, root)
-	return probeClaude(['claude'], argv, cap, root)
+export function selectProbe(values: Arguments['values'], cap: number, root: string): Probe {
+	if (values.cursor === true) return probeCursor(values, cap, root)
+	if (values.codex === true) return probeCodex(['codex'], values, cap, root)
+	return probeClaude(['claude'], values, cap, root)
 }
 
 /**
@@ -508,39 +495,36 @@ export function selectProbe(argv: readonly string[], cap: number, root: string):
  * @returns The exit code: 0 live, 3 dark, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`bench: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`bench: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`bench: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	if (BENCH_FLAGS.filter((flag) => argv.includes(flag)).length !== 1) {
+	const { values } = parsed.value
+	if ([values.cursor, values.codex, values.claude].filter((value) => value === true).length !== 1) {
 		console.error(USAGE)
 		return 64
 	}
-	if (argv.includes('--resolve') && !argv.includes('--cursor')) {
+	if (values.resolve === true && values.cursor !== true) {
 		console.error('bench: --resolve belongs to --cursor and reads nothing for another bench')
 		return 64
 	}
-	const sandbox = readOption(argv, '--sandbox')
+	const sandbox = typeof values.sandbox === 'string' ? values.sandbox : undefined
 	if (sandbox !== undefined && !SANDBOX_MODES.includes(sandbox)) {
 		console.error(
-			`bench: --sandbox takes one of ${SANDBOX_MODES.join(', ')}; got ${quote(sandbox)}`,
+			`bench: --sandbox takes one of ${SANDBOX_MODES.join(', ')}, not ${quote(sandbox)}; ${USAGE}`,
 		)
 		return 64
 	}
-	const cap = parseCap(readOption(argv, '--cap'))
+	const text = typeof values.cap === 'string' ? values.cap : undefined
+	const cap = parseCap(text)
 	if (cap === undefined) {
 		console.error(
-			`bench: --cap takes a number of seconds above 0 and at most ${String(MAX_CAP_SECONDS)}`,
+			`bench: --cap takes a number of seconds above 0 and at most ${String(MAX_CAP_SECONDS)}, not ${quote(text ?? '')}; ${USAGE}`,
 		)
 		return 64
 	}
-	const probe = selectProbe(argv, cap, process.cwd())
+	const probe = selectProbe(values, cap, process.cwd())
 	console.log(JSON.stringify(probe.report))
 	return probe.exit
 }

@@ -1,9 +1,9 @@
 // Run from the checkout root:
 //   node .agents/skills/orkestrel-harden/scripts/titles.ts --base REV [--root DIR] [--json] [--out FILE]
-// Each value is a separate argument: `--flag=value` and any flag the script does not read exit 64,
-// and so does a REV that opens with `-`. The baseline is read from the tree REV names, resolved
-// once with `--end-of-options`, with paths relative to --root, so a --root below the repository top
-// works.
+// The script reads its flags with `parseArgs` in strict mode, so a flag it does not read exits 64,
+// and so does `--base` followed by a value that opens with `-`. The baseline is read from the tree
+// REV names, resolved once with `--end-of-options`, with paths relative to --root, so a --root below
+// the repository top works.
 // Compare exact decoded describe/it/test/suite title counts in tests/**/*.test.ts against REV. A
 // baseline title with a deficit is moved when another tests/**/*.ts string literal spells it, and
 // missing otherwise. A moved row is a claim to rule, not proof: a literal that only spells the
@@ -25,6 +25,7 @@
 // Only .test.ts files register titles; a .test.tsx or .test.mts file is invisible to it.
 // Exit 0 with no missing or moved titles and no lost-dynamic file, 3 with any, 2 on git, filesystem
 // or token refusal, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import {
 	existsSync,
@@ -36,12 +37,51 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { dirname, extname, join, relative, resolve } from 'node:path'
-
-/** Lists the flags this script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = ['--base', '--root', '--json', '--out']
+import { parseArgs } from 'node:util'
 
 /** Holds the usage line printed on a usage refusal. */
 export const USAGE = 'usage: titles.ts --base REV [--root DIR] [--json] [--out FILE.json|FILE.txt]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	base: Object.freeze({ type: 'string' }),
+	root: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+	out: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Caps the characters of a name an error message echoes. */
 export const NAME_LIMIT = 80
@@ -156,60 +196,7 @@ export interface WalkedFile {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--base`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * Reads the arguments before a bare `--`. A `--flag=value` argument is unknown, because the script
- * reads `--flag value` pairs only.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -884,32 +871,25 @@ export function renderReport(report: Report): string {
  * failure, 64 usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`titles: ${unknown.map(describeName).join(', ')} is not a flag this script reads; give each value as its own argument. ${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`titles: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, ['--base', '--root', '--out'])
-	if (missing.length > 0) {
-		console.error(`titles: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const base = readOption(argv, '--base')
-	const out = readOption(argv, '--out')
-	if (base === undefined || (out !== undefined && !['.json', '.txt'].includes(extname(out)))) {
+	const { values } = parsed.value
+	const base = typeof values.base === 'string' ? values.base : undefined
+	const out = typeof values.out === 'string' ? values.out : undefined
+	if (base === undefined) {
 		console.error(USAGE)
 		return 64
 	}
-	if (base.startsWith('-')) {
-		console.error(
-			`titles: --base ${describeName(base)} opens with "-"; give a revision name or hash`,
-		)
+	if (out !== undefined && !['.json', '.txt'].includes(extname(out))) {
+		console.error(`titles: --out takes a .json or .txt file, not ${describeName(out)}; ${USAGE}`)
 		return 64
 	}
 	try {
-		const report = readReport(base, resolve(readOption(argv, '--root') ?? process.cwd()))
+		const root = typeof values.root === 'string' ? values.root : process.cwd()
+		const report = readReport(base, resolve(root))
 		const json = JSON.stringify(report)
 		const text = renderReport(report)
 		if (out !== undefined) {
@@ -917,7 +897,7 @@ export function main(argv: readonly string[]): number {
 			mkdirSync(dirname(target), { recursive: true })
 			writeFileSync(target, `${extname(target) === '.json' ? json : text}\n`)
 		}
-		console.log(argv.includes('--json') ? json : text)
+		console.log(values.json === true ? json : text)
 		return report.missing.length + report.moved.length + report.lostDynamic.length > 0 ? 3 : 0
 	} catch (error) {
 		console.error(`titles: ${error instanceof Error ? error.message : String(error)}`)

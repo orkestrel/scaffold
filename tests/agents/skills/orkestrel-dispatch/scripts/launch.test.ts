@@ -11,16 +11,16 @@ import {
 	LAUNCH_SCRIPT,
 	runSkillScript,
 	WORKSPACE_ROOT,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	computeCapMilliseconds,
 	endRunning,
 	forceKillTree,
 	MAX_CAP_SECONDS,
+	parseArguments,
 	readGitStatus,
-	readMissingFlags,
-	readOption,
-	readUnknownFlags,
 	startCommand,
 	waitForExit,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/launch.ts'
@@ -352,7 +352,22 @@ describe('launch.ts', () => {
 				{ cwd: scratch.path },
 			)
 			expect(beyond.status).toBe(64)
-			expect(beyond.stderr).toContain('from 0 to 2147483')
+			expect(beyond.stderr).toContain('--cap takes a number of seconds from 0 to 2147483')
+			expect(beyond.stderr).toContain('not "2147484"')
+			const empty = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', 'a', '--errors', 'b', '--cap', '', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(empty.status).toBe(64)
+			expect(empty.stderr).toContain('--cap takes a number of seconds from 0 to 2147483')
+			expect(empty.stderr).toContain('not ""')
+			const same = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', 'same', '--errors', 'same', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(same.stderr).toContain('--journal and --errors name the same file')
 			expect(scratch.has('a')).toBe(false)
 			expect(scratch.has('b')).toBe(false)
 		} finally {
@@ -420,7 +435,7 @@ describe('launch.ts', () => {
 		}
 	})
 
-	it('refuses an unknown flag and the equals form before the separator, and starts nothing', () => {
+	it('refuses an unknown flag with the parseArgs message before the separator, starts nothing, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-unknown-' })
 		try {
 			const unknown = runSkillScript(
@@ -429,18 +444,22 @@ describe('launch.ts', () => {
 				{ cwd: scratch.path },
 			)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--bogus')
+			expect(unknown.stderr).toContain("'--bogus'")
+			expect(unknown.stderr).toContain('usage: launch.ts')
 			expect(unknown.stdout).toBe('')
-			const equals = runSkillScript(
-				LAUNCH_SCRIPT,
-				['--journal=a', '--errors', 'b', '--', process.execPath, '-v'],
-				{ cwd: scratch.path },
-			)
-			expect(equals.status).toBe(64)
-			expect(equals.stderr).toContain('--journal=a')
-			expect(equals.stdout).toBe('')
 			expect(scratch.has('a')).toBe(false)
 			expect(scratch.has('b')).toBe(false)
+			const equals = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal=a', '--errors=b', '--cap=30', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(equals.status).toBe(0)
+			expect(scratch.read('a')?.trim()).toBe(process.version)
+			expect(parseArguments(['--cap=5', '--status'])).toEqual({
+				success: true,
+				value: { values: { cap: '5', status: true }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -463,12 +482,14 @@ describe('launch.ts', () => {
 					process.execPath,
 					'echo.cjs',
 					'--bogus',
+					'--',
+					'--journal',
 					'--x=1',
 				],
 				{ cwd: scratch.path },
 			)
 			expect(run.status).toBe(0)
-			expect(scratch.read('tmp/units/after.jsonl')).toBe('--bogus --x=1')
+			expect(scratch.read('tmp/units/after.jsonl')).toBe('--bogus -- --journal --x=1')
 		} finally {
 			scratch.destroy()
 		}
@@ -596,26 +617,8 @@ describe('the git status reader', () => {
 	})
 })
 
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['--journal', 'a.jsonl', '--errors', 'a.err', '--cap']
-		expect(readOption(argv, '--journal')).toBe('a.jsonl')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--journal', '--errors', 'x'], '--journal')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readMissingFlags(argv, ['--journal', '--errors', '--cap'])).toEqual(['--cap'])
-		expect(readMissingFlags(['--journal', 'a'], ['--errors'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(
-				['--journal=a', '--errors', 'b', '--status', '--bogus'],
-				['--journal', '--errors', '--status'],
-			),
-		).toEqual(['--journal=a', '--bogus'])
-		expect(readUnknownFlags(['--cap', '5', '--', 'node', '--watch'], ['--cap'])).toEqual([])
-		expect(readUnknownFlags(['--cap', '5', 'path', '-x'], ['--cap'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(LAUNCH_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

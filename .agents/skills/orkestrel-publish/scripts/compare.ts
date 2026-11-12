@@ -5,13 +5,15 @@
 // compares against a local .tgz instead of fetching. Sourcemaps are excluded, a text file differs
 // only when it differs with all whitespace removed, and a binary file differs on any byte. The
 // summary lists the paths added, removed, and changed. Exit 0 when nothing material differs, 3 when
-// something does, 2 when the tarball cannot be read, 64 on usage, including a flag the script does
-// not read and the `--flag=value` form.
+// something does, 2 when the tarball cannot be read, 64 on usage. The script reads its flags with
+// `parseArgs` in strict mode.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { gunzipSync } from 'node:zlib'
+import { parseArgs } from 'node:util'
 
 /** Holds the byte size of one tar block. */
 export const BLOCK = 512
@@ -32,12 +34,51 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 /** Holds the empty skip set, because a dist tree holds nothing a walk skips, so every emitted file counts. */
 export const NOTHING_SKIPPED: ReadonlySet<string> = new Set()
 
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = ['--package', '--version', '--tarball', '--dist', '--json']
-
 /** Holds the usage line the script prints on a usage refusal. */
 export const USAGE =
 	'usage: compare.ts [--package NAME] [--version V] [--tarball PATH] [--dist dist] [--json]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	package: Object.freeze({ type: 'string' }),
+	version: Object.freeze({ type: 'string' }),
+	tarball: Object.freeze({ type: 'string' }),
+	dist: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes the name and version a package manifest declares. */
 export interface Manifest {
@@ -80,60 +121,7 @@ export interface NpmCommand {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
- * with `--` is a missing value, and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--package`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * Reads the arguments before a bare `--`, which opens a command a script passes on. A `--flag=value`
- * argument is unknown, because the script reads no such form.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -462,31 +450,22 @@ export function differs(left: Buffer, right: Buffer): boolean {
  * cannot be read, 64 on usage.
  */
 export async function main(argv: readonly string[]): Promise<number> {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`compare: unknown flag ${unknown.join(', ')}; give each flag and its value as separate arguments\n${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`compare: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, ['--package', '--version', '--tarball', '--dist'])
-	if (missing.length > 0) {
-		console.error(`compare: ${missing.join(', ')} given with no value`)
-		return 64
-	}
+	const { values } = parsed.value
 	const manifest = readManifest('.')
-	const name = readOption(argv, '--package') ?? manifest.name
-	const dist = readOption(argv, '--dist') ?? 'dist'
-	const tarball = readOption(argv, '--tarball')
-	if (
-		name === undefined ||
-		!existsSync(dist) ||
-		(argv.includes('--tarball') && tarball === undefined)
-	) {
+	const name = typeof values.package === 'string' ? values.package : manifest.name
+	const dist = typeof values.dist === 'string' ? values.dist : 'dist'
+	const tarball = typeof values.tarball === 'string' ? values.tarball : undefined
+	if (name === undefined || !existsSync(dist)) {
 		console.error(USAGE)
 		return 64
 	}
-	const source = await readSource(name, readOption(argv, '--version'), tarball)
+	const requested = typeof values.version === 'string' ? values.version : undefined
+	const source = await readSource(name, requested, tarball)
 	const { archive, version } = source
 	if (archive === undefined) {
 		console.error(`compare: ${source.failure}`)
@@ -532,7 +511,7 @@ export async function main(argv: readonly string[]): Promise<number> {
 		changed,
 		material,
 	}
-	if (argv.includes('--json')) console.log(JSON.stringify(summary))
+	if (values.json === true) console.log(JSON.stringify(summary))
 	else {
 		console.log(
 			`compare: ${name}${version === undefined ? '' : `@${version}`} — ${published.size} published file(s), ${added.length} added, ${removed.length} removed, ${changed.length} changed`,

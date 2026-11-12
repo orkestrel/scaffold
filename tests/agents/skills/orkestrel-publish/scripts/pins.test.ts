@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import {
+	OPTIONS,
+	parseArguments,
 	BINARY,
 	buildRangeLiteral,
 	buildVersionLiteral,
@@ -11,13 +13,9 @@ import {
 	escapePattern,
 	listFiles,
 	normalizeSlashes,
-	readMissingFlags,
-	readOption,
-	readOptions,
-	readUnknownFlags,
 	sweepFile,
 } from '../../../../../.agents/skills/orkestrel-publish/scripts/pins.ts'
-import { runSkillScript, PINS_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, PINS_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 
 describe('pins.ts', () => {
 	it('bounds a version literal and a single-comparator range version by digits and dots', () => {
@@ -104,23 +102,37 @@ describe('pins.ts', () => {
 		}
 	})
 
-	it('refuses a flag it does not read, the equals form included, before it sweeps', () => {
+	it('refuses a flag it does not read, a value given to a switch, and a positional before it sweeps, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-pins-unknown-' })
 		try {
 			scratch.write('src/a.ts', '"0.0.7"\n')
 			for (const argv of [
 				['--version', '0.0.7', '--bogus'],
-				['--version=0.0.7'],
 				['--version', '0.0.7', '--json=1'],
-				['--version', '0.0.7', '--paths=src'],
-				['--version', '0.0.7', '--range=^0.0.7'],
+				['--version', '0.0.7', 'src'],
 			]) {
 				const run = runSkillScript(PINS_SCRIPT, argv, { cwd: scratch.path })
 				expect([argv, run.status]).toStrictEqual([argv, 64])
-				expect(run.stderr).toContain('pins: unknown flag')
+				expect(run.stderr).toContain('pins: ')
 				expect(run.stderr).toContain('usage: pins.ts')
 				expect(run.stdout).toBe('')
 			}
+			expect(
+				runSkillScript(PINS_SCRIPT, ['--version', '0.0.7', '--bogus'], { cwd: scratch.path })
+					.stderr,
+			).toContain("'--bogus'")
+			const equals = runSkillScript(
+				PINS_SCRIPT,
+				['--version=0.0.9', '--range=^0.0.7', '--range', '~0.0.8', '--paths=src', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(equals.status).toBe(3)
+			expect(equals.json?.paths).toEqual(['src'])
+			expect(equals.json?.literals).toEqual(['0.0.9', '^0.0.7', '~0.0.8'])
+			expect(parseArguments(['--range=^1.0.0', '--range', '~2.0.0'])).toEqual({
+				success: true,
+				value: { values: { range: ['^1.0.0', '~2.0.0'] }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -304,36 +316,6 @@ describe('the literal patterns', () => {
 })
 
 describe('the copied helpers', () => {
-	it('reads a flag value, a repeated flag, and treats a following flag as a missing value', () => {
-		const argv = ['--version', '1', '--range', '^1', '--range', '^2', '--paths', 'src', '--json']
-		expect(readOption(argv, '--paths')).toBe('src')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOptions(argv, '--range')).toEqual(['^1', '^2'])
-		expect(readOption(['--paths', '--json', 'x'], '--paths')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readOptions(['--range', '--json', '--range', '^1'], '--range')).toEqual(['^1'])
-		expect(
-			readMissingFlags(
-				['--version', '--json', '--range', 'a', '--paths'],
-				['--version', '--range', '--paths'],
-			),
-		).toEqual(['--version', '--paths'])
-		expect(readMissingFlags(['--range', 'a'], ['--version'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(
-				['--version=1.0.0', '--json', '--path', 'a', '--paths', 'a'],
-				['--version', '--json', '--paths'],
-			),
-		).toEqual(['--version=1.0.0', '--path'])
-		expect(readUnknownFlags(['--version', '5', '--', 'node', '--watch'], ['--version'])).toEqual([])
-		expect(readUnknownFlags(['--version', '5', 'path', '-x'], ['--version'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
-	})
-
 	it('normalizes slashes and lists files with forward slashes, skipping the excluded names exactly and at any depth', () => {
 		expect(normalizeSlashes('a\\b\\c.ts')).toBe('a/b/c.ts')
 		expect(normalizeSlashes('a/b')).toBe('a/b')
@@ -355,5 +337,11 @@ describe('the copied helpers', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(PINS_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

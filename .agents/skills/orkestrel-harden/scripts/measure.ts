@@ -14,22 +14,57 @@
 // id and the plugin's own scope for a built-in plugin such as `typescript-eslint`); any other
 // diagnostic, a parse error included, is not a hit and refuses the measurement, because a file the
 // linter could not read has no count. A linter that exits other than 0 or 1, or exits 1 with no
-// diagnostic, refuses it too. The script refuses a flag it does not read, the `--flag=value` form
-// included, and names an unknown flag before a flag given with no value.
+// diagnostic, refuses it too. The script reads its flags with `parseArgs` in strict mode, and
+// refuses a PATH that opens with `-`, which the linter would read as a flag.
 // Exit 0 when the rule has no hit, 3 when it has, 2 when the linter cannot run or reports another
 // diagnostic, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--rule', '--options']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = VALUE_FLAGS
+import { parseArgs } from 'node:util'
 
 /** Holds the usage line printed when a call names no rule or no path. */
 export const USAGE = 'usage: measure.ts --rule ID [--options JSON] PATH...'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	rule: Object.freeze({ type: 'string' }),
+	options: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: true,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Holds the directory, under the working directory, that keeps the variant configs. */
 export const PROBE_ROOT = 'tmp/probes/lint'
@@ -52,75 +87,6 @@ export interface Hits {
 }
 
 /**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--rule`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads the arguments that are neither a flag nor the value of a value flag.
- *
- * @param argv - The arguments after the script path.
- * @param valueFlags - The flags that take a value.
- * @returns The positional arguments in order.
- */
-export function readPositionals(
-	argv: readonly string[],
-	valueFlags: readonly string[],
-): readonly string[] {
-	return argv.filter(
-		(argument, index) => !argument.startsWith('--') && !valueFlags.includes(argv[index - 1] ?? ''),
-	)
-}
-
-/**
  * Checks whether a value is a non-null, non-array object.
  *
  * @param value - The value to inspect.
@@ -137,7 +103,7 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -351,25 +317,28 @@ export function formatHits(rule: string, hits: Hits): string {
  * 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`measure: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`measure: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`measure: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const rule = readOption(argv, '--rule')
-	const paths = readPositionals(argv, VALUE_FLAGS)
+	const { values, positionals: paths } = parsed.value
+	const rule = typeof values.rule === 'string' ? values.rule : undefined
 	if (rule === undefined || paths.length === 0) {
 		console.error(USAGE)
 		return 64
 	}
-	const options = readRuleOptions(readOption(argv, '--options'))
+	const dashed = paths.filter((path) => path.startsWith('-'))
+	if (dashed.length > 0) {
+		console.error(
+			`measure: PATH takes a path that does not open with "-", which the linter reads as a flag, not ${dashed.map(quote).join(', ')}; ${USAGE}`,
+		)
+		return 64
+	}
+	const text = typeof values.options === 'string' ? values.options : undefined
+	const options = readRuleOptions(text)
 	if (options === undefined) {
-		console.error(`measure: --options ${quote(readOption(argv, '--options') ?? '')} is not JSON`)
+		console.error(`measure: --options takes a JSON value, not ${quote(text ?? '')}; ${USAGE}`)
 		return 64
 	}
 	const root = process.cwd()

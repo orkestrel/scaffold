@@ -18,6 +18,8 @@ import { waitForEvent } from '@orkestrel/test'
 import { createScratch, readInventory, supportsDirectoryLinks } from '@orkestrel/test/server'
 import { CLI } from '../../../../../src/bin/CLI.js'
 import {
+	OPTIONS,
+	parseArguments,
 	collectPriorRanges,
 	collectSpecs,
 	compareRanges,
@@ -39,14 +41,11 @@ import {
 	parseJsonLine,
 	readLayers,
 	readManifest,
-	readMissingFlags,
-	readOption,
 	readRanges,
 	readReceipt,
 	readReleasedRanges,
 	readReleases,
 	readString,
-	readUnknownFlags,
 	readVerdict,
 	removeTree,
 	renderCommand,
@@ -92,6 +91,7 @@ import {
 	WAVE_IDENTITY,
 	WORKSPACE_ROOT,
 	FLEET_RELEASE_REPLIES,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 
 describe('wave.ts', () => {
@@ -1512,15 +1512,17 @@ describe('wave.ts', () => {
 			expect(
 				runSkillScript(WAVE_SCRIPT, ['--plan', '--regenerate'], { cwd: scratch.path }).status,
 			).toBe(64)
-			expect(
-				runSkillScript(WAVE_SCRIPT, ['--plan', '--visit', '--dry-run'], { cwd: scratch.path })
-					.status,
-			).toBe(64)
-			expect(
-				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--from', 'bogus'], {
-					cwd: scratch.path,
-				}).status,
-			).toBe(64)
+			const two = runSkillScript(WAVE_SCRIPT, ['--plan', '--visit', '--dry-run'], {
+				cwd: scratch.path,
+			})
+			expect(two.status).toBe(64)
+			expect(two.stderr).toContain('--plan and --visit are two modes')
+			const bogus = runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--from=bogus'], {
+				cwd: scratch.path,
+			})
+			expect(bogus.status).toBe(64)
+			expect(bogus.stderr).toContain('--from and --to take steps in order from: pin')
+			expect(bogus.stderr).toContain('not "bogus" and "compare"')
 			expect(
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--from', 'gates', '--to', 'pin'], {
 					cwd: scratch.path,
@@ -1534,10 +1536,12 @@ describe('wave.ts', () => {
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run'], { cwd: scratch.path }).status,
 			).toBe(2)
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
-			expect(
-				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--prior', 'x'], { cwd: scratch.path })
-					.status,
-			).toBe(64)
+			const prior = runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--prior', 'x'], {
+				cwd: scratch.path,
+			})
+			expect(prior.status).toBe(64)
+			expect(prior.stderr).toContain('--prior takes the version')
+			expect(prior.stderr).toContain('not "x"')
 			expect(
 				runSkillScript(WAVE_SCRIPT, ['--visit', '--dry-run', '--prior'], { cwd: scratch.path })
 					.status,
@@ -1558,26 +1562,36 @@ describe('wave.ts', () => {
 		}
 	})
 
-	it('refuses a flag it does not read, the equals form included, before it runs a step', () => {
+	it('refuses a flag it does not read, a value given to a switch, and a positional before it runs a step, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-unknown-' })
 		try {
 			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
 			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
 			for (const argv of [
 				['--visit', '--dry-run', '--bogus'],
-				['--visit', '--dry-run', '--from=pin'],
-				['--visit', '--target=.', '--dry-run'],
 				['--visit', '--dry-run', '--json=1'],
 				['--plan', '--json=1'],
-				['--plan', '--catalog=table.md'],
+				['--plan', 'stray'],
 				['--bogus'],
 			]) {
 				const run = runSkillScript(WAVE_SCRIPT, argv, { cwd: scratch.path })
 				expect([argv, run.status]).toStrictEqual([argv, 64])
-				expect(run.stderr).toContain('wave: unknown flag')
+				expect(run.stderr).toContain('wave: ')
 				expect(run.stderr).toContain('usage: wave.ts --visit')
 				expect(run.stdout).toBe('')
 			}
+			expect(runSkillScript(WAVE_SCRIPT, ['--bogus'], { cwd: scratch.path }).stderr).toContain(
+				"'--bogus'",
+			)
+			const equals = runSkillScript(WAVE_SCRIPT, ['--plan', '--catalog=table.md'], {
+				cwd: scratch.path,
+			})
+			expect(equals.status).toBe(2)
+			expect(equals.stderr).toContain('no marker-bounded catalog table')
+			expect(parseArguments(['--visit', '--from=pin', '--to', 'gates'])).toEqual({
+				success: true,
+				value: { values: { visit: true, from: 'pin', to: 'gates' }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -2200,33 +2214,6 @@ describe('the scaffold executable, the receipt, and the catalog', () => {
 })
 
 describe('the copied helpers', () => {
-	it('reads a flag value, treats a following flag as a missing value, and keeps the first occurrence', () => {
-		expect(readOption(['--target', 'dir', '--json'], '--target')).toBe('dir')
-		expect(readOption(['--target', 'dir'], '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOption(['--from', '--to', 'x'], '--from')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(
-			readMissingFlags(
-				['--target', '--json', '--out', 'a', '--from'],
-				['--target', '--out', '--from'],
-			),
-		).toEqual(['--target', '--from'])
-		expect(readMissingFlags(['--out', 'a'], ['--target'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(
-				['--target=dir', '--json', '--prior', '1.0.0', '--prio', 'x'],
-				['--target', '--json', '--prior'],
-			),
-		).toEqual(['--target=dir', '--prio'])
-		expect(readUnknownFlags(['--from', 'pin', '--', 'node', '--watch'], ['--from'])).toEqual([])
-		expect(readUnknownFlags(['--from', 'pin', 'path', '-x'], ['--from'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
-	})
-
 	it('reads the last JSON object line and a whole document, and typed members', () => {
 		expect(parseJsonLine('noise\n{"a":1,"b":"x"}\n\n')).toEqual({ a: 1, b: 'x' })
 		expect(parseJsonLine('{"a":1}\n[1]\n')).toBeUndefined()
@@ -2309,5 +2296,11 @@ describe('the copied helpers', () => {
 		const result = runNpm(['--version'])
 		expect(result.status).toBe(0)
 		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(WAVE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

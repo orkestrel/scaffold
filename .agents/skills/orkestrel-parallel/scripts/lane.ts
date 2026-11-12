@@ -4,10 +4,11 @@
 //   node .agents/skills/orkestrel-parallel/scripts/lane.ts --status [--root DIR] [--json]
 // A run takes a ticket, waits for its turn, runs the command through the dispatch skill's `launch`
 // script, reads the process tree, and releases. The launcher owns the cap, the journal, and the
-// errors file; its stdout lines pass through verbatim, and the cap must be above 0. The two forms are
-// two operation modes, so `--status` with a run's flag (`--solo` included) or a bare `--` is refused,
-// and `--json` belongs to `--status` alone. A run therefore cannot ask the launcher for its own
-// `--status` files.
+// errors file; its stdout lines pass through verbatim, and the cap must be above 0. The script reads
+// its flags before the first bare `--` with `parseArgs` in strict mode, and passes every argument
+// after it to the command. The two forms are two operation modes, so `--status` with a run's flag
+// (`--solo` included) or a bare `--` is refused, and `--json` belongs to `--status` alone. A run
+// therefore cannot ask the launcher for its own `--status` files.
 // Lanes: a ticket is heavy unless its arrival reads it light, and the reading is frozen in the
 // ticket. A heavy ticket holds when it is the earliest live non-light ticket; a `--solo` ticket is
 // heavy and also waits out every earlier light ticket. A light ticket holds when every earlier light
@@ -80,10 +81,12 @@
 // Migration stop: a second queue does not see the first, so while a host's sessions run another
 // serializer, no caller moves. After a scaffold release carries this script and no command runs on the
 // host, move every caller in one step and delete the serializer this replaces.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { ChildProcess } from 'node:child_process'
 import type { Server, Socket } from 'node:net'
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
+import { once } from 'node:events'
 import {
 	existsSync,
 	linkSync,
@@ -99,28 +102,62 @@ import { constants, hostname, setPriority, userInfo } from 'node:os'
 import { basename, dirname, extname, isAbsolute, join } from 'node:path'
 import { createInterface } from 'node:readline'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
 /** Holds the protocol version a ticket carries, so a process refuses a ticket it cannot read. */
 export const PROTOCOL = 1
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = [
-	'--label',
-	'--journal',
-	'--errors',
-	'--cap',
-	'--root',
-]
-
-/** Lists the flags only a run reads, which `--status` refuses. */
-export const RUN_FLAGS: readonly string[] = ['--label', '--journal', '--errors', '--cap', '--solo']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--status', '--json', '--solo']
+/** Lists the flags only a run reads, which `--status` refuses, by the name `parseArgs` reads them under. */
+export const RUN_OPTIONS: readonly string[] = ['label', 'journal', 'errors', 'cap', 'solo']
 
 /** Holds the usage line printed on a usage refusal. */
 export const USAGE =
 	'usage: lane.ts --label NAME --journal PATH --errors PATH --cap SECONDS [--root DIR] [--solo] -- COMMAND [ARGS...] | lane.ts --status [--root DIR] [--json]; the journal and the errors file differ, and the cap is a number of seconds above 0 up to 2147483'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	label: Object.freeze({ type: 'string' }),
+	journal: Object.freeze({ type: 'string' }),
+	errors: Object.freeze({ type: 'string' }),
+	cap: Object.freeze({ type: 'string' }),
+	root: Object.freeze({ type: 'string' }),
+	status: Object.freeze({ type: 'boolean' }),
+	json: Object.freeze({ type: 'boolean' }),
+	solo: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Holds the longest cap in whole seconds, equal to the limit of the sibling launcher. */
 export const MAX_CAP_SECONDS = 2_147_483
@@ -471,14 +508,9 @@ export class Token {
 	 * @returns A promise that resolves when the endpoint accepts connections, and rejects with the
 	 * listen failure.
 	 */
-	listen(endpoint: string): Promise<void> {
-		return new Promise((resolve, reject) => {
-			this.#server.once('error', reject)
-			this.#server.listen(endpoint, () => {
-				this.#server.removeListener('error', reject)
-				resolve()
-			})
-		})
+	async listen(endpoint: string): Promise<void> {
+		this.#server.listen(endpoint)
+		await once(this.#server, 'listening')
 	}
 
 	/** Marks the stage as ended and closes every accepted connection, which wakes each waiter. */
@@ -503,11 +535,10 @@ export class Token {
 	 *
 	 * @returns A promise that resolves when the server has closed.
 	 */
-	destroy(): Promise<void> {
+	async destroy(): Promise<void> {
 		for (const socket of this.#sockets) socket.destroy()
-		return new Promise((resolve) => {
-			this.#server.close(() => resolve())
-		})
+		this.#server.close()
+		await once(this.#server, 'close')
 	}
 
 	// Another byte after the publish comes from a stage waiter whose connection the allocation left unaccepted.
@@ -528,75 +559,6 @@ export class Token {
 			}
 		})
 	}
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments before the bare `--`.
- * @param name - The flag, such as `--label`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments before the bare `--`.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan, so the command after it keeps every argument.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads the arguments that are neither a flag nor the value of a value flag.
- *
- * @param argv - The arguments before the bare `--`.
- * @param valueFlags - The flags that take a value.
- * @returns The positional arguments in order.
- */
-export function readPositionals(
-	argv: readonly string[],
-	valueFlags: readonly string[],
-): readonly string[] {
-	return argv.filter(
-		(argument, index) => !argument.startsWith('--') && !valueFlags.includes(argv[index - 1] ?? ''),
-	)
 }
 
 /**
@@ -2437,18 +2399,18 @@ export function parseCap(text: string | undefined): number | undefined {
 /**
  * Validates a run's arguments.
  *
- * @param own - The arguments before the bare `--`.
+ * @param values - The flag values `parseArgs` read before the bare `--`.
  * @param command - The arguments after the bare `--`.
  * @returns The run, or undefined when a flag or the command is missing or out of range.
  */
 export function readLaneOptions(
-	own: readonly string[],
+	values: Arguments['values'],
 	command: readonly string[],
 ): LaneOptions | undefined {
-	const label = readOption(own, '--label')
-	const journal = readOption(own, '--journal')
-	const errors = readOption(own, '--errors')
-	const cap = parseCap(readOption(own, '--cap'))
+	const label = typeof values.label === 'string' ? values.label : undefined
+	const journal = typeof values.journal === 'string' ? values.journal : undefined
+	const errors = typeof values.errors === 'string' ? values.errors : undefined
+	const cap = parseCap(typeof values.cap === 'string' ? values.cap : undefined)
 	if (
 		label === undefined ||
 		label === '' ||
@@ -2462,12 +2424,12 @@ export function readLaneOptions(
 		return undefined
 	}
 	return {
-		root: resolveRoot(readOption(own, '--root')),
+		root: resolveRoot(typeof values.root === 'string' ? values.root : undefined),
 		label,
 		journal,
 		errors,
 		cap,
-		solo: own.includes('--solo'),
+		solo: values.solo === true,
 		command,
 	}
 }
@@ -2483,38 +2445,29 @@ export function readLaneOptions(
  */
 export async function main(argv: readonly string[]): Promise<number> {
 	const end = argv.indexOf('--')
-	const own = end === -1 ? argv : argv.slice(0, end)
 	const command = end === -1 ? [] : argv.slice(end + 1)
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`lane: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(end === -1 ? argv : argv.slice(0, end))
+	if (!parsed.success) {
+		console.error(`lane: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(own, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`lane: ${missing.join(', ')} given with no value; ${USAGE}`)
-		return 64
-	}
-	if (readPositionals(own, VALUE_FLAGS).length > 0) {
-		console.error(USAGE)
-		return 64
-	}
-	const status = own.includes('--status')
-	if (status) {
-		if (end !== -1 || RUN_FLAGS.some((flag) => own.includes(flag))) {
+	const { values } = parsed.value
+	const root = typeof values.root === 'string' ? values.root : undefined
+	if (values.status === true) {
+		if (end !== -1 || RUN_OPTIONS.some((name) => values[name] !== undefined)) {
 			console.error(`lane: --status and a run are two modes; ${USAGE}`)
 			return 64
 		}
-		return runStatus(resolveRoot(readOption(own, '--root')), own.includes('--json'))
+		return runStatus(resolveRoot(root), values.json === true)
 	}
-	const cap = readOption(own, '--cap')
+	const cap = typeof values.cap === 'string' ? values.cap : undefined
 	if (cap !== undefined && parseCap(cap) === undefined) {
 		console.error(
 			`lane: --cap takes a number of seconds above 0 up to ${String(MAX_CAP_SECONDS)}, not ${quote(cap)}; ${USAGE}`,
 		)
 		return 64
 	}
-	const options = own.includes('--json') ? undefined : readLaneOptions(own, command)
+	const options = values.json === true ? undefined : readLaneOptions(values, command)
 	if (options === undefined) {
 		console.error(USAGE)
 		return 64

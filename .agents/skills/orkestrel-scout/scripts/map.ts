@@ -1,5 +1,7 @@
 // Map terrain before a brief, an absorption lane, or a rename. Run from the checkout root:
-//   node .agents/skills/orkestrel-scout/scripts/map.ts --tree PATH... [--headings PATH...] [--frontmatter PATH...] [--exports PATH...] [--census TERM...] [--refs PATH] [--anchors PATH...] [--paths a,b] [--ignore-case] [--json] [--out FILE]
+//   node .agents/skills/orkestrel-scout/scripts/map.ts [--tree PATH ...] [--headings PATH ...]
+//     [--frontmatter PATH ...] [--exports PATH ...] [--census TERM ...] [--refs PATH]
+//     [--anchors PATH ...] [--paths a,b] [--ignore-case] [--json] [--out FILE]
 // --tree lists every file under each path with its line count and size. --headings lists every
 // Markdown heading with its line; a heading inside a fenced block is no heading, where a fence
 // opens with a run of three or more backticks or tildes indented up to three spaces and closes with
@@ -7,16 +9,15 @@
 // frontmatter block, a TOML file, or a YAML file with its whole value, a nested key dotted under its
 // parents (`interface.default_prompt`) and a TOML key under its table. --exports lists every
 // `export` declaration line in a TypeScript file (a text reading, not the compiler's). --census
-// lists every line carrying a term. --refs lists
-// every line naming a path or its basename. --anchors lists every `§ Heading` reference whose
-// heading the named file, or the same file, does not carry. Walks skip node_modules, .git, dist,
-// tmp, .orkestrel, .idea, and host.json; --paths narrows a census or refs walk. Modes combine, each
-// printing its section; --json prints one object; --out writes the output to FILE instead of the
-// terminal. Give each flag once; a later duplicate is not read. A value that opens with `--` is a
-// missing value, so census a custom property without its leading dashes. The script refuses a flag
-// it does not read, the `--flag=value` form included, and names every unknown flag and every flag
-// given with no value in one refusal. Exit 0, or 64 when no mode is given, a flag is given with no
-// value, or a flag is unknown.
+// lists every line carrying a term. --refs lists every line naming a path or its basename.
+// --anchors lists every `§ Heading` reference whose heading the named file, or the same file, does
+// not carry. Walks skip node_modules, .git, dist, tmp, .orkestrel, .idea, and host.json; --paths
+// narrows a census or refs walk. Modes combine, each printing its section; --json prints one
+// object; --out writes the output to FILE instead of the terminal. Each mode flag but --refs
+// repeats, one value per flag; give a value that opens with `-` in the `--census=--term` form. The
+// script reads its flags with `parseArgs` in strict mode. Exit 0, or 64 on usage, including no mode
+// given.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import {
 	existsSync,
 	mkdirSync,
@@ -27,6 +28,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /** Matches an `export` declaration line and captures its kind and name. */
 export const EXPORT =
@@ -55,25 +57,57 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 	'.idea',
 ])
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = [
-	'--tree',
-	'--headings',
-	'--frontmatter',
-	'--exports',
-	'--census',
-	'--refs',
-	'--anchors',
-	'--paths',
-	'--out',
-]
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--ignore-case', '--json']
-
 /** Holds the usage line printed when a call names no mode. */
 export const USAGE =
-	'usage: map.ts [--tree PATH...] [--headings PATH...] [--frontmatter PATH...] [--exports PATH...] [--census TERM...] [--refs PATH] [--anchors PATH...] [--paths a,b] [--ignore-case] [--json] [--out FILE]'
+	'usage: map.ts [--tree PATH ...] [--headings PATH ...] [--frontmatter PATH ...] [--exports PATH ...] [--census TERM ...] [--refs PATH] [--anchors PATH ...] [--paths a,b] [--ignore-case] [--json] [--out FILE]; name one mode or more; each mode flag but --refs repeats, one value per flag'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	tree: Object.freeze({ type: 'string', multiple: true }),
+	headings: Object.freeze({ type: 'string', multiple: true }),
+	frontmatter: Object.freeze({ type: 'string', multiple: true }),
+	exports: Object.freeze({ type: 'string', multiple: true }),
+	census: Object.freeze({ type: 'string', multiple: true }),
+	refs: Object.freeze({ type: 'string' }),
+	anchors: Object.freeze({ type: 'string', multiple: true }),
+	paths: Object.freeze({ type: 'string' }),
+	'ignore-case': Object.freeze({ type: 'boolean' }),
+	json: Object.freeze({ type: 'boolean' }),
+	out: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes one file a tree walk found, with the modification time it carries. */
 export interface WalkedFile {
@@ -162,71 +196,15 @@ export interface Report {
 }
 
 /**
- * Reads the value that follows a flag.
+ * Collects the strings a repeatable flag's value holds.
  *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--paths`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
+ * @param value - The value `parseArgs` read for a flag declared with `multiple: true`.
+ * @returns Each string in order, empty when the flag never appears.
  */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads the values that follow a flag up to the next flag.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--tree`.
- * @returns The values between the flag and the next `--` argument, empty when the flag is absent.
- */
-export function readList(argv: readonly string[], name: string): readonly string[] {
-	const index = argv.indexOf(name)
-	if (index === -1) return []
-	const rest = argv.slice(index + 1)
-	const end = rest.findIndex((argument) => argument.startsWith('--'))
-	return end === -1 ? rest : rest.slice(0, end)
+export function collectStrings(value: unknown): readonly string[] {
+	return Array.isArray(value)
+		? value.filter((member): member is string => typeof member === 'string')
+		: []
 }
 
 /**
@@ -236,7 +214,7 @@ export function readList(argv: readonly string[], name: string): readonly string
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -723,26 +701,21 @@ export function renderReport(report: Report): string {
  * @returns The exit code: 0 on success, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (unknown.length > 0 || missing.length > 0) {
-		console.error(
-			`map: ${[
-				...(unknown.length > 0 ? [`${unknown.join(', ')} is not a flag this script reads`] : []),
-				...(missing.length > 0 ? [`${missing.join(', ')} given with no value`] : []),
-			].join('; ')}; ${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`map: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const roots = (readOption(argv, '--paths') ?? '.').split(',')
-	const ignoreCase = argv.includes('--ignore-case')
-	const tree = readList(argv, '--tree')
-	const headings = readList(argv, '--headings')
-	const frontmatter = readList(argv, '--frontmatter')
-	const exports = readList(argv, '--exports')
-	const census = readList(argv, '--census')
-	const refs = readOption(argv, '--refs')
-	const anchors = readList(argv, '--anchors')
+	const { values } = parsed.value
+	const roots = (typeof values.paths === 'string' ? values.paths : '.').split(',')
+	const ignoreCase = values['ignore-case'] === true
+	const tree = collectStrings(values.tree)
+	const headings = collectStrings(values.headings)
+	const frontmatter = collectStrings(values.frontmatter)
+	const exports = collectStrings(values.exports)
+	const census = collectStrings(values.census)
+	const refs = typeof values.refs === 'string' ? values.refs : undefined
+	const anchors = collectStrings(values.anchors)
 	if (
 		tree.length +
 			headings.length +
@@ -765,8 +738,8 @@ export function main(argv: readonly string[]): number {
 		...(refs === undefined ? {} : { refs: mapRefs(refs, roots) }),
 		...(anchors.length > 0 ? { anchors: mapAnchors(anchors) } : {}),
 	}
-	const output = argv.includes('--json') ? `${JSON.stringify(report)}\n` : renderReport(report)
-	const out = readOption(argv, '--out')
+	const output = values.json === true ? `${JSON.stringify(report)}\n` : renderReport(report)
+	const out = typeof values.out === 'string' ? values.out : undefined
 	if (out === undefined) process.stdout.write(output)
 	else {
 		mkdirSync(dirname(out), { recursive: true })

@@ -1,7 +1,7 @@
 // Let Vitest select each gate's tests, then compare its identities with each config/mode universe.
 // Run from the checkout root:
 //   node .agents/skills/orkestrel-harden/scripts/discovery.ts [--config vite.config.ts] [--projects a,b] [--json]
-// Each value is a separate argument: `--flag=value` and any flag the script does not read exit 64.
+// The script reads its flags with `parseArgs` in strict mode, so a flag it does not read exits 64.
 // Roots are the package scripts no `npm run` invokes; `npm test` runs the root `test`, which stays a
 // root. Follow root chains and forwarded arguments through `npm run [-s|--silent] NAME`,
 // `npm run-script`, `npm test`, and `npm t`. Read a command past an environment prefix, `cross-env`,
@@ -31,6 +31,7 @@
 // Exit 0 with no flag, 3 with a flag, 2 for missing Vitest, an option table without a required
 // option, unsupported related commands, CLI/help/argument/listing/output failures, repeated
 // test-file changes, or filesystem/JSON errors; exit 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import {
 	existsSync,
@@ -43,6 +44,7 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, relative, resolve } from 'node:path'
+import { isDeepStrictEqual, parseArgs } from 'node:util'
 
 /** Names the Vitest entry the census runs. */
 export const VITEST = 'node_modules/vitest/vitest.mjs'
@@ -66,11 +68,48 @@ export const REQUIRED_OPTIONS: readonly string[] = [
 	'--staticParse',
 ]
 
-/** Lists the flags this script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = ['--config', '--projects', '--json']
-
 /** Holds the usage line printed on a usage refusal. */
 export const USAGE = 'usage: discovery.ts [--config vite.config.ts] [--projects a,b] [--json]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	config: Object.freeze({ type: 'string' }),
+	projects: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Names the options a gate listing drops, because they change the run and not the selection. */
 export const OMITTED = new Set([
@@ -315,60 +354,7 @@ export interface Span {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--config`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * Reads the arguments before a bare `--`. A `--flag=value` argument is unknown, because the script
- * reads `--flag value` pairs only.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
+	return path.replaceAll('\\', '/')
 }
 
 /** Describes one file a tree walk found, with the modification time the snapshot reads. */
@@ -1417,10 +1403,9 @@ export function readUnit(
 	if (universe === undefined) return undefined
 	const collected = universe.entries
 	const selected = collectResults(reached, (gate) => {
-		const selection =
-			JSON.stringify(gate.args) === JSON.stringify(universeArguments)
-				? collected
-				: listCollected(gate.args, gate.full, cache)?.entries
+		const selection = isDeepStrictEqual(gate.args, universeArguments)
+			? collected
+			: listCollected(gate.args, gate.full, cache)?.entries
 		if (selection === undefined) {
 			console.error(`discovery: gate ${gate.chain}: vitest list refused ${gate.args.join(' ')}`)
 			return undefined
@@ -1663,19 +1648,13 @@ export function collectStableListings(
  * @returns The exit code: 0 no flag, 3 a flag, 2 a tool failure, 64 usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`discovery: ${unknown.map(describeName).join(', ')} is not a flag this script reads; give each value as its own argument. ${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`discovery: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, ['--config', '--projects'])
-	if (missing.length > 0) {
-		console.error(`discovery: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const config = readOption(argv, '--config') ?? 'vite.config.ts'
+	const { values } = parsed.value
+	const config = typeof values.config === 'string' ? values.config : 'vite.config.ts'
 	if (!existsSync(config) || !existsSync('package.json')) {
 		console.error(USAGE)
 		return 64
@@ -1694,7 +1673,11 @@ export function main(argv: readonly string[]): number {
 		return 2
 	}
 	const named = [
-		...new Set((readOption(argv, '--projects') ?? '').split(',').filter((name) => name !== '')),
+		...new Set(
+			(typeof values.projects === 'string' ? values.projects : '')
+				.split(',')
+				.filter((name) => name !== ''),
+		),
 	]
 	const read = readGates(readScripts(), canonical, options)
 	if (named.length > 0) {
@@ -1784,7 +1767,7 @@ export function main(argv: readonly string[]): number {
 		markers: countMarkers(resolve(file)),
 	}))
 	const flagged = undiscovered.length + ungated.length + empty.length > 0
-	if (argv.includes('--json')) {
+	if (values.json === true) {
 		console.log(
 			JSON.stringify({ config, projects, ungated, empty, workbenches, undiscovered, census }),
 		)

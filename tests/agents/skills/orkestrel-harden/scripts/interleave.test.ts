@@ -8,8 +8,10 @@ import {
 	buildInterleaveSide,
 	readInterleaveLog,
 	runSkillScript,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	QUOTE_LIMIT,
 	computeDeviation,
 	computeMedian,
@@ -20,19 +22,16 @@ import {
 	isStringArray,
 	isStringRecord,
 	mergeEnv,
+	parseArguments,
 	parseJson,
 	parsePlan,
 	parseReading,
 	parseRounds,
 	quote,
 	readLastLine,
-	readMissingFlags,
-	readOption,
 	readPlanText,
 	readSide,
 	readSideProblems,
-	readStrayArguments,
-	readUnknownFlags,
 	renderNumber,
 	renderReport,
 	renderSummary,
@@ -253,19 +252,6 @@ describe('interleave.ts', () => {
 		expect(readSideProblems({ command: 'node', args: [] }, 'candidate')).toStrictEqual([])
 	})
 
-	it('reads flags and refuses a positional and a bare separator', () => {
-		expect(readOption(['--plan', 'a', '--plan', 'b'], '--plan')).toBe('a')
-		expect(readOption(['--plan', '--json'], '--plan')).toBeUndefined()
-		expect(readOption(['--json'], '--plan')).toBeUndefined()
-		expect(readMissingFlags(['--rounds'], ['--plan', '--rounds'])).toStrictEqual(['--rounds'])
-		expect(
-			readUnknownFlags(['--plan', 'a', '--bad', '--plan=b', '--', '--after'], ['--plan']),
-		).toStrictEqual(['--bad', '--plan=b'])
-		expect(
-			readStrayArguments(['--plan', 'a', 'stray', '--json', '--', 'tail'], ['--plan']),
-		).toStrictEqual(['stray', '--', 'tail'])
-	})
-
 	it('keeps its small readers total', () => {
 		expect(isRecord([])).toBe(false)
 		expect(isRecord(null)).toBe(false)
@@ -413,7 +399,7 @@ describe('interleave.ts', () => {
 					candidate: { ...side, cwd: 'child', env: { INTERLEAVE_MARK: 'set' } },
 				}),
 			)
-			const run = runSkillScript(INTERLEAVE_SCRIPT, ['--plan', 'plan.json', '--rounds', '2'], {
+			const run = runSkillScript(INTERLEAVE_SCRIPT, ['--plan=plan.json', '--rounds=2'], {
 				cwd: scratch.path,
 				env: { INTERLEAVE_MARK: 'inherited' },
 			})
@@ -612,16 +598,16 @@ describe('interleave.ts', () => {
 				[[], 'usage: interleave.ts'],
 				[plan, 'usage: interleave.ts'],
 				[rounds, 'usage: interleave.ts'],
-				[[...plan, ...rounds, '--no-such-flag'], '--no-such-flag is not a flag'],
-				[['--plan=plan.json', ...rounds], '--plan=plan.json is not a flag'],
-				[[...rounds, '--plan'], '--plan given with no value'],
-				[['--plan', '--json', ...rounds], '--plan given with no value'],
-				[[...plan, '--rounds'], '--rounds given with no value'],
-				[[...plan, ...rounds, '--out'], '--out given with no value'],
-				[[...plan, ...rounds, 'stray'], '"stray" is not an argument'],
-				[[...plan, ...rounds, '--', 'node'], '"--", "node" is not an argument'],
-				[[...plan, ...rounds, '--out', 'run.md'], '--out takes a .json or .txt file'],
-				[[...plan, '--rounds', '3'], '--rounds takes an even whole number of at least 2, got "3"'],
+				[[...plan, ...rounds, '--no-such-flag'], "'--no-such-flag'"],
+				[[...rounds, '--plan'], "'--plan"],
+				[['--plan', '--json', ...rounds], "'--plan"],
+				[[...plan, '--rounds'], "'--rounds"],
+				[[...plan, ...rounds, '--out'], "'--out"],
+				[[...plan, ...rounds, '--json=yes'], "'--json'"],
+				[[...plan, ...rounds, 'stray'], "'stray'"],
+				[[...plan, ...rounds, '--', 'node'], "'node'"],
+				[[...plan, ...rounds, '--out', 'run.md'], '--out takes a .json or .txt file, not "run.md"'],
+				[[...plan, '--rounds=3'], '--rounds takes an even whole number of at least 2, not "3"'],
 				[[...plan, '--rounds', '0'], '--rounds takes an even whole number'],
 				[['--plan', 'absent.json', ...rounds], '"absent.json" cannot be read'],
 				[['--plan', 'broken.json', ...rounds], 'the plan holds no "candidate" side'],
@@ -632,8 +618,18 @@ describe('interleave.ts', () => {
 				expect(run.stdout).toBe('')
 			}
 			expect(scratch.has('run.txt')).toBe(false)
+			expect(parseArguments(['--plan=p.json', '--rounds', '4', '--json'])).toEqual({
+				success: true,
+				value: { values: { plan: 'p.json', rounds: '4', json: true }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(INTERLEAVE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

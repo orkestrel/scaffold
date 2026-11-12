@@ -18,23 +18,56 @@
 // name one file), and nothing is written unless every selected edit resolves.
 // `--plan` prints each edit's resolution and writes nothing; `--apply` writes the files after every
 // edit resolved. `--skip N` leaves out edit number N, as the plan numbers them, and repeats. The
-// script refuses a flag it does not read, the `--flag=value` form included.
+// script reads its flags with `parseArgs` in strict mode.
 // Exit 0 when every selected edit resolved, 1 when one did not, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
-
-/** Lists the flags that each select one operation. */
-export const MODE_FLAGS: readonly string[] = ['--plan', '--apply']
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--skip']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...MODE_FLAGS, ...VALUE_FLAGS]
+import { parseArgs } from 'node:util'
 
 /** Holds the usage line printed when a call names no edit file or no mode, or two. */
 export const USAGE =
 	'usage: patch.ts EDITS.md (--plan | --apply) [--skip N ...]; name one mode; --skip repeats'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	plan: Object.freeze({ type: 'boolean' }),
+	apply: Object.freeze({ type: 'boolean' }),
+	skip: Object.freeze({ type: 'string', multiple: true }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: true,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Matches one edit block with its path, reason, and fenced old and new texts. */
 export const EDIT_BLOCK =
@@ -70,85 +103,6 @@ export interface Resolution {
 export interface Resolved {
 	readonly path: string
 	readonly text: string
-}
-
-/**
- * Names the value flags a caller gave with no value, at any occurrence.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) =>
-		argv.some((argument, index) => argument === name && isMissingValue(argv, index)),
-	)
-}
-
-/**
- * Checks whether the argument after a flag is absent or is another flag.
- *
- * @param argv - The arguments after the script path.
- * @param index - The position of the flag.
- * @returns True when no value follows the flag; false otherwise.
- */
-export function isMissingValue(argv: readonly string[], index: number): boolean {
-	const value = argv[index + 1]
-	return value === undefined || value.startsWith('--')
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads every value that follows a repeatable flag.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--skip`.
- * @returns The values in order, empty when the flag never appears.
- */
-export function readOptions(argv: readonly string[], name: string): readonly string[] {
-	return argv.flatMap((argument, index) => {
-		const value = argv[index + 1]
-		return argument === name && value !== undefined && !value.startsWith('--') ? [value] : []
-	})
-}
-
-/**
- * Reads the arguments that are neither a flag nor the value of a value flag.
- *
- * @param argv - The arguments after the script path.
- * @param valueFlags - The flags that take a value.
- * @returns The positional arguments in order.
- */
-export function readPositionals(
-	argv: readonly string[],
-	valueFlags: readonly string[],
-): readonly string[] {
-	return argv.filter(
-		(argument, index) => !argument.startsWith('--') && !valueFlags.includes(argv[index - 1] ?? ''),
-	)
 }
 
 /**
@@ -322,8 +276,41 @@ export function readFileKey(target: string): string {
  */
 export function readTargetProblem(root: string, target: string): string | undefined {
 	if (!isInside(root, target)) return 'path leaves the working directory'
-	if (!existsSync(target) || !statSync(target).isFile()) return 'no such file'
-	return undefined
+	return readFileProblem(target)
+}
+
+/**
+ * Names why a path is not a file this script can read.
+ *
+ * @remarks
+ * A stat that throws, such as one refused with `EACCES` or given a path that holds a NUL byte, is a
+ * problem named by its error code, never an uncaught error.
+ *
+ * @param path - The path to read.
+ * @returns The problem, or undefined when the path is a file.
+ */
+export function readFileProblem(path: string): string | undefined {
+	try {
+		return statSync(path, { throwIfNoEntry: false })?.isFile() === true ? undefined : 'no such file'
+	} catch (error) {
+		const code =
+			error instanceof Error && 'code' in error && typeof error.code === 'string'
+				? error.code
+				: String(error)
+		return `cannot be read: ${code}`
+	}
+}
+
+/**
+ * Collects the strings a repeatable flag's value holds.
+ *
+ * @param value - The value `parseArgs` read for a flag declared with `multiple: true`.
+ * @returns Each string in order, empty when the flag never appears.
+ */
+export function collectStrings(value: unknown): readonly string[] {
+	return Array.isArray(value)
+		? value.filter((member): member is string => typeof member === 'string')
+		: []
 }
 
 /**
@@ -333,24 +320,19 @@ export function readTargetProblem(root: string, target: string): string | undefi
  * @returns The exit code: 0 when every selected edit resolved, 1 when one did not, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`patch: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`patch: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`patch: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const modes = MODE_FLAGS.filter((flag) => argv.includes(flag))
-	const sources = readPositionals(argv, VALUE_FLAGS)
-	const source = sources[0]
-	if (modes.length !== 1 || sources.length !== 1 || source === undefined) {
+	const { values, positionals } = parsed.value
+	const apply = values.apply === true
+	const [source, ...extra] = positionals
+	if (apply === (values.plan === true) || extra.length > 0 || source === undefined) {
 		console.error(USAGE)
 		return 64
 	}
-	if (!existsSync(source) || !statSync(source).isFile()) {
+	if (readFileProblem(source) !== undefined) {
 		console.error(`patch: ${quote(source)} is not a readable edit file; ${USAGE}`)
 		return 64
 	}
@@ -363,7 +345,7 @@ export function main(argv: readonly string[]): number {
 		)
 		return 64
 	}
-	const skips = readOptions(argv, '--skip')
+	const skips = collectStrings(values.skip)
 	const invalid = readInvalidSkips(skips, edits.length)
 	if (invalid.length > 0) {
 		console.error(
@@ -386,7 +368,6 @@ export function main(argv: readonly string[]): number {
 		console.log('nothing written')
 		return 1
 	}
-	const apply = argv.includes('--apply')
 	if (apply) {
 		for (const file of resolution.files) writeFileSync(resolve(root, file.path), file.text)
 	}

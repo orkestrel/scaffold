@@ -4,8 +4,10 @@ import { basename, delimiter, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createRecorder, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
+import { runSkillScript, WORKSPACE_ROOT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
+	parseArguments,
 	buildPlan,
 	CHAIN,
 	collectNative,
@@ -21,13 +23,9 @@ import {
 	readCiOmissions,
 	readDerivation,
 	readHolders,
-	readMissingFlags,
 	readOmissionProblems,
 	readOmissions,
-	readStrayArguments,
-	readUnknownFlags,
 	readUsageProblem,
-	readValues,
 	resolveNpm,
 	selectSegments,
 	STEP_NAME,
@@ -244,7 +242,7 @@ describe('steps.ts', () => {
 		expect(parseOmission('a=')).toBeUndefined()
 		expect(parseOmission('a=  ')).toBeUndefined()
 		expect(parseOmission('a=one\ntwo')).toBeUndefined()
-		expect(readOmissions(['--omit', 'a=1', '--no-ci', '--omit', 'b=2'])).toStrictEqual([
+		expect(readOmissions({ omit: ['a=1', 'b=2'], 'no-ci': true })).toStrictEqual([
 			{ name: 'a', reason: '1' },
 			{ name: 'b', reason: '2' },
 		])
@@ -254,7 +252,7 @@ describe('steps.ts', () => {
 				[['--omit', 'test'], '"test"'],
 				[['--omit', 'test='], '"test="'],
 				[['--omit', 'test=a', '--omit', 'test=b'], 'more than once: "test"'],
-				[['--omit', 'test=a', '--omit'], '--omit given with no value'],
+				[['--omit', 'test=a', '--omit'], "'--omit"],
 			] as const) {
 				const run = runSkillScript(script, ['--journal', 'j', ...args], { cwd: scratch.path })
 				expect({ args, status: run.status }).toStrictEqual({ args, status: 64 })
@@ -266,21 +264,15 @@ describe('steps.ts', () => {
 		}
 	})
 
-	it('reads flags as pairs and refuses a stray argument, a bare --, and a missing journal', () => {
-		expect(readValues(['--journal', 'a', '--journal', 'b'], '--journal')).toStrictEqual(['a', 'b'])
-		expect(readValues(['--journal', '--json'], '--journal')).toStrictEqual([undefined])
-		expect(readMissingFlags(['--omit', 'a=b', '--omit'], ['--omit'])).toStrictEqual(['--omit'])
-		expect(readUnknownFlags(['--json', '--x=1', '--', '--y'], ['--json'])).toStrictEqual([
-			'--x=1',
-			'--',
-		])
+	it('reads flags with parseArgs and refuses an unknown flag, a stray argument, a bare -- before an argument, and a missing journal', () => {
 		expect(
-			readStrayArguments(['--journal', 'd', 'a=b', '--json', 'c'], ['--journal']),
-		).toStrictEqual(['a=b', 'c'])
-		expect(
-			readUsageProblem(['--journal', 'd', '--omit', 'a=b', '--no-ci', '--dry-run']),
+			readUsageProblem({ journal: 'd', omit: ['a=b'], 'no-ci': true, 'dry-run': true }),
 		).toBeUndefined()
-		expect(readUsageProblem(['--dry-run'])).toContain('usage: steps.ts --journal DIR')
+		expect(readUsageProblem({ 'dry-run': true })).toContain('usage: steps.ts --journal DIR')
+		expect(parseArguments(['--journal=d', '--omit=a=b', '--omit', 'c=d'])).toEqual({
+			success: true,
+			value: { values: { journal: 'd', omit: ['a=b', 'c=d'] }, positionals: [] },
+		})
 		const scratch = createScratch({ prefix: 'orkestrel-steps-usage-' })
 		try {
 			scratch.write('package.json', JSON.stringify({ scripts: { prepublishOnly: 'npm test' } }))
@@ -288,9 +280,22 @@ describe('steps.ts', () => {
 			expect(runSkillScript(script, [], cwd).status).toBe(64)
 			const stray = runSkillScript(script, ['--journal', 'j', 'test=why'], cwd)
 			expect(stray.status).toBe(64)
-			expect(stray.stderr).toContain('"test=why"')
+			expect(stray.stderr).toContain("'test=why'")
 			const bare = runSkillScript(script, ['--journal', 'j', '--', '--dry-run'], cwd)
 			expect(bare.status).toBe(64)
+			const unknown = runSkillScript(script, ['--journal', 'j', '--bogus'], cwd)
+			expect(unknown.status).toBe(64)
+			expect(unknown.stderr).toContain("'--bogus'")
+			expect(unknown.stderr).toContain('usage: steps.ts')
+			const equals = runSkillScript(
+				script,
+				['--journal=j', '--dry-run', '--json', '--omit=test=the fixture runs no tests'],
+				cwd,
+			)
+			expect(equals.status).toBe(0)
+			expect(equals.json?.omitted).toEqual(
+				expect.arrayContaining([{ name: 'test', reason: 'the fixture runs no tests' }]),
+			)
 			const json = runSkillScript(script, ['--journal', 'j', '--json'], cwd)
 			expect(json.status).toBe(64)
 			expect(json.stderr).toContain('--json reads only with --dry-run')
@@ -697,4 +702,12 @@ describe('steps.ts', () => {
 			}
 		},
 	)
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(
+			runFlagRefusals('.agents/skills/orkestrel-publish/scripts/steps.ts', OPTIONS),
+		).toStrictEqual([])
+	})
 })

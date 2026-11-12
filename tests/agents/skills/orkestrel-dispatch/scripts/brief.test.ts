@@ -2,15 +2,14 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, BRIEF_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, BRIEF_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	extractPaths,
 	extractSection,
 	LANES,
-	readMissingFlags,
-	readOption,
+	parseArguments,
 	readsAsPath,
-	readUnknownFlags,
 	REQUIREMENTS,
 	resolveBriefPath,
 	scanOmissions,
@@ -21,7 +20,7 @@ const SECTIONS =
 	'## Role and engine\n\n`opus` on Opus 5.5.\n\n## Execution\n\nPerform the assignment yourself and spawn nothing.\n'
 
 describe('brief.ts', () => {
-	it('refuses an unknown flag and the equals form before it writes or reads anything', () => {
+	it('refuses an unknown flag with the parseArgs message before it writes or reads anything, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-brief-flags-' })
 		try {
 			scratch.write('b.md', 'Read `src/present.ts`.\n')
@@ -31,16 +30,21 @@ describe('brief.ts', () => {
 				{ cwd: scratch.path },
 			)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--bogus')
-			const equals = runSkillScript(BRIEF_SCRIPT, ['--unit=demo', '--lane', 'units'], {
+			expect(unknown.stderr).toContain("'--bogus'")
+			expect(unknown.stderr).toContain('usage: brief.ts')
+			expect(scratch.has('tmp')).toBe(false)
+			const check = runSkillScript(BRIEF_SCRIPT, ['--check=b.md'], { cwd: scratch.path })
+			expect(check.status).toBe(3)
+			expect(check.stdout).toContain('src/present.ts')
+			const equals = runSkillScript(BRIEF_SCRIPT, ['--unit=demo', '--lane=units'], {
 				cwd: scratch.path,
 			})
-			expect(equals.status).toBe(64)
-			expect(equals.stderr).toContain('--unit=demo')
-			const check = runSkillScript(BRIEF_SCRIPT, ['--check=b.md'], { cwd: scratch.path })
-			expect(check.status).toBe(64)
-			expect(check.stdout).toBe('')
-			expect(scratch.has('tmp')).toBe(false)
+			expect(equals.status).toBe(0)
+			expect(scratch.has('tmp/units/demo-brief.md')).toBe(true)
+			expect(parseArguments(['--unit=a', '--unit', 'b'])).toEqual({
+				success: true,
+				value: { values: { unit: 'b' }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -149,15 +153,18 @@ describe('brief.ts', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-brief-usage-' })
 		try {
 			scratch.ensure('adir')
-			expect(
-				runSkillScript(BRIEF_SCRIPT, ['--unit', 'demo', '--lane', 'moon'], { cwd: scratch.path })
-					.status,
-			).toBe(64)
-			expect(
-				runSkillScript(BRIEF_SCRIPT, ['--unit', 'no/slash', '--lane', 'units'], {
-					cwd: scratch.path,
-				}).status,
-			).toBe(64)
+			const moon = runSkillScript(BRIEF_SCRIPT, ['--unit', 'demo', '--lane', 'moon'], {
+				cwd: scratch.path,
+			})
+			expect(moon.status).toBe(64)
+			expect(moon.stderr).toContain('--lane takes units, cursor, codex, or claude, not "moon"')
+			const slash = runSkillScript(BRIEF_SCRIPT, ['--unit', 'no/slash', '--lane', 'units'], {
+				cwd: scratch.path,
+			})
+			expect(slash.status).toBe(64)
+			expect(slash.stderr).toContain(
+				'--unit takes letters, digits, dots, underscores, and hyphens, not "no/slash"',
+			)
 			expect(runSkillScript(BRIEF_SCRIPT, ['--check', 'adir'], { cwd: scratch.path }).status).toBe(
 				64,
 			)
@@ -168,15 +175,13 @@ describe('brief.ts', () => {
 				runSkillScript(BRIEF_SCRIPT, ['--unit', '--lane', 'units'], { cwd: scratch.path }).status,
 			).toBe(64)
 			expect(runSkillScript(BRIEF_SCRIPT, [], { cwd: scratch.path }).status).toBe(64)
-			expect(
-				runSkillScript(
-					BRIEF_SCRIPT,
-					['--check', 'absent.md', '--unit', 'demo', '--lane', 'units'],
-					{
-						cwd: scratch.path,
-					},
-				).status,
-			).toBe(64)
+			const two = runSkillScript(
+				BRIEF_SCRIPT,
+				['--check', 'absent.md', '--unit', 'demo', '--lane', 'units'],
+				{ cwd: scratch.path },
+			)
+			expect(two.status).toBe(64)
+			expect(two.stderr).toContain('--check and --unit are two modes')
 			expect(scratch.has('tmp/units')).toBe(false)
 		} finally {
 			scratch.destroy()
@@ -265,22 +270,8 @@ describe('the brief path', () => {
 	})
 })
 
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['--unit', 'demo', '--lane', 'units', '--check']
-		expect(readOption(argv, '--unit')).toBe('demo')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--unit', '--lane', 'x'], '--unit')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readMissingFlags(argv, ['--unit', '--lane', '--check'])).toEqual(['--check'])
-		expect(readMissingFlags(['--unit', 'a'], ['--lane'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(['--unit=demo', '--lane', 'units', '--bogus'], ['--unit', '--lane']),
-		).toEqual(['--unit=demo', '--bogus'])
-		expect(readUnknownFlags(['--unit', 'a', '--', '--watch'], ['--unit'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(BRIEF_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

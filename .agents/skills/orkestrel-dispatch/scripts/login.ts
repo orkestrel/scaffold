@@ -8,12 +8,15 @@
 // seconds) ends, then kills the login by its pid. Each status read gets the time left to the cap
 // and is ended when it passes. --cap is a number of seconds above 0 and at most 2147483, checked
 // before anything starts.
-// --claude reads `claude auth status` and prints it. Name one bench per run; the script refuses a
-// flag it does not read, the `--flag=value` form included. The JSON summary carries `live`; exit 0
+// --claude reads `claude auth status` and prints it. Name one bench per run; the script reads its
+// flags with `parseArgs` in strict mode. The JSON summary carries `live`; exit 0
 // when the bench is logged in, 3 when it is not, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync } from 'node:fs'
+import { setTimeout } from 'node:timers/promises'
 import { dirname } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /** Names the file that journals the device-auth login output. */
 export const JOURNAL = 'tmp/codex/login.log'
@@ -36,11 +39,48 @@ export const URL_PATTERN = /https?:\/\/[^\s"'<>]+/u
 /** Matches the one-time code the login prints, such as `ABCD-12345`. */
 export const CODE_PATTERN = /\b([A-Z0-9]{4,5}-[A-Z0-9]{4,5})\b/u
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--cap']
+/** Holds the usage line printed when a call names no bench or two. */
+export const USAGE = 'usage: login.ts --codex [--cap SECONDS] | --claude'
 
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--codex', '--claude']
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	cap: Object.freeze({ type: 'string' }),
+	codex: Object.freeze({ type: 'boolean' }),
+	claude: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes whether a bench's status command started, whether it reports a login, and its text. */
 export interface Status {
@@ -86,59 +126,6 @@ export const CODEX_FLOW: Flow = {
 
 /** Holds the real Claude status command. */
 export const CLAUDE_STATUS: Invocation = { command: 'claude', args: ['auth', 'status'] }
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--cap`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
 
 /**
  * Parses the `--cap` value into a number of seconds.
@@ -206,18 +193,6 @@ export function terminateTree(pid: number): void {
 }
 
 /**
- * Waits a number of milliseconds.
- *
- * @param ms - The milliseconds to wait.
- * @returns A promise that resolves when the time has passed.
- */
-export function waitFor(ms: number): Promise<void> {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms)
-	})
-}
-
-/**
  * Polls the login journal and the login status until the bench is logged in or the cap ends.
  *
  * @param started - The time the login began, in milliseconds since the epoch.
@@ -238,7 +213,7 @@ export async function pollLogin(
 ): Promise<Poll> {
 	const deadline = started + capSeconds * 1000
 	if (Date.now() >= deadline) return { url, code, live: false }
-	await waitFor(flow.intervalMs)
+	await setTimeout(flow.intervalMs)
 	const text = existsSync(flow.journal) ? readFileSync(flow.journal, 'utf8') : ''
 	const nextUrl = url ?? text.match(URL_PATTERN)?.[0]
 	if (url === undefined && nextUrl !== undefined) announce(`login: open ${nextUrl}`)
@@ -317,42 +292,37 @@ export function loginClaude(status: Invocation): Outcome {
  * @returns The exit code: 0 when logged in, 3 when not, 64 on usage.
  */
 export async function main(argv: readonly string[]): Promise<number> {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`login: ${unknown.join(', ')} is not a flag this script reads; usage: login.ts --codex [--cap SECONDS] | --claude`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`login: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`login: ${missing.join(', ')} given with no value`)
+	const { values } = parsed.value
+	if (values.codex === true && values.claude === true) {
+		console.error(`login: --codex and --claude are two modes; name one bench; ${USAGE}`)
 		return 64
 	}
-	if (argv.includes('--codex') && argv.includes('--claude')) {
-		console.error('usage: login.ts names one bench: --codex [--cap SECONDS] | --claude')
-		return 64
-	}
-	const cap = parseCap(readOption(argv, '--cap'))
+	const text = typeof values.cap === 'string' ? values.cap : undefined
+	const cap = parseCap(text)
 	if (cap === undefined) {
 		console.error(
-			`login: --cap takes a number of seconds above 0 and at most ${String(MAX_CAP_SECONDS)}`,
+			`login: --cap takes a number of seconds above 0 and at most ${String(MAX_CAP_SECONDS)}, not ${JSON.stringify(text)}; ${USAGE}`,
 		)
 		return 64
 	}
-	if (argv.includes('--codex')) {
+	if (values.codex === true) {
 		const outcome = await loginCodex(cap, CODEX_FLOW, (line) => {
 			console.error(line)
 		})
 		console.log(JSON.stringify(outcome.report))
 		return outcome.exit
 	}
-	if (argv.includes('--claude')) {
+	if (values.claude === true) {
 		const outcome = loginClaude(CLAUDE_STATUS)
 		console.log(JSON.stringify(outcome.report))
 		return outcome.exit
 	}
-	console.error('usage: login.ts --codex [--cap SECONDS] | --claude')
+	console.error(USAGE)
 	return 64
 }
 
