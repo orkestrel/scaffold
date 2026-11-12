@@ -1258,7 +1258,8 @@ export function readVitestSeed(args: readonly string[]): Seed | undefined {
 		return 'heavy'
 	}
 	const files = operands.filter((operand) => /\.(?:test|spec)\./u.test(operand))
-	if (files.length === 0 && projects.some((project) => BROWSER_PROJECT.test(project))) return 'heavy'
+	if (files.length === 0 && projects.some((project) => BROWSER_PROJECT.test(project)))
+		return 'heavy'
 	if (files.length > 0 || projects.length === 1) return 'light'
 	return projects.length === 0 && operands.length === 0 ? 'heavy' : undefined
 }
