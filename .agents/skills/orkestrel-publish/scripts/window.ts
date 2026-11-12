@@ -15,12 +15,16 @@
 // acceptance line, stops at the first refusal and names the package to resume from, then confirms
 // each accepted version against the registry. --confirm re-reads the registry for each name@version every 5
 // seconds until it serves the version or the wait (default 120 seconds) ends. Exit 0 when the mode
-// succeeded, 3 when it did not, 64 on usage, including a flag the script does not read and the
-// `--flag=value` form.
+// succeeded, 3 when it did not, 64 on usage. The script reads its flags with `parseArgs` in strict
+// mode, and takes the directories of --publish and the targets of --confirm as its positional
+// arguments.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
+import { setTimeout } from 'node:timers/promises'
 import { dirname, join, resolve } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /** Holds the milliseconds between two polls of the registry. */
 export const POLL_MS = 5_000
@@ -28,20 +32,53 @@ export const POLL_MS = 5_000
 /** Matches the acceptance line `npm publish` prints and captures the name and the version. */
 export const ACCEPTED = /^\+ (\S+)@(\S+)\s*$/mu
 
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [
-	'--whoami',
-	'--login',
-	'--publish',
-	'--confirm',
-	'--wait',
-	'--otp',
-	'--json',
-]
-
 /** Holds the usage line the script prints when no mode or two modes were given. */
 export const USAGE =
 	'usage: window.ts --whoami [--wait SECONDS] | --login [--wait SECONDS] | --publish DIR... --otp CODE [--json] | --confirm NAME@VERSION... [--wait SECONDS]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	whoami: Object.freeze({ type: 'boolean' }),
+	login: Object.freeze({ type: 'boolean' }),
+	publish: Object.freeze({ type: 'boolean' }),
+	confirm: Object.freeze({ type: 'boolean' }),
+	wait: Object.freeze({ type: 'string' }),
+	otp: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: true,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes how to spawn npm on this host without a shell where the CLI entry is present. */
 export interface NpmCommand {
@@ -72,74 +109,6 @@ export interface Upload {
 export interface Published {
 	readonly uploads: readonly Upload[]
 	readonly stopped: boolean
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
- * with `--` is a missing value, and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--otp`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * Reads the arguments before a bare `--`, which opens a command a script passes on. A `--flag=value`
- * argument is unknown, because the script reads no such form.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads the values that follow a flag up to the next flag.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--publish`.
- * @returns The values between the flag and the next `--` argument, empty when the flag is absent.
- */
-export function readList(argv: readonly string[], name: string): readonly string[] {
-	const index = argv.indexOf(name)
-	if (index === -1) return []
-	const rest = argv.slice(index + 1)
-	const end = rest.findIndex((argument) => argument.startsWith('--'))
-	return end === -1 ? rest : rest.slice(0, end)
 }
 
 /**
@@ -207,18 +176,6 @@ export function runNpm(args: readonly string[], cwd?: string): SpawnSyncReturns<
 }
 
 /**
- * Waits for a number of milliseconds.
- *
- * @param ms - The delay.
- * @returns A promise that settles after the delay.
- */
-export function waitFor(ms: number): Promise<void> {
-	return new Promise((settle) => {
-		setTimeout(settle, ms)
-	})
-}
-
-/**
  * Reads the account `npm whoami` names once.
  *
  * @returns The user name, or undefined when npm exited nonzero or printed nothing.
@@ -242,7 +199,7 @@ export async function pollWhoami(
 ): Promise<string | undefined> {
 	const user = readWhoami()
 	if (user !== undefined || Date.now() - started >= waitSeconds * 1000) return user
-	await waitFor(POLL_MS)
+	await setTimeout(POLL_MS)
 	return pollWhoami(waitSeconds, started)
 }
 
@@ -275,7 +232,7 @@ export async function confirmServed(
 ): Promise<boolean> {
 	const served = readServed(name, version)
 	if (served || Date.now() - started >= waitSeconds * 1000) return served
-	await waitFor(POLL_MS)
+	await setTimeout(POLL_MS)
 	return confirmServed(name, version, waitSeconds, started)
 }
 
@@ -404,34 +361,39 @@ export async function publishAll(
  * @returns The exit code: 0 when the mode succeeded, 3 when it did not, 64 on usage.
  */
 export async function main(argv: readonly string[]): Promise<number> {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`window: unknown flag ${unknown.join(', ')}; give each flag and its value as separate arguments\n${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`window: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, ['--wait', '--otp'])
-	if (missing.length > 0) {
-		console.error(`window: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const wait = Number(readOption(argv, '--wait') ?? 120)
-	const modes = ['--whoami', '--login', '--publish', '--confirm'].filter((flag) =>
-		argv.includes(flag),
+	const { values, positionals } = parsed.value
+	const modes = [values.whoami, values.login, values.publish, values.confirm].filter(
+		(value) => value === true,
 	)
-	if (modes.length > 1 || (argv.includes('--wait') && (!Number.isFinite(wait) || wait < 0))) {
+	if (modes.length > 1) {
+		console.error(USAGE)
+		return 64
+	}
+	const given = typeof values.wait === 'string' ? values.wait : undefined
+	const wait = Number(given ?? 120)
+	if (given !== undefined && (given.trim() === '' || !Number.isFinite(wait) || wait < 0)) {
 		console.error(
-			'usage: window.ts names one mode (--whoami | --login | --publish | --confirm), and --wait takes a number of seconds',
+			`window: --wait takes a number of seconds from 0, not ${JSON.stringify(given)}; ${USAGE}`,
 		)
 		return 64
 	}
-	if (argv.includes('--whoami')) {
-		const user = await pollWhoami(argv.includes('--wait') ? wait : 0)
+	if (positionals.length > 0 && values.publish !== true && values.confirm !== true) {
+		console.error(
+			`window: ${positionals.map((value) => JSON.stringify(value)).join(', ')} given without --publish or --confirm, the modes that take a list; ${USAGE}`,
+		)
+		return 64
+	}
+	if (values.whoami === true) {
+		const user = await pollWhoami(given === undefined ? 0 : wait)
 		console.log(JSON.stringify({ mode: 'whoami', user, live: user !== undefined }))
 		return user === undefined ? 3 : 0
 	}
-	if (argv.includes('--login')) {
+	if (values.login === true) {
 		const command =
 			process.platform === 'win32'
 				? 'npm login --browser=false'
@@ -439,13 +401,13 @@ export async function main(argv: readonly string[]): Promise<number> {
 		console.error(
 			`window: run this in a real terminal, then approve the URL it prints on its first line: ${command}`,
 		)
-		const user = await pollWhoami(argv.includes('--wait') ? wait : 300)
+		const user = await pollWhoami(given === undefined ? 300 : wait)
 		console.log(JSON.stringify({ mode: 'login', command, user, live: user !== undefined }))
 		return user === undefined ? 3 : 0
 	}
-	if (argv.includes('--publish')) {
-		const directories = readList(argv, '--publish')
-		const otp = readOption(argv, '--otp')
+	if (values.publish === true) {
+		const directories = positionals
+		const otp = typeof values.otp === 'string' ? values.otp : undefined
 		if (
 			directories.length === 0 ||
 			otp === undefined ||
@@ -460,7 +422,7 @@ export async function main(argv: readonly string[]): Promise<number> {
 		for (const directory of directories) {
 			const root = findGitRoot(resolve(directory))
 			const entry = join(root, '.git')
-			if (!existsSync(entry) || !statSync(entry).isFile()) continue
+			if (statSync(entry, { throwIfNoEntry: false })?.isFile() !== true) continue
 			const line = readFileSync(entry, 'utf8')
 				.split(/\r\n|\n/u)
 				.find((value) => value.startsWith('gitdir:'))
@@ -491,7 +453,7 @@ export async function main(argv: readonly string[]): Promise<number> {
 			return 3
 		}
 		const uploads = await publishAll(directories, otp, wait)
-		if (argv.includes('--json')) console.log(JSON.stringify({ mode: 'publish', uploads }))
+		if (values.json === true) console.log(JSON.stringify({ mode: 'publish', uploads }))
 		else {
 			for (const upload of uploads) {
 				console.log(
@@ -501,8 +463,8 @@ export async function main(argv: readonly string[]): Promise<number> {
 		}
 		return uploads.every((upload) => upload.accepted && upload.confirmed) ? 0 : 3
 	}
-	if (argv.includes('--confirm')) {
-		const targets = readList(argv, '--confirm')
+	if (values.confirm === true) {
+		const targets = positionals
 		if (targets.length === 0 || targets.some((target) => !/^@?[^@]+@\S+$/u.test(target))) {
 			console.error('usage: window.ts --confirm NAME@VERSION... [--wait SECONDS]')
 			return 64

@@ -9,23 +9,59 @@
 // launch.ts wrote (`exit`, `capped`, `durationMs`) and the journal's `bytes`, `ageMs`, and last
 // event, which is the liveness reading for a run still going. The answer is written to --out when
 // given, and a journal with no session or answer exits 3 so a driver cannot pass off an empty lane.
-// Name one mode per run; the script refuses a flag it does not read, the `--flag=value` form
-// included. Exit 0 when the lane answered, 3 when it carries no session or answer, 64 on usage.
+// Name one mode per run; the script reads its flags with `parseArgs` in strict mode. Exit 0 when the lane answered, 3 when it carries no session or answer, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
+import { parseArgs } from 'node:util'
 
-/** Lists the flags that each select one journal reader. */
-export const MODE_FLAGS: readonly string[] = ['--cursor', '--claude', '--codex']
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = [...MODE_FLAGS, '--out']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = VALUE_FLAGS
+/** Lists the flags that each select one journal reader, by the name `parseArgs` reads them under. */
+export const MODES: readonly string[] = ['cursor', 'claude', 'codex']
 
 /** Holds the usage line printed when a call names no journal or two modes. */
 export const USAGE =
 	'usage: result.ts (--cursor JOURNAL | --claude JOURNAL | --codex JOURNAL) [--out PATH]; name one mode'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	cursor: Object.freeze({ type: 'string' }),
+	claude: Object.freeze({ type: 'string' }),
+	codex: Object.freeze({ type: 'string' }),
+	out: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes what a journal's events say: the session, the answer, and the run's duration. */
 export interface SessionResult {
@@ -39,59 +75,6 @@ export interface Errors {
 	readonly exit: number | undefined
 	readonly capped: boolean | undefined
 	readonly durationMs: number | undefined
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--out`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
 }
 
 /**
@@ -248,26 +231,23 @@ export function describeEvent(event: Record<string, unknown> | undefined): strin
  * @returns The exit code: 0 when the lane answered, 3 when it carries no session or answer, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`result: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`result: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`result: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const modes = MODE_FLAGS.filter((flag) => argv.includes(flag))
-	const mode = modes[0]
-	const path = mode === undefined ? undefined : readOption(argv, mode)
-	const out = readOption(argv, '--out')
+	const { values } = parsed.value
+	const modes = MODES.filter((name) => values[name] !== undefined)
+	const [mode] = modes
+	const chosen = mode === undefined ? undefined : values[mode]
+	const path = typeof chosen === 'string' ? chosen : undefined
+	const out = typeof values.out === 'string' ? values.out : undefined
 	if (modes.length !== 1 || mode === undefined || path === undefined || !existsSync(path)) {
 		console.error(USAGE)
 		return 64
 	}
 	const events = readEvents(path)
-	const result = mode === '--codex' ? readCodex(path, events) : readStream(events)
+	const result = mode === 'codex' ? readCodex(path, events) : readStream(events)
 	const errors = readErrors(path)
 	const stat = statSync(path)
 	if (result.answer !== undefined && out !== undefined) {

@@ -8,6 +8,7 @@ import {
 	runSkillScript,
 } from '../../../../setupServer.js'
 import {
+	parseArguments,
 	anchorPlugin,
 	anchorSpecifier,
 	buildVariant,
@@ -22,11 +23,7 @@ import {
 	quote,
 	readCodeScopes,
 	readHits,
-	readMissingFlags,
-	readOption,
-	readPositionals,
 	readRuleOptions,
-	readUnknownFlags,
 } from '../../../../../.agents/skills/orkestrel-harden/scripts/measure.ts'
 
 describe('measure.ts', () => {
@@ -171,18 +168,6 @@ describe('measure.ts', () => {
 		)
 	})
 
-	it('reads flags and positionals, and names every missing or unknown flag', () => {
-		expect(readOption(['--rule', 'x'], '--rule')).toBe('x')
-		expect(readOption(['--rule', '--options'], '--rule')).toBeUndefined()
-		expect(readMissingFlags(['--options'], ['--rule', '--options'])).toStrictEqual(['--options'])
-		expect(
-			readPositionals(['--rule', 'x', 'a.ts', '--options', '[]', 'b.ts'], ['--rule', '--options']),
-		).toStrictEqual(['a.ts', 'b.ts'])
-		expect(
-			readUnknownFlags(['--rule', 'x', '--bad', '--rule=y', '--', '--after'], ['--rule']),
-		).toStrictEqual(['--bad', '--rule=y'])
-	})
-
 	it('counts a rule’s hits per file with the installed linter, writes the variant, and exits 3', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-measure-hits-' })
 		try {
@@ -297,7 +282,7 @@ describe('measure.ts', () => {
 		}
 	})
 
-	it('refuses no rule, no path, options that are not JSON, an unknown flag, the --flag=value form, and a bare flag with exit 64', () => {
+	it('refuses no rule, no path, options that are not JSON, an unknown flag, and a bare flag with exit 64, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-measure-usage-' })
 		try {
 			const cwd = { cwd: scratch.path }
@@ -310,24 +295,29 @@ describe('measure.ts', () => {
 				cwd,
 			)
 			expect(options.status).toBe(64)
-			expect(options.stderr).toContain('"allow" is not JSON')
+			expect(options.stderr).toContain('--options takes a JSON value, not "allow"')
 			const unknown = runSkillScript(
 				MEASURE_SCRIPT,
 				['--rule', 'no-var', '--no-such-flag', 'a.ts'],
 				cwd,
 			)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--no-such-flag')
-			const joined = runSkillScript(MEASURE_SCRIPT, ['--rule=no-var', 'a.ts'], cwd)
-			expect(joined.status).toBe(64)
-			expect(joined.stderr).toContain('--rule=no-var')
+			expect(unknown.stderr).toContain("'--no-such-flag'")
+			expect(unknown.stderr).toContain('usage: measure.ts')
 			const bare = runSkillScript(MEASURE_SCRIPT, ['a.ts', '--rule'], cwd)
 			expect(bare.status).toBe(64)
-			expect(bare.stderr).toContain('--rule given with no value')
+			expect(bare.stderr).toContain("'--rule")
 			const both = runSkillScript(MEASURE_SCRIPT, ['--rule', '--no-such-flag', 'a.ts'], cwd)
 			expect(both.status).toBe(64)
-			expect(both.stderr).toContain('--no-such-flag')
+			expect(both.stderr).toContain("'--rule'")
 			expect(scratch.has('tmp')).toBe(false)
+			const joined = runSkillScript(MEASURE_SCRIPT, ['--rule=no-var', '--options=[]', 'a.ts'], cwd)
+			expect(joined.status).toBe(2)
+			expect(joined.stderr).toContain('".oxlintrc.json"')
+			expect(parseArguments(['--rule=no-var', '--options', '{}', 'a.ts', 'b.ts'])).toEqual({
+				success: true,
+				value: { values: { rule: 'no-var', options: '{}' }, positionals: ['a.ts', 'b.ts'] },
+			})
 		} finally {
 			scratch.destroy()
 		}

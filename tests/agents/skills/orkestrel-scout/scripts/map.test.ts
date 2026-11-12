@@ -10,14 +10,11 @@ import {
 	MAP_SCRIPT,
 } from '../../../../setupServer.js'
 import {
+	parseArguments,
 	buildMatcher,
 	isText,
 	listFiles,
 	normalizeSlashes,
-	readList,
-	readMissingFlags,
-	readOption,
-	readUnknownFlags,
 	scanFences,
 } from '../../../../../.agents/skills/orkestrel-scout/scripts/map.ts'
 
@@ -39,6 +36,7 @@ describe('map.ts', () => {
 				[
 					'--tree',
 					'docs',
+					'--tree',
 					'src',
 					'--headings',
 					'docs',
@@ -133,7 +131,15 @@ describe('map.ts', () => {
 			)
 			const run = runSkillScript(
 				MAP_SCRIPT,
-				['--frontmatter', 'role.md', 'role.toml', 'openai.yaml', '--json'],
+				[
+					'--frontmatter',
+					'role.md',
+					'--frontmatter',
+					'role.toml',
+					'--frontmatter',
+					'openai.yaml',
+					'--json',
+				],
 				{ cwd: scratch.path },
 			)
 			expect(run.status).toBe(0)
@@ -198,45 +204,60 @@ describe('map.ts', () => {
 				cwd: scratch.path,
 			})
 			expect(census.status).toBe(64)
-			expect(census.stderr).toContain('--census given with no value')
+			expect(census.stderr).toContain("'--census'")
 			expect(census.stdout).toBe('')
+			scratch.write('a.css', '.x { color: var(--vn-drag-color) }\n')
+			const dashed = runSkillScript(MAP_SCRIPT, ['--census=--vn-drag-color', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(dashed.status).toBe(0)
+			expect(JSON.stringify(dashed.json?.census)).toContain('a.css')
 		} finally {
 			scratch.destroy()
 		}
 	})
 
-	it('refuses an unknown flag and the equals form before it reads anything', () => {
+	it('refuses an unknown flag, a value given to a switch, and a second value after a flag before it reads anything', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-map-flags-' })
 		try {
 			scratch.write('docs/a.md', '# Title\n')
 			for (const argv of [
 				['--tree', 'docs', '--bogus'],
-				['--tree=docs'],
 				['--headings', 'docs', '--json=true'],
-				['--tree', 'docs', '--out=tmp/map.txt'],
+				['--tree', 'docs', 'notes'],
 			]) {
 				const run = runSkillScript(MAP_SCRIPT, argv, { cwd: scratch.path })
 				expect({ argv, status: run.status }).toEqual({ argv, status: 64 })
+				expect(run.stderr).toContain('usage: map.ts')
 				expect(run.stdout).toBe('')
 			}
+			expect(
+				runSkillScript(MAP_SCRIPT, ['--tree', 'docs', '--bogus'], { cwd: scratch.path }).stderr,
+			).toContain("'--bogus'")
 			expect(scratch.has('tmp')).toBe(false)
 		} finally {
 			scratch.destroy()
 		}
 	})
 
-	it('names an unknown flag and a flag given with no value in one refusal', () => {
-		const scratch = createScratch({ prefix: 'orkestrel-map-both-' })
+	it('reads the --flag=value form and a repeated flag, one value each', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-map-repeat-' })
 		try {
 			scratch.write('docs/a.md', '# Title\n')
-			const run = runSkillScript(MAP_SCRIPT, ['--tree', '--bogus', '--out=tmp/map.txt'], {
-				cwd: scratch.path,
+			scratch.write('notes/b.md', '# Other\n')
+			const run = runSkillScript(
+				MAP_SCRIPT,
+				['--headings=docs', '--headings', 'notes', '--json', '--out=tmp/map.json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			const written = scratch.read('tmp/map.json') ?? ''
+			expect(written).toContain('Title')
+			expect(written).toContain('Other')
+			expect(parseArguments(['--tree=a', '--tree', 'b', '--refs', 'c'])).toEqual({
+				success: true,
+				value: { values: { tree: ['a', 'b'], refs: 'c' }, positionals: [] },
 			})
-			expect(run.status).toBe(64)
-			expect(run.stderr).toContain('--bogus, --out=tmp/map.txt is not a flag this script reads')
-			expect(run.stderr).toContain('--tree given with no value')
-			expect(run.stdout).toBe('')
-			expect(scratch.has('tmp')).toBe(false)
 		} finally {
 			scratch.destroy()
 		}
@@ -486,30 +507,6 @@ describe('the census matcher and the text filter', () => {
 		for (const path of ['a.md', 'a.ts', 'a.json', 'host.json.md']) {
 			expect({ path, text: isText(path) }).toEqual({ path, text: true })
 		}
-	})
-})
-
-describe('the argument readers', () => {
-	it('reads a flag value, a list up to the next flag, and treats a following flag as a missing value', () => {
-		const argv = ['--tree', 'a', 'b', '--json', '--out']
-		expect(readOption(['--paths', 'a,b', '--json'], '--paths')).toBe('a,b')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--refs', '--json'], '--refs')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readList(argv, '--tree')).toEqual(['a', 'b'])
-		expect(readList(argv, '--absent')).toEqual([])
-		expect(readList(['--tree'], '--tree')).toEqual([])
-		expect(readMissingFlags(argv, ['--tree', '--out'])).toEqual(['--out'])
-		expect(readMissingFlags(['--out', 'a'], ['--tree'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(readUnknownFlags(['--tree=docs', '--json', '--bogus'], ['--tree', '--json'])).toEqual([
-			'--tree=docs',
-			'--bogus',
-		])
-		expect(readUnknownFlags(['--tree', 'a', '--', '--watch'], ['--tree'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
 	})
 })
 

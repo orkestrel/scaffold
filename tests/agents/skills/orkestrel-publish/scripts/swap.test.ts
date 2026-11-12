@@ -44,9 +44,6 @@ import {
 	planPin,
 	planRestore,
 	readBlock,
-	readMissingFlags,
-	readOption,
-	readOptions,
 	readPack,
 	readString,
 	removeTree,
@@ -1086,23 +1083,18 @@ describe('swap.ts', () => {
 		}
 	})
 
-	it('refuses a flag the mode does not read, the equals form and a stray argument included, before it writes anything', () => {
+	it('refuses a flag the mode does not read and a stray argument before it writes anything, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-swap-unknown-' })
 		try {
 			const fixture = writeSwapFixture(scratch.path)
 			const options = { cwd: scratch.path, env: buildSwapEnvironment(scratch.path) }
 			const consumer = ['--consumer', fixture.consumer]
 			const cases: ReadonlyArray<readonly [readonly string[], string]> = [
-				[['--status', `--consumer=${fixture.consumer}`], 'is not a flag this script reads'],
-				[['--status', ...consumer, '--bogus'], '--bogus is not a flag this script reads'],
-				[['--status', ...consumer, 'stray'], '--status does not read stray'],
-				[['--restore', ...consumer, '--json=1'], '--json=1 is not a flag this script reads'],
+				[['--status', ...consumer, '--bogus'], "'--bogus'"],
+				[['--status', ...consumer, 'stray'], "'stray'"],
+				[['--restore', ...consumer, '--json=1'], "'--json'"],
 				[['--restore', ...consumer, '--source', fixture.alpha], '--restore does not read --source'],
-				[
-					['--pin', ...consumer, '--source', fixture.alpha, '--bogus'],
-					'--bogus is not a flag this script reads',
-				],
-				[['--pin', ...consumer, `--source=${fixture.alpha}`], 'is not a flag this script reads'],
+				[['--pin', ...consumer, '--source', fixture.alpha, '--bogus'], "'--bogus'"],
 			]
 			for (const [args, message] of cases) {
 				const run = runSkillScript(SWAP_SCRIPT, args, options)
@@ -1113,6 +1105,14 @@ describe('swap.ts', () => {
 			}
 			expect(existsSync(join(fixture.consumer, 'tmp'))).toBe(false)
 			expect(existsSync(join(scratch.path, 'tmp'))).toBe(false)
+			const pair = runSkillScript(SWAP_SCRIPT, ['--status', ...consumer, '--json'], options)
+			const equals = runSkillScript(
+				SWAP_SCRIPT,
+				['--status', `--consumer=${fixture.consumer}`, '--json'],
+				options,
+			)
+			expect(equals.status).not.toBe(64)
+			expect([equals.status, equals.stdout]).toStrictEqual([pair.status, pair.stdout])
 		} finally {
 			scratch.destroy()
 		}
@@ -1798,17 +1798,30 @@ describe('the command line', () => {
 		const refusals: ReadonlyArray<readonly [readonly string[], string]> = [
 			[[], 'Give one of --pin, --restore, and --status'],
 			[['--pin', '--restore'], 'Give one mode, not --pin and --restore'],
-			[['--status', '--consumer=x'], '--consumer=x is not a flag this script reads'],
-			[['--bogus'], '--bogus is not a flag this script reads'],
-			[['--status', '--consumer', 'c', 'stray'], '--status does not read stray'],
-			[['--pin', '--consumer', 'c', '--package', 'a'], '--pin does not read --package, a'],
-			[['--status', '--consumer'], '--consumer given with no value'],
+			[['--bogus'], "'--bogus'"],
+			[['--status', '--consumer', 'c', 'stray'], "'stray'"],
+			[['--pin', '--consumer', 'c', '--package', 'a'], '--pin does not read --package'],
+			[['--status', '--consumer', 'c', '--no-build'], '--status does not read --no-build'],
+			[['--status', '--consumer'], "'--consumer"],
+			[['--status', '--json=1'], "'--json'"],
 			[['--status'], '--consumer DIR is required'],
 			[['--pin', '--consumer', 'c'], '--pin takes at least one --source DIR'],
 		]
 		for (const [argv, message] of refusals) {
-			expect([argv, parseCommand(argv)]).toStrictEqual([argv, { ok: false, message }])
+			const parsed = parseCommand(argv)
+			expect([argv, parsed.ok]).toStrictEqual([argv, false])
+			expect([argv, parsed.ok ? '' : parsed.message]).toStrictEqual([
+				argv,
+				expect.stringContaining(message),
+			])
 		}
+		const equals = parseCommand(['--status', '--consumer=c', '--json'])
+		if (!equals.ok) throw new Error(equals.message)
+		expect(equals.command).toMatchObject({ mode: 'status', json: true })
+		expect(equals.command.consumer.endsWith('c')).toBe(true)
+		const repeated = parseCommand(['--pin', '--consumer', 'c', '--source=s', '--source', 't'])
+		if (!repeated.ok) throw new Error(repeated.message)
+		expect(repeated.command.sources).toHaveLength(2)
 	})
 })
 
@@ -1883,24 +1896,6 @@ describe('the copied helpers', () => {
 		} finally {
 			scratch.destroy()
 		}
-	})
-
-	it('reads a flag value, a repeated flag, and treats a following flag as a missing value', () => {
-		const argv = ['--consumer', 'c', '--source', 'a', '--source', 'b', '--json']
-		expect(readOption(argv, '--consumer')).toBe('c')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOptions(argv, '--source')).toEqual(['a', 'b'])
-		expect(readOption(['--consumer', '--json', 'x'], '--consumer')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readOptions(['--source', '--json', '--source', 'b'], '--source')).toEqual(['b'])
-		expect(
-			readMissingFlags(
-				['--consumer', '--json', '--source', 'a', '--package'],
-				['--consumer', '--source', '--package'],
-			),
-		).toEqual(['--consumer', '--package'])
-		expect(readMissingFlags(['--source', 'a'], ['--consumer'])).toEqual([])
 	})
 
 	it('normalizes slashes, parses a whole document as one record, and reads its string members', () => {

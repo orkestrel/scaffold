@@ -13,10 +13,11 @@ These rules govern the shape of options, managers, emitters, and contracts, and 
 
 `AGENTS.md` § Non-negotiable rules owns the reuse law. Before writing a guard, parser, combinator, outcome, safe exception boundary, contract shape/compiler, schema utility, error narrower, emitter helper, or other general primitive:
 
-1. Inspect `package.json`, the lockfile, vendored dependency guides, and exact installed declarations/exports.
-2. Build a semantic overlap map between the proposed/local behavior and declared `@orkestrel/*` capabilities.
-3. Keep local behavior only when it adds a real domain invariant, composition, projection, translation, or intentionally different contract.
-4. Test the difference. Similar names are not proof of equivalent semantics.
+1. Check the stable `node:` modules and ECMAScript built-ins at the declared `engines.node` floor, and use the one whose semantics match, such as `parseArgs` from `node:util` for command-line flags.
+2. Inspect `package.json`, the lockfile, vendored dependency guides, and exact installed declarations/exports.
+3. Build a semantic overlap map between the proposed/local behavior and declared `@orkestrel/*` capabilities.
+4. Keep local behavior only when it adds a real domain invariant, composition, projection, translation, or intentionally different contract.
+5. Test the difference. Similar names are not proof of equivalent semantics.
 
 ## Options
 

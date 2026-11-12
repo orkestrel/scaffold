@@ -4,18 +4,14 @@ import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import {
+	parseArguments,
 	findGitRoot,
 	parseJsonRecord,
 	readErrorCode,
-	readList,
 	readManifestName,
-	readMissingFlags,
-	readOption,
 	readString,
-	readUnknownFlags,
 	resolveNpm,
 	runNpm,
-	waitFor,
 } from '../../../../../.agents/skills/orkestrel-publish/scripts/window.ts'
 import {
 	buildWhoamiEnvironment,
@@ -142,7 +138,7 @@ describe('window.ts', () => {
 		}
 	})
 
-	it('refuses a flag it does not read, the equals form included, before it contacts npm', async () => {
+	it('refuses a flag it does not read, a value given to a switch, and a stray argument before it contacts npm, and reads the --flag=value form', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-unknown-' })
 		const registry = await createWhoamiRegistry(undefined)
 		try {
@@ -150,22 +146,74 @@ describe('window.ts', () => {
 			const env = buildWhoamiEnvironment(scratch.path, registry)
 			for (const argv of [
 				['--whoami', '--bogus'],
-				['--whoami', '--wait=5'],
 				['--login', '--json=1'],
-				['--publish', 'pkg', '--otp=123456'],
 				['--publish', 'pkg', '--otp', '123456', '--bogus'],
 				['--confirm', '@fixture/pkg@1.0.0', '--json=1'],
+				['--whoami', 'stray'],
+				['--whoami', '--wait=soon'],
 			]) {
 				const run = await spawnSkillScript(WINDOW_SCRIPT, argv, { cwd: scratch.path, env })
 				expect([argv, run.status]).toStrictEqual([argv, 64])
-				expect(run.stderr).toContain('window: unknown flag')
 				expect(run.stderr).toContain('usage: window.ts')
 				expect(run.stdout).toBe('')
 			}
+			const unknown = await spawnSkillScript(WINDOW_SCRIPT, ['--whoami', '--bogus'], {
+				cwd: scratch.path,
+				env,
+			})
+			expect(unknown.stderr).toContain("'--bogus'")
+			const soon = await spawnSkillScript(WINDOW_SCRIPT, ['--whoami', '--wait', 'soon'], {
+				cwd: scratch.path,
+				env,
+			})
+			expect(soon.stderr).toContain('--wait takes a number of seconds from 0, not "soon"')
 			expect(registry.requests).toEqual([])
 			expect(scratch.has('tmp/units')).toBe(false)
+			const equals = await spawnSkillScript(WINDOW_SCRIPT, ['--whoami', '--wait=0'], {
+				cwd: scratch.path,
+				env,
+			})
+			expect(equals.status).toBe(3)
+			expect(equals.json).toMatchObject({ mode: 'whoami', live: false })
+			expect(registry.requests).not.toEqual([])
+			expect(parseArguments(['--publish', 'a', 'b', '--otp=123456'])).toEqual({
+				success: true,
+				value: { values: { publish: true, otp: '123456' }, positionals: ['a', 'b'] },
+			})
 		} finally {
 			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('reads --publish A B --otp X as the directories A and B, and refuses a list without the mode that takes it', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-list-' })
+		const dark = await createWhoamiRegistry(undefined)
+		try {
+			const env = buildWhoamiEnvironment(scratch.path, dark)
+			scratch.write('a/package.json', '{"name":"@fixture/a","version":"1.0.0"}')
+			scratch.write('b/package.json', '{"name":"@fixture/b","version":"1.0.0"}')
+			for (const [argv, status] of [
+				[['--publish', 'a', 'absent', '--otp', '123456'], 64],
+				[['--publish', 'absent', 'b', '--otp', '123456'], 64],
+				[['--publish', 'a', 'b', '--otp', '123456'], 3],
+			] as const) {
+				const run = await spawnSkillScript(WINDOW_SCRIPT, argv, { cwd: scratch.path, env })
+				expect([argv, run.status]).toStrictEqual([argv, status])
+			}
+			expect(dark.requests).toEqual(['GET /-/whoami'])
+			const stray = await spawnSkillScript(WINDOW_SCRIPT, ['--whoami', 'a', 'b'], {
+				cwd: scratch.path,
+				env,
+			})
+			expect(stray.status).toBe(64)
+			expect(stray.stderr).toContain(
+				'"a", "b" given without --publish or --confirm, the modes that take a list',
+			)
+			expect(dark.requests).toEqual(['GET /-/whoami'])
+			expect(scratch.has('tmp/units')).toBe(false)
+		} finally {
+			await dark.destroy()
 			scratch.destroy()
 		}
 	})
@@ -469,50 +517,9 @@ describe('the error code and the manifest reader', () => {
 			scratch.destroy()
 		}
 	})
-
-	it('waits for the delay it is given', async () => {
-		const started = Date.now()
-		await waitFor(20)
-		expect(Date.now() - started).toBeGreaterThanOrEqual(15)
-	})
 })
 
 describe('the copied helpers', () => {
-	it('reads a flag value, treats a following flag as a missing value, and keeps the first occurrence', () => {
-		expect(readOption(['--otp', '123456', '--json'], '--otp')).toBe('123456')
-		expect(readOption(['--otp', '123456'], '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOption(['--otp', '--json', 'x'], '--otp')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(
-			readMissingFlags(
-				['--wait', '--json', '--otp', '1', '--other'],
-				['--wait', '--otp', '--other'],
-			),
-		).toEqual(['--wait', '--other'])
-		expect(readMissingFlags(['--otp', '1'], ['--wait'])).toEqual([])
-	})
-
-	it('reads the values that follow a flag up to the next flag', () => {
-		const argv = ['--publish', 'a', 'b', '--otp', '123456', '--confirm', 'c@1', 'd@2']
-		expect(readList(argv, '--publish')).toEqual(['a', 'b'])
-		expect(readList(argv, '--confirm')).toEqual(['c@1', 'd@2'])
-		expect(readList(argv, '--absent')).toEqual([])
-		expect(readList(['--publish', '--otp'], '--publish')).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(
-				['--wait=5', '--whoami', '--wai', '5', '--wait', '5'],
-				['--whoami', '--wait'],
-			),
-		).toEqual(['--wait=5', '--wai'])
-		expect(readUnknownFlags(['--wait', '5', '--', 'node', '--watch'], ['--wait'])).toEqual([])
-		expect(readUnknownFlags(['--wait', '5', 'path', '-x'], ['--wait'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
-	})
-
 	it('parses a whole document as one record and reads its string members', () => {
 		expect(parseJsonRecord('{\n\t"name": "@fixture/pkg"\n}\n')).toEqual({ name: '@fixture/pkg' })
 		expect(parseJsonRecord('[1]')).toBeUndefined()

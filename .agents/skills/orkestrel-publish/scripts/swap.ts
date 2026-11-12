@@ -35,7 +35,9 @@
 // --pin and --restore write a receipt create-only to tmp/units/swap-<consumer>-<time>.json under the
 // working directory. Every mode prints text lines, or one JSON line with --json.
 // Exit 0 on success, 1 when a command or a proof failed, 3 when --status reports drift, 64 on usage,
-// including a flag the mode does not read and the `--flag=value` form.
+// including a flag the mode does not read. The script reads its flags with `parseArgs` in strict
+// mode.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -52,6 +54,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { isDeepStrictEqual, parseArgs } from 'node:util'
 
 /** Describes a package manifest as a read-only record. */
 export type Manifest = Readonly<Record<string, unknown>>
@@ -211,18 +214,11 @@ export const EXIT_USAGE = 64
 export const FORMAT_PROBLEM =
 	'package.json is not tab-indented JSON with a trailing newline; the script would reformat it'
 
-/** Lists the value flags each mode reads. */
-export const VALUE_FLAGS: Readonly<Record<SwapMode, readonly string[]>> = {
-	pin: ['--consumer', '--source', '--override'],
-	restore: ['--consumer', '--package'],
-	status: ['--consumer'],
-}
-
-/** Lists the switch flags each mode reads. */
-export const SWITCH_FLAGS: Readonly<Record<SwapMode, readonly string[]>> = {
-	pin: ['--pin', '--no-build', '--dry-run', '--json'],
-	restore: ['--restore', '--json'],
-	status: ['--status', '--json'],
+/** Lists the flags each mode reads, by the name `parseArgs` reads them under. */
+export const MODE_OPTIONS: Readonly<Record<SwapMode, readonly string[]>> = {
+	pin: ['pin', 'consumer', 'source', 'override', 'no-build', 'dry-run', 'json'],
+	restore: ['restore', 'consumer', 'package', 'json'],
+	status: ['status', 'consumer', 'json'],
 }
 
 /**
@@ -316,6 +312,53 @@ export const USAGE = [
 	'       swap.ts --status --consumer DIR [--json]',
 ].join('\n')
 
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	pin: Object.freeze({ type: 'boolean' }),
+	restore: Object.freeze({ type: 'boolean' }),
+	status: Object.freeze({ type: 'boolean' }),
+	consumer: Object.freeze({ type: 'string' }),
+	source: Object.freeze({ type: 'string', multiple: true }),
+	override: Object.freeze({ type: 'string', multiple: true }),
+	package: Object.freeze({ type: 'string', multiple: true }),
+	'no-build': Object.freeze({ type: 'boolean' }),
+	'dry-run': Object.freeze({ type: 'boolean' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
+
 /** Names the manifest fields that hold specs, including nested overrides. */
 export const SPEC_FIELDS: readonly string[] = Object.freeze([
 	'dependencies',
@@ -406,53 +449,7 @@ export function removeTree(path: string): void {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
- * with `--` is a missing value, and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--consumer`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Reads every value that follows a repeatable flag.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--source`.
- * @returns The values in order, empty when the flag never appears.
- */
-export function readOptions(argv: readonly string[], name: string): readonly string[] {
-	return argv.flatMap((argument, index) => {
-		const value = argv[index + 1]
-		return argument === name && value !== undefined && !value.startsWith('--') ? [value] : []
-	})
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -1243,26 +1240,15 @@ export function matchesRange(text: string, range: string): boolean {
  * Parses the command line.
  *
  * @param argv - The arguments after the script path.
- * @returns The command, or the reason the line is refused: no mode or two modes, a flag the mode does
- * not read (the `--flag=value` form included), a flag with no value, no consumer, or a pin with no
- * source.
+ * @returns The command, or the reason the line is refused: the `parseArgs` refusal, no mode or two
+ * modes, a flag the mode does not read, no consumer, or a pin with no source.
  */
 export function parseCommand(argv: readonly string[]): CommandResult {
-	const known = MODES.flatMap((candidate) => [
-		`--${candidate}`,
-		...VALUE_FLAGS[candidate],
-		...SWITCH_FLAGS[candidate],
-	])
-	// A bare `--` ends the arguments the script reads; nothing after it is a flag of this script.
-	const end = argv.indexOf('--')
-	const foreign = (end === -1 ? argv : argv.slice(0, end)).filter(
-		(token) => token.startsWith('--') && !known.includes(token),
-	)
-	if (foreign.length > 0) {
-		return { ok: false, message: `${foreign.join(', ')} is not a flag this script reads` }
-	}
-	const given = MODES.filter((candidate) => argv.includes(`--${candidate}`))
-	const mode = MODES.find((candidate) => argv.includes(`--${candidate}`))
+	const parsed = parseArguments(argv)
+	if (!parsed.success) return { ok: false, message: parsed.error }
+	const { values } = parsed.value
+	const given = MODES.filter((candidate) => values[candidate] === true)
+	const [mode] = given
 	if (mode === undefined)
 		return { ok: false, message: 'Give one of --pin, --restore, and --status' }
 	if (given.length > 1) {
@@ -1271,23 +1257,18 @@ export function parseCommand(argv: readonly string[]): CommandResult {
 			message: `Give one mode, not ${given.map((candidate) => `--${candidate}`).join(' and ')}`,
 		}
 	}
-	const values = VALUE_FLAGS[mode]
-	const switches = SWITCH_FLAGS[mode]
-	const unknown = argv.filter((token, index) =>
-		token.startsWith('--')
-			? !values.includes(token) && !switches.includes(token)
-			: !values.includes(argv[index - 1] ?? ''),
+	const unknown = Object.keys(values).filter(
+		(name) => values[name] !== undefined && !MODE_OPTIONS[mode].includes(name),
 	)
 	if (unknown.length > 0) {
-		return { ok: false, message: `--${mode} does not read ${unknown.join(', ')}` }
+		return {
+			ok: false,
+			message: `--${mode} does not read ${unknown.map((name) => `--${name}`).join(', ')}`,
+		}
 	}
-	const missing = readMissingFlags(argv, values)
-	if (missing.length > 0) {
-		return { ok: false, message: `${missing.join(', ')} given with no value` }
-	}
-	const consumer = readOption(argv, '--consumer')
+	const consumer = typeof values.consumer === 'string' ? values.consumer : undefined
 	if (consumer === undefined) return { ok: false, message: '--consumer DIR is required' }
-	const sources = readOptions(argv, '--source')
+	const sources = collectStrings(values.source)
 	if (mode === 'pin' && sources.length === 0) {
 		return { ok: false, message: '--pin takes at least one --source DIR' }
 	}
@@ -1297,13 +1278,25 @@ export function parseCommand(argv: readonly string[]): CommandResult {
 			mode,
 			consumer: resolve(consumer),
 			sources: sources.map((source) => resolve(source)),
-			overrides: readOptions(argv, '--override'),
-			packages: readOptions(argv, '--package'),
-			build: !argv.includes('--no-build'),
-			dry: argv.includes('--dry-run'),
-			json: argv.includes('--json'),
+			overrides: collectStrings(values.override),
+			packages: collectStrings(values.package),
+			build: values['no-build'] !== true,
+			dry: values['dry-run'] === true,
+			json: values.json === true,
 		},
 	}
+}
+
+/**
+ * Collects the strings a repeatable flag's value holds.
+ *
+ * @param value - The value `parseArgs` read for a flag declared with `multiple: true`.
+ * @returns Each string in order, empty when the flag never appears.
+ */
+export function collectStrings(value: unknown): readonly string[] {
+	return Array.isArray(value)
+		? value.filter((member): member is string => typeof member === 'string')
+		: []
 }
 
 /**
@@ -1624,7 +1617,7 @@ export function proveInstalled(
 				]
 			: []),
 		...(installed?.link === true ? [`${name} is installed as a link`] : []),
-		...(real && JSON.stringify(present) !== JSON.stringify(tarball.files)
+		...(real && !isDeepStrictEqual(present, tarball.files)
 			? [`${name} file set differs from its pack list`]
 			: []),
 		...(differing.length > 0 ? [`${name} differs from its source in ${differing.join(', ')}`] : []),
@@ -1780,7 +1773,7 @@ export function printReport(
  * @returns The usage exit code.
  */
 export function reportUsage(message: string): number {
-	process.stderr.write(`swap: ${message}\n${USAGE}\n`)
+	process.stderr.write(`swap: ${message}; ${USAGE}\n`)
 	return EXIT_USAGE
 }
 
@@ -2370,7 +2363,7 @@ export function executeStatus(command: Command): number {
 		const archive = join(tarballs, entry.tarball)
 		const git = existsSync(entry.source) ? inspectCheckout(entry.source) : undefined
 		const held = entry.field === undefined ? current[name] : declaration?.spec
-		const link = existsSync(top) && lstatSync(top).isSymbolicLink()
+		const link = lstatSync(top, { throwIfNoEntry: false })?.isSymbolicLink() === true
 		const installed = existsSync(top)
 			? {
 					version: readString(loadJSONRecord(join(top, 'package.json')), 'version'),

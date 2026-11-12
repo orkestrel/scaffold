@@ -21,17 +21,15 @@ import {
 	isManifestEntry,
 	keyEdit,
 	openLog,
+	parseArguments,
 	parseEdits,
 	quote,
 	readDrift,
+	readFileProblem,
 	readLeftovers,
 	readManifest,
-	readMissingFlags,
-	readOption,
-	readPositionals,
 	readStrays,
 	readTail,
-	readUnknownFlags,
 	resolveMutations,
 	restoreFiles,
 	runCommand,
@@ -42,6 +40,31 @@ import {
 } from '../../../../../.agents/skills/orkestrel-falsify/scripts/mutate.ts'
 
 describe('mutate.ts', () => {
+	it('names a target the host cannot stat as a problem with its error code, and touches nothing', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-mutate-unreadable-' })
+		try {
+			scratch.write('target.txt', 'GOOD\n')
+			expect(readFileProblem(join(scratch.path, 'target.txt'))).toBeUndefined()
+			expect(readFileProblem(join(scratch.path, 'absent.txt'))).toBe('no such file')
+			expect(readFileProblem(join(scratch.path, 't\u0000.txt'))).toMatch(/^cannot be read: \S+$/u)
+			scratch.write(
+				'edits.md',
+				renderEditFile([{ path: 't\u0000.txt', reason: 'r', before: 'GOOD', after: 'BAD' }]),
+			)
+			const run = runSkillScript(
+				MUTATE_SCRIPT,
+				['--edits', 'edits.md', '--', process.execPath, '-e', '0'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain(': cannot be read: ')
+			expect(run.stderr).toContain('no file was touched and no command ran')
+			expect(scratch.has('tmp')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('parses blocks in order and finds a line that opens no complete block', () => {
 		const text = renderEditFile([
 			{ path: 'a', reason: 'r', before: 'x', after: 'y' },
@@ -74,13 +97,6 @@ describe('mutate.ts', () => {
 	})
 
 	it('reads flags, positionals, containment, digests, and quotes at their edges', () => {
-		expect(readOption(['--edits', 'e.md'], '--edits')).toBe('e.md')
-		expect(readOption(['--edits', '--x'], '--edits')).toBeUndefined()
-		expect(readMissingFlags(['--edits'], ['--edits'])).toStrictEqual(['--edits'])
-		expect(
-			readUnknownFlags(['--edits', 'e', '--bad', '--e=1', '--', '--after'], ['--edits']),
-		).toStrictEqual(['--bad', '--e=1'])
-		expect(readPositionals(['--edits', 'e.md', 'extra'], ['--edits'])).toStrictEqual(['extra'])
 		expect(isInside('/root', '/root/a')).toBe(true)
 		expect(isInside('/root', '/root')).toBe(false)
 		expect(isInside('/root', '/other')).toBe(false)
@@ -453,7 +469,7 @@ describe('mutate.ts', () => {
 		}
 	})
 
-	it('refuses an unknown flag and the --flag=value form before the bare --, and passes a flag after it on', () => {
+	it('refuses an unknown flag before the bare --, reads the --flag=value form, and passes everything after the first bare -- on unchanged', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-mutate-flags-' })
 		try {
 			scratch.write('target.txt', 'GOOD\n')
@@ -466,20 +482,18 @@ describe('mutate.ts', () => {
 				cwd,
 			)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--no-such-flag')
-			const joined = runSkillScript(MUTATE_SCRIPT, ['--edits=edits.md', '--', node, '-e', '0'], cwd)
-			expect(joined.status).toBe(64)
-			expect(joined.stderr).toContain('--edits=edits.md')
+			expect(unknown.stderr).toContain("'--no-such-flag'")
+			expect(unknown.stderr).toContain('usage: mutate.ts')
 			const bare = runSkillScript(MUTATE_SCRIPT, ['--edits', '--', node, '-e', '0'], cwd)
 			expect(bare.status).toBe(64)
-			expect(bare.stderr).toContain('--edits given with no value')
+			expect(bare.stderr).toContain("'--edits")
 			const both = runSkillScript(
 				MUTATE_SCRIPT,
 				['--edits', '--no-such-flag', '--', node, '-e', '0'],
 				cwd,
 			)
 			expect(both.status).toBe(64)
-			expect(both.stderr).toContain('--no-such-flag')
+			expect(both.stderr).toContain("'--edits'")
 			expect(scratch.has('tmp')).toBe(false)
 			const passed = runSkillScript(
 				MUTATE_SCRIPT,
@@ -497,6 +511,27 @@ describe('mutate.ts', () => {
 			)
 			expect(passed.json).toMatchObject({ mutatedExit: 0, restoredExit: 0 })
 			expect(scratch.read('target.txt')).toBe('GOOD\n')
+			const echoed = runSkillScript(
+				MUTATE_SCRIPT,
+				[
+					'--edits=edits.md',
+					'--',
+					node,
+					'-e',
+					'console.log(JSON.stringify(process.argv.slice(1))); process.exit(require("node:fs").readFileSync("target.txt", "utf8").includes("GOOD") ? 0 : 1)',
+					'--',
+					'--edits',
+					'--x=1',
+				],
+				cwd,
+			)
+			expect(echoed.status).toBe(0)
+			expect(echoed.json).toMatchObject({ mutatedExit: 1, restoredExit: 0 })
+			expect(scratch.read('edits.md.mutated.log')).toContain('["--edits","--x=1"]')
+			expect(parseArguments(['--edits=e.md'])).toEqual({
+				success: true,
+				value: { values: { edits: 'e.md' }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -727,7 +762,7 @@ describe('mutate.ts', () => {
 			expect(stray.status).toBe(64)
 			const missing = runSkillScript(MUTATE_SCRIPT, ['--restore'], cwd)
 			expect(missing.status).toBe(64)
-			expect(missing.stderr).toContain('--restore given with no value')
+			expect(missing.stderr).toContain("'--restore")
 		} finally {
 			scratch.destroy()
 		}

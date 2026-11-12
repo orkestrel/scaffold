@@ -4,6 +4,7 @@ import { gzipSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import {
+	parseArguments,
 	differs,
 	fetchTarball,
 	isMaterial,
@@ -13,12 +14,9 @@ import {
 	readField,
 	readHeaderText,
 	readManifest,
-	readMissingFlags,
-	readOption,
 	readPaxPath,
 	readString,
 	readTar,
-	readUnknownFlags,
 	resolveNpm,
 	runNpm,
 	unpackTar,
@@ -218,25 +216,33 @@ describe('compare.ts', () => {
 		}
 	})
 
-	it('refuses a flag it does not read, the equals form included, before any work', () => {
+	it('refuses a flag it does not read, a value given to a switch, and a positional before any work, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-compare-unknown-' })
 		try {
 			scratch.write('package.json', JSON.stringify({ name: '@fixture/pkg', version: '1.0.0' }))
 			scratch.write('dist/index.js', '')
 			scratch.write('bad.tgz', 'garbage')
-			for (const argv of [
-				['--bogus'],
-				['--tarball=bad.tgz'],
-				['--json=true'],
-				['--tarball', 'bad.tgz', '--dist=dist'],
-				['--package=@fixture/pkg'],
-			]) {
+			for (const argv of [['--bogus'], ['--json=true'], ['--tarball', 'bad.tgz', 'stray']]) {
 				const run = runSkillScript(COMPARE_SCRIPT, argv, { cwd: scratch.path })
 				expect([argv, run.status]).toStrictEqual([argv, 64])
-				expect(run.stderr).toContain('compare: unknown flag')
+				expect(run.stderr).toContain('compare: ')
 				expect(run.stderr).toContain('usage: compare.ts')
 				expect(run.stdout).toBe('')
 			}
+			expect(runSkillScript(COMPARE_SCRIPT, ['--bogus'], { cwd: scratch.path }).stderr).toContain(
+				"'--bogus'",
+			)
+			const equals = runSkillScript(
+				COMPARE_SCRIPT,
+				['--tarball=bad.tgz', '--dist=dist', '--package=@fixture/pkg', '--version=1.0.0'],
+				{ cwd: scratch.path },
+			)
+			expect(equals.status).toBe(2)
+			expect(equals.stderr).toContain('compare: ')
+			expect(parseArguments(['--tarball=a.tgz', '--json'])).toEqual({
+				success: true,
+				value: { values: { tarball: 'a.tgz', json: true }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -343,33 +349,6 @@ describe('the tar reader', () => {
 })
 
 describe('the copied helpers', () => {
-	it('reads a flag value, treats a following flag as a missing value, and keeps the first occurrence', () => {
-		expect(readOption(['--package', 'demo', '--json'], '--package')).toBe('demo')
-		expect(readOption(['--package', 'demo'], '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOption(['--dist', '--json', 'x'], '--dist')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(
-			readMissingFlags(
-				['--package', '--json', '--version', 'a', '--dist'],
-				['--package', '--version', '--dist'],
-			),
-		).toEqual(['--package', '--dist'])
-		expect(readMissingFlags(['--version', 'a'], ['--package'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(
-				['--package=@fixture/pkg', '--json', '--project', 'a', '--version', '1'],
-				['--package', '--json', '--version'],
-			),
-		).toEqual(['--package=@fixture/pkg', '--project'])
-		expect(readUnknownFlags(['--package', 'x', '--', 'node', '--watch'], ['--package'])).toEqual([])
-		expect(readUnknownFlags(['--package', 'x', 'path', '-x'], ['--package'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
-	})
-
 	it('normalizes slashes and parses a whole document as one record', () => {
 		expect(normalizeSlashes('a\\b\\c.ts')).toBe('a/b/c.ts')
 		expect(normalizeSlashes('a/b')).toBe('a/b')

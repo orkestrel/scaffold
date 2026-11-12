@@ -22,11 +22,12 @@
 //   node .agents/skills/orkestrel-falsify/scripts/mutate.ts --restore tmp/probes/mutate/run-NAME
 // writes each saved original back, proves each file's SHA-256 digest against the run's manifest,
 // deletes the run directory, and prints `{"files":[{"path":"...","digest":"..."}],"restored":true}`.
-// The script refuses a flag it does not read before the bare `--`, the `--flag=value` form included,
-// and names an unknown flag before a flag given with no value.
+// The script reads its flags before the first bare `--` with `parseArgs` in strict mode, and passes
+// every argument after it to the command.
 // Exit 0 when the mutated run failed and the restored run passed (or a `--restore` is proven), 3
 // when either did not, 2 when a restore is not proven or the command cannot start or a log cannot
 // be opened, 64 on usage, an edit that does not resolve, or a run directory an earlier run left.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
@@ -43,16 +44,50 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--edits', '--restore']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = VALUE_FLAGS
+import { parseArgs } from 'node:util'
 
 /** Holds the usage line printed when a call names no edit file or no command. */
 export const USAGE =
 	'usage: mutate.ts --edits EDITS.md -- COMMAND [ARGS...] | mutate.ts --restore tmp/probes/mutate/run-NAME'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	edits: Object.freeze({ type: 'string' }),
+	restore: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Holds the directory, under the working directory, that keeps the original bytes of a run. */
 export const BACKUP_ROOT = 'tmp/probes/mutate'
@@ -111,75 +146,6 @@ export interface Resolution {
 export interface Finish {
 	readonly exit: number | undefined
 	readonly error: string | undefined
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments before the bare `--`.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments before the bare `--`.
- * @param name - The flag, such as `--edits`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan, because it opens the command the script runs.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads the arguments that are neither a flag nor the value of a value flag.
- *
- * @param argv - The arguments before the bare `--`.
- * @param valueFlags - The flags that take a value.
- * @returns The positional arguments in order.
- */
-export function readPositionals(
-	argv: readonly string[],
-	valueFlags: readonly string[],
-): readonly string[] {
-	return argv.filter(
-		(argument, index) => !argument.startsWith('--') && !valueFlags.includes(argv[index - 1] ?? ''),
-	)
 }
 
 /**
@@ -308,6 +274,28 @@ export function keyEdit(root: string, edit: Edit): string {
 }
 
 /**
+ * Names why a path is not a file this script can read.
+ *
+ * @remarks
+ * A stat that throws, such as one refused with `EACCES` or given a path that holds a NUL byte, is a
+ * problem named by its error code, never an uncaught error.
+ *
+ * @param path - The path to read.
+ * @returns The problem, or undefined when the path is a file.
+ */
+export function readFileProblem(path: string): string | undefined {
+	try {
+		return statSync(path, { throwIfNoEntry: false })?.isFile() === true ? undefined : 'no such file'
+	} catch (error) {
+		const code =
+			error instanceof Error && 'code' in error && typeof error.code === 'string'
+				? error.code
+				: String(error)
+		return `cannot be read: ${code}`
+	}
+}
+
+/**
  * Resolves every edit against the files under a root, writing nothing.
  *
  * @remarks
@@ -325,9 +313,8 @@ export function resolveMutations(root: string, edits: readonly Edit[]): Resoluti
 		if (!isInside(root, target)) {
 			return { mutation: undefined, problems: [`${path}: path leaves the working directory`] }
 		}
-		if (!existsSync(target) || !statSync(target).isFile()) {
-			return { mutation: undefined, problems: [`${path}: no such file`] }
-		}
+		const problem = readFileProblem(target)
+		if (problem !== undefined) return { mutation: undefined, problems: [`${path}: ${problem}`] }
 		const original = readFileSync(target)
 		const applied = applyEdits(original.toString('utf8'), own)
 		return {
@@ -663,35 +650,29 @@ export function main(argv: readonly string[]): number {
 	const end = argv.indexOf('--')
 	const own = end === -1 ? argv : argv.slice(0, end)
 	const command = end === -1 ? [] : argv.slice(end + 1)
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`mutate: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(own)
+	if (!parsed.success) {
+		console.error(`mutate: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(own, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`mutate: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const restore = readOption(own, '--restore')
+	const { values } = parsed.value
+	const source = typeof values.edits === 'string' ? values.edits : undefined
+	const restore = typeof values.restore === 'string' ? values.restore : undefined
 	if (restore !== undefined) {
-		if (end !== -1 || own.includes('--edits') || readPositionals(own, VALUE_FLAGS).length > 0) {
-			console.error(USAGE)
+		if (end !== -1 || source !== undefined) {
+			console.error(
+				`mutate: --restore and --edits with a command are two modes; name one; ${USAGE}`,
+			)
 			return 64
 		}
 		return restoreRun(process.cwd(), restore)
 	}
-	const source = readOption(own, '--edits')
 	const executable = command[0]
-	if (
-		source === undefined ||
-		executable === undefined ||
-		readPositionals(own, VALUE_FLAGS).length > 0
-	) {
+	if (source === undefined || executable === undefined) {
 		console.error(USAGE)
 		return 64
 	}
-	if (!existsSync(source) || !statSync(source).isFile()) {
+	if (readFileProblem(source) !== undefined) {
 		console.error(`mutate: ${quote(source)} is not a readable edit file; ${USAGE}`)
 		return 64
 	}

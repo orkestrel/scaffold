@@ -26,11 +26,9 @@ import {
 	escapeCell,
 	listFiles,
 	normalizeSlashes,
+	parseArguments,
 	readLostDynamic,
-	readMissingFlags,
-	readOption,
 	readRegistrations,
-	readUnknownFlags,
 	renderReport,
 	TokenScanner,
 } from '../../../../../.agents/skills/orkestrel-harden/scripts/titles.ts'
@@ -1029,13 +1027,14 @@ describe('titles.ts', () => {
 	})
 
 	it.each(TITLES_REFUSED_ARGUMENTS)(
-		'refuses the equals form and an unread flag with exit 64: %j',
+		'refuses with the parseArgs message and exit 64: %j',
 		(...args) => {
 			const scratch = createScratch({ prefix: 'titles-unknown-flag-' })
 			try {
 				const run = runSkillScript(TITLES_SCRIPT, args, { cwd: scratch.path })
 				expect(run.status).toBe(64)
-				expect(run.stderr).toContain('is not a flag this script reads')
+				expect(run.stderr).toContain('titles: ')
+				expect(run.stderr).toContain('usage: titles.ts')
 				expect(run.stdout).toBe('')
 				expect(scratch.has('report.json')).toBe(false)
 			} finally {
@@ -1044,13 +1043,46 @@ describe('titles.ts', () => {
 		},
 	)
 
-	it('refuses a base that opens with a hyphen', () => {
+	it('refuses a base that opens with a hyphen with the parseArgs message and the usage line, and an output of another kind naming the flag and the value it takes', () => {
 		const scratch = createScratch({ prefix: 'titles-hyphen-base-' })
 		try {
 			const run = runSkillScript(TITLES_SCRIPT, ['--base', '-x'], { cwd: scratch.path })
 			expect(run.status).toBe(64)
-			expect(run.stderr).toContain('opens with "-"')
-			expect(run.stderr).toContain('"-x"')
+			expect(run.stderr).toMatch(/^titles: Option '--base' [\s\S]*; usage: titles\.ts --base REV/u)
+			expect(run.stdout).toBe('')
+			const out = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--out', 'report.md'], {
+				cwd: scratch.path,
+			})
+			expect(out.status).toBe(64)
+			expect(out.stderr).toContain('--out takes a .json or .txt file, not "report.md"')
+			const unknown = runSkillScript(TITLES_SCRIPT, ['--base', 'HEAD', '--jsno'], {
+				cwd: scratch.path,
+			})
+			expect(unknown.stderr).toContain("'--jsno'")
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the --flag=value form alike with --flag value', () => {
+		const scratch = createScratch({ prefix: 'titles-equals-' })
+		try {
+			scratch.write('pkg/tests/sample.test.ts', "it('reads', () => {})\n")
+			createRepository(scratch.path)
+			trackFiles(scratch.path)
+			commitFiles(scratch.path)
+			const run = runSkillScript(
+				TITLES_SCRIPT,
+				['--base=HEAD', '--root=pkg', '--out=report.json', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({ count: 1, missing: [], moved: [] })
+			expect(scratch.has('report.json')).toBe(true)
+			expect(parseArguments(['--base=HEAD', '--json'])).toEqual({
+				success: true,
+				value: { values: { base: 'HEAD', json: true }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -1072,27 +1104,6 @@ describe('titles.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
-	})
-
-	it('reads flag values, missing values, and unread flags', () => {
-		const argv = ['--base', 'HEAD', '--root', 'pkg', '--json']
-		expect(readOption(argv, '--base')).toBe('HEAD')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOption(['--base', '--json', 'x'], '--base')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(
-			readMissingFlags(['--base', '--json', '--out', 'a', '--root'], ['--base', '--out', '--root']),
-		).toEqual(['--base', '--root'])
-		expect(readMissingFlags(['--out', 'a'], ['--base'])).toEqual([])
-		expect(
-			readUnknownFlags(
-				['--base=HEAD', '--json', '--root', 'a', '--out', 'b'],
-				['--base', '--json', '--out'],
-			),
-		).toEqual(['--base=HEAD', '--root'])
-		expect(readUnknownFlags(['--base', 'HEAD', '--', 'node', '--watch'], ['--base'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
 	})
 
 	it('normalizes slashes and echoes a name JSON-encoded and capped', () => {

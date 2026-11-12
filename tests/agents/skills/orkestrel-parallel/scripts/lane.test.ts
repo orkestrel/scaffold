@@ -15,13 +15,13 @@ import {
 	WORKSPACE_ROOT,
 } from '../../../../setupServer.js'
 import {
+	parseArguments,
 	BREACH_CODE,
 	buildOutcome,
 	buildTicket,
 	classifyLight,
 	decideTurn,
 	fitsBudget,
-	FLAGS,
 	HISTORY_DIRECTORY,
 	isBreach,
 	isGone,
@@ -41,12 +41,9 @@ import {
 	quote,
 	readCommandId,
 	readLimits,
-	readMissingFlags,
 	readNames,
-	readOption,
 	readOutcomeNames,
 	readOutcomes,
-	readPositionals,
 	readQueue,
 	readRun,
 	readSeed,
@@ -54,7 +51,6 @@ import {
 	readSnapshot,
 	readStatus,
 	readTree,
-	readUnknownFlags,
 	reclaimTicket,
 	renderEndpoint,
 	renderKey,
@@ -70,7 +66,6 @@ import {
 	Token,
 	TICKET_SUFFIX,
 	TOKEN_PATTERN,
-	VALUE_FLAGS,
 	writeOutcome,
 	writeRun,
 	writeStage,
@@ -96,18 +91,14 @@ const VITEST = ['node', 'node_modules/vitest/vitest.mjs', 'run', '--config', 'vi
 describe('lane.ts', () => {
 	describe('command line', () => {
 		it('reads flags by the script law', () => {
-			expect(readOption(['--label', 'one', '--label', 'two'], '--label')).toBe('one')
-			expect(readOption(['--label', '--cap'], '--label')).toBeUndefined()
-			expect(readMissingFlags(['--label', '--cap', '5'], VALUE_FLAGS)).toStrictEqual(['--label'])
-			expect(readUnknownFlags(['--cap=5', '--', '--anything'], FLAGS)).toStrictEqual(['--cap=5'])
-			expect(readPositionals(['--cap', '5', 'stray'], VALUE_FLAGS)).toStrictEqual(['stray'])
 			expect(quote('x'.repeat(100))).toBe(`"${'x'.repeat(80)}…"`)
 		})
 
 		it.each([
 			['no arguments', []],
 			['an unknown flag', ['--nope']],
-			['the equals form', ['--cap=5']],
+			['a run with only a cap in the equals form', ['--cap=5']],
+			['a value given to a switch', ['--status', '--json=1']],
 			['a flag with no value', ['--label']],
 			['a positional', ['stray']],
 			['no command', ['--label', 'a', '--journal', 'j', '--errors', 'e', '--cap', '5', '--']],
@@ -160,7 +151,7 @@ describe('lane.ts', () => {
 			const run = runSkillScript(LANE_SCRIPT, [
 				'--root',
 				root,
-				...['--label', 'a', '--journal', 'j', '--errors', 'e', '--cap', cap, '--', 'c'],
+				...['--label', 'a', '--journal', 'j', '--errors', 'e', `--cap=${cap}`, '--', 'c'],
 			])
 			expect(run.status).toBe(64)
 			expect(run.stderr).toContain(
@@ -220,6 +211,43 @@ describe('lane.ts', () => {
 	})
 
 	describe('the launcher the lane depends on', () => {
+		it('reads the --flag=value form and passes everything after the first bare -- to the command unchanged', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const unknown = runSkillScript(LANE_SCRIPT, [
+				'--root',
+				join(bench.scratch.path, 'refused'),
+				'--nope',
+			])
+			expect(unknown.status).toBe(64)
+			expect(unknown.stderr).toContain("'--nope'")
+			const echo = bench.scratch.write(
+				'echo.cjs',
+				'process.stdout.write(JSON.stringify(process.argv.slice(2)))',
+			)
+			const journal = join(bench.journals, 'equals.jsonl')
+			const run = runSkillScript(LANE_SCRIPT, [
+				'--label=equals',
+				`--journal=${journal}`,
+				`--errors=${join(bench.journals, 'equals.err')}`,
+				'--cap=40',
+				`--root=${bench.root}`,
+				'--',
+				process.execPath,
+				echo,
+				'--label',
+				'--',
+				'--x=1',
+			])
+			expect(run.status).toBe(0)
+			expect(readFileSync(journal, 'utf8')).toBe('["--label","--","--x=1"]')
+			expect(bench.scratch.names('root')).toStrictEqual([])
+			expect(parseArguments(['--status', '--root=r', '--json'])).toEqual({
+				success: true,
+				value: { values: { status: true, root: 'r', json: true }, positionals: [] },
+			})
+		})
+
 		it('relays the spawn line and the summary line and passes on the command code', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())

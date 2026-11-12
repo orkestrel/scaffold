@@ -10,18 +10,20 @@
 // step and stops at the first step that does not exit 0. Because no shell runs, a command that is a
 // Windows `.cmd` shim, such as `npm`, starts only through the interpreter it wraps. A step that
 // must not stop the chain belongs in a second plan; launch the chain itself through `launch.ts`
-// for a cap. The script refuses a flag it does not read, the `--flag=value` form included.
+// for a cap. The script reads its flags with `parseArgs` in strict mode.
 // Exit 0 when every step exited 0, the failing step's exit code when one did not, 2 when a step
 // cannot start, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { parseArgs } from 'node:util'
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--plan', '--journal']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = VALUE_FLAGS
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	plan: Object.freeze({ type: 'string' }),
+	journal: Object.freeze({ type: 'string' }),
+})
 
 /** Holds the usage line printed when a call names no plan or no journal. */
 export const USAGE = 'usage: chain.ts --plan FILE.json --journal DIR'
@@ -44,6 +46,19 @@ export interface Plan {
 	readonly problems: readonly string[]
 }
 
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
 /** Describes one finished step: how it ended and how long it took. */
 export interface Finish {
 	readonly exit: number | undefined
@@ -52,56 +67,23 @@ export interface Finish {
 }
 
 /**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
+ * Parses the arguments in strict mode against `OPTIONS`.
  *
  * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--plan`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
  */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
 }
 
 /**
@@ -313,18 +295,14 @@ export function formatStep(step: Step, finish: Finish): string {
  * cannot start, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`chain: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`chain: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`chain: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const path = readOption(argv, '--plan')
-	const journal = readOption(argv, '--journal')
+	const { values } = parsed.value
+	const path = typeof values.plan === 'string' ? values.plan : undefined
+	const journal = typeof values.journal === 'string' ? values.journal : undefined
 	if (path === undefined || journal === undefined || !existsSync(path)) {
 		console.error(USAGE)
 		return 64

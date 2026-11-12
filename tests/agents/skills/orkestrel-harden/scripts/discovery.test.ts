@@ -21,15 +21,13 @@ import {
 	matchesWildcard,
 	narrowGates,
 	normalizeSlashes,
+	parseArguments,
 	readCommands,
 	readFileCredits,
 	readGate,
 	readGates,
 	readMarkers,
-	readMissingFlags,
 	readMissingOptions,
-	readOption,
-	readUnknownFlags,
 	replaceProjects,
 } from '../../../../../.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
@@ -1679,7 +1677,7 @@ export default ({ mode }) => {
 	})
 
 	it.each(DISCOVERY_REFUSED_ARGUMENTS)(
-		'refuses the equals form and an unread flag with exit 64: %j',
+		'refuses with the parseArgs message and exit 64: %j',
 		(...args) => {
 			const scratch = createScratch({ prefix: 'orkestrel-discovery-unknown-flag-' })
 			try {
@@ -1687,13 +1685,41 @@ export default ({ mode }) => {
 				scratch.write('vite.config.ts', 'export default {}\n')
 				const run = runSkillScript(DISCOVERY_SCRIPT, args, { cwd: scratch.path })
 				expect(run.status).toBe(64)
-				expect(run.stderr).toContain('is not a flag this script reads')
+				expect(run.stderr).toContain('discovery: ')
+				expect(run.stderr).toContain('usage: discovery.ts')
 				expect(run.stdout).toBe('')
 			} finally {
 				scratch.destroy()
 			}
 		},
 	)
+
+	it('reads the --flag=value form alike with --flag value', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-equals-' })
+		try {
+			scratch.write('package.json', '{"scripts":{}}')
+			scratch.write('vite.config.ts', 'export default {}\n')
+			const run = runSkillScript(
+				DISCOVERY_SCRIPT,
+				['--config=vite.config.ts', '--projects=core', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('is missing; run npm ci first')
+			const absent = runSkillScript(DISCOVERY_SCRIPT, ['--config=absent.config.ts'], {
+				cwd: scratch.path,
+			})
+			expect(absent.status).toBe(64)
+			const unknown = runSkillScript(DISCOVERY_SCRIPT, ['--jsno'], { cwd: scratch.path })
+			expect(unknown.stderr).toContain("'--jsno'")
+			expect(parseArguments(['--projects=a,b', '--json'])).toEqual({
+				success: true,
+				value: { values: { projects: 'a,b', json: true }, positionals: [] },
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
 
 	it('exits 2 naming the Vitest version when its option table lacks a required option', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-help-' })
@@ -2076,31 +2102,6 @@ export default ({ mode }) => {
 			'--project',
 			'z',
 		])
-	})
-
-	it('reads flag values, missing values, and unread flags', () => {
-		const argv = ['--config', 'vite.config.ts', '--projects', 'a,b', '--json']
-		expect(readOption(argv, '--config')).toBe('vite.config.ts')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--json'], '--json')).toBeUndefined()
-		expect(readOption(['--config', '--json', 'x'], '--config')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(
-			readMissingFlags(
-				['--config', '--json', '--out', 'a', '--projects'],
-				['--config', '--out', '--projects'],
-			),
-		).toEqual(['--config', '--projects'])
-		expect(readMissingFlags(['--out', 'a'], ['--config'])).toEqual([])
-		expect(
-			readUnknownFlags(
-				['--config=vite.config.ts', '--json', '--project', 'a', '--projects', 'a'],
-				['--config', '--json', '--projects'],
-			),
-		).toEqual(['--config=vite.config.ts', '--project'])
-		expect(readUnknownFlags(['--config', 'x', '--', 'node', '--watch'], ['--config'])).toEqual([])
-		expect(readUnknownFlags(['--config', 'x', 'path', '-x'], ['--config'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
 	})
 
 	it('normalizes slashes', () => {

@@ -47,22 +47,22 @@ describe('skill scripts', () => {
 	})
 
 	for (const script of readSkillScripts()) {
-		it(`${script} refuses an unknown flag and the --flag=value form with exit 64, naming the flag`, () => {
+		it(`${script} refuses an unknown flag and a value given to a switch or an unknown flag with exit 64, naming the flag`, () => {
 			const scratch = createScratch({ prefix: 'orkestrel-script-flags-' })
 			try {
 				const cwd = { cwd: scratch.path }
 				const unknown = runSkillScript(script, ['--no-such-flag'], cwd)
 				expect(unknown.status).toBe(64)
-				expect(unknown.stderr).toContain('--no-such-flag')
+				expect(unknown.stderr).toContain("'--no-such-flag'")
 				const joined = runSkillScript(script, ['--json=1'], cwd)
 				expect(joined.status).toBe(64)
-				expect(joined.stderr).toContain('--json=1')
+				expect(joined.stderr).toContain("'--json'")
 			} finally {
 				scratch.destroy()
 			}
 		})
 
-		it(`${script} names the unknown flag beside a flag with no value, reads nothing after --, and leaves the directory untouched`, () => {
+		it(`${script} names the flag parseArgs refuses, reads no flag after --, and leaves the directory untouched`, () => {
 			const scratch = createScratch({ prefix: 'orkestrel-script-refusal-' })
 			try {
 				scratch.write('seed.txt', 'seed')
@@ -76,7 +76,7 @@ describe('skill scripts', () => {
 					expect(readTreeDigest(scratch.path)).toBe(before)
 				}
 				const after = runScriptFile(file, ['--', '--no-such-flag'], { cwd: scratch.path })
-				expect(after.stderr).not.toContain('--no-such-flag')
+				expect(after.stderr).not.toContain("Unknown option '--no-such-flag'")
 				expect(readTreeDigest(scratch.path)).toBe(before)
 			} finally {
 				scratch.destroy()
@@ -86,7 +86,7 @@ describe('skill scripts', () => {
 		// The build writes the twin under `dist/`, which git ignores, so a checkout that has not built
 		// has no twin to refuse through; the build runs before the tests in the gate order.
 		it.skipIf(!existsSync(join(WORKSPACE_ROOT, readBuiltScript(script))))(
-			`${readBuiltScript(script)} refuses the same calls as its source, naming the unknown flag`,
+			`${readBuiltScript(script)} refuses the same calls as its source, naming the refused flag`,
 			() => {
 				const scratch = createScratch({ prefix: 'orkestrel-script-twin-' })
 				try {

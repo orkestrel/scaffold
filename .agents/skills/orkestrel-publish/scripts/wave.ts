@@ -25,8 +25,9 @@
 // ruling is unanswered. --plan reads the marker-bounded catalog table in
 // `.claude/agents/orkestrel.md` and prints the packages by layer. The pins and compare steps run
 // `pins.ts` and `compare.ts` as child commands. Exit 0 when every step passed, 1 when a step
-// failed, 2 when a reading failed, 64 on usage, including --plan --regenerate, a flag the script
-// does not read, and the `--flag=value` form.
+// failed, 2 when a reading failed, 64 on usage, including --plan --regenerate. The script reads its
+// flags with `parseArgs` in strict mode.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -44,6 +45,7 @@ import {
 } from 'node:fs'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
 /** Lists the steps of a visit in the order they run. */
 export const STEPS: readonly string[] = [
@@ -122,25 +124,58 @@ export const PINS = fileURLToPath(new URL(`./pins${EXTENSION}`, import.meta.url)
 export const DIRTY_ENTRY =
 	/(?=[RC][^\0]|[^\0][RC])[^\0]{2} ([^\0]*)\0([^\0]*)(?:\0|$)|[^\0]{2} ([^\0]*)(?:\0|$)/gu
 
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [
-	'--visit',
-	'--plan',
-	'--target',
-	'--offline',
-	'--regenerate',
-	'--from',
-	'--to',
-	'--prior',
-	'--dry-run',
-	'--json',
-	'--out',
-	'--catalog',
-]
-
 /** Holds the usage line the script prints when no mode was given. */
 export const USAGE =
 	'usage: wave.ts --visit [--target DIR] [--offline] [--regenerate] [--from STEP] [--to STEP] [--prior VERSION] [--dry-run] [--json] [--out FILE] | --plan [--catalog PATH] [--json]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	visit: Object.freeze({ type: 'boolean' }),
+	plan: Object.freeze({ type: 'boolean' }),
+	target: Object.freeze({ type: 'string' }),
+	offline: Object.freeze({ type: 'boolean' }),
+	regenerate: Object.freeze({ type: 'boolean' }),
+	from: Object.freeze({ type: 'string' }),
+	to: Object.freeze({ type: 'string' }),
+	prior: Object.freeze({ type: 'string' }),
+	'dry-run': Object.freeze({ type: 'boolean' }),
+	json: Object.freeze({ type: 'boolean' }),
+	out: Object.freeze({ type: 'string' }),
+	catalog: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Names the manifest fields that hold specs, including nested overrides. */
 export const SPEC_FIELDS: readonly string[] = Object.freeze([
@@ -334,60 +369,7 @@ export function removeTree(path: string): void {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
- * with `--` is a missing value, and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--target`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * Reads the arguments before a bare `--`, which opens a command a script passes on. A `--flag=value`
- * argument is unknown, because the script reads no such form.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -2006,12 +1988,12 @@ export function describeChange(
 /**
  * Runs one repository's visit.
  *
- * @param argv - The arguments after the script path.
+ * @param values - The flag values `parseArgs` read.
  * @returns The finished visit, or undefined when the target carries no readable manifest or no
  * scaffold executable.
  */
-export function runVisit(argv: readonly string[]): Visit | undefined {
-	const target = readOption(argv, '--target') ?? process.cwd()
+export function runVisit(values: Arguments['values']): Visit | undefined {
+	const target = typeof values.target === 'string' ? values.target : process.cwd()
 	if (!existsSync(join(target, 'package.json'))) {
 		console.error(`wave: ${target} carries no package.json`)
 		return undefined
@@ -2030,8 +2012,8 @@ export function runVisit(argv: readonly string[]): Visit | undefined {
 	}
 	const [scaffoldFile, ...scaffoldPrefix] = scaffold
 	if (scaffoldFile === undefined) return undefined
-	const from = STEPS.indexOf(readOption(argv, '--from') ?? 'pin')
-	const to = STEPS.indexOf(readOption(argv, '--to') ?? 'compare')
+	const from = STEPS.indexOf(typeof values.from === 'string' ? values.from : 'pin')
+	const to = STEPS.indexOf(typeof values.to === 'string' ? values.to : 'compare')
 	const selected = new Set(STEPS.slice(from, to + 1))
 	const manifest = readManifest(target)
 	if (manifest === undefined) {
@@ -2042,11 +2024,11 @@ export function runVisit(argv: readonly string[]): Visit | undefined {
 	const version = readString(manifest, 'version')
 	const runner: Runner = {
 		target: resolve(target),
-		dry: argv.includes('--dry-run'),
-		offline: argv.includes('--offline'),
-		regenerate: argv.includes('--regenerate'),
+		dry: values['dry-run'] === true,
+		offline: values.offline === true,
+		regenerate: values.regenerate === true,
 		directory:
-			argv.includes('--dry-run') ||
+			values['dry-run'] === true ||
 			(name === SCAFFOLD && from === STEPS.indexOf('record') && to === from)
 				? undefined
 				: readJournalDirectory(resolve(target)),
@@ -2080,7 +2062,7 @@ export function runVisit(argv: readonly string[]): Visit | undefined {
 	if (selected.has('install') && !failed(runner.steps)) runInstall(runner, 'install')
 	const hits =
 		selected.has('pins') && !failed(runner.steps)
-			? runPins(runner, before, readOption(argv, '--prior') ?? version)
+			? runPins(runner, before, typeof values.prior === 'string' ? values.prior : version)
 			: undefined
 	const format = selected.has('format') && !failed(runner.steps) ? runFormat(runner) : undefined
 	if (selected.has('record') && !failed(runner.steps)) runRecord(runner, name, format)
@@ -2196,64 +2178,55 @@ export function renderVisit(visit: Visit): string {
  * on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`wave: unknown flag ${unknown.join(', ')}; give each flag and its value as separate arguments\n${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`wave: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, [
-		'--target',
-		'--from',
-		'--to',
-		'--prior',
-		'--catalog',
-		'--out',
-	])
-	if (missing.length > 0) {
-		console.error(`wave: ${missing.join(', ')} given with no value`)
+	const { values } = parsed.value
+	if (values.plan === true && values.visit === true) {
+		console.error(`wave: --plan and --visit are two modes; name one; ${USAGE}`)
 		return 64
 	}
-	if (argv.includes('--plan') && argv.includes('--visit')) {
-		console.error('wave: --plan and --visit are two modes; name one')
-		return 64
-	}
-	if (argv.includes('--plan')) {
-		if (argv.includes('--regenerate')) {
-			console.error('wave: --regenerate requires --visit, not --plan')
+	if (values.plan === true) {
+		if (values.regenerate === true) {
+			console.error(`wave: --regenerate requires --visit, not --plan; ${USAGE}`)
 			return 64
 		}
-		const layers = readLayers(readOption(argv, '--catalog') ?? CATALOG)
+		const layers = readLayers(typeof values.catalog === 'string' ? values.catalog : CATALOG)
 		if (layers === undefined) {
 			console.error('wave: no marker-bounded catalog table; run scaffold catalog first')
 			return 2
 		}
-		if (argv.includes('--json')) console.log(JSON.stringify(Object.fromEntries(layers)))
+		if (values.json === true) console.log(JSON.stringify(Object.fromEntries(layers)))
 		else for (const [layer, members] of layers) console.log(`${layer}\t${members.join(', ')}`)
 		return 0
 	}
-	if (!argv.includes('--visit')) {
+	if (values.visit !== true) {
 		console.error(USAGE)
 		return 64
 	}
-	const from = STEPS.indexOf(readOption(argv, '--from') ?? 'pin')
-	const to = STEPS.indexOf(readOption(argv, '--to') ?? 'compare')
+	const first = typeof values.from === 'string' ? values.from : 'pin'
+	const last = typeof values.to === 'string' ? values.to : 'compare'
+	const from = STEPS.indexOf(first)
+	const to = STEPS.indexOf(last)
 	if (from === -1 || to === -1 || to < from) {
-		console.error(`wave: --from and --to name steps in order from: ${STEPS.join(', ')}`)
-		return 64
-	}
-	const prior = readOption(argv, '--prior')
-	if (prior !== undefined && !VERSION.test(prior)) {
 		console.error(
-			'wave: --prior takes the version the package carried before its bump, MAJOR.MINOR.PATCH',
+			`wave: --from and --to take steps in order from: ${STEPS.join(', ')}, not ${JSON.stringify(first)} and ${JSON.stringify(last)}; ${USAGE}`,
 		)
 		return 64
 	}
-	const visit = runVisit(argv)
+	const prior = typeof values.prior === 'string' ? values.prior : undefined
+	if (prior !== undefined && !VERSION.test(prior)) {
+		console.error(
+			`wave: --prior takes the version the package carried before its bump, MAJOR.MINOR.PATCH, not ${JSON.stringify(prior)}; ${USAGE}`,
+		)
+		return 64
+	}
+	const visit = runVisit(values)
 	if (visit === undefined) return 2
-	const output = argv.includes('--json') ? `${JSON.stringify(visit)}\n` : renderVisit(visit)
-	const out = readOption(argv, '--out')
+	const output = values.json === true ? `${JSON.stringify(visit)}\n` : renderVisit(visit)
+	const out = typeof values.out === 'string' ? values.out : undefined
 	if (out === undefined) process.stdout.write(output)
 	else {
 		mkdirSync(dirname(out), { recursive: true })

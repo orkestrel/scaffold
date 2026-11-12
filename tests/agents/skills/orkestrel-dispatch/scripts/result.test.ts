@@ -4,17 +4,15 @@ import { createScratch } from '@orkestrel/test/server'
 import { RESULT_STREAM, runSkillScript, RESULT_SCRIPT } from '../../../../setupServer.js'
 import {
 	describeEvent,
+	parseArguments,
 	parseJsonLine,
 	readAnswer,
 	readCodex,
 	readErrors,
 	readEvents,
-	readMissingFlags,
 	readNumber,
-	readOption,
 	readStream,
 	readString,
-	readUnknownFlags,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/result.ts'
 
 describe('result.ts', () => {
@@ -114,15 +112,13 @@ describe('result.ts', () => {
 			expect(
 				runSkillScript(RESULT_SCRIPT, ['--cursor', 'tmp/none.jsonl'], { cwd: scratch.path }).status,
 			).toBe(64)
-			expect(
-				runSkillScript(
-					RESULT_SCRIPT,
-					['--cursor', 'tmp/cursor/u.jsonl', '--codex', 'tmp/codex/c.jsonl'],
-					{
-						cwd: scratch.path,
-					},
-				).status,
-			).toBe(64)
+			const two = runSkillScript(
+				RESULT_SCRIPT,
+				['--cursor', 'tmp/cursor/u.jsonl', '--codex', 'tmp/codex/c.jsonl'],
+				{ cwd: scratch.path },
+			)
+			expect(two.status).toBe(64)
+			expect(two.stderr).toContain('usage: result.ts')
 			expect(
 				runSkillScript(RESULT_SCRIPT, ['--cursor', 'tmp/cursor/u.jsonl', '--out'], {
 					cwd: scratch.path,
@@ -134,7 +130,7 @@ describe('result.ts', () => {
 		}
 	})
 
-	it('refuses an unknown flag and the equals form before it reads the journal', () => {
+	it('refuses an unknown flag with the parseArgs message before it reads the journal, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-result-flags-' })
 		try {
 			scratch.write('tmp/cursor/u.jsonl', RESULT_STREAM)
@@ -142,20 +138,21 @@ describe('result.ts', () => {
 				cwd: scratch.path,
 			})
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--bogus')
+			expect(unknown.stderr).toContain("'--bogus'")
+			expect(unknown.stderr).toContain('usage: result.ts')
 			expect(unknown.stdout).toBe('')
-			const equals = runSkillScript(RESULT_SCRIPT, ['--cursor=tmp/cursor/u.jsonl'], {
-				cwd: scratch.path,
-			})
-			expect(equals.status).toBe(64)
-			expect(equals.stderr).toContain('--cursor=tmp/cursor/u.jsonl')
-			const out = runSkillScript(
+			const equals = runSkillScript(
 				RESULT_SCRIPT,
-				['--cursor', 'tmp/cursor/u.jsonl', '--out=tmp/answer.md'],
+				['--cursor=tmp/cursor/u.jsonl', '--out=tmp/answer.md'],
 				{ cwd: scratch.path },
 			)
-			expect(out.status).toBe(64)
-			expect(scratch.has('tmp/answer.md')).toBe(false)
+			expect(equals.status).toBe(0)
+			expect(equals.json).toMatchObject({ journal: 'tmp/cursor/u.jsonl', out: 'tmp/answer.md' })
+			expect(scratch.has('tmp/answer.md')).toBe(true)
+			expect(parseArguments(['--codex=c.jsonl'])).toEqual({
+				success: true,
+				value: { values: { codex: 'c.jsonl' }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -266,25 +263,5 @@ describe('the record readers', () => {
 		expect(readNumber({ a: Number.NaN }, 'a')).toBeUndefined()
 		expect(readNumber({ a: Number.POSITIVE_INFINITY }, 'a')).toBeUndefined()
 		expect(readNumber({ a: '1' }, 'a')).toBeUndefined()
-	})
-})
-
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['--cursor', 'j.jsonl', '--out']
-		expect(readOption(argv, '--cursor')).toBe('j.jsonl')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--cursor', '--out', 'x'], '--cursor')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readMissingFlags(argv, ['--cursor', '--out'])).toEqual(['--out'])
-		expect(readMissingFlags(['--cursor', 'j'], ['--out'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(['--cursor=j.jsonl', '--out', 'a', '--bogus'], ['--cursor', '--out']),
-		).toEqual(['--cursor=j.jsonl', '--bogus'])
-		expect(readUnknownFlags(['--out', 'a', '--', '--watch'], ['--out'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
 	})
 })

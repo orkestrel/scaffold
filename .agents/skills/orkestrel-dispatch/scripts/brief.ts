@@ -10,11 +10,13 @@
 // `:line-line` suffix, resolves it from the working directory, and prints the ones that do not
 // exist; a bare filename is outside the check. It also names each template section the brief omits:
 // the `## Role and engine` section, and the `## Execution` section with its spawn-nothing sentence.
-// The two forms are two modes; name one. The script refuses a flag it does not read, the
-// `--flag=value` form included. Exit 3 when a path or a section is missing, 64 on usage.
+// The two forms are two modes; name one. The script reads its flags with `parseArgs` in strict
+// mode. Exit 3 when a path or a section is missing, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
 /** Names the brief template, found from this script's own location. */
 export const TEMPLATE = resolve(
@@ -46,67 +48,49 @@ export const REQUIREMENTS: readonly Requirement[] = [
 	{ heading: '## Execution', sentence: 'Perform the assignment yourself and spawn nothing.' },
 ]
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--unit', '--lane', '--subject', '--check']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = VALUE_FLAGS
-
 /** Holds the usage line printed when a call names no mode. */
 export const USAGE =
 	'usage: brief.ts --unit UNIT --lane units|cursor|codex|claude [--subject TEXT] | --check PATH'
 
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--unit`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	unit: Object.freeze({ type: 'string' }),
+	lane: Object.freeze({ type: 'string' }),
+	subject: Object.freeze({ type: 'string' }),
+	check: Object.freeze({ type: 'string' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
 }
 
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
 
 /**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
+ * Parses the arguments in strict mode against `OPTIONS`.
  *
  * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
  */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
 }
 
 /**
@@ -192,15 +176,27 @@ export function resolveBriefPath(directory: string, unit: string, count = 1): st
 /**
  * Writes a brief from the template.
  *
- * @param argv - The arguments after the script path.
+ * @param values - The flag values `parseArgs` read.
  * @returns The exit code: 0 on success, 64 on usage or a missing template.
  */
-export function writeBrief(argv: readonly string[]): number {
-	const unit = readOption(argv, '--unit')
-	const lane = readOption(argv, '--lane')
-	const directory = lane === undefined ? undefined : LANES[lane]
-	if (unit === undefined || directory === undefined || !/^[A-Za-z0-9._-]+$/u.test(unit)) {
+export function writeBrief(values: Arguments['values']): number {
+	const unit = typeof values.unit === 'string' ? values.unit : undefined
+	const lane = typeof values.lane === 'string' ? values.lane : undefined
+	if (unit === undefined || lane === undefined) {
 		console.error('usage: brief.ts --unit UNIT --lane units|cursor|codex|claude [--subject TEXT]')
+		return 64
+	}
+	if (!/^[A-Za-z0-9._-]+$/u.test(unit)) {
+		console.error(
+			`brief: --unit takes letters, digits, dots, underscores, and hyphens, not ${JSON.stringify(unit)}`,
+		)
+		return 64
+	}
+	const directory = LANES[lane]
+	if (directory === undefined) {
+		console.error(
+			`brief: --lane takes units, cursor, codex, or claude, not ${JSON.stringify(lane)}`,
+		)
 		return 64
 	}
 	if (!existsSync(TEMPLATE)) {
@@ -209,7 +205,7 @@ export function writeBrief(argv: readonly string[]): number {
 	}
 	mkdirSync(directory, { recursive: true })
 	const path = resolveBriefPath(directory, unit)
-	const subject = readOption(argv, '--subject') ?? 'SHORT_SUBJECT'
+	const subject = typeof values.subject === 'string' ? values.subject : 'SHORT_SUBJECT'
 	const content = readFileSync(TEMPLATE, 'utf8')
 		.replace(/UNIT_ID/gu, unit)
 		.replace(/SHORT_SUBJECT/gu, subject)
@@ -226,7 +222,7 @@ export function writeBrief(argv: readonly string[]): number {
  * missing or a section is omitted, 64 when the brief is not a file.
  */
 export function checkBrief(path: string): number {
-	if (!existsSync(path) || !statSync(path).isFile()) {
+	if (statSync(path, { throwIfNoEntry: false })?.isFile() !== true) {
 		console.error(`brief: ${path} is not a file`)
 		return 64
 	}
@@ -247,23 +243,19 @@ export function checkBrief(path: string): number {
  * usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`brief: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`brief: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`brief: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const check = readOption(argv, '--check')
-	if (check !== undefined && argv.includes('--unit')) {
-		console.error('brief: --check and --unit are two modes; name one')
+	const { values } = parsed.value
+	const check = typeof values.check === 'string' ? values.check : undefined
+	if (check !== undefined && values.unit !== undefined) {
+		console.error(`brief: --check and --unit are two modes; name one; ${USAGE}`)
 		return 64
 	}
 	if (check !== undefined) return checkBrief(check)
-	if (argv.includes('--unit')) return writeBrief(argv)
+	if (values.unit !== undefined) return writeBrief(values)
 	console.error(USAGE)
 	return 64
 }

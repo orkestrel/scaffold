@@ -14,11 +14,12 @@
 // --delete removes them, refusing while one changed in the last 2 minutes.
 // --tmp and --unit --delete never delete a file git tracks: each prints `kept tracked <path>` and the
 // refusal ignores a tracked file; --unit alone marks a tracked file in its listing.
-// Name one mode per run; the script refuses a flag it does not read, the `--flag=value` form
-// included. Exit 0 on success, 2 when a deletion is refused, 64 on usage.
+// Name one mode per run; the script reads its flags with `parseArgs` in strict mode. Exit 0 on success, 2 when a deletion is refused, 64 on usage.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /** Lists the directories under `tmp/` that hold launch files. */
 export const LAUNCH_DIRECTORIES: readonly string[] = [
@@ -65,15 +66,51 @@ export const BACKTICKED = /`([^`\n]+)`/gu
 /** Matches the first glob or placeholder character in a path. */
 export const PLACEHOLDER = /[*?<{]/u
 
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--unit', '--older-than']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--report', '--tmp', '--delete']
-
 /** Holds the usage line printed when a call names an unknown mode. */
 export const USAGE =
 	'usage: sweep.ts --report | --tmp [--older-than MINUTES] | --unit UNIT [--delete]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	unit: Object.freeze({ type: 'string' }),
+	'older-than': Object.freeze({ type: 'string' }),
+	report: Object.freeze({ type: 'boolean' }),
+	tmp: Object.freeze({ type: 'boolean' }),
+	delete: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes one file a tree walk found, with the modification time the sweep reads. */
 export interface WalkedFile {
@@ -96,66 +133,13 @@ export interface Finding {
 }
 
 /**
- * Reads the value that follows a flag.
- *
- * @remarks
- * The first occurrence of a flag wins, a following value that opens with `--` is a missing value,
- * and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--unit`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. A bare `--` ends the
- * scan.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
  * Normalizes a host path to forward slashes.
  *
  * @param path - A host path.
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -253,15 +237,15 @@ export function removeEmptyDirectories(directory: string): void {
 }
 
 /**
- * Reads the `--older-than` threshold in minutes.
+ * Parses the `--older-than` threshold in minutes.
  *
- * @param argv - The arguments after the script path.
+ * @param text - The value after `--older-than`, or undefined when the flag is absent.
  * @returns The default threshold when the flag is absent, the number when it is finite and above 0,
  * and undefined otherwise.
  */
-export function readThreshold(argv: readonly string[]): number | undefined {
-	if (!argv.includes('--older-than')) return DEFAULT_THRESHOLD
-	const value = Number(readOption(argv, '--older-than'))
+export function parseThreshold(text: string | undefined): number | undefined {
+	if (text === undefined) return DEFAULT_THRESHOLD
+	const value = Number(text)
 	return Number.isFinite(value) && value > 0 ? value : undefined
 }
 
@@ -479,13 +463,15 @@ export function listUnitFiles(unit: string): ReadonlyArray<{ path: string; modif
 /**
  * Lists or deletes one unit's launch files.
  *
- * @param unit - The unit name, or undefined when the call gave none.
+ * @param unit - The unit name.
  * @param remove - If true, deletes the untracked files; if false, lists them.
  * @returns The exit code: 0 on success, 2 when a deletion is refused, 64 on usage.
  */
-export function runUnit(unit: string | undefined, remove: boolean): number {
-	if (unit === undefined || !/^[A-Za-z0-9._][A-Za-z0-9._-]*$/u.test(unit)) {
-		console.error('usage: sweep.ts --unit UNIT [--delete]')
+export function runUnit(unit: string, remove: boolean): number {
+	if (!/^[A-Za-z0-9._][A-Za-z0-9._-]*$/u.test(unit)) {
+		console.error(
+			`sweep: --unit takes letters, digits, dots, underscores, and hyphens, not opening with a hyphen, not ${JSON.stringify(unit)}; ${USAGE}`,
+		)
 		return 64
 	}
 	const files = listUnitFiles(unit)
@@ -518,37 +504,35 @@ export function runUnit(unit: string | undefined, remove: boolean): number {
  * @returns The exit code: 0 on success, 2 when a deletion is refused, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(`sweep: ${unknown.join(', ')} is not a flag this script reads; ${USAGE}`)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`sweep: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) {
-		console.error(`sweep: ${missing.join(', ')} given with no value`)
-		return 64
-	}
+	const { values } = parsed.value
 	if (!existsSync('.git')) {
 		console.error('sweep: run from the repository root')
 		return 64
 	}
-	const modes = ['--report', '--tmp', '--unit'].filter((flag) => argv.includes(flag))
+	const unit = typeof values.unit === 'string' ? values.unit : undefined
+	const modes = [values.report, values.tmp, unit].filter((value) => value !== undefined)
 	if (modes.length > 1) {
-		console.error(
-			'usage: sweep.ts names one mode: --report | --tmp [--older-than MINUTES] | --unit UNIT [--delete]',
-		)
+		console.error(`sweep: --report, --tmp, and --unit are three modes; name one; ${USAGE}`)
 		return 64
 	}
-	if (argv.includes('--tmp')) {
-		const threshold = readThreshold(argv)
+	if (values.tmp === true) {
+		const text = typeof values['older-than'] === 'string' ? values['older-than'] : undefined
+		const threshold = parseThreshold(text)
 		if (threshold === undefined) {
-			console.error('usage: sweep.ts --tmp [--older-than MINUTES]; MINUTES is a positive number')
+			console.error(
+				`sweep: --older-than takes a number of minutes above 0, not ${JSON.stringify(text)}; ${USAGE}`,
+			)
 			return 64
 		}
 		return runSweep(threshold)
 	}
-	if (argv.includes('--unit')) return runUnit(readOption(argv, '--unit'), argv.includes('--delete'))
-	if (argv.length === 0 || argv.includes('--report')) return runReport()
+	if (unit !== undefined) return runUnit(unit, values.delete === true)
+	if (argv.length === 0 || values.report === true) return runReport()
 	console.error(USAGE)
 	return 64
 }

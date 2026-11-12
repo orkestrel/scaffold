@@ -9,6 +9,7 @@ import {
 	runSkillScript,
 } from '../../../../setupServer.js'
 import {
+	parseArguments,
 	countStatus,
 	describeFile,
 	isUnsuccessful,
@@ -18,10 +19,6 @@ import {
 	readCase,
 	readCases,
 	readFailedFiles,
-	readMissingFlags,
-	readOptions,
-	readPositionals,
-	readUnknownFlags,
 	relativeFile,
 } from '../../../../../.agents/skills/orkestrel-parallel/scripts/cases.ts'
 
@@ -91,19 +88,6 @@ describe('cases.ts', () => {
 	})
 
 	it('reads flags, repeated values, positionals, and missing values at every occurrence', () => {
-		expect(
-			readOptions(['--passed', 'a', '--failed', 'b', '--passed', 'c'], '--passed'),
-		).toStrictEqual(['a', 'c'])
-		expect(readMissingFlags(['--passed', 'a', '--passed'], ['--passed'])).toStrictEqual([
-			'--passed',
-		])
-		expect(readMissingFlags(['--failed', '--passed', 'a'], ['--passed', '--failed'])).toStrictEqual(
-			['--failed'],
-		)
-		expect(readPositionals(['--report', 'r.json', 'extra'], ['--report'])).toStrictEqual(['extra'])
-		expect(readUnknownFlags(['--report', 'r', '--x=1', '--', '--y'], ['--report'])).toStrictEqual([
-			'--x=1',
-		])
 		expect(describeFile('/root', '')).toBe('')
 	})
 
@@ -197,7 +181,7 @@ describe('cases.ts', () => {
 		}
 	})
 
-	it('refuses no report, a name given to both flags, an unknown flag, the --flag=value form, and a bare flag with exit 64', () => {
+	it('refuses no report, a name given to both flags, an unknown flag, and a bare flag with exit 64, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-cases-usage-' })
 		try {
 			scratch.write('report.json', renderCasesReport(scratch.path, CASES_ROWS))
@@ -220,16 +204,29 @@ describe('cases.ts', () => {
 				cwd,
 			)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--no-such-flag')
-			const joined = runSkillScript(CASES_SCRIPT, ['--report=report.json'], cwd)
-			expect(joined.status).toBe(64)
-			expect(joined.stderr).toContain('--report=report.json')
+			expect(unknown.stderr).toContain("'--no-such-flag'")
+			expect(unknown.stderr).toContain('usage: cases.ts')
 			const bare = runSkillScript(CASES_SCRIPT, ['--report', 'report.json', '--passed'], cwd)
 			expect(bare.status).toBe(64)
-			expect(bare.stderr).toContain('--passed given with no value')
+			expect(bare.stderr).toContain("'--passed")
 			const missingBesideUnknown = runSkillScript(CASES_SCRIPT, ['--report', '--no-such-flag'], cwd)
 			expect(missingBesideUnknown.status).toBe(64)
-			expect(missingBesideUnknown.stderr).toContain('--no-such-flag')
+			expect(missingBesideUnknown.stderr).toContain("'--report'")
+			const joined = runSkillScript(
+				CASES_SCRIPT,
+				['--report=report.json', '--failed=breaks', '--passed', 'holds'],
+				cwd,
+			)
+			expect(joined.status).toBe(0)
+			expect(joined.stdout).toContain('ok')
+			expect(parseArguments(['--report=r.json', '--passed=a', '--passed', '--b'])).toStrictEqual({
+				success: false,
+				error: expect.stringContaining("'--passed'"),
+			})
+			expect(parseArguments(['--report=r.json', '--passed=a', '--passed=--b'])).toEqual({
+				success: true,
+				value: { values: { report: 'r.json', passed: ['a', '--b'] }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}

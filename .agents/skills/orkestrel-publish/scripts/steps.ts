@@ -14,11 +14,13 @@
 // `DIR/plan.json` and every omitted step to `DIR/omitted.txt`, prints each omitted step on its own
 // line, and runs the sibling `chain.ts` with stdio inherited and `npm_config_prefer_online=true`
 // merged into its environment. `--dry-run` prints the steps and omissions, writes nothing, and runs
-// nothing; `--json`, which `--dry-run` must accompany, prints them as one JSON value.
+// nothing; `--json`, which `--dry-run` must accompany, prints them as one JSON value. The script
+// reads its flags with `parseArgs` in strict mode.
 // Exit with the chain's code: 0 when every step exited 0, the failing step's code when one did not,
 // 2 when a step or the chain cannot start. Exit 2 when the journal cannot be written, 64 on usage,
 // and 65 when no complete step list can be derived or an `--omit` names no derived step. A step
 // exiting 65 reads alike with that refusal.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import {
 	closeSync,
@@ -32,16 +34,53 @@ import {
 } from 'node:fs'
 import { dirname, extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-
-/** Lists the flags that take a value. */
-export const VALUE_FLAGS: readonly string[] = ['--journal', '--omit']
-
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = [...VALUE_FLAGS, '--no-ci', '--dry-run', '--json']
+import { parseArgs } from 'node:util'
 
 /** Holds the usage line printed when a call names no journal or gives a malformed flag. */
 export const USAGE =
 	'usage: steps.ts --journal DIR [--omit NAME=REASON ...] [--no-ci] [--dry-run] [--json]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	journal: Object.freeze({ type: 'string' }),
+	omit: Object.freeze({ type: 'string', multiple: true }),
+	'no-ci': Object.freeze({ type: 'boolean' }),
+	'dry-run': Object.freeze({ type: 'boolean' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Matches a step name `chain.ts` accepts. */
 export const STEP_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u
@@ -153,75 +192,6 @@ export function parseJson(text: string): unknown {
 }
 
 /**
- * Reads the value after each occurrence of a flag.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--omit`.
- * @returns One member per occurrence, undefined where the flag is last or a value opens with `--`.
- */
-export function readValues(
-	argv: readonly string[],
-	name: string,
-): ReadonlyArray<string | undefined> {
-	return argv.flatMap((argument, index) => {
-		if (argument !== name) return []
-		const value = argv[index + 1]
-		return [value === undefined || value.startsWith('--') ? undefined : value]
-	})
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag with an occurrence that is last or followed by another flag.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => readValues(argv, name).includes(undefined))
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * A `--flag=value` argument is unknown, because the script reads no such form. The script passes no
- * command on, so a bare `--` is unknown too, and the scan stops there and reads nothing after it.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end + 1)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Names the arguments no flag reads as its value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each argument that neither opens with `--` nor follows a value flag.
- */
-export function readStrayArguments(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return argv.filter(
-		(argument, index) => !argument.startsWith('--') && !names.includes(argv[index - 1] ?? ''),
-	)
-}
-
-/**
  * Parses one `--omit` value.
  *
  * @param text - The value, such as `test-distribution=the registry refuses this host`.
@@ -236,28 +206,22 @@ export function parseOmission(text: string): Omission | undefined {
 }
 
 /**
- * Reads the first usage problem in the arguments.
+ * Reads the first usage problem in the flag values `parseArgs` read.
  *
- * @param argv - The arguments after the script path.
- * @returns The refusal to print, or undefined when the arguments are well formed.
+ * @param values - The flag values.
+ * @returns The refusal to print, or undefined when the values are well formed.
  */
-export function readUsageProblem(argv: readonly string[]): string | undefined {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) return `${unknown.join(', ')} is not a flag this script reads; ${USAGE}`
-	const missing = readMissingFlags(argv, VALUE_FLAGS)
-	if (missing.length > 0) return `${missing.join(', ')} given with no value; ${USAGE}`
-	const strays = readStrayArguments(argv, VALUE_FLAGS)
-	if (strays.length > 0) return `${strays.map(quote).join(', ')} is not read by a flag; ${USAGE}`
-	if (readValues(argv, '--journal').length === 0) return USAGE
-	if (argv.includes('--json') && !argv.includes('--dry-run')) {
+export function readUsageProblem(values: Arguments['values']): string | undefined {
+	if (typeof values.journal !== 'string') return USAGE
+	if (values.json === true && values['dry-run'] !== true) {
 		return `--json reads only with --dry-run, because the chain prints to standard output; ${USAGE}`
 	}
-	const values = readValues(argv, '--omit').flatMap((value) => (value === undefined ? [] : [value]))
-	const malformed = values.filter((value) => parseOmission(value) === undefined)
+	const omits = collectStrings(values.omit)
+	const malformed = omits.filter((value) => parseOmission(value) === undefined)
 	if (malformed.length > 0) {
-		return `--omit takes NAME=REASON with a non-empty one-line reason, given ${malformed.map(quote).join(', ')}`
+		return `--omit takes NAME=REASON with a non-empty one-line reason, not ${malformed.map(quote).join(', ')}; ${USAGE}`
 	}
-	const names = values.map((value) => value.slice(0, value.indexOf('=')))
+	const names = omits.map((value) => value.slice(0, value.indexOf('=')))
 	const repeated = [...new Set(names.filter((name, index) => names.indexOf(name) !== index))]
 	if (repeated.length > 0) {
 		return `--omit names a step more than once: ${repeated.map(quote).join(', ')}`
@@ -268,14 +232,26 @@ export function readUsageProblem(argv: readonly string[]): string | undefined {
 /**
  * Reads the given `--omit` values as omissions.
  *
- * @param argv - Arguments that `readUsageProblem` found no problem in.
+ * @param values - Flag values that `readUsageProblem` found no problem in.
  * @returns One omission per occurrence, in argument order.
  */
-export function readOmissions(argv: readonly string[]): readonly Omission[] {
-	return readValues(argv, '--omit').flatMap((value) => {
-		const omission = value === undefined ? undefined : parseOmission(value)
+export function readOmissions(values: Arguments['values']): readonly Omission[] {
+	return collectStrings(values.omit).flatMap((value) => {
+		const omission = parseOmission(value)
 		return omission === undefined ? [] : [omission]
 	})
+}
+
+/**
+ * Collects the strings a repeatable flag's value holds.
+ *
+ * @param value - The value `parseArgs` read for a flag declared with `multiple: true`.
+ * @returns Each string in order, empty when the flag never appears.
+ */
+export function collectStrings(value: unknown): readonly string[] {
+	return Array.isArray(value)
+		? value.filter((member): member is string => typeof member === 'string')
+		: []
 }
 
 /**
@@ -609,14 +585,20 @@ export function runChain(journal: string): number {
  * names no derived step.
  */
 export function main(argv: readonly string[]): number {
-	const usage = readUsageProblem(argv)
-	const [journal] = readValues(argv, '--journal')
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`steps: ${parsed.error}; ${USAGE}`)
+		return 64
+	}
+	const { values } = parsed.value
+	const usage = readUsageProblem(values)
+	const journal = typeof values.journal === 'string' ? values.journal : undefined
 	if (usage !== undefined || journal === undefined) {
 		console.error(`steps: ${usage ?? USAGE}`)
 		return 64
 	}
 	const derivation = readDerivation(process.cwd())
-	const omissions = readOmissions(argv)
+	const omissions = readOmissions(values)
 	const problems = [
 		...derivation.problems,
 		...(derivation.problems.length > 0 ? [] : readOmissionProblems(omissions, derivation.segments)),
@@ -626,17 +608,17 @@ export function main(argv: readonly string[]): number {
 		return 65
 	}
 	const omitted = [
-		...readCiOmissions(argv.includes('--no-ci'), () => readHolders('node_modules')),
+		...readCiOmissions(values['no-ci'] === true, () => readHolders('node_modules')),
 		...omissions,
 	]
 	const selected = selectSegments(derivation.segments, omitted)
 	const plan = buildPlan(selected, resolveNpm())
-	if (argv.includes('--json')) {
+	if (values.json === true) {
 		console.log(JSON.stringify({ steps: plan, omitted }))
 		return 0
 	}
 	const lines = omitted.map((omission) => formatOmission(omission))
-	if (argv.includes('--dry-run')) {
+	if (values['dry-run'] === true) {
 		console.log([...selected.map((segment) => formatSegment(segment)), ...lines].join('\n'))
 		return 0
 	}

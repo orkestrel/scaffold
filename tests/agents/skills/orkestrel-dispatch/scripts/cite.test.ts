@@ -11,9 +11,7 @@ import {
 	listFiles,
 	needsIndex,
 	normalizeSlashes,
-	readMissingFlags,
-	readOption,
-	readUnknownFlags,
+	parseArguments,
 	resolveDirect,
 	resolveFile,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/cite.ts'
@@ -114,17 +112,43 @@ describe('cite.ts', () => {
 		}
 	})
 
-	it('refuses an unknown flag and the equals form before it reads the report', () => {
+	it('refuses an unknown flag, a value given to a switch, a flag with no value, and two reports before it reads one', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-cite-flags-' })
 		try {
 			scratch.write('docs/a.md', 'one\n')
 			scratch.write('report.md', 'See `docs/a.md:1`.\n')
-			for (const flag of ['--bogus', '--root=sub', '--json=true']) {
-				const run = runSkillScript(CITE_SCRIPT, ['report.md', flag], { cwd: scratch.path })
-				expect({ flag, status: run.status }).toEqual({ flag, status: 64 })
-				expect(run.stderr).toContain(flag)
+			for (const args of [
+				['report.md', '--bogus'],
+				['report.md', '--json=true'],
+				['report.md', '--root'],
+				['report.md', 'report.md'],
+			]) {
+				const run = runSkillScript(CITE_SCRIPT, args, { cwd: scratch.path })
+				expect({ args, status: run.status }).toEqual({ args, status: 64 })
+				expect(run.stderr).toContain('usage: cite.ts')
 				expect(run.stdout).toBe('')
 			}
+			const unknown = runSkillScript(CITE_SCRIPT, ['report.md', '--bogus'], { cwd: scratch.path })
+			expect(unknown.stderr).toContain("'--bogus'")
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the --flag=value form alike with --flag value', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-cite-equals-' })
+		try {
+			scratch.write('sub/docs/a.md', 'one\n')
+			scratch.write('report.md', 'See `docs/a.md:1`.\n')
+			const run = runSkillScript(CITE_SCRIPT, ['report.md', '--root=sub', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			expect(run.json).toMatchObject({ root: 'sub', citations: 1, unresolved: [] })
+			expect(parseArguments(['r.md', '--root=sub'])).toEqual({
+				success: true,
+				value: { values: { root: 'sub' }, positionals: ['r.md'] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -221,26 +245,6 @@ describe('the file resolution', () => {
 		} finally {
 			scratch.destroy()
 		}
-	})
-})
-
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['report.md', '--root', 'sub', '--json']
-		expect(readOption(argv, '--root')).toBe('sub')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--root', '--json'], '--root')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readMissingFlags(['report.md', '--root'], ['--root'])).toEqual(['--root'])
-		expect(readMissingFlags(argv, ['--root'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(['a.md', '--root=sub', '--json', '--bogus'], ['--root', '--json']),
-		).toEqual(['--root=sub', '--bogus'])
-		expect(readUnknownFlags(['a.md', '--', '--watch'], ['--root'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
 	})
 })
 

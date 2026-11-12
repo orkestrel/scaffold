@@ -6,21 +6,42 @@ import {
 	applyEdits,
 	countOccurrences,
 	isInside,
-	isMissingValue,
+	parseArguments,
 	parseEdits,
 	quote,
 	readFileKey,
+	readFileProblem,
 	readInvalidSkips,
-	readMissingFlags,
-	readOptions,
-	readPositionals,
 	readStrays,
 	readTargetProblem,
-	readUnknownFlags,
 	resolveEdits,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/patch.ts'
 
 describe('patch.ts', () => {
+	it('names a target the host cannot stat as a problem with its error code, and writes nothing', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-patch-unreadable-' })
+		try {
+			scratch.write('a.txt', 'one\n')
+			expect(readFileProblem(resolve(scratch.path, 'a.txt'))).toBeUndefined()
+			expect(readFileProblem(resolve(scratch.path, 'absent.txt'))).toBe('no such file')
+			expect(readFileProblem(resolve(scratch.path, 'a\u0000.txt'))).toMatch(
+				/^cannot be read: \S+$/u,
+			)
+			scratch.write(
+				'edits.md',
+				renderEditFile([{ path: 'a\u0000.txt', reason: 'r', before: 'one', after: '1' }]),
+			)
+			const run = runSkillScript(PATCH_SCRIPT, ['edits.md', '--apply'], { cwd: scratch.path })
+			expect(run.status).toBe(1)
+			expect(run.stdout).toContain(': cannot be read: ')
+			expect(run.stdout).toContain('nothing written')
+			expect(run.stderr).toBe('')
+			expect(scratch.read('a.txt')).toBe('one\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('parses blocks in order, with a longer fence, CRLF line breaks, and an empty replacement', () => {
 		const text = [
 			'Notes before the first block are ignored.',
@@ -102,25 +123,6 @@ describe('patch.ts', () => {
 			'old text occurs 2 times',
 			'old text occurs 0 times',
 		])
-	})
-
-	it('reads positionals, repeated values, missing values at every occurrence, and unknown flags', () => {
-		expect(readPositionals(['E.md', '--skip', '2', '--plan'], ['--skip'])).toStrictEqual(['E.md'])
-		expect(readPositionals(['--skip', '2', '3'], ['--skip'])).toStrictEqual(['3'])
-		expect(readOptions(['--skip', '1', '--plan', '--skip', '3'], '--skip')).toStrictEqual([
-			'1',
-			'3',
-		])
-		expect(readMissingFlags(['--skip', '1', '--skip'], ['--skip'])).toStrictEqual(['--skip'])
-		expect(readMissingFlags(['--skip', '1', '--skip', '--plan'], ['--skip'])).toStrictEqual([
-			'--skip',
-		])
-		expect(readMissingFlags(['--skip', '1'], ['--skip'])).toStrictEqual([])
-		expect(isMissingValue(['--skip', '--plan'], 0)).toBe(true)
-		expect(isMissingValue(['--skip', '2'], 0)).toBe(false)
-		expect(
-			readUnknownFlags(['--plan', '--x', '--json=1', '--', '--after'], ['--plan']),
-		).toStrictEqual(['--x', '--json=1'])
 	})
 
 	it('checks skips, containment, and quoting at their edges', () => {
@@ -337,7 +339,12 @@ describe('patch.ts', () => {
 			const cwd = { cwd: scratch.path }
 			expect(runSkillScript(PATCH_SCRIPT, [], cwd).status).toBe(64)
 			expect(runSkillScript(PATCH_SCRIPT, ['edits.md'], cwd).status).toBe(64)
-			expect(runSkillScript(PATCH_SCRIPT, ['edits.md', '--plan', '--apply'], cwd).status).toBe(64)
+			const two = runSkillScript(PATCH_SCRIPT, ['edits.md', '--plan', '--apply'], cwd)
+			expect(two.status).toBe(64)
+			expect(two.stderr).toContain('usage: patch.ts')
+			const files = runSkillScript(PATCH_SCRIPT, ['edits.md', 'edits.md', '--plan'], cwd)
+			expect(files.status).toBe(64)
+			expect(files.stderr).toContain('usage: patch.ts')
 			expect(runSkillScript(PATCH_SCRIPT, ['--plan'], cwd).status).toBe(64)
 			const gone = runSkillScript(PATCH_SCRIPT, ['gone.md', '--plan'], cwd)
 			expect(gone.status).toBe(64)
@@ -354,7 +361,7 @@ describe('patch.ts', () => {
 		}
 	})
 
-	it('refuses an unknown flag, the --flag=value form, a skip with no value, and a skip naming no edit', () => {
+	it('refuses an unknown flag, a skip with no value, and a skip naming no edit, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-patch-flags-' })
 		try {
 			scratch.write('a.txt', 'one\n')
@@ -365,17 +372,23 @@ describe('patch.ts', () => {
 			const cwd = { cwd: scratch.path }
 			const unknown = runSkillScript(PATCH_SCRIPT, ['edits.md', '--apply', '--no-such-flag'], cwd)
 			expect(unknown.status).toBe(64)
-			expect(unknown.stderr).toContain('--no-such-flag')
-			const joined = runSkillScript(PATCH_SCRIPT, ['edits.md', '--apply', '--skip=1'], cwd)
-			expect(joined.status).toBe(64)
-			expect(joined.stderr).toContain('--skip=1')
+			expect(unknown.stderr).toContain("'--no-such-flag'")
+			expect(unknown.stderr).toContain('usage: patch.ts')
 			const bare = runSkillScript(PATCH_SCRIPT, ['edits.md', '--skip', '--apply'], cwd)
 			expect(bare.status).toBe(64)
-			expect(bare.stderr).toContain('--skip given with no value')
+			expect(bare.stderr).toContain("'--skip")
 			const range = runSkillScript(PATCH_SCRIPT, ['edits.md', '--apply', '--skip', '2'], cwd)
 			expect(range.status).toBe(64)
-			expect(range.stderr).toContain('edits 1 to 1')
+			expect(range.stderr).toContain('--skip "2" names no edit; the file holds edits 1 to 1')
 			expect(scratch.read('a.txt')).toBe('one\n')
+			const joined = runSkillScript(PATCH_SCRIPT, ['edits.md', '--apply', '--skip=1'], cwd)
+			expect(joined.status).toBe(0)
+			expect(joined.stdout).toContain('#1 skipped a.txt')
+			expect(scratch.read('a.txt')).toBe('one\n')
+			expect(parseArguments(['e.md', '--plan', '--skip=1', '--skip', '3'])).toEqual({
+				success: true,
+				value: { values: { plan: true, skip: ['1', '3'] }, positionals: ['e.md'] },
+			})
 		} finally {
 			scratch.destroy()
 		}

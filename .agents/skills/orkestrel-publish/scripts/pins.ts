@@ -8,10 +8,12 @@
 // range (`>=1.2.0 <2.0.0`, `8.x`) hits its literal bounded the same way and not preceded by another
 // range operator. Each matching line prints once as path:line: text, naming the first requested
 // literal that matched in the order --version then each --range, so the operator rules on it.
-// Exit 0 with no hits, 3 with hits, 64 on usage, including a flag the script does not read and the
-// `--flag=value` form.
+// Exit 0 with no hits, 3 with hits, 64 on usage. The script reads its flags with `parseArgs` in
+// strict mode.
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { parseArgs } from 'node:util'
 
 /** Matches the file extensions the sweep skips as binary. */
 export const BINARY = /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|eot|zip|tgz|gz|pdf|wasm)$/u
@@ -30,12 +32,50 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 	'.idea',
 ])
 
-/** Lists every flag the script reads, value flags and switches alike. */
-export const FLAGS: readonly string[] = ['--version', '--range', '--paths', '--json']
-
 /** Holds the usage line the script prints on a usage refusal. */
 export const USAGE =
 	'usage: pins.ts --version PRIOR [--range PRIOR_RANGE ...] [--paths src,tests,guides] [--json]'
+
+/** Declares every flag the script reads, for `parseArgs`. */
+export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	version: Object.freeze({ type: 'string' }),
+	range: Object.freeze({ type: 'string', multiple: true }),
+	paths: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
+})
+
+/** Describes the arguments `parseArgs` read: each flag's value by name, and the positionals. */
+export interface Arguments {
+	readonly values: Readonly<
+		Record<string, string | boolean | ReadonlyArray<string | boolean> | undefined>
+	>
+	readonly positionals: readonly string[]
+}
+
+/** Describes how `parseArgs` read the arguments: the arguments, or the message it refused them with. */
+export type ArgumentsResult =
+	| { readonly success: true; readonly value: Arguments }
+	| { readonly success: false; readonly error: string }
+
+/**
+ * Parses the arguments in strict mode against `OPTIONS`.
+ *
+ * @param argv - The arguments after the script path.
+ * @returns The values and positionals, or the message `parseArgs` refused the arguments with.
+ */
+export function parseArguments(argv: readonly string[]): ArgumentsResult {
+	try {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			options: OPTIONS,
+			strict: true,
+			allowPositionals: false,
+		})
+		return { success: true, value: { values, positionals } }
+	} catch (error) {
+		return { success: false, error: error instanceof Error ? error.message : String(error) }
+	}
+}
 
 /** Describes one requested literal and the pattern that finds it in a line. */
 export interface Literal {
@@ -64,74 +104,7 @@ export interface WalkedFile {
  * @returns The same path with every backslash replaced by a slash.
  */
 export function normalizeSlashes(path: string): string {
-	return path.split('\\').join('/')
-}
-
-/**
- * Reads the value that follows a flag.
- *
- * @remarks
- * Reads `--flag value` pairs: the first occurrence of a flag wins, a following value that opens
- * with `--` is a missing value, and the `--flag=value` form is not read.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--paths`.
- * @returns The value after the flag, or undefined when the flag is absent, last, or followed by
- * another flag.
- */
-export function readOption(argv: readonly string[], name: string): string | undefined {
-	const index = argv.indexOf(name)
-	const value = index === -1 ? undefined : argv[index + 1]
-	return value === undefined || value.startsWith('--') ? undefined : value
-}
-
-/**
- * Names the value flags a caller gave with no value.
- *
- * @param argv - The arguments after the script path.
- * @param names - The flags that take a value.
- * @returns Each named flag that appears last or is followed by another flag, in argument order.
- */
-export function readMissingFlags(
-	argv: readonly string[],
-	names: readonly string[],
-): readonly string[] {
-	return names.filter((name) => argv.includes(name) && readOption(argv, name) === undefined)
-}
-
-/**
- * Names the flags a caller gave that the script does not read.
- *
- * @remarks
- * Reads the arguments before a bare `--`, which opens a command a script passes on. A `--flag=value`
- * argument is unknown, because the script reads no such form.
- *
- * @param argv - The arguments after the script path.
- * @param flags - Every flag the script reads, value flags and switches alike.
- * @returns Each argument that opens with `--` and is not a read flag, in argument order.
- */
-export function readUnknownFlags(
-	argv: readonly string[],
-	flags: readonly string[],
-): readonly string[] {
-	const end = argv.indexOf('--')
-	return (end === -1 ? argv : argv.slice(0, end)).filter(
-		(argument) => argument.startsWith('--') && !flags.includes(argument),
-	)
-}
-
-/**
- * Reads every value that follows a repeatable flag.
- *
- * @param argv - The arguments after the script path.
- * @param name - The flag, such as `--range`.
- * @returns The values in order, empty when the flag never appears.
- */
-export function readOptions(argv: readonly string[], name: string): readonly string[] {
-	return argv.flatMap((argument, index) => {
-		const value = argv[index + 1]
-		return argument === name && value !== undefined && !value.startsWith('--') ? [value] : []
-	})
+	return path.replaceAll('\\', '/')
 }
 
 /**
@@ -235,27 +208,33 @@ export function sweepFile(path: string, literals: readonly Literal[]): readonly 
 }
 
 /**
+ * Collects the strings a repeatable flag's value holds.
+ *
+ * @param value - The value `parseArgs` read for a flag declared with `multiple: true`.
+ * @returns Each string in order, empty when the flag never appears.
+ */
+export function collectStrings(value: unknown): readonly string[] {
+	return Array.isArray(value)
+		? value.filter((member): member is string => typeof member === 'string')
+		: []
+}
+
+/**
  * Runs the sweep and prints its hits.
  *
  * @param argv - The arguments after the script path.
  * @returns The exit code: 0 with no hits, 3 with hits, 64 on usage.
  */
 export function main(argv: readonly string[]): number {
-	const unknown = readUnknownFlags(argv, FLAGS)
-	if (unknown.length > 0) {
-		console.error(
-			`pins: unknown flag ${unknown.join(', ')}; give each flag and its value as separate arguments\n${USAGE}`,
-		)
+	const parsed = parseArguments(argv)
+	if (!parsed.success) {
+		console.error(`pins: ${parsed.error}; ${USAGE}`)
 		return 64
 	}
-	const missing = readMissingFlags(argv, ['--version', '--range', '--paths'])
-	if (missing.length > 0) {
-		console.error(`pins: ${missing.join(', ')} given with no value`)
-		return 64
-	}
-	const version = readOptions(argv, '--version')[0]
-	const ranges = readOptions(argv, '--range')
-	const paths = (readOptions(argv, '--paths')[0] ?? 'src,tests,guides').split(',')
+	const { values } = parsed.value
+	const version = typeof values.version === 'string' ? values.version : undefined
+	const ranges = collectStrings(values.range)
+	const paths = (typeof values.paths === 'string' ? values.paths : 'src,tests,guides').split(',')
 	if (version === undefined && ranges.length === 0) {
 		console.error(USAGE)
 		return 64
@@ -278,7 +257,7 @@ export function main(argv: readonly string[]): number {
 		.filter((file) => !BINARY.test(file))
 		.flatMap((file) => sweepFile(file, literals))
 	const names = literals.map((entry) => entry.literal)
-	if (argv.includes('--json')) {
+	if (values.json === true) {
 		console.log(JSON.stringify({ literals: names, paths: present, skipped, hits }))
 	} else {
 		for (const hit of hits) console.log(`${hit.path}:${hit.line}: ${hit.text}`)

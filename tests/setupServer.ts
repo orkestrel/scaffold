@@ -5562,20 +5562,23 @@ export const DISCOVERY_NPM_SHAPES: readonly string[] = Object.freeze([
 	'npm run test:unit',
 ])
 
-/** Supplies each discovery argument list the script refuses: an equals form and an unread flag. */
+/** Supplies each discovery argument list `parseArgs` refuses: an unread flag, a value given to a switch, a flag with no value, and a positional. */
 export const DISCOVERY_REFUSED_ARGUMENTS: ReadonlyArray<readonly string[]> = Object.freeze([
-	['--config=vite.config.ts'],
-	['--projects=core'],
 	['--project', 'core'],
 	['--jsno'],
+	['--json=1'],
+	['--config'],
+	['--projects', '--json'],
+	['stray'],
 ])
 
-/** Supplies each titles argument list the script refuses: an equals form and an unread flag. */
+/** Supplies each titles argument list `parseArgs` refuses: an unread flag, a value given to a switch, a flag with no value, and a positional. */
 export const TITLES_REFUSED_ARGUMENTS: ReadonlyArray<readonly string[]> = Object.freeze([
-	['--base', 'HEAD', '--root=pkg'],
-	['--base', 'HEAD', '--out=report.json'],
-	['--base=HEAD'],
 	['--base', 'HEAD', '--jsno'],
+	['--base', 'HEAD', '--json=1'],
+	['--base'],
+	['--base', '-x'],
+	['--base', 'HEAD', 'stray'],
 ])
 
 /** Describes one registration case: a source text and the titles it registers, in order. */
@@ -6253,38 +6256,40 @@ export function runScriptFile(
 }
 
 /**
- * Reads the value flags a skill script declares from the source of its `VALUE_FLAGS` export.
+ * Reads the value flags a skill script declares from the source of its `OPTIONS` export.
  *
  * @param script - The script path relative to the checkout root.
- * @returns Each quoted `--flag` in the declaration, in order; empty when the script declares none.
+ * @returns Each `--flag` the declaration types as a string, in order; empty when the script declares
+ * none.
  */
 export function readScriptValueFlags(script: string): readonly string[] {
 	const source = readFileSync(join(WORKSPACE_ROOT, script), 'utf8')
-	const declaration = /export const VALUE_FLAGS\b[^=]*=([\s\S]*?)\n\n/u.exec(source)?.[1] ?? ''
+	const declaration = /export const OPTIONS\b[^=]*=([\s\S]*?)\n\}\)\n/u.exec(source)?.[1] ?? ''
 	return [
-		...new Set((declaration.match(/'--[a-z][a-z-]*'/gu) ?? []).map((text) => text.slice(1, -1))),
-	]
+		...declaration.matchAll(/^\t'?([a-z][a-z-]*)'?: Object\.freeze\(\{ type: 'string'/gmu),
+	].map((match) => `--${match[1] ?? ''}`)
 }
 
-/** Describes one refusal a script owes: the arguments to give it and the flag its message must name. */
+/** Describes one refusal a script owes: the arguments to give it and the text its message must carry. */
 export type TestFlagRefusal = readonly [args: readonly string[], named: string]
 
 /**
- * Builds the refusals every skill script owes a call that gives an unknown flag.
+ * Builds the refusals `parseArgs` makes for every skill script, each with the quoted flag its message names.
  *
  * @remarks
- * Each value flag appears once beside an unknown flag, so the unknown flag must be named although a
- * value is also missing, and once beside a `--flag=value` form the script does not read.
+ * Each value flag appears once followed by an unknown flag, which `parseArgs` reads as a missing
+ * value and refuses by the value flag, and once after an unknown flag in the `--flag=value` form,
+ * which it refuses by the unknown flag's name.
  *
  * @param flags - The script's value flags.
  * @returns The unknown flag alone, then the pair for each value flag.
  */
 export function buildFlagRefusals(flags: readonly string[]): readonly TestFlagRefusal[] {
 	return [
-		[['--no-such-flag'], '--no-such-flag'],
+		[['--no-such-flag'], "'--no-such-flag'"],
 		...flags.flatMap((flag): readonly TestFlagRefusal[] => [
-			[[flag, '--no-such-flag'], '--no-such-flag'],
-			[['--no-such=1', flag], '--no-such=1'],
+			[[flag, '--no-such-flag'], `'${flag}'`],
+			[['--no-such=1', flag], "'--no-such'"],
 		]),
 	]
 }
@@ -6640,8 +6645,8 @@ export function buildSwapRefusals(
 	return [
 		[[], 'Give one of --pin, --restore, and --status'],
 		[['--pin', '--status', ...consumer], 'Give one mode, not --pin and --status'],
-		[['--status', ...consumer, '--package', 'x'], '--status does not read --package, x'],
-		[['--status', '--consumer'], '--consumer given with no value'],
+		[['--status', ...consumer, '--package', 'x'], '--status does not read --package'],
+		[['--status', '--consumer'], "'--consumer"],
 		[['--status'], '--consumer DIR is required'],
 		[['--pin', ...consumer], '--pin takes at least one --source DIR'],
 		[

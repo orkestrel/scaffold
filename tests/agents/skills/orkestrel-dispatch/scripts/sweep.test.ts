@@ -19,10 +19,8 @@ import {
 	normalizeSlashes,
 	probeOf,
 	readCitation,
-	readMissingFlags,
-	readOption,
-	readThreshold,
-	readUnknownFlags,
+	parseArguments,
+	parseThreshold,
 	removeEmptyDirectories,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/sweep.ts'
 
@@ -223,17 +221,26 @@ describe('sweep.ts', () => {
 			expect(
 				runSkillScript(SWEEP_SCRIPT, ['--unit', '--delete'], { cwd: scratch.path }).status,
 			).toBe(64)
-			expect(
-				runSkillScript(SWEEP_SCRIPT, ['--tmp', '--older-than', 'abc'], { cwd: scratch.path })
-					.status,
-			).toBe(64)
-			expect(
-				runSkillScript(SWEEP_SCRIPT, ['--tmp', '--older-than', '-5'], { cwd: scratch.path }).status,
-			).toBe(64)
+			const abc = runSkillScript(SWEEP_SCRIPT, ['--tmp', '--older-than', 'abc'], {
+				cwd: scratch.path,
+			})
+			expect(abc.status).toBe(64)
+			expect(abc.stderr).toContain('--older-than takes a number of minutes above 0, not "abc"')
+			const negative = runSkillScript(SWEEP_SCRIPT, ['--tmp', '--older-than=-5'], {
+				cwd: scratch.path,
+			})
+			expect(negative.status).toBe(64)
+			expect(negative.stderr).toContain('not "-5"')
+			const hyphen = runSkillScript(SWEEP_SCRIPT, ['--unit=-keep'], { cwd: scratch.path })
+			expect(hyphen.status).toBe(64)
+			expect(hyphen.stderr).toContain(
+				'--unit takes letters, digits, dots, underscores, and hyphens',
+			)
+			expect(hyphen.stderr).toContain('not "-keep"')
 			expect(runSkillScript(SWEEP_SCRIPT, ['--elsewhere'], { cwd: scratch.path }).status).toBe(64)
-			expect(
-				runSkillScript(SWEEP_SCRIPT, ['--tmp', '--unit', 'keep'], { cwd: scratch.path }).status,
-			).toBe(64)
+			const two = runSkillScript(SWEEP_SCRIPT, ['--tmp', '--unit', 'keep'], { cwd: scratch.path })
+			expect(two.status).toBe(64)
+			expect(two.stderr).toContain('three modes; name one')
 			expect(
 				runSkillScript(SWEEP_SCRIPT, ['--tmp', '--older-than'], { cwd: scratch.path }).status,
 			).toBe(64)
@@ -246,7 +253,7 @@ describe('sweep.ts', () => {
 		}
 	})
 
-	it('refuses an unknown flag and the equals form before it sweeps or deletes anything', () => {
+	it('refuses an unknown flag and a value given to a switch before it sweeps or deletes anything, and reads the --flag=value form', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-sweep-flags-' })
 		try {
 			scratch.ensure('.git')
@@ -255,15 +262,29 @@ describe('sweep.ts', () => {
 			utimesSync(join(scratch.path, 'tmp/units/keep-brief.md'), past, past)
 			for (const argv of [
 				['--tmp', '--bogus'],
-				['--tmp', '--older-than=5'],
-				['--unit=keep', '--delete'],
 				['--report', '--delete=yes'],
 			]) {
 				const run = runSkillScript(SWEEP_SCRIPT, argv, { cwd: scratch.path })
 				expect({ argv, status: run.status }).toEqual({ argv, status: 64 })
+				expect(run.stderr).toContain('usage: sweep.ts')
 				expect(run.stdout).toBe('')
 			}
+			expect(
+				runSkillScript(SWEEP_SCRIPT, ['--tmp', '--bogus'], { cwd: scratch.path }).stderr,
+			).toContain("'--bogus'")
 			expect(scratch.has('tmp/units/keep-brief.md')).toBe(true)
+			const listed = runSkillScript(SWEEP_SCRIPT, ['--unit=keep'], { cwd: scratch.path })
+			expect(listed.status).toBe(0)
+			expect(listed.stdout).toContain('1 file(s) for keep')
+			const swept = runSkillScript(SWEEP_SCRIPT, ['--tmp', '--older-than=5'], {
+				cwd: scratch.path,
+			})
+			expect(swept.status).toBe(0)
+			expect(scratch.has('tmp/units/keep-brief.md')).toBe(false)
+			expect(parseArguments(['--unit=a', '--delete'])).toEqual({
+				success: true,
+				value: { values: { unit: 'a', delete: true }, positionals: [] },
+			})
 		} finally {
 			scratch.destroy()
 		}
@@ -388,16 +409,15 @@ describe('the finding reader', () => {
 
 describe('the threshold and the directory sweep', () => {
 	it('reads the threshold in minutes and refuses a value that is not a positive number', () => {
-		expect(readThreshold([])).toBe(60)
-		expect(readThreshold(['--older-than', '5'])).toBe(5)
-		expect(readThreshold(['--older-than', '0.5'])).toBe(0.5)
-		for (const value of ['abc', '0', '-5', 'Infinity']) {
-			expect({ value, minutes: readThreshold(['--older-than', value]) }).toEqual({
+		expect(parseThreshold(undefined)).toBe(60)
+		expect(parseThreshold('5')).toBe(5)
+		expect(parseThreshold('0.5')).toBe(0.5)
+		for (const value of ['abc', '0', '-5', 'Infinity', '']) {
+			expect({ value, minutes: parseThreshold(value) }).toEqual({
 				value,
 				minutes: undefined,
 			})
 		}
-		expect(readThreshold(['--older-than'])).toBeUndefined()
 	})
 
 	it('formats a modification time as its UTC day', () => {
@@ -420,26 +440,6 @@ describe('the threshold and the directory sweep', () => {
 		} finally {
 			scratch.destroy()
 		}
-	})
-})
-
-describe('the argument readers', () => {
-	it('reads a flag value and treats a following flag as a missing value, keeping the first occurrence', () => {
-		const argv = ['--unit', 'demo', '--older-than']
-		expect(readOption(argv, '--unit')).toBe('demo')
-		expect(readOption(argv, '--absent')).toBeUndefined()
-		expect(readOption(['--unit', '--delete'], '--unit')).toBeUndefined()
-		expect(readOption(['--x', '1', '--x', '2'], '--x')).toBe('1')
-		expect(readMissingFlags(argv, ['--unit', '--older-than'])).toEqual(['--older-than'])
-		expect(readMissingFlags(['--unit', 'a'], ['--older-than'])).toEqual([])
-	})
-
-	it('names an unread flag and the equals form, and stops at the command separator', () => {
-		expect(
-			readUnknownFlags(['--unit=demo', '--delete', '--bogus'], ['--unit', '--delete']),
-		).toEqual(['--unit=demo', '--bogus'])
-		expect(readUnknownFlags(['--unit', 'a', '--', '--watch'], ['--unit'])).toEqual([])
-		expect(readUnknownFlags([], [])).toEqual([])
 	})
 })
 
