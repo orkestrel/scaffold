@@ -1131,8 +1131,6 @@ export function pruneEmptiedDirectories(
 	return ordered.flatMap((candidate): readonly string[] => {
 		const directory = resolveContainedPath(target, candidate)
 		if (directory === undefined || !isPhysicalDirectory(directory)) return []
-		const entries = attempt(() => readdirSync(directory))
-		if (!entries.success || entries.value.length > 0) return []
 		return attempt(() => rmdirSync(directory)).success ? [candidate] : []
 	})
 }

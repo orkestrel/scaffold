@@ -22,11 +22,7 @@ import {
 import { dirname, isAbsolute, join, relative, resolve as resolvePath, sep } from 'node:path'
 
 export function hasASCIIURLControl(value: string): boolean {
-	for (const character of value) {
-		const code = character.codePointAt(0)
-		if (code !== undefined && (code <= 0x1f || code === 0x7f)) return true
-	}
-	return false
+	return /[\p{Cc}--[\u0080-\u009f]]/v.test(value)
 }
 
 /**
@@ -372,7 +368,7 @@ export function findPackageDirectory(current: string): string | undefined {
 export function packageRootOf(packageName: string, resolvedPath: string): string | undefined {
 	const physical = physicalPath(resolvedPath)
 	const directory = findPackageDirectory(
-		existsSync(physical) && lstatSync(physical).isDirectory() ? physical : dirname(physical),
+		lstatSync(physical, { throwIfNoEntry: false })?.isDirectory() ? physical : dirname(physical),
 	)
 	return directory !== undefined && packageManifestName(directory) === packageName
 		? realpathSync.native(directory)
@@ -382,7 +378,7 @@ export function packageRootOf(packageName: string, resolvedPath: string): string
 export function packageRootForResolved(resolvedPath: string): string | undefined {
 	const physical = physicalPath(resolvedPath)
 	const directory = findPackageDirectory(
-		existsSync(physical) && lstatSync(physical).isDirectory() ? physical : dirname(physical),
+		lstatSync(physical, { throwIfNoEntry: false })?.isDirectory() ? physical : dirname(physical),
 	)
 	return directory !== undefined && packageManifestName(directory) !== undefined
 		? realpathSync.native(directory)

@@ -910,7 +910,7 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "316a70bb0e3eb51d9831dad144b613e86092fc82c6288b9ce428d2bb0cc93ba0"
+			"digest": "b0c4931baf2a74c04752525f521f37170975357aad3415cc5771d5b92dc854f7"
 		},
 		{
 			"storage": "configs/policy.ts",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "f164d7ae0a443b1373798c09c14772fd5e097cfad7959f27e7eb2d3aea6a30d6"
+			"digest": "6621c52a3551aa0442dcddc6e66018e9c65f56e8ea4f70d9556069f672de4872"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "9e9f3a60ff602aca7812ea56fa06239d14d145068a6d40dc89914bf42423cae6"
+	"digest": "de101acf01aad6944e6d49f587c02f4a98ab5f3277c7927475f8227aa45e098f"
 }
