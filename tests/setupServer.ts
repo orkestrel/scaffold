@@ -5901,16 +5901,59 @@ export class TestLaneBench {
 			readonly cwd?: string
 			readonly cap?: number
 			readonly grandchild?: string
+			readonly solo?: boolean
 		},
 	): TestLaneRun {
 		return this.spawn(
 			[
 				...renderLaneFlags(options?.root ?? this.root, this.journals, label, options?.cap),
+				...(options?.solo === true ? ['--solo'] : []),
 				'--',
 				...this.command(label, options?.grandchild),
 			],
 			options?.cwd,
 		)
+	}
+
+	/**
+	 * Writes `limits.json` under the queue root, which enables the light lanes.
+	 *
+	 * @param limits - The file's content.
+	 */
+	limit(limits: unknown): void {
+		this.scratch.write(join('root', 'limits.json'), JSON.stringify(limits))
+	}
+
+	/**
+	 * Renders the scratch-relative history directory of a command started from the checkout root.
+	 *
+	 * @remarks
+	 * The key is the hex sha256 of the JSON array of the real working directory and the command,
+	 * computed here apart from the script.
+	 *
+	 * @param command - The command and its arguments.
+	 * @returns The directory under the queue root's `history`.
+	 */
+	history(command: readonly string[]): string {
+		const key = createHash('sha256')
+			.update(JSON.stringify([realpathSync(WORKSPACE_ROOT), ...command]))
+			.digest('hex')
+		return join('root', 'history', key)
+	}
+
+	/**
+	 * Writes run records for a command started from the checkout root, oldest first.
+	 *
+	 * @param command - The command and its arguments.
+	 * @param outcomes - The records, each written under an end time that orders it before every run.
+	 */
+	record(command: readonly string[], outcomes: readonly unknown[]): void {
+		for (const [index, outcome] of outcomes.entries()) {
+			this.scratch.write(
+				join(this.history(command), `${String(index + 1).padStart(15, '0')}-seeded.json`),
+				JSON.stringify(outcome),
+			)
+		}
 	}
 
 	/**
@@ -5964,6 +6007,27 @@ export class TestLaneBench {
 		this.#runs.clear()
 		await destroyScratch(this.scratch)
 	}
+}
+
+/**
+ * Reads a Windows process's base priority from `Win32_Process.Priority`.
+ *
+ * @param pid - The process id.
+ * @returns The priority (8 for normal, 6 for below normal), or undefined when no such process reads.
+ */
+export function readProcessPriority(pid: number): number | undefined {
+	const result = spawnSync(
+		'powershell.exe',
+		[
+			'-NoProfile',
+			'-NonInteractive',
+			'-Command',
+			`(Get-CimInstance Win32_Process -Filter 'ProcessId=${String(pid)}').Priority`,
+		],
+		{ encoding: 'utf8', windowsHide: true },
+	)
+	const text = result.stdout.trim()
+	return result.status === 0 && /^\d+$/u.test(text) ? Number(text) : undefined
 }
 
 /**
