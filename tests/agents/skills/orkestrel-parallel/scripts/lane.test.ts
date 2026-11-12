@@ -1505,8 +1505,9 @@ describe('lane.ts', () => {
 			const [light, heavy] = ['one', 'alpha'].map((label) =>
 				Number(readFileSync(`${join(bench.journals, `${label}.jsonl`)}.pid`, 'utf8').trim()),
 			)
+			// A heavy child inherits this run's own priority, which is below normal when the lane runs this file light.
 			expect(readProcessPriority(light ?? 0)).toBe(6)
-			expect(readProcessPriority(heavy ?? 0)).toBe(8)
+			expect(readProcessPriority(heavy ?? 0)).toBe(readProcessPriority(process.pid))
 			bench.meter.releaseAll()
 			expect(await Promise.all([one.exit(), alpha.exit()])).toStrictEqual([0, 0])
 		})
