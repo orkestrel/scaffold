@@ -1120,11 +1120,11 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 	const publishes = blueprint.src.length > 0 || targets.length > 0
 	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const dependencies = Object.fromEntries(
-		[...blueprint.dependencies]
-			.sort((left, right) => comparePrimitives(left.name, right.name))
+		blueprint.dependencies
+			.toSorted((left, right) => comparePrimitives(left.name, right.name))
 			.map((dependency) => [dependency.name, dependency.range]),
 	)
-	const peers = [...blueprint.peers].sort((left, right) => comparePrimitives(left.name, right.name))
+	const peers = blueprint.peers.toSorted((left, right) => comparePrimitives(left.name, right.name))
 	const peerDependencies = Object.fromEntries(peers.map((peer) => [peer.name, peer.range]))
 	const peerDependenciesMeta = Object.fromEntries(
 		peers.filter((peer) => peer.optional === true).map((peer) => [peer.name, { optional: true }]),
@@ -2471,6 +2471,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 						origin: 'template',
 						content: fillTemplate(distribution.module, {
 							types: browser ? distribution.types : '',
+							events: browser ? distribution.events : '',
 							transport: browser ? distribution.transport : '',
 							launcher: browser ? distribution.launcher : '',
 							helpers: browser ? distribution.helpers : '',
@@ -3078,7 +3079,7 @@ export function insertManifestSection(
 ): string | undefined {
 	const tokens = scanManifestTokens(manifest)
 	if (tokens === undefined) return undefined
-	const ordered = [...dependencies].sort((left, right) => comparePrimitives(left.name, right.name))
+	const ordered = dependencies.toSorted((left, right) => comparePrimitives(left.name, right.name))
 	const lines = ordered.map(
 		({ name, range }) => `${JSON.stringify(name)}: ${JSON.stringify(range)}`,
 	)

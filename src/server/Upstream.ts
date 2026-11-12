@@ -712,7 +712,7 @@ export class Upstream implements UpstreamInterface {
 				{ url, count: names.length },
 			)
 		}
-		return [...names].sort()
+		return names.toSorted()
 	}
 
 	// The version the registry's `latest` tag states, or nothing. The version is bounded

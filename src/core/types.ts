@@ -925,6 +925,7 @@ export interface ArtifactTemplateSet {
 		readonly distribution: {
 			readonly module: string
 			readonly proof: string
+			readonly events: string
 			readonly transport: string
 			readonly types: string
 			readonly launcher: string

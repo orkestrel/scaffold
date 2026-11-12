@@ -11,6 +11,7 @@ import {
 	cpSync,
 	existsSync,
 	globSync,
+	lstatSync,
 	mkdirSync,
 	openSync,
 	readdirSync,
@@ -5449,6 +5450,26 @@ describe('configuration helpers', () => {
 				realpathSync.native(packageRoot),
 			)
 			expect(configHelpers.packageRootForResolved(source)).toBe(realpathSync.native(packageRoot))
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('resolves a package root from a path the host reports as absent or beneath a file', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-lstat-' })
+		try {
+			const packageRoot = resolve(scratch.path, 'node_modules/@sample/package')
+			const source = resolve(packageRoot, 'src/index.ts')
+			mkdirSync(dirname(source), { recursive: true })
+			writeFileSync(resolve(packageRoot, 'package.json'), '{"name":"@sample/package"}', 'utf8')
+			writeFileSync(source, 'export {}\n', 'utf8')
+			const expected = realpathSync.native(packageRoot)
+			const absent = resolve(packageRoot, 'src/absent.ts')
+			const beneathFile = resolve(source, 'child')
+			expect(lstatSync(absent, { throwIfNoEntry: false })).toBeUndefined()
+			expect(lstatSync(beneathFile, { throwIfNoEntry: false })).toBeUndefined()
+			expect(configHelpers.packageRootOf('@sample/package', absent)).toBe(expected)
+			expect(configHelpers.packageRootForResolved(beneathFile)).toBe(expected)
 		} finally {
 			scratch.destroy()
 		}

@@ -2770,7 +2770,7 @@ describe('blueprintToScripts config projects', () => {
 			'.filter(({ entry, files }) => entry === undefined && !files.some(matchesDistributionModule))',
 		)
 		expect(content).toContain('undeclared: stage.undeclared,')
-		expect(content).toContain('partitioned: [...stage.subpaths].sort()')
+		expect(content).toContain('partitioned: stage.subpaths.toSorted()')
 		// The falsifying shape: a declaration test that leaves the loop with no bucket
 		// for the subpath it walked past.
 		expect(content).not.toContain("!declaration.endsWith('.d.ts')) continue")

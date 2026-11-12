@@ -49,6 +49,7 @@ import {
 	resolve as resolvePath,
 } from 'node:path'
 import { createInterface } from 'node:readline'
+import { text as consumeText } from 'node:stream/consumers'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { deserialize } from 'node:v8'
 import { gzipSync } from 'node:zlib'
@@ -2559,8 +2560,8 @@ export function buildCheckoutManifest(): HostManifest {
 	]
 	const roots = STAGED_PATHS.filter((path) => HOST_DIRECTORY_PATHS.includes(path))
 	const membership = {
-		entries: [...entries].sort((first, second) => (first.storage < second.storage ? -1 : 1)),
-		roots: [...roots].sort(),
+		entries: entries.toSorted((first, second) => (first.storage < second.storage ? -1 : 1)),
+		roots: roots.toSorted(),
 		surface: [],
 	}
 	return {
@@ -4279,33 +4280,23 @@ export function buildEnvironment(
  * @param options - Where the script runs and what its environment adds.
  * @returns The finished run: its exit, both streams, and its last stdout line parsed as JSON.
  */
-export function spawnSkillScript(
+export async function spawnSkillScript(
 	script: string,
 	args: readonly string[],
 	options?: TestSkillRunOptions,
 ): Promise<TestSkillRun> {
-	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, [join(WORKSPACE_ROOT, script), ...args], {
-			cwd: options?.cwd ?? WORKSPACE_ROOT,
-			env: buildEnvironment(options?.env),
-			windowsHide: true,
-			stdio: ['ignore', 'pipe', 'pipe'],
-		})
-		const stdout: string[] = []
-		const stderr: string[] = []
-		child.stdout.setEncoding('utf8')
-		child.stderr.setEncoding('utf8')
-		child.stdout.on('data', (chunk: string) => {
-			stdout.push(chunk)
-		})
-		child.stderr.on('data', (chunk: string) => {
-			stderr.push(chunk)
-		})
-		child.on('error', reject)
-		child.on('close', (status) => {
-			resolve(buildSkillRun(status, stdout.join(''), stderr.join('')))
-		})
+	const child = spawn(process.execPath, [join(WORKSPACE_ROOT, script), ...args], {
+		cwd: options?.cwd ?? WORKSPACE_ROOT,
+		env: buildEnvironment(options?.env),
+		windowsHide: true,
+		stdio: ['ignore', 'pipe', 'pipe'],
 	})
+	const [stdout, stderr, [status]] = await Promise.all([
+		consumeText(child.stdout),
+		consumeText(child.stderr),
+		once(child, 'close'),
+	])
+	return buildSkillRun(status, stdout, stderr)
 }
 
 /**
@@ -5710,9 +5701,8 @@ export class TestLaneMeter {
 	/** Closes the meter and every connection. */
 	async destroy(): Promise<void> {
 		for (const socket of this.#sockets.values()) socket.destroy()
-		await new Promise<void>((resolve) => {
-			this.#server.close(() => resolve())
-		})
+		this.#server.close()
+		await once(this.#server, 'close')
 	}
 
 	#has(event: TestLaneMark['event'], label: string): boolean {

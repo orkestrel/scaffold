@@ -493,7 +493,7 @@ export class WriteTransaction {
 		const destination = resolve(path)
 		const { anchor: located, missing } = this.#locate(destination)
 		const created: WriteAnchor[] = []
-		for (const segment of [...missing].reverse()) {
+		for (const segment of missing.toReversed()) {
 			const anchor = created.at(-1) ?? located
 			if (!matchesAnchor(anchor)) {
 				throw new ScaffoldError('WRITE', `The directory at ${anchor.path} changed while writing.`, {
@@ -635,13 +635,13 @@ export class WriteTransaction {
 	// and report failures without replacing the failure that started the rollback.
 	#recover(promoted: readonly string[], taken: readonly string[]): readonly unknown[] {
 		const restoreFailures = [
-			...[...taken].reverse().flatMap((path): readonly unknown[] => {
+			...taken.toReversed().flatMap((path): readonly unknown[] => {
 				const restored = attempt(() =>
 					renameSync(this.#resolve(this.#backup, path), this.#expectation(path).path),
 				)
 				return restored.success ? [] : [restored.error]
 			}),
-			...[...promoted].reverse().flatMap((path): readonly unknown[] => {
+			...promoted.toReversed().flatMap((path): readonly unknown[] => {
 				const expectation = this.#expectation(path)
 				const restored = attempt(() => {
 					if (expectation.shape === 'absent') {
@@ -660,7 +660,7 @@ export class WriteTransaction {
 				? attempt(() => rmSync(this.#root, { recursive: true, force: true }))
 				: undefined
 		const clearFailures = cleared === undefined || cleared.success ? [] : [cleared.error]
-		const removeFailures = [...this.#created].reverse().flatMap((created): readonly unknown[] => {
+		const removeFailures = this.#created.toReversed().flatMap((created): readonly unknown[] => {
 			const path = isString(created) ? created : created.path
 			const removed = attempt(() => rmdirSync(path))
 			return !removed.success && !matchesMissingPath(removed.error) ? [removed.error] : []
