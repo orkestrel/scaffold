@@ -86,6 +86,7 @@ import {
 	isPolicyIgnoreReaching,
 	isPolicyCodeSpecifier,
 	createPolicySurfaceGuide,
+	describeSurfaceCollision,
 	readPolicyDeclarations,
 	readPolicyJSON,
 	readPolicyLiteral,
@@ -396,6 +397,21 @@ describe('configuration infrastructure', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('describeSurfaceCollision', () => {
+	it('teaches reuse before renaming with the owner and its import', () => {
+		expect(describeSurfaceCollision('waitForDelay', 'test')).toBe(
+			"surface name belongs to one package: waitForDelay (test). Where the local declaration carries the owner's contract, delete it and import the owner's: import { waitForDelay } from \"@orkestrel/test\", or from the owner's environment entry that exports it. Rename the local declaration only when its contract differs from the owner's, and name it for the thing it is.",
+		)
+	})
+
+	it('encodes and caps an untrusted owner', () => {
+		const message = describeSurfaceCollision('readShared', 'a"\nb' + 'x'.repeat(600))
+		expect(message).not.toContain('\n')
+		expect(message).toContain('from "@orkestrel/a\\"\\nb')
+		expect(message.length).toBeLessThan(1700)
 	})
 })
 
@@ -965,7 +981,7 @@ describe('readPolicyDeclarations', () => {
 					rule: 'surface',
 					path: 'tests/setupServer.ts',
 					line: 1,
-					message: 'surface name belongs to one package: waitForCondition (other)',
+					message: describeSurfaceCollision('waitForCondition', 'other'),
 				})
 			} finally {
 				scratch.destroy()
@@ -989,14 +1005,14 @@ describe('readPolicyDeclarations', () => {
 			expect(
 				inspectPolicyWorkspace(scratch.path).filter(
 					(violation) =>
-						violation.message === 'surface name belongs to one package: waitForCondition (other)',
+						violation.message === describeSurfaceCollision('waitForCondition', 'other'),
 				),
 			).toEqual([
 				{
 					rule: 'surface',
 					path: 'tests/setupServer.ts',
 					line: 1,
-					message: 'surface name belongs to one package: waitForCondition (other)',
+					message: describeSurfaceCollision('waitForCondition', 'other'),
 				},
 			])
 		} finally {
@@ -1013,7 +1029,7 @@ describe('readPolicyDeclarations', () => {
 				rule: 'surface',
 				path: 'src/core/helpers.ts',
 				line: 1,
-				message: 'surface name belongs to one package: readShared (other)',
+				message: describeSurfaceCollision('readShared', 'other'),
 			})
 		} finally {
 			scratch.destroy()
@@ -1029,7 +1045,7 @@ describe('readPolicyDeclarations', () => {
 				rule: 'surface',
 				path: 'tests/helpers.ts',
 				line: 1,
-				message: 'surface name belongs to one package: readShared (other)',
+				message: describeSurfaceCollision('readShared', 'other'),
 			})
 		} finally {
 			scratch.destroy()
@@ -1354,7 +1370,7 @@ describe('inspectPolicySurface evidence', () => {
 				rule: 'surface',
 				path: 'src/browser/types.ts',
 				line: 1,
-				message: 'surface name belongs to one package: readShared (other)',
+				message: describeSurfaceCollision('readShared', 'other'),
 			})
 			expect(violations.slice(1)).toEqual([])
 		} finally {
@@ -1370,7 +1386,7 @@ describe('inspectPolicySurface evidence', () => {
 				rule: 'surface',
 				path: 'src/core/helpers.ts',
 				line: 1,
-				message: 'surface name belongs to one package: readShared (other)',
+				message: describeSurfaceCollision('readShared', 'other'),
 			}
 			const admitted = [{ name: 'readShared', owners: ['other', 'sample'] }]
 			const foreign = [{ name: 'readShared', owners: ['other', 'third'] }]

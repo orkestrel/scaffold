@@ -2465,6 +2465,19 @@ describe('readSurfaceCollisions', () => {
 			workspace.destroy()
 		}
 	})
+	it('refuses a candidate with neither guide nor source by naming that it publishes no surface', () => {
+		const workspace = createScratch({ files: { 'package.json': '{"name":"@orkestrel/taverna"}' } })
+		try {
+			expect(captureError(() => readSurfaceCandidate(workspace.path))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining(
+					'publishes no surface: it has neither "guides/taverna.md" nor src/, as an app-only workspace has neither. Its test:policy surface rule enforces fleet name ownership over its exports',
+				),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
 	it('refuses a missing guide module with the scaffold failure vocabulary', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

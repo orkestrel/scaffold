@@ -2246,7 +2246,7 @@ export function readSurfaceCandidate(root: string, loader?: SurfaceLoader): Surf
 	if (guide === undefined && !isPhysicalDirectory(source)) {
 		throw new ScaffoldError(
 			'TARGET',
-			`Surface candidate ${JSON.stringify(root.slice(0, 512))} has neither ${JSON.stringify(`guides/${owner}.md`)} nor src/. Add its guide or source directory before checking its claims.`,
+			`Surface candidate ${JSON.stringify(root.slice(0, 512))} publishes no surface: it has neither ${JSON.stringify(`guides/${owner}.md`)} nor src/, as an app-only workspace has neither. Its test:policy surface rule enforces fleet name ownership over its exports, so run npm run test:policy there; add its guide or src/ only when the package is meant to publish names.`,
 			{ root },
 		)
 	}
