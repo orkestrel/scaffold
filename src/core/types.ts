@@ -266,7 +266,7 @@ export interface Override {
  * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
- * `bin`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
+ * `bin`, `reporter`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
  * `vendors`, `studies`, `global`, `showcase`, `journey`, `base`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
@@ -316,6 +316,8 @@ export interface Blueprint {
 	readonly engines: string
 	readonly overrides: readonly Override[]
 	readonly bin: boolean
+	/** Selects the exact-case `src/reporter/main.ts` entry of the published Vitest reporter. */
+	readonly reporter: boolean
 	readonly setup: readonly SetupRuntime[]
 	readonly guides: boolean
 	readonly integration: boolean
@@ -829,6 +831,7 @@ export interface ConfigTemplateSet {
 			readonly browser: string
 			readonly server: string
 			readonly bin: string
+			readonly reporter: string
 		}
 		readonly app: {
 			readonly core: string
@@ -859,6 +862,7 @@ export interface ConfigTemplateSet {
 		readonly src: { readonly core: string; readonly browser: string; readonly server: string }
 		readonly app: { readonly core: string; readonly browser: string; readonly server: string }
 		readonly bin: string
+		readonly reporter: string
 		readonly skills: string
 	}
 	readonly vites: {
@@ -870,6 +874,7 @@ export interface ConfigTemplateSet {
 			readonly server: string
 		}
 		readonly bin: string
+		readonly reporter: string
 		readonly app: {
 			readonly vue: string
 			readonly browser: string
@@ -916,6 +921,7 @@ export interface ArtifactTemplateSet {
 		readonly global: { readonly module: string; readonly proof: string }
 		readonly entry: string
 		readonly bin: string
+		readonly reporter: string
 		readonly distribution: {
 			readonly module: string
 			readonly proof: string

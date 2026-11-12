@@ -915,6 +915,7 @@ describe('the emitted-template fixtures', () => {
 		expect(blueprints).toHaveLength((ENVIRONMENT_SELECTIONS.length ** 2 - 1) * 2)
 		expect(blueprints.some(({ src, app }) => src.length === 0 && app.length === 0)).toBe(false)
 		expect(blueprints.filter(({ bin }) => bin)).toHaveLength(blueprints.length / 2)
+		expect(blueprints.filter(({ reporter }) => reporter)).toHaveLength(blueprints.length / 2)
 		expect(blueprints.every(({ name }) => name === 'sample')).toBe(true)
 	})
 
