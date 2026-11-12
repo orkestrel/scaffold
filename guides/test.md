@@ -1051,7 +1051,7 @@ The provider command consumes the browser journey's resolved selector inside Vit
 | `requireContained`       | function | `(root: string, target: string) => string`                                                                          | Resolves a target that stays below a root directory, refusing a path outside it.                     |
 | `hasScratchPath`         | function | `(root: string, target: string) => boolean`                                                                         | Reports whether a contained entry exists under a scratch directory without following its final link. |
 | `isExcluded`             | function | `(key: string, exclusions: readonly string[]) => boolean`                                                           | Reports whether a root-relative key matches an exclusion.                                            |
-| `readIdentity`           | function | `(status: Stats) => ScratchIdentity`                                                                                | Reads the identity of one allocated directory off a host status.                                     |
+| `readIdentity`           | function | `(status: BigIntStats) => ScratchIdentity`                                                                          | Reads the identity of one allocated directory off a host status.                                     |
 | `matchesIdentity`        | function | `(current: ScratchIdentity, allocation: ScratchIdentity) => boolean`                                                | Reports whether two directory identities name the same allocation.                                   |
 | `readErrorCode`          | function | `(error: unknown) => string \| undefined`                                                                           | Reads the `code` an unknown thrown value carries.                                                    |
 | `createLink`             | function | `(path: string, source: string) => void`                                                                            | Creates a symbolic link with a directory-junction fallback for hosts that refuse symbolic links.     |
@@ -1106,7 +1106,9 @@ All three fields are compared because none of them alone identifies an allocatio
 shared by every directory on one filesystem, an index node is reused after its directory is removed,
 and a creation time repeats within the host's timestamp resolution. It is exported so a fixture that
 manages its own directory can make the same check rather than trusting a path. `readIdentity` reads
-that triple off a `node:fs` `Stats`, and it is the one reading `createScratch` takes at allocation,
+that triple off a `node:fs` `BigIntStats` taken with `{ bigint: true }`, with the creation time in
+nanoseconds as `birthtimeNs`. A number `Stats` rounds a file identifier past 2^53, and two distinct
+entries then compare equal. `readIdentity` is the one reading `createScratch` takes at allocation,
 before a `remove`, and before a `destroy`, so the three sites cannot drift on which fields name an
 allocation.
 
@@ -1678,8 +1680,8 @@ These hold across `src/core`, `src/browser`, `src/server`, and this guide.
    reads the entry and then removes the path as separate steps, so an allocation swapped between
    them is removed anyway; whoever swaps it runs as the same uid, which is the population the threat
    model already declines to defend against. And birth time is the host's to supply. This host
-   supplies a real one — the allocation's `birthtimeMs` does not move when files are written into
-   it, while its `ctimeMs` does — so `destroy()` is sound here. Where a host has none, libuv reports
+   supplies a real one — the allocation's `birthtimeNs` does not move when files are written into
+   it, while its `ctimeNs` does — so `destroy()` is sound here. Where a host has none, libuv reports
    `ctime` in its place, the first seeded write moves it, and `destroy()` takes its early return. It
    returns `void`, so that refusal is indistinguishable from success and the allocation leaks
    silently.
@@ -4439,11 +4441,11 @@ Each entry names the contracts its file proves. The test names carry the cases.
   contained relative and absolute targets and both spellings of a path outside the root, and `requireContained`
   takes the same contained pair and each path outside the root refused with the message naming the target it was
   given. `readIdentity` takes a real
-  allocation's three fields, that allocation matching itself across a `stat` and an `lstat`, and a
+  allocation's three bigint fields, that allocation matching itself across a `stat` and an `lstat`, and a
   second allocation reading as a different identity. `readErrorCode` takes a real `ENOENT` off the
   host, a plain object, an `Error` carrying a non-string `code` and one carrying none, a
   null-prototype record, and the values that are not objects at all. `matchesIdentity` takes a triple
-  matching in every field and one differing in each. `isExcluded` takes a key, an ancestor, the root, and a sibling that only
+  matching in every field, one differing in each, and two index nodes that differ only past 2^53. `isExcluded` takes a key, an ancestor, the root, and a sibling that only
   looks like a match. `readInventory` takes key order, extension filtering, exclusion at the named
   door and at the walked one with its spellings normalized to one rule, each of its link refusals
   with a contained intermediate link as the control on the intermediate-link one, a root-level
@@ -4483,7 +4485,7 @@ Each entry names the contracts its file proves. The test names carry the cases.
   `ensure` takes an empty directory, every missing parent, and a repeated call. `link` takes
   traversal through a planted link, the final segment `has` reports rather than follows, and the
   `EEXIST` an occupied final segment throws. `remove` takes a file beside a kept
-  sibling, an empty directory, a populated subtree, a missing target, an ancestor link back to the
+  sibling, a file written immediately after allocation, an empty directory, a populated subtree, a missing target, an ancestor link back to the
   allocation with every seeded file read back afterwards, a final link whose destination is read back
   afterwards, a sibling directory reached through that same ancestor link, a target outside the root with
   the file outside left intact, the root refused as `''`, as `'.'`, and as its absolute path, a
