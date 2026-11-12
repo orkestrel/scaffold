@@ -2032,7 +2032,7 @@ set is reachable through a published specifier.
 | `POLICY_SURFACE_HOST`           | const     | Names the installed host root containing the fleet's reference guides.               |
 | `createPolicySurfaceFixture`    | function  | Creates a scratch target with a complete installed guide population.                 |
 | `createPolicySurfaceGuide`      | function  | Creates a guide whose surface claims the supplied fixture names.                     |
-| `createPolicySurfaceMessage`    | function  | Creates the refusal for a name two packages claim, with the owner's import.          |
+| `describeSurfaceCollision`      | function  | Describes the refusal for a name that two packages claim, with the owner's import.   |
 | `inspectPolicySurface`          | function  | Inspects source and target-owned setup names against the hosted fleet guides.        |
 | `readPolicyDeclarations`        | function  | Locates parsed exports at their physical declaration lines.                          |
 | `readPolicySurface`             | function  | Reads reachable source declarations and refuses unread barrel statements or targets. |

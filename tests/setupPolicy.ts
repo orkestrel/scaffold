@@ -160,13 +160,13 @@ export function createPolicySurfaceGuide(names: readonly string[]): string {
 }
 
 /**
- * Creates the message for a name that two packages claim.
+ * Describes the refusal for a name that two packages claim, with the owner's import.
  *
  * @param name - The colliding bare name.
  * @param owner - The package that owns the name, without its scope.
  * @returns The refusal text that names the owner's import and the reuse-before-renaming rule.
  */
-export function createPolicySurfaceMessage(name: string, owner: string): string {
+export function describeSurfaceCollision(name: string, owner: string): string {
 	const subject = JSON.stringify(name.slice(0, 512)).slice(1, -1)
 	const label = JSON.stringify(owner.slice(0, 512)).slice(1, -1)
 	const specifier = JSON.stringify(`@orkestrel/${owner.slice(0, 512)}`)
@@ -3870,7 +3870,7 @@ export function inspectPolicySurface(root: string): readonly PolicyViolation[] {
 				createPolicyViolation(
 					'surface',
 					declaration.path,
-					createPolicySurfaceMessage(declaration.name, owner),
+					describeSurfaceCollision(declaration.name, owner),
 					declaration.line,
 				),
 			),
