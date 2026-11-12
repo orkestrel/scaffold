@@ -1010,9 +1010,12 @@ chain invokes `test:app`. A chain whose planned form adds an
 aggregate the manifest lacks stays with the package, and the `projects` question keeps its remedy.
 `audit` reports this `test` chain write only through the `projects` question, so a planned step that
 registers no Vitest project, such as `npm run test:guides`, lands on the next `repair` without an
-earlier advisory. `audit` reports no `build:app` chain write, so in a barrel workspace only the
-`scripts` question's report of a missing `build:app:barrel` script precedes that write. A `test` or
-`build:app` chain running any other step or order stays maintainer-owned, as do the
+earlier advisory. `audit` reports no `build:app` chain write, so `repair` rewrites a predecessor
+`build:app` with no earlier advisory after `build:app:barrel` is declared, and before then only the
+`scripts` question's report of a missing `build:app:barrel` script precedes that write. A
+package-owned `build:app` chain that omits the barrel step stays with the package, and the `scripts`
+question reports that no chain from `build` reaches `build:app:barrel`. A `test` or `build:app` chain
+running any other step or order stays maintainer-owned, as do the
 `check`, `build`, `dev`, `serve`, `format`, `lint`, `clean`, and `copy` gate chains. A
 declared value is overwritten only when it is already the value being written or is a recognized
 generated predecessor. The overwrite happens in place,
@@ -1700,14 +1703,14 @@ A workspace that selects `studies` and the `server` application also builds the 
 `build:app:barrel` script exist only under that condition, and `build:app` runs the script after
 `build:app:server`. `serve:build` runs `build` before `serve`, so the barrel, which the server
 build's emptied `dist/app/server` would otherwise lose, and every browser face the server serves are
-rebuilt. The build emits the single file `dist/app/server/index.js` with `@app/*` and
-`@src/*` specifiers and relative imports inlined, and `node:` and every installed package specifier
-left external. It sets `emptyOutDir` to `false`, so `main.cjs` stays byte-identical. A workspace
-without both conditions plans none of the three. Scaffold's `tests/src/core/templates.test.ts` builds both entries in a
-staged root, compares the `main.cjs` digest across the barrel step, builds the barrel twice for one
-`index.js` digest, imports the file in Node, and holds each claim under a control. The vendored
-`tests/config.test.ts` repeats the externals, digest, and `main.cjs` readings in each target that
-plans the barrel.
+rebuilt. The build emits the single file `dist/app/server/index.js` with `@app/*` and `@src/*`
+specifiers and relative imports inlined, and `node:` and every installed package specifier left
+external. It sets `emptyOutDir` to `false`, so `main.cjs` stays byte-identical. A workspace without
+both conditions plans none of the three. Scaffold's `tests/src/core/templates.test.ts` builds both
+entries in a staged root, compares the `main.cjs` digest across the barrel step, builds the barrel
+twice for one `index.js` digest, imports the file in Node, and holds each claim under a control.
+The vendored `tests/config.test.ts` repeats the externals, digest, and `main.cjs` readings in each
+target that plans the barrel.
 
 ### The migration guard
 

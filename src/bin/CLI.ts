@@ -77,6 +77,7 @@ import {
 	JOURNEY_CONFIG_PATH,
 	isFloorPath,
 	isScaffoldError,
+	matchesBarrel,
 	matchesGuideRefusal,
 	manifestToDependencies,
 	manifestToName,
@@ -1641,6 +1642,34 @@ export class CLI implements CLIInterface {
 		}
 	}
 
+	// Report a planned application server barrel that no chain from `build` reaches. The
+	// projection carries the writable predecessor chains, so a `build:app` chain a write
+	// replaces raises nothing and only a package-owned chain that omits the step is reported.
+	#barrelQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
+		if (!matchesBarrel(blueprint)) return undefined
+		const text = this.#manifest(target)
+		const manifest =
+			replaceManifestScripts(text, manifestToWritableScripts(text, blueprint)) ?? text
+		const parsed = parseJSON(manifest)
+		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
+		const chain = collectScriptChain('build', scripts, new Map())
+		if (chain.visited.has('build:app:barrel')) return undefined
+		if (chain.unreadable.size > 0) {
+			return {
+				field: 'scripts',
+				message: `The manifest at ${target} declares a build chain the audit could not read literally, so it cannot confirm that npm run build reaches the planned script build:app:barrel. The unreadable scripts are ${[...chain.unreadable].sort().join(', ')}, because each command is not a literal sequence of npm run scripts. Replace each with literal npm run script names.`,
+				blocking: false,
+				groups: ['manifest'],
+			}
+		}
+		return {
+			field: 'scripts',
+			message: `The manifest at ${target} does not reach the planned script build:app:barrel from build, so npm run build does not emit dist/app/server/index.js. Invoke npm run build:app:barrel from the build chain, after npm run build:app:server.`,
+			blocking: false,
+			groups: ['manifest'],
+		}
+	}
+
 	// Report absent and differing writable scripts separately. Audit owns this
 	// advisory. Writing verbs reach the manifest region writer, which appends an
 	// absent script, upgrades an accepted predecessor, and retains a differing
@@ -1896,6 +1925,8 @@ export class CLI implements CLIInterface {
 			const script = this.#scriptQuestion(target, blueprint)
 			if (script !== undefined) questions.push(script)
 		}
+		const barrel = this.#barrelQuestion(target, blueprint)
+		if (barrel !== undefined) questions.push(barrel)
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)
 		const dependency = this.#dependencyQuestion(target, blueprint, writing, declaring)

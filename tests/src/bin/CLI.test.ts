@@ -4719,6 +4719,180 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('reports a planned barrel that no chain from build reaches, and only for a package-owned build:app', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', {
+				src: ['core'],
+				app: ['core', 'server'],
+				studies: true,
+			})
+			workspace.ensure('target/app/core')
+			workspace.ensure('target/app/server')
+			workspace.write('target/tests/studies/adapter.test.ts', '')
+			const planned = blueprintToScripts(blueprint)
+			const args = [
+				'--groups',
+				'manifest',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--offline',
+				'--json',
+			]
+			const owned = 'npm run build:app:server && npm run check'
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint, undefined, undefined, { ...planned, 'build:app': owned }),
+			)
+
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(['audit', ...args]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} does not reach the planned script build:app:barrel from build, so npm run build does not emit dist/app/server/index.js. Invoke npm run build:app:barrel from the build chain, after npm run build:app:server.`,
+					blocking: false,
+				},
+			])
+
+			// A chain the barrel step follows from another script is reached, so the question stays silent.
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint, undefined, undefined, {
+					...planned,
+					'build:app': `${owned} && npm run build:app:barrel`,
+				}),
+			)
+			const reached = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...reached.options }).execute(['audit', ...args]),
+			).toBe(EXIT_CLEAN)
+			const terminal: Audit = JSON.parse(reached.output[0] ?? '')
+			expect(terminal.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([])
+
+			// A build command the audit cannot read literally is reported as unread, never as reached or unreached.
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint, undefined, undefined, {
+					...planned,
+					build: 'npm run clean && echo "unterminated',
+				}),
+			)
+			const unread = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...unread.options }).execute(['audit', ...args]),
+			).toBe(EXIT_CLEAN)
+			const opaque: Audit = JSON.parse(unread.output[0] ?? '')
+			expect(opaque.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} declares a build chain the audit could not read literally, so it cannot confirm that npm run build reaches the planned script build:app:barrel. The unreadable scripts are build, because each command is not a literal sequence of npm run scripts. Replace each with literal npm run script names.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a missing serve:build script with its exact planned line', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { src: ['core'], app: ['core', 'server'] })
+			workspace.ensure('target/app/core')
+			workspace.ensure('target/app/server')
+			const scripts: Record<string, string> = { ...blueprintToScripts(blueprint) }
+			delete scripts['serve:build']
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint, undefined, undefined, scripts),
+			)
+			const sink = createSink()
+
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} does not declare a planned script: serve:build. Add this exact script line to package.json: "serve:build": "npm run build && npm run serve",`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('retains and reports a customized serve:build script, and accepts its generated predecessor', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { src: ['core'], app: ['core', 'server'] })
+			workspace.ensure('target/app/core')
+			workspace.ensure('target/app/server')
+			const planned = blueprintToScripts(blueprint)
+			const customized = 'npm run build:app:server && npm run serve -- --port 8080'
+			const args = [
+				'--groups',
+				'manifest',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--offline',
+				'--json',
+			]
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(blueprint, undefined, undefined, {
+					...planned,
+					'serve:build': customized,
+				}),
+			)
+			const sink = createSink()
+
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(['audit', ...args]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} declares a planned script with a differing value: serve:build. Keep the declared value unchanged or replace it with the planned value: "serve:build" declares ${JSON.stringify(customized)}; planned ${JSON.stringify(planned['serve:build'])}.`,
+					blocking: false,
+				},
+			])
+
+			const repaired = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute(['repair', ...args]),
+			).toBe(EXIT_CLEAN)
+			const written = requireValue(workspace.read('target/package.json'))
+			expect(written).toContain(`"serve:build": ${JSON.stringify(customized)}`)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('appends absent scripts while retaining and reporting a differing html script', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
