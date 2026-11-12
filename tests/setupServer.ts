@@ -4291,12 +4291,13 @@ export async function spawnSkillScript(
 		windowsHide: true,
 		stdio: ['ignore', 'pipe', 'pipe'],
 	})
-	const [stdout, stderr, [status]] = await Promise.all([
+	const [stdout, stderr, closed] = await Promise.all([
 		consumeText(child.stdout),
 		consumeText(child.stderr),
 		once(child, 'close'),
 	])
-	return buildSkillRun(status, stdout, stderr)
+	const [status]: readonly unknown[] = closed
+	return buildSkillRun(typeof status === 'number' ? status : null, stdout, stderr)
 }
 
 /**
