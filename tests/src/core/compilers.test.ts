@@ -6386,3 +6386,99 @@ describe('compilers over a list that serves one iterator read it where the loops
 		expect(writable.reads.length - planned.reads.length - sheeted.reads.length).toBe(names.length)
 	})
 })
+
+// A workspace publishes a Vitest reporter when it holds `src/reporter/main.ts`. Each case reads
+// the fact present beside the same selection with the fact absent, so an output the fact adds is
+// named and a selection without it keeps the output it had.
+describe('reporter entry', () => {
+	const absent = buildBlueprint({ src: ['core', 'server'] })
+	const present = buildBlueprint({ src: ['core', 'server'], reporter: true })
+
+	it('publishes the ES-only reporter subpath and its output directory', () => {
+		expect(blueprintToExports(present)['./reporter']).toStrictEqual({
+			import: { types: './dist/reporter/main.d.ts', default: './dist/reporter/main.js' },
+		})
+		expect(Object.keys(blueprintToExports(present))).toStrictEqual([
+			'.',
+			'./server',
+			'./package.json',
+			'./reporter',
+		])
+		expect(blueprintToExports(absent)['./reporter']).toBeUndefined()
+		const manifest: unknown = JSON.parse(blueprintToManifest(present))
+		const control: unknown = JSON.parse(blueprintToManifest(absent))
+		expect(isRecord(manifest) ? manifest.files : undefined).toContain('dist/reporter')
+		expect(isRecord(control) ? control.files : undefined).not.toContain('dist/reporter')
+		expect(isRecord(manifest) ? manifest.sideEffects : undefined).toBe(false)
+	})
+
+	it('plans the reporter check, build, and test scripts beside the source environments', () => {
+		const scripts = blueprintToScripts(present)
+		expect(scripts['check:src:reporter']).toBe('tsc --noEmit -p configs/src/tsconfig.reporter.json')
+		expect(scripts['build:src:reporter']).toBe(
+			'vite build --config configs/src/vite.reporter.config.ts',
+		)
+		expect(scripts['test:src:reporter']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:reporter',
+		)
+		expect(scripts['check:src']).toBe(
+			'npm run check:src:core && npm run check:src:server && npm run check:src:reporter',
+		)
+		expect(scripts['build:src']).toBe(
+			'npm run build:src:core && npm run build:src:server && npm run build:src:reporter',
+		)
+		expect(scripts['test:src']).toContain('--project src:server --project src:reporter')
+		const control = blueprintToScripts(absent)
+		for (const name of ['check:src:reporter', 'build:src:reporter', 'test:src:reporter']) {
+			expect(control[name]).toBeUndefined()
+		}
+		expect(Object.values(control).join('\n')).not.toMatch(/src:reporter|\.reporter\./u)
+	})
+
+	it('registers the src:reporter project, its root factory, and its wrappers', () => {
+		expect(blueprintToProjects(present)).toContain('src:reporter')
+		expect(blueprintToProjects(absent)).not.toContain('src:reporter')
+		const root = blueprintToRootVite(present)
+		expect(root).toContain(CONFIG_TEMPLATES.factories.src.reporter)
+		expect(root).toMatch(/projects: \[[^\]]*srcReporter/u)
+		expect(listUndeclaredIdentifiers(root)).toStrictEqual([])
+		expect(blueprintToRootVite(absent)).not.toContain('Reporter')
+
+		const wrappers = blueprintToConfigArtifacts(present).filter(({ path }) =>
+			path.includes('reporter'),
+		)
+		expect(wrappers.map(({ path }) => path)).toStrictEqual([
+			'configs/src/vite.reporter.config.ts',
+			'configs/src/tsconfig.reporter.json',
+		])
+		const vite = wrappers.find(({ path }) => path === 'configs/src/vite.reporter.config.ts')
+		expect(vite?.content).toContain(
+			"\t\t\t\t\tpaths: {\n\t\t\t\t\t\t'@src/core': '../src/core/index.js',\n\t\t\t\t\t\t'@src/server': '../src/server/index.js',\n\t\t\t\t\t},",
+		)
+		expect(vite?.content).toContain('rewrite: rewriteServerSpecifier,')
+		expect(
+			blueprintToConfigArtifacts(absent).filter(({ path }) => path.includes('reporter')),
+		).toStrictEqual([])
+	})
+
+	it('seeds the reporter proof and the server setup it runs under', () => {
+		const seeded = blueprintToTestArtifacts(present).find(
+			({ path }) => path === 'tests/src/reporter/main.test.ts',
+		)
+		expect(seeded).toMatchObject({ group: 'tests', ownership: 'birth', origin: 'template' })
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ src: ['core'], reporter: true })).map(
+				({ path }) => path,
+			),
+		).toContain('tests/setupServer.ts')
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).map(({ path }) => path),
+		).not.toContain('tests/setupServer.ts')
+		expect(blueprintToSourceArtifacts(present).map(({ path }) => path)).not.toContain(
+			'src/reporter/main.ts',
+		)
+		expect(blueprintToTestArtifacts(absent).map(({ path }) => path)).not.toContain(
+			'tests/src/reporter/main.test.ts',
+		)
+	})
+})

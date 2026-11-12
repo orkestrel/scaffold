@@ -271,6 +271,7 @@ describe('configuration templates', () => {
 				createBlueprint('published', {
 					src: ['core', 'browser', 'server'],
 					bin: true,
+					reporter: true,
 					vendors: ['ollama'],
 				}),
 				createBlueprint('server-only', { src: ['server'] }),
@@ -1579,6 +1580,100 @@ export default appServer(override)
 		// three because the cost under a full suite run is contention rather than work.
 	}, 360_000)
 
+	// This checkout holds no `src/reporter/main.ts`, so the vendored reporter case takes its
+	// absence branch here. The case stages a target with `src/core`, `src/server`, and the
+	// reporter entry, copies the real vendored files, and runs the reporter case through a nested
+	// Vitest. Three further staged copies carry one mutation each in the emitted reporter wrapper:
+	// no `output.paths` row for the server, no declaration rewrite, and no source map. Each has to
+	// fail at the assertion on its own output file, so a pass cannot be a run that reached none.
+	it('runs the vendored reporter proof in a staged target and fails under mutation', async () => {
+		const title = 'builds the reporter entry to one ES module whose default is the server class'
+		expect(readFileSync(resolve('tests/config.test.ts'), 'utf8')).toContain(title)
+		const cases = [
+			{ prefix: 'present', from: '', to: '', code: 0, text: '1 passed' },
+			{
+				prefix: 'unpathed',
+				from: "\t\t\t\t\t\t'@src/server': '../src/server/index.js',\n",
+				to: '',
+				code: 1,
+				text: '"file": "main.js",',
+			},
+			{
+				prefix: 'unrewritten',
+				from: '\t\t\t\trewrite: rewriteServerSpecifier,\n',
+				to: '',
+				code: 1,
+				text: '"file": "main.d.ts"',
+			},
+			{
+				prefix: 'unmapped',
+				from: '\t\tbuild: {\n\t\t\trolldownOptions: {',
+				to: '\t\tbuild: {\n\t\t\tsourcemap: false,\n\t\t\trolldownOptions: {',
+				code: 1,
+				text: '"file": "main.js.map"',
+			},
+		]
+		const wrapper = 'configs/src/vite.reporter.config.ts'
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-reporter-vendored-',
+		})
+		try {
+			for (const { prefix, from, to, code, text } of cases) {
+				const blueprint = createBlueprint('sample', { src: ['core', 'server'], reporter: true })
+				stageRootConfig(blueprint, workspace, prefix)
+				workspace.link(`${prefix}/node_modules/@orkestrel/scaffold`, resolve('.'))
+				for (const artifact of [
+					...blueprintToConfigArtifacts(blueprint),
+					...blueprintToSourceArtifacts(blueprint),
+					...blueprintToTestArtifacts(blueprint),
+				]) {
+					if (artifact.origin !== 'host')
+						workspace.write(`${prefix}/${artifact.path}`, artifact.content)
+				}
+				workspace.write(
+					`${prefix}/src/server/index.ts`,
+					'export class SampleReporter {\n\treadonly name = "sample"\n}\n',
+				)
+				workspace.write(
+					`${prefix}/src/reporter/main.ts`,
+					"import { SampleReporter } from '@src/server'\n\nexport default SampleReporter\n",
+				)
+				for (const path of ['tests/config.test.ts', 'tests/setupPolicy.ts', 'configs/policy.ts']) {
+					workspace.write(`${prefix}/${path}`, readFileSync(resolve(path), 'utf8'))
+				}
+				const emitted = requireValue(workspace.read(`${prefix}/${wrapper}`))
+				expect(emitted).toContain(from)
+				workspace.write(`${prefix}/${wrapper}`, emitted.replace(from, to))
+				const staged = join(workspace.path, prefix)
+				const result = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'run',
+							'--config',
+							'vite.config.ts',
+							'--project',
+							'config',
+							'tests/config.test.ts',
+							'-t',
+							title,
+						],
+					},
+					{ workspace: staged, timeout: 150_000, strict: false },
+				)
+				expect(`${result.stdout}${result.stderr}`).toContain(text)
+				expect(result.code).toBe(code)
+			}
+		} finally {
+			workspace.destroy()
+		}
+		// Four nested Vitest runs, each loading the staged configuration and the vendored policy
+		// modules and running three real builds, two with a declaration roll-up; the budget carries
+		// room for all four because the cost under a full suite run is contention rather than work.
+	}, 640_000)
+
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)
 
@@ -1831,6 +1926,14 @@ export default appServer(override)
 			)
 			expect(workspace.read('studied/vite.config.ts')).toContain('export function appBarrel(')
 			expect(checkTypes(workspace.ensure('studied'))).toBe('')
+			// A reporter selection adds the reporter factory to a source server configuration.
+			stageRootConfig(
+				createBlueprint('sample', { src: ['core', 'server'], reporter: true }),
+				workspace,
+				'reported',
+			)
+			expect(workspace.read('reported/vite.config.ts')).toContain('export function srcReporter(')
+			expect(checkTypes(workspace.ensure('reported'))).toBe('')
 
 			const control = emitted.replace('codeSplitting: false', "codeSplitting: 'never'")
 			expect(control).not.toBe(emitted)
@@ -1847,10 +1950,10 @@ export default appServer(override)
 		} finally {
 			workspace.destroy()
 		}
-		// Three real `tsc` invocations, each measured at about nine seconds for the
+		// Four real `tsc` invocations, each measured at about nine seconds for the
 		// browser configuration. The budget carries slack over that because the cost
 		// is contention, not work.
-	}, 60_000)
+	}, 90_000)
 
 	it('typechecks the Vue factories and their wrappers on each axis', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-vue-types-' })
@@ -2348,6 +2451,46 @@ describe('emitted distribution classifier', () => {
 					`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
 				]),
 			).toEqual([['dist/src/server/index.js.map: src/core/errors.ts']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// A relative server import in the reporter entry bundles the server class into
+	// `dist/reporter/main.js`, so the scan reads that face and names the copied server source; the
+	// control map lists the entry alone. An output outside every named face stays unread.
+	it('A8.1 reads the reporter face and reports a server source copied into it', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-reporter-' })
+		try {
+			const file = writeDistributionHarness(workspace)
+			const installed = writeDistributionFixture(workspace, {})
+			workspace.write('installed/dist/reporter/main.js', 'export const reporter = 1\n')
+			workspace.write(
+				'installed/dist/reporter/main.js.map',
+				JSON.stringify({
+					version: 3,
+					sources: ['../../src/reporter/main.ts', '../../src/server/index.ts'],
+				}),
+			)
+			const faces = [
+				`scan.readDistributionFace(${JSON.stringify(installed)}, ${JSON.stringify(join(installed, 'dist/reporter/main.js'))})`,
+				`scan.readDistributionFace(${JSON.stringify(installed)}, ${JSON.stringify(join(installed, 'dist/other/x.js'))})`,
+				`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+			]
+			expect(driveModule(file, 'scan', faces)).toEqual([
+				'reporter',
+				undefined,
+				['dist/reporter/main.js.map: src/server/index.ts'],
+			])
+			workspace.write(
+				'installed/dist/reporter/main.js.map',
+				JSON.stringify({ version: 3, sources: ['../../src/reporter/main.ts'] }),
+			)
+			expect(
+				driveModule(file, 'scan', [
+					`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
+				]),
+			).toEqual([[]])
 		} finally {
 			workspace.destroy()
 		}

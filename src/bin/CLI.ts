@@ -85,6 +85,7 @@ import {
 	replaceManifestScripts,
 	replaceManifestOverrides,
 	replacePlanRanges,
+	REPORTER_ENTRY_PATH,
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
 	SKILLS_CONFIG_PATH,
@@ -1370,6 +1371,7 @@ export class CLI implements CLIInterface {
 			})
 		}
 		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
+		const reporter = resolveContainedPath(target, REPORTER_ENTRY_PATH)
 		const tests = resolveContainedPath(target, 'tests')
 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
@@ -1415,6 +1417,7 @@ export class CLI implements CLIInterface {
 			app: targetToEnvironments(target, 'app'),
 			dependencies: manifestToDependencies(manifest).runtime,
 			bin: bin !== undefined && isExactCaseFile(bin),
+			reporter: reporter !== undefined && isExactCaseFile(reporter),
 			setup: [...setup],
 			guides: guides !== undefined && isExactCaseFile(guides),
 			integration: integration !== undefined && isExactCaseFile(integration),

@@ -6,6 +6,7 @@ import {
 	DISTRIBUTION_TEST_PATH,
 	GUIDES_TEST_PATH,
 	INTEGRATION_TEST_PATH,
+	REPORTER_ENTRY_PATH,
 	SERVICE_TEST_INCLUDE,
 	STUDIES_TEST_INCLUDE,
 } from './constants.js'
@@ -419,6 +420,46 @@ export function srcBin(override?: UserConfig): UserConfig {
 			// spends seconds in process startup and filesystem work rather than milliseconds.
 			// Vitest's five-second default clears one alone and times out under a full suite.
 			testTimeout: 15_000,
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
+			reporter: `function resolveReporterFilename(): string {
+	return 'main.js'
+}
+
+function resolveReporterExternal(id: string): boolean {
+	return id.startsWith('@src/') || resolveExternal(id, { peers, refused: [], siblings: [] })
+}
+
+export function srcReporter(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		publicDir: false,
+		plugins: [outputBoundary('dist/reporter')],
+		build: {
+			emptyOutDir: true,
+			sourcemap: true,
+			minify: false,
+			lib: {
+				entry: resolveWorkspacePath('${REPORTER_ENTRY_PATH}'),
+				formats: ['es'],
+				fileName: resolveReporterFilename,
+			},
+			outDir: 'dist/reporter',
+			target: 'node22',
+			rolldownOptions: {
+				onLog: enforceBuildLog,
+				external: resolveReporterExternal,
+			},
+		},
+		test: {
+			name: { label: 'src:reporter', color: 'cyan' },
+			include: ['tests/src/reporter/**/*.test.ts'],
+			setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+			environment: 'node',
+			browser: { enabled: false },
 		},
 	}
 	return mergeOverride(project, override)
@@ -1112,6 +1153,25 @@ export function probe(override?: UserConfig): UserConfig {
 	]
 }
 `,
+		reporter: `{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext"],
+		"types": ["node"],
+		"noEmit": false,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"rootDir": "../../src",
+		"outDir": "../../dist/reporter"
+	},
+	"include": [
+		"../../src/reporter/**/*.cts",
+		"../../src/reporter/**/*.mts",
+		"../../src/reporter/**/*.ts",
+		"../../src/reporter/**/*.tsx"
+	]
+}
+`,
 		skills: `{
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
@@ -1270,6 +1330,29 @@ export default defineConfig(
 					id.startsWith('@src/') || resolveExternal(id, { peers, refused: [], siblings: [] }),
 				output: {
 					banner: '#!/usr/bin/env node',
+{{paths}}
+				},
+			},
+		},
+	}),
+)
+`,
+		reporter: `import { defineConfig } from 'vite'
+import { declarationRollup, rewriteServerSpecifier } from '../helpers.js'
+import { resolveWorkspacePath, srcReporter } from '../../vite.config.ts'
+
+// Each external \`@src/*\` path resolves from \`dist/reporter/\` to the built environment.
+export default defineConfig(
+	srcReporter({
+		plugins: [
+			declarationRollup({
+				project: resolveWorkspacePath('configs/src/tsconfig.reporter.json'),
+				rewrite: rewriteServerSpecifier,
+			}),
+		],
+		build: {
+			rolldownOptions: {
+				output: {
 {{paths}}
 				},
 			},
@@ -1875,6 +1958,15 @@ describe('bin entry', () => {
 	it('has no starter exports', async () => {
 {{import}}
 		expect(Object.keys(entry)).toStrictEqual([])
+	})
+})
+`,
+		reporter: `import { describe, expect, it } from 'vitest'
+import reporter from '../../../src/reporter/main.js'
+
+describe('reporter entry', () => {
+	it('exports the reporter class by default', () => {
+		expect(reporter).toBeTypeOf('function')
 	})
 })
 `,
@@ -3135,8 +3227,8 @@ export function readDistributionFace(installed: string, path: string): string | 
 	return output === 'dist'
 		? axis === 'src'
 			? face
-			: axis === 'bin'
-				? 'bin'
+			: axis === 'bin' || axis === 'reporter'
+				? axis
 				: undefined
 		: undefined
 }

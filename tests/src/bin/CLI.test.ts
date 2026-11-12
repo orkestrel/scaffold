@@ -3901,6 +3901,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			workspace.ensure('target/src/bin')
+			workspace.ensure('target/src/reporter')
 			workspace.ensure('target/tests')
 			workspace.write('target/configs/app/other.config.ts', 'export {}\n')
 			expect(
@@ -3916,6 +3917,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const absent = workspace.read('target/vite.config.ts')
 			expect(absent).not.toContain("label: 'src:bin'")
+			expect(absent).not.toContain("label: 'src:reporter'")
 			expect(absent).not.toContain("label: 'guides'")
 			expect(absent).not.toContain("label: 'integration'")
 			expect(absent).not.toContain("label: 'conformance'")
@@ -3925,6 +3927,7 @@ describe('CLI audit', () => {
 			expect(absent).not.toContain('appShowcase')
 
 			workspace.write('target/src/bin/Main.ts', 'export {}\n')
+			workspace.write('target/src/reporter/Main.ts', 'export {}\n')
 			workspace.write('target/tests/Guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/Tree.test.ts', 'export {}\n')
 			workspace.write('target/tests/Setup.test.ts', 'export {}\n')
@@ -3941,15 +3944,18 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:bin'")
+			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:reporter'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'guides'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'tree'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'setup'")
 			workspace.remove('target/src/bin/Main.ts')
+			workspace.remove('target/src/reporter/Main.ts')
 			workspace.remove('target/tests/Guides.test.ts')
 			workspace.remove('target/tests/Tree.test.ts')
 			workspace.remove('target/tests/Setup.test.ts')
 
 			workspace.write('target/src/bin/main.ts', 'export {}\n')
+			workspace.write('target/src/reporter/main.ts', 'export {}\n')
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
 			workspace.write('target/tests/guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
@@ -3963,6 +3969,7 @@ describe('CLI audit', () => {
 				src: ['core'],
 				app: ['browser'],
 				bin: true,
+				reporter: true,
 				setup: ['node'],
 				guides: true,
 				integration: true,
@@ -3986,6 +3993,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const present = workspace.read('target/vite.config.ts')
 			expect(present).toContain("label: 'src:bin'")
+			expect(present).toContain("label: 'src:reporter'")
 			expect(present).toContain("label: 'setup'")
 			expect(present).toContain("label: 'guides'")
 			expect(present).toContain("label: 'integration'")

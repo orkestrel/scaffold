@@ -736,7 +736,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "0a5a7b0278de5ab0c7ef8633e74729af393fff366003f031d97ae8d63fbd0d38"
+			"digest": "3caf95acda2cd82009e8291970a0826eba91c98688eaa1bb3a17d232cbf662ae"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -910,7 +910,7 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "316a70bb0e3eb51d9831dad144b613e86092fc82c6288b9ce428d2bb0cc93ba0"
+			"digest": "6c0b3109c97bea961b440ae64bbcb54a3a82a23faa052f97213b0f6b2fb9a699"
 		},
 		{
 			"storage": "configs/policy.ts",
@@ -970,7 +970,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "8c459fbf2120d1de42cdf6380e26988c96044253578c6b2b9749cab322155c62"
+			"digest": "067e6118929b9fff899e2cab6ac133d791b17abfdd12757c12d076e56323dbd2"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "69f9a370df9fa370bf52e6090f343ec724df3fd7ec517fdfa6c5b3e53bd2226b"
+			"digest": "8a20916c55247460b5d708eff49d79718ff1b6090974160492164b20e735b0e9"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "f164d7ae0a443b1373798c09c14772fd5e097cfad7959f27e7eb2d3aea6a30d6"
+			"digest": "81bd55e9b46d3fb0b92875909b3ebe952857533ae464615ac0cb04e4828514fe"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "984fadd39e0cc0b09742920165d2114f6c22a4ccb7e49ca7530d9a7b157014a3"
+	"digest": "7106aedbb3b9fcb63e4619401599c332c2309c93ceb9b83cca3e92e59ff6e7b3"
 }
