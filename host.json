@@ -724,7 +724,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "3af5f4c5104a7846d0ee4dfb40bc8f4940d90f4a00bee3bee0c4e6d4bf6980ac"
+			"digest": "2847f18d0033f8427d7a19c07bd0860beee136e2e4fb0e115e3a2ba32230695e"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "b7a01ef90671422f3e49e520fb046c37ef21c45703c2181a5a66529cd6faa29c"
+			"digest": "a4ca8fba9ae07021fdbc28c8fef149acdc800d7cca00652f2d3503882359686f"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1342,13 +1342,13 @@
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "f52fbd4346715e945b62dcaa1530a3a5d4e2c960bccfc06f5d37b2b1dae7a254"
+			"digest": "1b6ee3c7e2dbfdc583f2766c5d151f634e029479ce51b400143e0e1c6eec6858"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "de7149a4e2b47686d4509f5302993276b583a2c1c3c4800fabff9dde3132b9ec"
+			"digest": "dac43808d7ffb3fe72d4220badf05b18f552ab15366889ff51c6445540c63042"
 		}
 	],
 	"roots": [
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "af026d36bf20bfe231afb42e6a984e5484069bc3c11e82eb32b10ea6df24d0ae"
+	"digest": "79853a71c4fcfd19629e453578b2d826da498283d9ca66840712a960158ef3a6"
 }

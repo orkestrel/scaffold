@@ -1127,7 +1127,7 @@ describe('sheet planning', () => {
 			for (const text of [
 				'export function sheetProject(name: string, override?: UserConfig): UserConfig',
 				"existsSync(resolveWorkspacePath('tests/setupStyles.ts'))",
-				"include: ['@orkestrel/test', '@orkestrel/test/browser']",
+				"include: ['@orkestrel/test', '@orkestrel/test/browser', '@orkestrel/contract']",
 			])
 				expect(root.includes(text)).toBe(styled)
 			expect(root).not.toContain("label: 'setup:browser'")
@@ -2198,6 +2198,20 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		expect(planned['@microsoft/api-extractor']).toBeUndefined()
 	})
 
+	it('plans contract in every workspace except the contract workspace', () => {
+		for (const blueprint of [
+			createBlueprint('router', { src: ['core'] }),
+			createBlueprint('service', { src: [], app: ['server'] }),
+		]) {
+			expect(blueprintToDevDependencies(blueprint)['@orkestrel/contract']).toBe('^0.0.23')
+		}
+		expect(
+			blueprintToDevDependencies(createBlueprint('contract', { src: ['core'] }))[
+				'@orkestrel/contract'
+			],
+		).toBeUndefined()
+	})
+
 	it('keeps library publishing tools in an executable workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
 
@@ -2764,8 +2778,8 @@ describe('blueprintToScripts config projects', () => {
 		// list. Node reads an array in an exports entry as one, so a walker refusing it
 		// collects no target, and the subpath is filed as excluded and never measured
 		// while the totality assertion stays green.
-		expect(content).toMatch(/if \(isDistributionList\(entry\)\)\s+return entry\.flatMap/u)
-		expect(content).toContain('if (isDistributionList(entry)) {')
+		expect(content).toMatch(/if \(isArray\(entry\)\)\s+return entry\.flatMap/u)
+		expect(content).toContain('if (isArray(entry)) {')
 	})
 
 	// Each Node drive filters installed entries by its runtime capability, so entries

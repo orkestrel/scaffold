@@ -628,6 +628,7 @@ describe('vendored imports', () => {
 			{ path: 'control/from.ts', content: "import { value } from '@orkestrel/test/server'" },
 			{ path: 'control/dynamic.ts', content: 'await import(`@orkestrel/test/server`)' },
 			{ path: 'control/guide.ts', content: "import { findDrift } from '@orkestrel/guide'" },
+			{ path: 'control/contract.ts', content: "import { isRecord } from '@orkestrel/contract'" },
 			{ path: 'control/console.ts', content: "import { render } from '@orkestrel/console'" },
 			{
 				path: 'control/quoted.ts',
@@ -692,6 +693,7 @@ describe('vendored imports', () => {
 			'control/from.ts: @orkestrel/test/server declared',
 			'control/dynamic.ts: @orkestrel/test/server declared',
 			'control/guide.ts: @orkestrel/guide declared',
+			'control/contract.ts: @orkestrel/contract declared',
 			'control/console.ts: @orkestrel/console undeclared',
 			'control/expression.ts: unreadable import',
 		])

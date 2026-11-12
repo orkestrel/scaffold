@@ -27,7 +27,6 @@ import {
 	inspectSkillBridges,
 	isPolicyFile,
 	isPolicyMirror,
-	isPolicyRecord,
 	isPolicyStray,
 	matchesSkillTrigger,
 	parseSkillFrontmatter,
@@ -1073,12 +1072,5 @@ describe('policy configuration wiring', () => {
 
 	it('reports a configuration that is not a record', () => {
 		expect(inspectPolicyWiring([], [], [])).toEqual(['Oxlint configuration must be a record'])
-	})
-
-	it('admits a plain record and refuses an array, null, and a primitive', () => {
-		expect(isPolicyRecord({})).toBe(true)
-		expect(isPolicyRecord([])).toBe(false)
-		expect(isPolicyRecord(null)).toBe(false)
-		expect(isPolicyRecord('record')).toBe(false)
 	})
 })

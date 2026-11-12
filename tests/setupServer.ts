@@ -3947,6 +3947,7 @@ export const UPSTREAM_PATHS = Object.freeze({
 export const FLEET_UPSTREAM_PATHS = Object.freeze({
 	organization: '/-/org/orkestrel/package',
 	packages: Object.freeze({
+		contract: '/@orkestrel%2Fcontract',
 		emitter: '/@orkestrel%2Femitter',
 		guide: '/@orkestrel%2Fguide',
 		probe: '/@orkestrel%2Fprobe',
@@ -3956,6 +3957,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
 		test: '/@orkestrel%2Ftest',
 	}),
 	mirrors: Object.freeze({
+		contract: '/orkestrel/contract/refs/heads/main/guides/contract.md',
 		emitter: '/orkestrel/emitter/refs/heads/main/guides/emitter.md',
 		guide: '/orkestrel/guide/refs/heads/main/guides/guide.md',
 		probe: '/orkestrel/probe/refs/heads/main/guides/probe.md',
@@ -4960,6 +4962,10 @@ export const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> 
 		status: 200,
 		body: buildPackument(CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture']?.slice(1) ?? ''),
 	},
+	[FLEET_UPSTREAM_PATHS.packages.contract]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/contract']?.slice(1) ?? ''),
+	},
 	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
 	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
 	[FLEET_UPSTREAM_PATHS.packages.probe]: {
@@ -5011,6 +5017,11 @@ export const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> 
  * Maps each fleet mirror path to the guide text the repository fixture serves for it.
  */
 export const FLEET_MIRROR_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
+	[FLEET_UPSTREAM_PATHS.mirrors.contract]: {
+		status: 200,
+		body: '# Contract\n',
+		type: 'text/plain',
+	},
 	[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 200, body: '# Emitter\n', type: 'text/plain' },
 	[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
 	[FLEET_UPSTREAM_PATHS.mirrors.probe]: { status: 200, body: '# Probe\n', type: 'text/plain' },
@@ -5062,7 +5073,10 @@ export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object
 		status: 200,
 		body: buildPackument(BROWSE_DEV_DEPENDENCIES['@orkestrel/browser']?.slice(1) ?? ''),
 	},
-	'/@orkestrel%2Fcontract': { status: 200, body: buildPackument('0.0.13') },
+	'/@orkestrel%2Fcontract': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/contract']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.5') },
 	'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
 	'/@orkestrel%2Fhtml': { status: 200, body: buildPackument('0.0.4') },

@@ -2877,6 +2877,7 @@ describe('emitted distribution classifier', () => {
 				browser
 					? [
 							'../configs/browsers.js',
+							'@orkestrel/contract',
 							'@vitest/browser-playwright',
 							'playwright',
 							'playwright',
@@ -2884,7 +2885,7 @@ describe('emitted distribution classifier', () => {
 							'vite',
 							'vitest',
 						].sort()
-					: ['vite', 'vitest'],
+					: ['@orkestrel/contract', 'vite', 'vitest'],
 			)
 			expect(module.content).not.toMatch(/\b(?:describe|it|expect)\s*\(/u)
 		}

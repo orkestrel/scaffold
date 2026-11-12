@@ -30,7 +30,6 @@ import {
 import { fillTemplate } from '@orkestrel/template'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
-	APP_DEV_DEPENDENCIES,
 	APP_MATRIX,
 	APP_SERVER_DEV_DEPENDENCIES,
 	AXES,
@@ -367,7 +366,6 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser') || sheets
 			? SOURCE_BROWSER_DEV_DEPENDENCIES
 			: {}),
-		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 		...Object.fromEntries(

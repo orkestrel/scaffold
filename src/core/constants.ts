@@ -669,6 +669,7 @@ export const WORKSPACE_DEV_ENGINES = Object.freeze({
 
 /** Holds the baseline tooling versions, before framework holds apply. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@orkestrel/contract': manifest.dependencies['@orkestrel/contract'],
 	'@orkestrel/guide': manifest.devDependencies['@orkestrel/guide'],
 	'@orkestrel/probe': manifest.devDependencies['@orkestrel/probe'],
 	'@orkestrel/scaffold': `^${manifest.version}`,
@@ -825,11 +826,6 @@ export const BROWSE_UPSTREAM: readonly string[] = Object.freeze([
 	'@orkestrel/tool',
 	'@orkestrel/websocket',
 ])
-
-/** Names the development dependency every private `app` environment adds. */
-export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/contract': manifest.dependencies['@orkestrel/contract'],
-})
 
 /** Lists the development dependencies a private browser application adds. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({

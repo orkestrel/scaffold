@@ -209,7 +209,7 @@ Test helpers are shared infrastructure, not local test-file clutter.
 - For the test modules scaffold owns, keep shared helpers within them instead of importing them
   from `@orkestrel/test`. In the vendored set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
   `tests/config.test.ts`), follow the vendored-file import law in `.claude/rules/workspace.md`. In
-  the `tests/setupDistribution.ts` harness, import only `node:` modules, `vitest`, and `vite`, and
+  the `tests/setupDistribution.ts` harness, import only `node:` modules, `@orkestrel/contract`, `vitest`, and `vite`, and
   in its browser variant also `playwright`, `@vitest/browser-playwright`, and
   `../configs/browsers.js`.
 
