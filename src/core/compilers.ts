@@ -946,9 +946,9 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * Every direct `test:<project>` script is writable, together with the probe and
  * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
  * whose package-owned entry runs the guides project and handles explicit parity
- * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication lifecycle scripts.
- * Sheet and framework faces add their check and build scripts, application frameworks add dev scripts,
- * and selected showcases and journeys add their mode scripts.
+ * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication
+ * lifecycle scripts. Sheet and framework faces add their check and build scripts, application
+ * frameworks add dev scripts, and selected showcases and journeys add their mode scripts.
  * A base browser application's journey axis also adds `journey` and `capture`, and each
  * app-side browser face adds `journey:<name>` and `capture:<name>`. Their generated
  * commands are writable and have no predecessor forms; customized values remain caller-owned.
@@ -965,10 +965,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * existed. The pack hook accepts the build chain emitted before it
  * delegated to `build`. The publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. No accepted publication chain carries a study
- * step. `serve:build` accepts the server-only chain it ran before it delegated to
- * `build`. The value being written is always writable, so it is not repeated there. Any other value is a script the workspace author
- * customized, and {@link replaceManifestScripts} retains it while writing the
- * other named scripts independently.
+ * step. `serve:build` accepts the server-only chain it ran before it delegated to `build`.
+ * The value being written is always writable, so it is not repeated there. Any other value is a
+ * script the workspace author customized, and {@link replaceManifestScripts} retains it while
+ * writing the other named scripts independently.
  *
  * @example
  * ```ts
