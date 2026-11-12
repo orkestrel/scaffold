@@ -27,7 +27,6 @@ import type {
 import { VERB_OPTIONS, VERBS } from '../src/bin/constants.js'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
-	APP_DEV_DEPENDENCIES,
 	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BROWSE_DEV_DEPENDENCIES,
@@ -2584,8 +2583,6 @@ export const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'DISTRIBUTION_RUNTIME_CONDITIONS',
 	'DISTRIBUTION_BUNDLER_CONDITIONS',
 	'DISTRIBUTION_DECLARATION_CONDITIONS',
-	'isDistributionRecord',
-	'isDistributionList',
 	'matchesDistributionPackageTarget',
 	'readDistributionJSON',
 	'readDistributionPeers',
@@ -2998,6 +2995,7 @@ export const HOOK_SETUP_TEXT = [
  * Lists the fleet packages the upstream fixtures answer for.
  */
 export const FLEET_NAMES: readonly string[] = Object.freeze([
+	'@orkestrel/contract',
 	'@orkestrel/emitter',
 	'@orkestrel/guide',
 	'@orkestrel/probe',
@@ -3052,7 +3050,6 @@ export const DEPENDENCY_TABLES = [
 	['browse', BROWSE_DEV_DEPENDENCIES],
 	['capture', CAPTURE_DEV_DEPENDENCIES],
 	['source browser', SOURCE_BROWSER_DEV_DEPENDENCIES],
-	['app', APP_DEV_DEPENDENCIES],
 	['app browser', APP_BROWSER_DEV_DEPENDENCIES],
 	['vue', FRAMEWORK_MATRIX.vue.dependencies],
 	['app server', APP_SERVER_DEV_DEPENDENCIES],

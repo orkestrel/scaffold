@@ -74,6 +74,10 @@ describe('scaffold', () => {
 	it('routes the configured npm registry through the process entry', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const registry = await createUpstreamServer({
+			'/@orkestrel%2Fcontract': {
+				status: 200,
+				body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/contract']?.slice(1) ?? ''),
+			},
 			'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.6') },
 			'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
 			'/@orkestrel%2Fprobe': { status: 200, body: buildPackument('0.0.2') },

@@ -15,7 +15,6 @@ import { globSync } from 'node:fs'
 import { join, matchesGlob } from 'node:path'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
-	APP_DEV_DEPENDENCIES,
 	ARTIFACT_GROUPS,
 	ARTIFACT_TEMPLATES,
 	BASE_DEV_DEPENDENCIES,
@@ -2754,7 +2753,6 @@ describe('CLI audit', () => {
 					omitDependencies(
 						{
 							...TARGET_DEV_DEPENDENCIES,
-							...APP_DEV_DEPENDENCIES,
 							...APP_BROWSER_DEV_DEPENDENCIES,
 							...BROWSE_DEV_DEPENDENCIES,
 						},
@@ -2796,7 +2794,6 @@ describe('CLI audit', () => {
 					omitDependencies(
 						{
 							...TARGET_DEV_DEPENDENCIES,
-							...APP_DEV_DEPENDENCIES,
 							...APP_BROWSER_DEV_DEPENDENCIES,
 							...BROWSE_DEV_DEPENDENCIES,
 						},
@@ -3101,6 +3098,92 @@ describe('CLI audit', () => {
 			])
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
 			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps contract in dependencies without a question or a development row', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const range = requireValue(BASE_DEV_DEPENDENCIES['@orkestrel/contract'])
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(
+					undefined,
+					{ '@orkestrel/emitter': '^0.0.5', '@orkestrel/contract': range },
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['@orkestrel/contract']),
+				),
+			)
+			const sink = createSink()
+			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			expect(manifest).toMatchObject({ dependencies: { '@orkestrel/contract': range } })
+			expect(manifest).not.toHaveProperty(['devDependencies', '@orkestrel/contract'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('asks for contract when a core-only workspace declares it nowhere', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(
+					undefined,
+					undefined,
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['@orkestrel/contract']),
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'dependencies',
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: @orkestrel/contract. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/contract": "^0.0.23",`,
+					blocking: false,
+				},
+			])
 		} finally {
 			workspace.destroy()
 		}
@@ -9099,7 +9182,14 @@ describe('CLI catalog', () => {
 			expect(result.provenance).toStrictEqual({ guides: 'floor' })
 			expect(result.note).toContain('guide-only')
 			expect(result.membership).toBeUndefined()
-			expect(result.mirrors.map((mirror) => mirror.name)).toStrictEqual(FLEET_NAMES)
+			expect(result.mirrors.map((mirror) => mirror.name)).toStrictEqual([
+				'@orkestrel/emitter',
+				'@orkestrel/contract',
+				'@orkestrel/guide',
+				'@orkestrel/probe',
+				'@orkestrel/scaffold',
+				'@orkestrel/test',
+			])
 			expect(result.written).toContain('guides/emitter.md')
 			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBe(
 				readFileHex(fleet.host, 'guides/emitter.md'),
@@ -9273,6 +9363,13 @@ describe('CLI catalog', () => {
 			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
 			expect(requireValue(result.membership).entries).toStrictEqual([
 				{
+					name: '@orkestrel/contract',
+					lookup: 'found',
+					version: '0.0.23',
+					dependencies: [],
+					peers: [],
+				},
+				{
 					name: '@orkestrel/emitter',
 					lookup: 'found',
 					version: '0.0.6',
@@ -9304,6 +9401,7 @@ describe('CLI catalog', () => {
 			])
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
 				'guides/emitter.md',
+				'guides/contract.md',
 				'guides/guide.md',
 				'guides/probe.md',
 				'guides/scaffold.md',
@@ -9376,6 +9474,7 @@ describe('CLI catalog', () => {
 			expect(code).toBe(EXIT_CLEAN)
 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
 			expect(requireValue(result.membership).entries.map((entry) => entry.name)).toStrictEqual([
+				'@orkestrel/contract',
 				'@orkestrel/emitter',
 				'@orkestrel/guide',
 				'@orkestrel/probe',
@@ -9516,9 +9615,12 @@ describe('CLI catalog', () => {
 			// instead and this list would be empty.
 			expect(server.paths).toStrictEqual([
 				FLEET_UPSTREAM_PATHS.organization,
-				...Object.values(FLEET_UPSTREAM_PATHS.mirrors).filter(
-					(path) => path !== FLEET_UPSTREAM_PATHS.mirrors.router,
-				),
+				FLEET_UPSTREAM_PATHS.mirrors.emitter,
+				FLEET_UPSTREAM_PATHS.mirrors.contract,
+				FLEET_UPSTREAM_PATHS.mirrors.guide,
+				FLEET_UPSTREAM_PATHS.mirrors.probe,
+				FLEET_UPSTREAM_PATHS.mirrors.scaffold,
+				FLEET_UPSTREAM_PATHS.mirrors.test,
 			])
 		} finally {
 			await server.destroy()
@@ -9598,6 +9700,7 @@ describe('CLI new dependencies', () => {
 			expect(server.paths).toStrictEqual([
 				FLEET_UPSTREAM_PATHS.packages.emitter,
 				FLEET_UPSTREAM_PATHS.packages.router,
+				FLEET_UPSTREAM_PATHS.packages.contract,
 				FLEET_UPSTREAM_PATHS.packages.guide,
 				FLEET_UPSTREAM_PATHS.packages.probe,
 				FLEET_UPSTREAM_PATHS.packages.scaffold,

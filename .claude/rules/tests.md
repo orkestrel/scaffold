@@ -209,9 +209,9 @@ Test helpers are shared infrastructure, not local test-file clutter.
 - For the test modules scaffold owns, keep shared helpers within them instead of importing them
   from `@orkestrel/test`. In the vendored set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
   `tests/config.test.ts`), follow the vendored-file import law in `.claude/rules/workspace.md`. In
-  the `tests/setupDistribution.ts` harness, import only `node:` modules, `vitest`, and `vite`, and
-  in its browser variant also `playwright`, `@vitest/browser-playwright`, and
-  `../configs/browsers.js`.
+  the `tests/setupDistribution.ts` harness, import only `node:` modules, `@orkestrel/contract`,
+  `vitest`, and `vite`, and in its browser variant also `playwright`, `@vitest/browser-playwright`,
+  and `../configs/browsers.js`.
 
 - Extract a fixture, recorder, event factory, async wait, renderer, scenario/data builder, protocol fixture, or DOM builder as soon as it could serve another test.
 - Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.

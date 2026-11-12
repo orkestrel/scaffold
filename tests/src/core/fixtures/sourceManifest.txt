@@ -62,6 +62,7 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.60.1",
+		"@orkestrel/contract": "^0.0.23",
 		"@orkestrel/guide": "^0.0.31",
 		"@orkestrel/probe": "^0.0.30",
 		"@orkestrel/scaffold": "^0.0.133",
