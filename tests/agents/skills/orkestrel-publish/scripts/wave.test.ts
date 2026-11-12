@@ -804,7 +804,12 @@ describe('wave.ts', () => {
 			join(WORKSPACE_ROOT, '.agents/skills/orkestrel-publish/references/wave.md'),
 			'utf8',
 		)
-		expect(wave).toContain("Re-pin every range the audit's release readings name")
+		expect(wave).toContain(
+			"Re-pin every `dependencies` and `devDependencies` range the audit's release readings name",
+		)
+		expect(wave.replace(/\s+/gu, ' ')).toContain(
+			'Keep a published `peerDependencies` range at the floor the release needs: raise it only when its floor fails the release.',
+		)
 		expect(wave).toContain('Force-verify the same audit population and lookup bounds')
 		expect(wave).toContain('scripts spawn the npm CLI beside the running')
 		const skill = readFileSync(
@@ -1994,34 +1999,52 @@ describe('the manifest ranges', () => {
 	it('rewrites the manifest only when a range moved', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-write-' })
 		try {
-			expect(writeRanges(scratch.path, [])).toEqual([])
+			expect(writeRanges(scratch.path, [])).toEqual({ moved: [], kept: [] })
 			const original = `{\n  "name": "x",\n  "dependencies": { "a": "^1.2.0" }\n}\n`
 			scratch.write('package.json', original)
 			const same: readonly Release[] = [{ name: 'a', range: '^1.2.0', latest: '1.2.0' }]
-			expect(writeRanges(scratch.path, same)).toEqual([])
+			expect(writeRanges(scratch.path, same)).toEqual({ moved: [], kept: [] })
 			expect(scratch.read('package.json')).toBe(original)
+			const peer = `{\n  "name": "x",\n  "peerDependencies": { "a": "^1.0.0" }\n}\n`
+			scratch.write('package.json', peer)
+			const moved: readonly Release[] = [{ name: 'a', range: '^1.0.0', latest: '1.2.0' }]
+			expect(writeRanges(scratch.path, moved)).toEqual({
+				moved: [],
+				kept: ['peer a ^1.0.0 left alone, not ^1.2.0'],
+			})
+			expect(scratch.read('package.json')).toBe(peer)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('moves the runtime and development ranges and keeps a peer range the registry moved past', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-peer-' })
+		try {
 			scratch.write(
 				'package.json',
 				JSON.stringify({
-					name: 'x',
-					dependencies: { a: '^1.0.0' },
-					peerDependencies: { a: '^1.0.0' },
-					devDependencies: { a: '^1.0.0' },
+					name: '@fixture/capture',
+					dependencies: { '@orkestrel/contract': '^0.0.22' },
+					peerDependencies: { vite: '^8.3.7' },
+					devDependencies: { vite: '^8.3.7' },
 				}),
 			)
-			const moved: readonly Release[] = [{ name: 'a', range: '^1.0.0', latest: '1.2.0' }]
-			expect(writeRanges(scratch.path, moved)).toEqual([
-				'a ^1.0.0 -> ^1.2.0',
-				'a ^1.0.0 -> ^1.2.0',
-				'a ^1.0.0 -> ^1.2.0',
-			])
+			const releases: readonly Release[] = [
+				{ name: '@orkestrel/contract', range: '*', latest: '0.0.23' },
+				{ name: 'vite', range: '^8', latest: '8.3.8' },
+			]
+			expect(writeRanges(scratch.path, releases)).toEqual({
+				moved: ['@orkestrel/contract ^0.0.22 -> ^0.0.23', 'vite ^8.3.7 -> ^8.3.8'],
+				kept: ['peer vite ^8.3.7 left alone, not ^8.3.8'],
+			})
 			expect(scratch.read('package.json')).toBe(
 				`${JSON.stringify(
 					{
-						name: 'x',
-						dependencies: { a: '^1.2.0' },
-						peerDependencies: { a: '^1.2.0' },
-						devDependencies: { a: '^1.2.0' },
+						name: '@fixture/capture',
+						dependencies: { '@orkestrel/contract': '^0.0.23' },
+						peerDependencies: { vite: '^8.3.7' },
+						devDependencies: { vite: '^8.3.8' },
 					},
 					null,
 					'\t',
@@ -2029,6 +2052,49 @@ describe('the manifest ranges', () => {
 			)
 		} finally {
 			scratch.destroy()
+		}
+	})
+})
+
+describe('the pin step', () => {
+	it('keeps a peer range the registry has moved past and names it in the rewrite journal', async () => {
+		const session = await createWaveSession('orkestrel-wave-peer-')
+		try {
+			session.scratch.write(
+				'consumer/package.json',
+				renderPackageManifest({
+					...readInstalledRecord(session.target),
+					peerDependencies: { pr: '^1.0.0' },
+				}),
+			)
+			trackFiles(session.target)
+			commitFiles(session.target)
+			const run = await spawnSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--regenerate', '--to', 'pin', '--json'],
+				{ cwd: session.target, env: session.environment },
+			)
+			expect(run.status).toBe(0)
+			const steps = run.json?.steps
+			if (!isArray(steps)) throw new Error('The visit carries no steps')
+			const row = steps.find(
+				(step) =>
+					isRecord(step) && step.command === 'rewrite audit release ranges to the registry caret',
+			)
+			if (!isRecord(row) || !isString(row.note) || !isString(row.journal))
+				throw new Error('The visit carries no rewrite row')
+			expect(row.note).toBe('pr ^1.0.0 -> ^1.0.1; peer pr ^1.0.0 left alone, not ^1.0.1')
+			expect(readFileSync(row.journal, 'utf8')).toContain('peer pr ^1.0.0 left alone, not ^1.0.1')
+			const written = readInstalledRecord(session.target)
+			expect(written.peerDependencies).toEqual({ pr: '^1.0.0' })
+			expect(written.devDependencies).toEqual({
+				'@orkestrel/scaffold': '1.0.0',
+				vt: '^1.0.0',
+				bp: '^1.0.0',
+				pr: '^1.0.1',
+			})
+		} finally {
+			await session.destroy()
 		}
 	})
 })

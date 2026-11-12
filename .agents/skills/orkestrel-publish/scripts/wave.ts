@@ -3,7 +3,10 @@
 //   node .agents/skills/orkestrel-publish/scripts/wave.ts --plan [--catalog PATH] [--json]
 // --visit runs the visit `wave.md` § Visit a repository fixes, in order, stopping at the first step
 // that fails: pin (read `scaffold audit --json`, whose drift exit is the reading the pin closes, then
-// re-pin every range the audit release readings name to the registry caret and install), commit (`git commit --only` of
+// re-pin every `dependencies` and `devDependencies` range the audit release readings name to the registry caret and
+// install; the pin step raises a `peerDependencies` range only when its floor fails the release, and no reading the
+// visit takes names such a floor, so every peer stays as declared and the rewrite row names each peer it left
+// alone), commit (`git commit --only` of
 // the manifest and lockfile as the preparation commit), overwrite (`scaffold overwrite --json`, then
 // `scaffold audit` exiting 0; offline, an exit of 1 whose note names the skipped catalog step is
 // accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
@@ -186,6 +189,12 @@ export interface Verdict {
 export interface RangeMove {
 	readonly ranges: Record<string, unknown>
 	readonly moved: readonly string[]
+}
+
+/** Describes a manifest re-pin: the ranges it moved and the peer ranges it left at their floor. */
+export interface Rewrite {
+	readonly moved: readonly string[]
+	readonly kept: readonly string[]
 }
 
 /** Describes the bump ruling a visit reaches. */
@@ -1606,29 +1615,51 @@ export function computeRanges(
 }
 
 /**
- * Writes the re-pinned ranges into the target's manifest.
+ * Writes the re-pinned ranges into the target's manifest, keeping every peer range at its floor.
+ *
+ * @remarks
+ * A `peerDependencies` range moves only when its floor fails the release, and no reading the visit
+ * takes names a floor the release needs, so every peer the registry moved past stays as declared and
+ * is reported as kept.
  *
  * @param target - The target directory.
  * @param releases - The audit's release readings.
- * @returns One message per range moved; the manifest is rewritten only when a range moved.
+ * @returns One message per range moved and one per peer range kept; the manifest is rewritten only
+ * when a range moved.
+ * @example
+ * ```ts
+ * writeRanges('.', [{ name: 'vite', range: '^8', latest: '8.3.8' }])
+ * // { moved: ['vite ^8.3.7 -> ^8.3.8'], kept: ['peer vite ^8.3.7 left alone, not ^8.3.8'] }
+ * ```
  */
-export function writeRanges(target: string, releases: readonly Release[]): readonly string[] {
+export function writeRanges(target: string, releases: readonly Release[]): Rewrite {
 	const manifest = readManifest(target)
-	if (manifest === undefined) return []
+	if (manifest === undefined) return { moved: [], kept: [] }
 	const fields = RANGE_FIELDS.flatMap((field) => {
 		const block = manifest[field]
 		if (typeof block !== 'object' || block === null) return []
-		return [{ field, ...computeRanges(Object.fromEntries(Object.entries(block)), releases) }]
+		const ranges = Object.fromEntries(Object.entries(block))
+		return [{ field, ranges, moves: computeRanges(ranges, releases) }]
 	})
-	const moved = fields.flatMap((entry) => entry.moved)
+	const peers = fields.filter((entry) => entry.field === 'peerDependencies')
+	const kept = peers.flatMap((entry) =>
+		Object.entries(entry.ranges)
+			.filter(([name, range]) => entry.moves.ranges[name] !== range)
+			.map(
+				([name, range]) =>
+					`peer ${name} ${String(range)} left alone, not ${String(entry.moves.ranges[name])}`,
+			),
+	)
+	const pinned = fields.filter((entry) => entry.field !== 'peerDependencies')
+	const moved = pinned.flatMap((entry) => entry.moves.moved)
 	if (moved.length > 0) {
 		const written = {
 			...manifest,
-			...Object.fromEntries(fields.map((entry) => [entry.field, entry.ranges])),
+			...Object.fromEntries(pinned.map((entry) => [entry.field, entry.moves.ranges])),
 		}
 		writeFileSync(join(target, 'package.json'), `${JSON.stringify(written, null, '\t')}\n`)
 	}
-	return moved
+	return { moved, kept }
 }
 
 /**
@@ -1657,12 +1688,12 @@ export function runPin(
 	if (audit !== undefined) {
 		const releases = readReleases(audit.stdout)
 		if (releases === undefined || (audit.status !== 0 && audit.status !== 1)) return
-		const moved = writeRanges(runner.target, releases)
+		const { moved, kept } = writeRanges(runner.target, releases)
 		appendStep(
 			runner,
 			'pin',
 			'rewrite audit release ranges to the registry caret',
-			moved.length === 0 ? 'no range moved' : moved.join(', '),
+			[moved.length === 0 ? 'no range moved' : moved.join(', '), ...kept].join('; '),
 		)
 	} else {
 		appendStep(runner, 'pin', 'rewrite audit release ranges to the registry caret', 'dry run')
