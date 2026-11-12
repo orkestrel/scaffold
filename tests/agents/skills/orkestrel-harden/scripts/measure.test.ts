@@ -6,8 +6,10 @@ import {
 	WORKSPACE_ROOT,
 	renderLinterFixture,
 	runSkillScript,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	parseArguments,
 	anchorPlugin,
 	anchorSpecifier,
@@ -310,6 +312,14 @@ describe('measure.ts', () => {
 			const both = runSkillScript(MEASURE_SCRIPT, ['--rule', '--no-such-flag', 'a.ts'], cwd)
 			expect(both.status).toBe(64)
 			expect(both.stderr).toContain("'--rule'")
+			const dashed = runSkillScript(
+				MEASURE_SCRIPT,
+				['--rule', 'no-var', 'a.ts', '--', '--fix'],
+				cwd,
+			)
+			expect(dashed.status).toBe(64)
+			expect(dashed.stderr).toContain('PATH takes a path that does not open with "-"')
+			expect(dashed.stderr).toContain('not "--fix"')
 			expect(scratch.has('tmp')).toBe(false)
 			const joined = runSkillScript(MEASURE_SCRIPT, ['--rule=no-var', '--options=[]', 'a.ts'], cwd)
 			expect(joined.status).toBe(2)
@@ -387,5 +397,11 @@ describe('measure.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(MEASURE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

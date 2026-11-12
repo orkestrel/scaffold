@@ -4,8 +4,9 @@ import { basename, delimiter, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createRecorder, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
+import { runSkillScript, WORKSPACE_ROOT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	parseArguments,
 	buildPlan,
 	CHAIN,
@@ -701,4 +702,12 @@ describe('steps.ts', () => {
 			}
 		},
 	)
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(
+			runFlagRefusals('.agents/skills/orkestrel-publish/scripts/steps.ts', OPTIONS),
+		).toStrictEqual([])
+	})
 })

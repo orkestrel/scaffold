@@ -14,7 +14,8 @@
 // id and the plugin's own scope for a built-in plugin such as `typescript-eslint`); any other
 // diagnostic, a parse error included, is not a hit and refuses the measurement, because a file the
 // linter could not read has no count. A linter that exits other than 0 or 1, or exits 1 with no
-// diagnostic, refuses it too. The script reads its flags with `parseArgs` in strict mode.
+// diagnostic, refuses it too. The script reads its flags with `parseArgs` in strict mode, and
+// refuses a PATH that opens with `-`, which the linter would read as a flag.
 // Exit 0 when the rule has no hit, 3 when it has, 2 when the linter cannot run or reports another
 // diagnostic, 64 on usage.
 import type { ParseArgsOptionsConfig } from 'node:util'
@@ -325,6 +326,13 @@ export function main(argv: readonly string[]): number {
 	const rule = typeof values.rule === 'string' ? values.rule : undefined
 	if (rule === undefined || paths.length === 0) {
 		console.error(USAGE)
+		return 64
+	}
+	const dashed = paths.filter((path) => path.startsWith('-'))
+	if (dashed.length > 0) {
+		console.error(
+			`measure: PATH takes a path that does not open with "-", which the linter reads as a flag, not ${dashed.map(quote).join(', ')}; ${USAGE}`,
+		)
 		return 64
 	}
 	const text = typeof values.options === 'string' ? values.options : undefined

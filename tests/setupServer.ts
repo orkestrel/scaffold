@@ -23,6 +23,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Socket } from 'node:net'
 import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
+import type { ParseArgsOptionsConfig } from 'node:util'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { resolveCompiler } from '../configs/helpers.js'
@@ -42,6 +43,7 @@ import {
 import { createServer } from 'node:http'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
 import {
+	basename,
 	delimiter,
 	dirname,
 	join,
@@ -6255,36 +6257,25 @@ export function runScriptFile(
 	return buildSkillRun(result.status, result.stdout, result.stderr)
 }
 
-/**
- * Reads the value flags a skill script declares from the source of its `OPTIONS` export.
- *
- * @param script - The script path relative to the checkout root.
- * @returns Each `--flag` the declaration types as a string, in order; empty when the script declares
- * none.
- */
-export function readScriptValueFlags(script: string): readonly string[] {
-	const source = readFileSync(join(WORKSPACE_ROOT, script), 'utf8')
-	const declaration = /export const OPTIONS\b[^=]*=([\s\S]*?)\n\}\)\n/u.exec(source)?.[1] ?? ''
-	return [
-		...declaration.matchAll(/^\t'?([a-z][a-z-]*)'?: Object\.freeze\(\{ type: 'string'/gmu),
-	].map((match) => `--${match[1] ?? ''}`)
-}
-
 /** Describes one refusal a script owes: the arguments to give it and the text its message must carry. */
 export type TestFlagRefusal = readonly [args: readonly string[], named: string]
 
 /**
- * Builds the refusals `parseArgs` makes for every skill script, each with the quoted flag its message names.
+ * Builds the refusals `parseArgs` makes for a skill script, each with the quoted flag its message names.
  *
  * @remarks
- * Each value flag appears once followed by an unknown flag, which `parseArgs` reads as a missing
- * value and refuses by the value flag, and once after an unknown flag in the `--flag=value` form,
- * which it refuses by the unknown flag's name.
+ * Each value flag appears once followed by an unknown flag, which `parseArgs` refuses as an
+ * ambiguous value of the value flag, naming it, and once after an unknown flag in the
+ * `--flag=value` form, which it refuses by the unknown flag's name.
  *
- * @param flags - The script's value flags.
- * @returns The unknown flag alone, then the pair for each value flag.
+ * @param options - The script's exported `parseArgs` options table.
+ * @returns The unknown flag alone, then the pair for each flag the table types as a string.
+ * @throws Thrown when the table declares no flag, so a proof cannot pass on an empty table.
  */
-export function buildFlagRefusals(flags: readonly string[]): readonly TestFlagRefusal[] {
+export function buildFlagRefusals(options: ParseArgsOptionsConfig): readonly TestFlagRefusal[] {
+	const names = Object.keys(options)
+	if (names.length === 0) throw new Error('buildFlagRefusals needs a declared options table')
+	const flags = names.filter((name) => options[name]?.type === 'string').map((name) => `--${name}`)
 	return [
 		[['--no-such-flag'], "'--no-such-flag'"],
 		...flags.flatMap((flag): readonly TestFlagRefusal[] => [
@@ -6292,6 +6283,53 @@ export function buildFlagRefusals(flags: readonly string[]): readonly TestFlagRe
 			[['--no-such=1', flag], "'--no-such'"],
 		]),
 	]
+}
+
+/**
+ * Runs the refusals `parseArgs` makes for a skill script through its source, a linked directory,
+ * and its built twin when a build has written one, each against a scratch directory.
+ *
+ * @remarks
+ * The twin is read only where it exists, because the build that writes it runs after the source
+ * proofs in a fresh checkout.
+ *
+ * @param script - The script path relative to the checkout root.
+ * @param options - The script's exported `parseArgs` options table.
+ * @returns One line per refusal that did not exit 64, did not name its flag, or changed the
+ * scratch directory; empty when every refusal held.
+ */
+export function runFlagRefusals(
+	script: string,
+	options: ParseArgsOptionsConfig,
+): readonly string[] {
+	const work = createScratch({ prefix: 'orkestrel-script-refusal-' })
+	const links = createScratch({ prefix: 'orkestrel-script-links-' })
+	try {
+		work.write('seed.txt', 'seed')
+		work.write('nested/seed.json', '{}')
+		const before = readTreeDigest(work.path)
+		links.link('scripts', dirname(join(WORKSPACE_ROOT, script)))
+		const twin = join(WORKSPACE_ROOT, readBuiltScript(script))
+		const files = [
+			join(WORKSPACE_ROOT, script),
+			join(links.path, 'scripts', basename(script)),
+			...(existsSync(twin) ? [twin] : []),
+		]
+		return files.flatMap((file) =>
+			buildFlagRefusals(options).flatMap(([args, named]) => {
+				const run = runScriptFile(file, args, { cwd: work.path })
+				const where = `${file} ${JSON.stringify(args)}`
+				return [
+					...(run.status === 64 ? [] : [`${where} exited ${String(run.status)}, not 64`]),
+					...(run.stderr.includes(named) ? [] : [`${where} did not name ${named}`]),
+					...(readTreeDigest(work.path) === before ? [] : [`${where} changed the directory`]),
+				]
+			}),
+		)
+	} finally {
+		links.destroy()
+		work.destroy()
+	}
 }
 
 /**

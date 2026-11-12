@@ -1,5 +1,7 @@
 // Map terrain before a brief, an absorption lane, or a rename. Run from the checkout root:
-//   node .agents/skills/orkestrel-scout/scripts/map.ts [--tree PATH ...] [--headings PATH ...] [--frontmatter PATH ...] [--exports PATH ...] [--census TERM ...] [--refs PATH] [--anchors PATH ...] [--paths a,b] [--ignore-case] [--json] [--out FILE]
+//   node .agents/skills/orkestrel-scout/scripts/map.ts [--tree PATH ...] [--headings PATH ...]
+//     [--frontmatter PATH ...] [--exports PATH ...] [--census TERM ...] [--refs PATH]
+//     [--anchors PATH ...] [--paths a,b] [--ignore-case] [--json] [--out FILE]
 // --tree lists every file under each path with its line count and size. --headings lists every
 // Markdown heading with its line; a heading inside a fenced block is no heading, where a fence
 // opens with a run of three or more backticks or tildes indented up to three spaces and closes with
@@ -7,14 +9,14 @@
 // frontmatter block, a TOML file, or a YAML file with its whole value, a nested key dotted under its
 // parents (`interface.default_prompt`) and a TOML key under its table. --exports lists every
 // `export` declaration line in a TypeScript file (a text reading, not the compiler's). --census
-// lists every line carrying a term. --refs lists
-// every line naming a path or its basename. --anchors lists every `§ Heading` reference whose
-// heading the named file, or the same file, does not carry. Walks skip node_modules, .git, dist,
-// tmp, .orkestrel, .idea, and host.json; --paths narrows a census or refs walk. Modes combine, each
-// printing its section; --json prints one object; --out writes the output to FILE instead of the
-// terminal. --tree, --headings, --frontmatter, --exports, --census, and --anchors repeat, one value
-// each; give a value that opens with `-` in the `--census=--term` form. The script reads its flags
-// with `parseArgs` in strict mode. Exit 0, or 64 on usage, including no mode given.
+// lists every line carrying a term. --refs lists every line naming a path or its basename.
+// --anchors lists every `§ Heading` reference whose heading the named file, or the same file, does
+// not carry. Walks skip node_modules, .git, dist, tmp, .orkestrel, .idea, and host.json; --paths
+// narrows a census or refs walk. Modes combine, each printing its section; --json prints one
+// object; --out writes the output to FILE instead of the terminal. Each mode flag but --refs
+// repeats, one value per flag; give a value that opens with `-` in the `--census=--term` form. The
+// script reads its flags with `parseArgs` in strict mode. Exit 0, or 64 on usage, including no mode
+// given.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import {
 	existsSync,
@@ -57,7 +59,7 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 
 /** Holds the usage line printed when a call names no mode. */
 export const USAGE =
-	'usage: map.ts [--tree PATH ...] [--headings PATH ...] [--frontmatter PATH ...] [--exports PATH ...] [--census TERM ...] [--refs PATH] [--anchors PATH ...] [--paths a,b] [--ignore-case] [--json] [--out FILE]; name one mode or more; each flag a mode list follows repeats, one value per flag'
+	'usage: map.ts [--tree PATH ...] [--headings PATH ...] [--frontmatter PATH ...] [--exports PATH ...] [--census TERM ...] [--refs PATH] [--anchors PATH ...] [--paths a,b] [--ignore-case] [--json] [--out FILE]; name one mode or more; each mode flag but --refs repeats, one value per flag'
 
 /** Declares every flag the script reads, for `parseArgs`. */
 export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({

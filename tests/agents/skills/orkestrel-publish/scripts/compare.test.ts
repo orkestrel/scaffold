@@ -4,6 +4,7 @@ import { gzipSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import {
+	OPTIONS,
 	parseArguments,
 	differs,
 	fetchTarball,
@@ -31,6 +32,7 @@ import {
 	spawnSkillScript,
 	TAR_END,
 	writeSwapPackage,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 
 describe('compare.ts', () => {
@@ -402,5 +404,11 @@ describe('the copied helpers', () => {
 		const result = runNpm(['--version'])
 		expect(result.status).toBe(0)
 		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(COMPARE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

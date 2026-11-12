@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { isRecord } from '@orkestrel/contract'
 import { createScratch, supportsDirectoryLinks } from '@orkestrel/test/server'
 import {
+	OPTIONS,
 	buildLedgerEntry,
 	buildRepin,
 	buildTarballName,
@@ -100,6 +101,7 @@ import {
 	writeSwapFixture,
 	writeSwapPackage,
 	writeSwapSource,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 
 describe('swap.ts', () => {
@@ -1916,5 +1918,11 @@ describe('the copied helpers', () => {
 		const result = runNpm(['--version'])
 		expect(result.status).toBe(0)
 		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(SWAP_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

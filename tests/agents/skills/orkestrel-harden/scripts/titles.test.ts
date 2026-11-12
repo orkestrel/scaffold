@@ -18,8 +18,10 @@ import {
 	TITLES_TERMINATORS,
 	TITLES_UNBALANCED,
 	trackFiles,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	countDynamic,
 	decodeTitle,
 	describeName,
@@ -1189,5 +1191,11 @@ describe('titles.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(TITLES_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

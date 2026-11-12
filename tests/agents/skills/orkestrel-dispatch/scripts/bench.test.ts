@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { isString } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, BENCH_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, BENCH_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	DEFAULT_CAP,
 	MAX_CAP_SECONDS,
 	isLive,
@@ -381,5 +382,11 @@ describe('the record readers', () => {
 		expect(readNumber({ a: Number.NaN }, 'a')).toBeUndefined()
 		expect(readNumber({ a: Number.POSITIVE_INFINITY }, 'a')).toBeUndefined()
 		expect(readNumber({ a: '1' }, 'a')).toBeUndefined()
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(BENCH_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

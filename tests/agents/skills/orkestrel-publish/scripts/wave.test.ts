@@ -18,6 +18,7 @@ import { waitForEvent } from '@orkestrel/test'
 import { createScratch, readInventory, supportsDirectoryLinks } from '@orkestrel/test/server'
 import { CLI } from '../../../../../src/bin/CLI.js'
 import {
+	OPTIONS,
 	parseArguments,
 	collectPriorRanges,
 	collectSpecs,
@@ -90,6 +91,7 @@ import {
 	WAVE_IDENTITY,
 	WORKSPACE_ROOT,
 	FLEET_RELEASE_REPLIES,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 
 describe('wave.ts', () => {
@@ -2294,5 +2296,11 @@ describe('the copied helpers', () => {
 		const result = runNpm(['--version'])
 		expect(result.status).toBe(0)
 		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(WAVE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

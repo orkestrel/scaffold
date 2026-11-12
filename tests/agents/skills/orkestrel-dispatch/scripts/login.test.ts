@@ -3,8 +3,14 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createRecorder, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import { isProcessRunning, runSkillScript, LOGIN_SCRIPT } from '../../../../setupServer.js'
 import {
+	isProcessRunning,
+	runSkillScript,
+	LOGIN_SCRIPT,
+	runFlagRefusals,
+} from '../../../../setupServer.js'
+import {
+	OPTIONS,
 	CODE_PATTERN,
 	loginClaude,
 	MAX_CAP_SECONDS,
@@ -433,5 +439,11 @@ describe('the status reader and the poll', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(LOGIN_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

@@ -9,7 +9,8 @@
 // launch.ts wrote (`exit`, `capped`, `durationMs`) and the journal's `bytes`, `ageMs`, and last
 // event, which is the liveness reading for a run still going. The answer is written to --out when
 // given, and a journal with no session or answer exits 3 so a driver cannot pass off an empty lane.
-// Name one mode per run; the script reads its flags with `parseArgs` in strict mode. Exit 0 when the lane answered, 3 when it carries no session or answer, 64 on usage.
+// Name one mode per run; the script reads its flags with `parseArgs` in strict mode. Exit 0 when
+// the lane answered, 3 when it carries no session or answer, 64 on usage.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'

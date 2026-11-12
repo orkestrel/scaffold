@@ -2,8 +2,9 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, CITE_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, CITE_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	countLines,
 	extractCitations,
 	indexBasenames,
@@ -269,5 +270,11 @@ describe('the tree walk', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(CITE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

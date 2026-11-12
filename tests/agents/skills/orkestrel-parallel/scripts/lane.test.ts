@@ -13,8 +13,10 @@ import {
 	runSkillScript,
 	startLaneBench,
 	WORKSPACE_ROOT,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	parseArguments,
 	BREACH_CODE,
 	buildOutcome,
@@ -1675,5 +1677,11 @@ describe('lane.ts', () => {
 			bench.meter.release('beta')
 			expect(await Promise.all(runs.map((run) => run.exit()))).toStrictEqual([0, 0, 0, 0])
 		})
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(LANE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

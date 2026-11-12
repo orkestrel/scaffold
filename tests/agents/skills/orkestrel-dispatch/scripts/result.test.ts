@@ -1,8 +1,14 @@
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
-import { RESULT_STREAM, runSkillScript, RESULT_SCRIPT } from '../../../../setupServer.js'
 import {
+	RESULT_STREAM,
+	runSkillScript,
+	RESULT_SCRIPT,
+	runFlagRefusals,
+} from '../../../../setupServer.js'
+import {
+	OPTIONS,
 	describeEvent,
 	parseArguments,
 	parseJsonLine,
@@ -263,5 +269,11 @@ describe('the record readers', () => {
 		expect(readNumber({ a: Number.NaN }, 'a')).toBeUndefined()
 		expect(readNumber({ a: Number.POSITIVE_INFINITY }, 'a')).toBeUndefined()
 		expect(readNumber({ a: '1' }, 'a')).toBeUndefined()
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(RESULT_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

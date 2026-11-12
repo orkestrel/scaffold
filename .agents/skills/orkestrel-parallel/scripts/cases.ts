@@ -1,17 +1,17 @@
 // Check a Vitest JSON report against named red and green cases. Run from the checkout root:
 //   node .agents/skills/orkestrel-parallel/scripts/cases.ts --report FILE.json [--passed NAME ...] [--failed NAME ...]
 // The report is Vitest's `--reporter=json` output. A name matches every case whose full name (its
-// `describe` titles and its own title, joined by spaces) or whose own title equals it exactly; give a
-// name that opens with `-` in the `--passed=NAME` form. Each `--passed NAME` requires every case it matches to have
-// passed and each `--failed NAME` requires every one to have failed; a name that matches no case is
-// missing. A failed case that no name matches is refused, so a run that fails more than the request
-// expected reads as a difference. A test file that failed with no failed case (it did not collect,
-// or a hook threw) is an unnamed failure named by its file, and a report whose `success` is false
-// while no case and no file failed is a difference too. Name no case to require a report with no
-// failure. Both flags repeat and a name may not be given to both. The script prints one summary
-// line, one line per difference, and `ok` or `differences=N`. The script reads its flags with
-// `parseArgs` in strict mode. Exit 0 when the report matches the names, 3 when it does not, 2 when the report cannot be
-// read as a Vitest report, 64 on usage.
+// `describe` titles and its own title, joined by spaces) or whose own title equals it exactly; give
+// a name that opens with `-` in the `--passed=NAME` form. Each `--passed NAME` requires every case
+// it matches to have passed and each `--failed NAME` requires every one to have failed; a name that
+// matches no case is missing. A failed case that no name matches is refused, so a run that fails
+// more than the request expected reads as a difference. A test file that failed with no failed case
+// (it did not collect, or a hook threw) is an unnamed failure named by its file, and a report whose
+// `success` is false while no case and no file failed is a difference too. Name no case to require
+// a report with no failure. Both flags repeat and a name may not be given to both. The script
+// prints one summary line, one line per difference, and `ok` or `differences=N`. The script reads
+// its flags with `parseArgs` in strict mode. Exit 0 when the report matches the names, 3 when it
+// does not, 2 when the report cannot be read as a Vitest report, 64 on usage.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import { readFileSync, realpathSync, statSync } from 'node:fs'
 import { relative } from 'node:path'

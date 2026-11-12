@@ -9,8 +9,10 @@ import {
 	MUTATE_SCRIPT,
 	renderEditFile,
 	runSkillScript,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	TAIL_LINES,
 	applyEdits,
 	countOccurrences,
@@ -766,5 +768,11 @@ describe('mutate.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(MUTATE_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

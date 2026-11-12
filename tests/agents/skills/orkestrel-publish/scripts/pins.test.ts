@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import {
+	OPTIONS,
 	parseArguments,
 	BINARY,
 	buildRangeLiteral,
@@ -14,7 +15,7 @@ import {
 	normalizeSlashes,
 	sweepFile,
 } from '../../../../../.agents/skills/orkestrel-publish/scripts/pins.ts'
-import { runSkillScript, PINS_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, PINS_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 
 describe('pins.ts', () => {
 	it('bounds a version literal and a single-comparator range version by digits and dots', () => {
@@ -336,5 +337,11 @@ describe('the copied helpers', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(PINS_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

@@ -2,8 +2,9 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript, BRIEF_SCRIPT } from '../../../../setupServer.js'
+import { runSkillScript, BRIEF_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	extractPaths,
 	extractSection,
 	LANES,
@@ -266,5 +267,11 @@ describe('the brief path', () => {
 		}
 		expect(Object.keys(LANES)).toEqual(['units', 'cursor', 'codex', 'claude'])
 		expect(existsSync(TEMPLATE)).toBe(true)
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(BRIEF_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

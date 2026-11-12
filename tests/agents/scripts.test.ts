@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs'
-import { basename, dirname, join } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import {
@@ -10,7 +10,6 @@ import {
 	MUTATE_SCRIPT,
 	PATCH_SCRIPT,
 	readBuiltScript,
-	readScriptValueFlags,
 	readSkillScripts,
 	readTreeDigest,
 	runScriptFile,
@@ -41,12 +40,30 @@ describe('skill scripts', () => {
 		)
 	})
 
-	it('reads the value flags a script declares', () => {
-		expect(readScriptValueFlags(BENCH_SCRIPT)).toEqual(['--model', '--cap', '--sandbox'])
-		expect(readScriptValueFlags(PATCH_SCRIPT)).toEqual(['--skip'])
+	it('builds the parseArgs refusals from an options table and refuses an empty table', () => {
+		expect(
+			buildFlagRefusals({ plan: { type: 'string' }, json: { type: 'boolean' } }),
+		).toStrictEqual([
+			[['--no-such-flag'], "'--no-such-flag'"],
+			[['--plan', '--no-such-flag'], "'--plan'"],
+			[['--no-such=1', '--plan'], "'--no-such'"],
+		])
+		expect(() => buildFlagRefusals({})).toThrow('declared options table')
 	})
 
 	for (const script of readSkillScripts()) {
+		it(`${script} has a proof that runs the parseArgs refusals against its own options table`, () => {
+			const proof = readFileSync(
+				join(
+					WORKSPACE_ROOT,
+					'tests',
+					script.replace(/^\.agents\//u, 'agents/').replace(/\.ts$/u, '.test.ts'),
+				),
+				'utf8',
+			)
+			expect(proof).toMatch(/runFlagRefusals\([^,]+, OPTIONS\)/u)
+		})
+
 		it(`${script} refuses an unknown flag and a value given to a switch or an unknown flag with exit 64, naming the flag`, () => {
 			const scratch = createScratch({ prefix: 'orkestrel-script-flags-' })
 			try {
@@ -62,66 +79,18 @@ describe('skill scripts', () => {
 			}
 		})
 
-		it(`${script} names the flag parseArgs refuses, reads no flag after --, and leaves the directory untouched`, () => {
+		it(`${script} reads no flag after --, and leaves the directory untouched`, () => {
 			const scratch = createScratch({ prefix: 'orkestrel-script-refusal-' })
 			try {
 				scratch.write('seed.txt', 'seed')
-				scratch.write('nested/seed.json', '{}')
 				const before = readTreeDigest(scratch.path)
-				const file = join(WORKSPACE_ROOT, script)
-				for (const [args, named] of buildFlagRefusals(readScriptValueFlags(script))) {
-					const run = runScriptFile(file, args, { cwd: scratch.path })
-					expect({ args, status: run.status }).toEqual({ args, status: 64 })
-					expect(run.stderr).toContain(named)
-					expect(readTreeDigest(scratch.path)).toBe(before)
-				}
-				const after = runScriptFile(file, ['--', '--no-such-flag'], { cwd: scratch.path })
+				const after = runScriptFile(join(WORKSPACE_ROOT, script), ['--', '--no-such-flag'], {
+					cwd: scratch.path,
+				})
 				expect(after.stderr).not.toContain("Unknown option '--no-such-flag'")
 				expect(readTreeDigest(scratch.path)).toBe(before)
 			} finally {
 				scratch.destroy()
-			}
-		})
-
-		// The build writes the twin under `dist/`, which git ignores, so a checkout that has not built
-		// has no twin to refuse through; the build runs before the tests in the gate order.
-		it.skipIf(!existsSync(join(WORKSPACE_ROOT, readBuiltScript(script))))(
-			`${readBuiltScript(script)} refuses the same calls as its source, naming the refused flag`,
-			() => {
-				const scratch = createScratch({ prefix: 'orkestrel-script-twin-' })
-				try {
-					scratch.write('seed.txt', 'seed')
-					const before = readTreeDigest(scratch.path)
-					const file = join(WORKSPACE_ROOT, readBuiltScript(script))
-					for (const [args, named] of buildFlagRefusals(readScriptValueFlags(script))) {
-						const run = runScriptFile(file, args, { cwd: scratch.path })
-						expect({ args, status: run.status }).toEqual({ args, status: 64 })
-						expect(run.stderr).toContain(named)
-						expect(readTreeDigest(scratch.path)).toBe(before)
-					}
-				} finally {
-					scratch.destroy()
-				}
-			},
-		)
-
-		it(`${script} still runs when a link reaches it, so the entry guard reads the real path`, () => {
-			const work = createScratch({ prefix: 'orkestrel-script-work-' })
-			const links = createScratch({ prefix: 'orkestrel-script-links-' })
-			try {
-				work.write('seed.txt', 'seed')
-				const before = readTreeDigest(work.path)
-				links.link('scripts', dirname(join(WORKSPACE_ROOT, script)))
-				const file = join(links.path, 'scripts', basename(script))
-				for (const [args, named] of buildFlagRefusals(readScriptValueFlags(script))) {
-					const run = runScriptFile(file, args, { cwd: work.path })
-					expect({ args, status: run.status }).toEqual({ args, status: 64 })
-					expect(run.stderr).toContain(named)
-					expect(readTreeDigest(work.path)).toBe(before)
-				}
-			} finally {
-				links.destroy()
-				work.destroy()
 			}
 		})
 	}

@@ -3,10 +3,11 @@
 //   node .agents/skills/orkestrel-dispatch/scripts/cite.ts PATH [--root DIR] [--json]
 // A citation resolves when its path exists under the root (a path relative to the root resolves
 // first, and a backslash reads as a slash) and the line is within the file, where a trailing line
-// break ends the last line. A citation naming a bare filename that no root-relative
-// file matches resolves when exactly one file under the root carries that name, outside
-// node_modules, dist, tmp, .git, .orkestrel, and .idea. The summary lists every citation that does
-// not resolve, with the reason. The script reads its flags with `parseArgs` in strict mode. Exit 0 when all resolve, 3 when any does not, 64 on usage.
+// break ends the last line. A citation naming a bare filename that no root-relative file matches
+// resolves when exactly one file under the root carries that name, outside node_modules, dist, tmp,
+// .git, .orkestrel, and .idea. The summary lists every citation that does not resolve, with the
+// reason. The script reads its flags with `parseArgs` in strict mode. Exit 0 when all resolve, 3
+// when any does not, 64 on usage.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { basename, join, relative, resolve } from 'node:path'
@@ -195,7 +196,8 @@ export function countLines(path: string): number {
  */
 export function resolveDirect(root: string, file: string): string | undefined {
 	const direct = resolve(root, normalizeSlashes(file))
-	return statSync(direct, { throwIfNoEntry: false })?.isFile() === true ? direct : undefined
+	// The path comes from report text, and existsSync answers false where a stat would throw.
+	return existsSync(direct) && statSync(direct).isFile() ? direct : undefined
 }
 
 /**

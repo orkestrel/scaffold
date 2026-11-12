@@ -14,7 +14,8 @@
 // --delete removes them, refusing while one changed in the last 2 minutes.
 // --tmp and --unit --delete never delete a file git tracks: each prints `kept tracked <path>` and the
 // refusal ignores a tracked file; --unit alone marks a tracked file in its listing.
-// Name one mode per run; the script reads its flags with `parseArgs` in strict mode. Exit 0 on success, 2 when a deletion is refused, 64 on usage.
+// Name one mode per run; the script reads its flags with `parseArgs` in strict mode. Exit 0 on
+// success, 2 when a deletion is refused, 64 on usage.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs'

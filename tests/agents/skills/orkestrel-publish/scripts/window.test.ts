@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import {
+	OPTIONS,
 	parseArguments,
 	findGitRoot,
 	parseJsonRecord,
@@ -20,6 +21,7 @@ import {
 	runSkillScript,
 	spawnSkillScript,
 	WINDOW_SCRIPT,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 
 describe('window.ts', () => {
@@ -124,6 +126,14 @@ describe('window.ts', () => {
 			expect(
 				runSkillScript(WINDOW_SCRIPT, ['--whoami', '--wait', 'abc'], { cwd: scratch.path }).status,
 			).toBe(64)
+			const empty = runSkillScript(WINDOW_SCRIPT, ['--whoami', '--wait', ''], { cwd: scratch.path })
+			expect(empty.status).toBe(64)
+			expect(empty.stderr).toContain('--wait takes a number of seconds from 0, not ""')
+			const blank = runSkillScript(WINDOW_SCRIPT, ['--whoami', '--wait', ' '], {
+				cwd: scratch.path,
+			})
+			expect(blank.status).toBe(64)
+			expect(blank.stderr).toContain('--wait takes a number of seconds from 0, not " "')
 			expect(
 				runSkillScript(WINDOW_SCRIPT, ['--whoami', '--wait'], { cwd: scratch.path }).status,
 			).toBe(64)
@@ -536,5 +546,11 @@ describe('the copied helpers', () => {
 		const result = runNpm(['--version'])
 		expect(result.status).toBe(0)
 		expect(/^\d+\.\d+\.\d+/u.test(result.stdout.trim())).toBe(true)
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(WINDOW_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

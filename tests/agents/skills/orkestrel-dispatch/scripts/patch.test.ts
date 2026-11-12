@@ -1,8 +1,14 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
-import { PATCH_SCRIPT, renderEditFile, runSkillScript } from '../../../../setupServer.js'
 import {
+	PATCH_SCRIPT,
+	renderEditFile,
+	runSkillScript,
+	runFlagRefusals,
+} from '../../../../setupServer.js'
+import {
+	OPTIONS,
 	applyEdits,
 	countOccurrences,
 	isInside,
@@ -392,5 +398,11 @@ describe('patch.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(PATCH_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

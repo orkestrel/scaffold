@@ -12,8 +12,10 @@ import {
 	DISCOVERY_SCRIPT,
 	runSkillScript,
 	WORKSPACE_ROOT,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	CodeScanner,
 	listFiles,
 	listInvocations,
@@ -2145,5 +2147,11 @@ export default ({ mode }) => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(DISCOVERY_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

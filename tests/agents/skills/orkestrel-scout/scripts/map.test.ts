@@ -8,8 +8,10 @@ import {
 	readJsonColumn,
 	runSkillScript,
 	MAP_SCRIPT,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	parseArguments,
 	buildMatcher,
 	isText,
@@ -529,5 +531,11 @@ describe('the tree walk', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(MAP_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

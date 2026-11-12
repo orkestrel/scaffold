@@ -9,8 +9,10 @@ import {
 	SWEEP_MINUTES_AGO,
 	SWEEP_SCRIPT,
 	trackFiles,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	describeFinding,
 	formatDay,
 	isCovered,
@@ -463,5 +465,11 @@ describe('the tree walk', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(SWEEP_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })

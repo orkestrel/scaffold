@@ -11,8 +11,10 @@ import {
 	LAUNCH_SCRIPT,
 	runSkillScript,
 	WORKSPACE_ROOT,
+	runFlagRefusals,
 } from '../../../../setupServer.js'
 import {
+	OPTIONS,
 	computeCapMilliseconds,
 	endRunning,
 	forceKillTree,
@@ -352,6 +354,14 @@ describe('launch.ts', () => {
 			expect(beyond.status).toBe(64)
 			expect(beyond.stderr).toContain('--cap takes a number of seconds from 0 to 2147483')
 			expect(beyond.stderr).toContain('not "2147484"')
+			const empty = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', 'a', '--errors', 'b', '--cap', '', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(empty.status).toBe(64)
+			expect(empty.stderr).toContain('--cap takes a number of seconds from 0 to 2147483')
+			expect(empty.stderr).toContain('not ""')
 			const same = runSkillScript(
 				LAUNCH_SCRIPT,
 				['--journal', 'same', '--errors', 'same', '--', process.execPath, '-v'],
@@ -604,5 +614,11 @@ describe('the git status reader', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the parseArgs refusals', () => {
+	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
+		expect(runFlagRefusals(LAUNCH_SCRIPT, OPTIONS)).toStrictEqual([])
 	})
 })
