@@ -297,6 +297,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const token = new Token()
+			onTestFinished(() => token.destroy())
 			const endpoint = renderEndpoint(bench.root, FIRST_TOKEN)
 			await token.listen(endpoint)
 			token.publish()
@@ -407,6 +408,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const token = new Token()
+			onTestFinished(() => token.destroy())
 			await token.listen(renderEndpoint(bench.root, FIRST_TOKEN))
 			writeStage(bench.root, buildTicket(FIRST_TOKEN, 'planted'))
 			linkStage(bench.root, FIRST_TOKEN)
@@ -1011,6 +1013,8 @@ describe('lane.ts', () => {
 			['the source aggregate script', [...NPM, 'run', 'test:src'], 'heavy'],
 			['the application aggregate script', [...NPM, 'run', 'test:app'], 'heavy'],
 			['the live-service project', [...VITEST, '--project', 'service'], 'heavy'],
+			['the benchmark script', [...NPM, 'run', 'test:bench'], 'heavy'],
+			['a wildcard project filter', [...VITEST, '--project', 'src:*'], 'heavy'],
 			[
 				'a full run with a dotted report flag',
 				[...VITEST, '--reporter=json', '--outputFile.json', 'tmp/r.json'],
@@ -1413,6 +1417,7 @@ describe('lane.ts', () => {
 			bench.limit(LIMITS)
 			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
 			const token = new Token()
+			onTestFinished(() => token.destroy())
 			await token.listen(renderEndpoint(bench.root, FIRST_TOKEN))
 			writeStage(bench.root, buildTicket(FIRST_TOKEN, 'planted'))
 			linkStage(bench.root, FIRST_TOKEN)

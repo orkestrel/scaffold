@@ -246,7 +246,7 @@ export const HEAVY_VERBS: readonly string[] = [
 
 /**
  * Lists the package scripts a seed reads heavy: the full suite, the aggregates that build and run
- * several projects, the pack-and-install suite, and the live-service suite.
+ * several projects, the pack-and-install suite, the live-service suite, and the benchmark run.
  */
 export const HEAVY_SCRIPTS: readonly string[] = [
 	'test',
@@ -254,6 +254,7 @@ export const HEAVY_SCRIPTS: readonly string[] = [
 	'test:app',
 	'test:distribution',
 	'test:service',
+	'test:bench',
 ]
 
 /** Lists the Vitest projects a seed reads heavy: the pack-and-install project and the live-service project. */
@@ -1247,7 +1248,10 @@ export function readVitestSeed(args: readonly string[]): Seed | undefined {
 		if (argument.startsWith('--project=')) return [argument.slice('--project='.length)]
 		return args[index - 1] === '--project' ? [argument] : []
 	})
-	if (projects.length > 1 || projects.some((project) => HEAVY_PROJECTS.includes(project))) {
+	if (
+		projects.length > 1 ||
+		projects.some((project) => project.includes('*') || HEAVY_PROJECTS.includes(project))
+	) {
 		return 'heavy'
 	}
 	const files = operands.filter((operand) => /\.(?:test|spec)\./u.test(operand))
@@ -2180,6 +2184,7 @@ export async function runHolder(
 	const child = startLauncher(launcher, options)
 	const id = child.pid
 	if (id === undefined) {
+		token?.leave()
 		releaseTicket(root, sequence)
 		console.error(`lane: ${quote(launcher)} could not start`)
 		return 75
