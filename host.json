@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "c852ff9886b2a2d24b8a0d69efe10f58dac37bd217d676c133048c148b5e877e"
+			"digest": "c8521d98dcca003af43e2629ddc12c202fde291a03cec6018740507839269e14"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -442,7 +442,7 @@
 			"storage": "agents/skills/orkestrel-parallel/scripts/lane.ts",
 			"destination": ".agents/skills/orkestrel-parallel/scripts/lane.ts",
 			"executable": false,
-			"digest": "4d68f57166a75d73b73d21dd1a1c16e6e5333841fdc84a0be039fe62141eb4a9"
+			"digest": "cf1bc0cbbe71307b329705d56ab27fab6016cdfeeb40dde2550f3306dfc356ca"
 		},
 		{
 			"storage": "agents/skills/orkestrel-polish/SKILL.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "6419a0a43f947d90e7812d47dedcbc9e4e77e2bbe951688e6e0cc7c809e39a63"
+	"digest": "dca224af9830d1d721c595f40572c7462467ede00b59ce12e7dcd2bbc5226a3c"
 }

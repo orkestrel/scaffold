@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { chmodSync, existsSync, readFileSync, realpathSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
@@ -30,11 +30,14 @@ import {
 	KILL_BUDGET,
 	killMembers,
 	linkStage,
+	MAX_CAP_SECONDS,
 	measurePeak,
 	parkOn,
+	parseCap,
 	parseGauges,
 	parseRows,
 	RECENT_RUNS,
+	RUN_SUFFIX,
 	quote,
 	readCommandId,
 	readLimits,
@@ -56,9 +59,8 @@ import {
 	renderEndpoint,
 	renderKey,
 	renderOutcomeName,
-	renderRunName,
 	renderStatus,
-	renderTicketName,
+	renderName,
 	resolveLauncher,
 	resolveRoot,
 	Sampler,
@@ -66,6 +68,7 @@ import {
 	sweepTree,
 	tallySample,
 	Token,
+	TICKET_SUFFIX,
 	TOKEN_PATTERN,
 	VALUE_FLAGS,
 	writeOutcome,
@@ -145,6 +148,39 @@ describe('lane.ts', () => {
 			expect(existsSync(root)).toBe(false)
 		})
 
+		it.each([
+			['a cap that is no number', 'soon', '"soon"'],
+			['a cap of 0', '0', '"0"'],
+			['a negative cap', '-5', '"-5"'],
+			['a cap past the launcher limit', '2147484', '"2147484"'],
+		])('names --cap and the value it takes on %s', async (_name, cap, quoted) => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const root = join(bench.scratch.path, 'refused')
+			const run = runSkillScript(LANE_SCRIPT, [
+				'--root',
+				root,
+				...['--label', 'a', '--journal', 'j', '--errors', 'e', '--cap', cap, '--', 'c'],
+			])
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain(
+				`--cap takes a number of seconds above 0 up to ${String(MAX_CAP_SECONDS)}, not ${quoted}`,
+			)
+			expect(run.stderr).toContain('usage: lane.ts')
+			expect(existsSync(root)).toBe(false)
+		})
+
+		it('reads a cap as a number of seconds above 0 up to the launcher limit', () => {
+			expect(parseCap('5')).toBe(5)
+			expect(parseCap('0.5')).toBe(0.5)
+			expect(parseCap(String(MAX_CAP_SECONDS))).toBe(MAX_CAP_SECONDS)
+			expect(parseCap(undefined)).toBeUndefined()
+			expect(parseCap('')).toBeUndefined()
+			expect(parseCap('0')).toBeUndefined()
+			expect(parseCap('soon')).toBeUndefined()
+			expect(parseCap(String(MAX_CAP_SECONDS + 1))).toBeUndefined()
+		})
+
 		it('exits 75 when the root cannot be created, naming the root', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
@@ -158,6 +194,24 @@ describe('lane.ts', () => {
 			])
 			expect(run.status).toBe(75)
 			expect(run.stderr).toContain('refused the run')
+		})
+
+		it('exits 75 and strands no ticket when the run record cannot be written', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const record = bench.scratch.write(join('root', renderName(1, RUN_SUFFIX)), '')
+			chmodSync(record, 0o444)
+			expect(() => writeRun(bench.root, 1, { started: 1, launcher: 1, command: 1 })).toThrow(
+				/EPERM|EACCES/u,
+			)
+			const run = bench.lane('unwritable')
+			expect(await run.exit()).toBe(75)
+			expect(run.output).toContain(
+				`the run record ${renderName(1, RUN_SUFFIX)} under ${bench.root}`,
+			)
+			expect(run.output).toContain('could not be written')
+			expect(bench.meter.marks).toStrictEqual([])
+			expect(bench.scratch.names('root')).toStrictEqual([])
 		})
 
 		it('resolves the sibling launcher by the running extension', () => {
@@ -357,7 +411,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			writeStage(bench.root, buildTicket(FIRST_TOKEN, 'first'))
-			bench.scratch.write(join('root', renderTicketName(1)), '{}')
+			bench.scratch.write(join('root', renderName(1, TICKET_SUFFIX)), '{}')
 			expect(linkStage(bench.root, FIRST_TOKEN)).toBe(2)
 		})
 
@@ -450,12 +504,12 @@ describe('lane.ts', () => {
 		])('exits 75 on %s and removes its own ticket', async (_name, text, expected) => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
-			bench.scratch.write(join('root', renderTicketName(1)), text)
+			bench.scratch.write(join('root', renderName(1, TICKET_SUFFIX)), text)
 			const run = bench.lane('arrival')
 			expect(await run.exit()).toBe(75)
 			expect(run.output).toContain(expected)
 			expect(bench.meter.marks).toStrictEqual([])
-			expect(bench.scratch.names('root')).toStrictEqual([renderTicketName(1)])
+			expect(bench.scratch.names('root')).toStrictEqual([renderName(1, TICKET_SUFFIX)])
 		})
 	})
 
@@ -533,7 +587,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.scratch.write(
-				join('root', renderTicketName(1)),
+				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(FIRST_TOKEN, 'dead')),
 			)
 			const run = bench.lane('arrival')
@@ -550,7 +604,7 @@ describe('lane.ts', () => {
 			const gone = bench.spawn(['process.exit(0)'], bench.scratch.path, '-e')
 			expect(await gone.exit()).toBe(0)
 			bench.scratch.write(
-				join('root', renderTicketName(1)),
+				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(FIRST_TOKEN, 'dead')),
 			)
 			writeRun(bench.root, 1, { started, launcher: gone.pid, command: undefined })
@@ -567,14 +621,14 @@ describe('lane.ts', () => {
 			const started = Date.now()
 			const living = bench.spawn(['setInterval(() => undefined, 1000)'], bench.scratch.path, '-e')
 			bench.scratch.write(
-				join('root', renderTicketName(1)),
+				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(FIRST_TOKEN, 'dead')),
 			)
 			writeRun(bench.root, 1, { started, launcher: living.pid, command: undefined })
 			const refused = bench.lane('refused')
 			expect(await refused.exit()).toBe(75)
 			expect(refused.output).toContain('"dead"')
-			expect(refused.output).toContain(renderRunName(1))
+			expect(refused.output).toContain(renderName(1, RUN_SUFFIX))
 			expect(refused.output).toContain(String(living.pid))
 			expect(bench.meter.marks).toStrictEqual([])
 			await living.kill()
@@ -589,22 +643,22 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.scratch.write(
-				join('root', renderTicketName(1)),
+				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(FIRST_TOKEN, 'dead')),
 			)
 			writeRun(bench.root, 1, { started: Date.now(), launcher: undefined, command: undefined })
 			const refused = bench.lane('refused')
 			expect(await refused.exit()).toBe(75)
 			expect(refused.output).toContain('before its tree could be identified')
-			expect(refused.output).toContain(renderRunName(1))
+			expect(refused.output).toContain(renderName(1, RUN_SUFFIX))
 			expect(bench.meter.marks).toStrictEqual([])
-			expect(bench.scratch.has(join('root', renderTicketName(1)))).toBe(true)
+			expect(bench.scratch.has(join('root', renderName(1, TICKET_SUFFIX)))).toBe(true)
 		})
 
 		it('refuses a dead ticket whose run record is malformed', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
-			bench.scratch.write(join('root', renderRunName(1)), 'not json')
+			bench.scratch.write(join('root', renderName(1, RUN_SUFFIX)), 'not json')
 			expect(readRun(bench.root, 1)).toBe('unread')
 			expect(readRun(bench.root, 2)).toBe('absent')
 			expect(reclaimTicket(bench.root, 1, buildTicket(FIRST_TOKEN, 'dead'))).toContain(
@@ -858,7 +912,7 @@ describe('lane.ts', () => {
 			await bench.meter.reach('enter', 'holding')
 			await waitForCondition(
 				'the run record exists',
-				() => bench.scratch.has(join('root', renderRunName(1))),
+				() => bench.scratch.has(join('root', renderName(1, RUN_SUFFIX))),
 				{ budget: 45_000, interval: 10 },
 			)
 			const waiter = bench.lane('queued')
@@ -888,7 +942,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.scratch.write(
-				join('root', renderTicketName(1)),
+				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(FIRST_TOKEN, 'dead')),
 			)
 			writeStage(bench.root, buildTicket(SECOND_TOKEN, 'stage'))
@@ -904,9 +958,9 @@ describe('lane.ts', () => {
 		it('reports a malformed or foreign ticket as unread', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
-			bench.scratch.write(join('root', renderTicketName(1)), 'not json')
+			bench.scratch.write(join('root', renderName(1, TICKET_SUFFIX)), 'not json')
 			bench.scratch.write(
-				join('root', renderTicketName(2)),
+				join('root', renderName(2, TICKET_SUFFIX)),
 				JSON.stringify({ ...buildTicket(FIRST_TOKEN, 'far'), host: 'elsewhere' }),
 			)
 			const status = await readStatus(bench.root)
@@ -1407,7 +1461,7 @@ describe('lane.ts', () => {
 			bench.limit(LIMITS)
 			bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
 			bench.scratch.write(
-				join('root', renderTicketName(1)),
+				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(THIRD_TOKEN, 'dead', USAGE)),
 			)
 			const two = bench.lane('two')
@@ -1435,8 +1489,8 @@ describe('lane.ts', () => {
 			const alpha = bench.lane('alpha')
 			await alpha.reach('lane: waiting behind "planted"')
 			expect(bench.meter.present).toStrictEqual(['one'])
-			bench.scratch.remove(join('root', renderRunName(1)))
-			bench.scratch.remove(join('root', renderTicketName(1)))
+			bench.scratch.remove(join('root', renderName(1, RUN_SUFFIX)))
+			bench.scratch.remove(join('root', renderName(1, TICKET_SUFFIX)))
 			await token.destroy()
 			await bench.meter.reach('enter', 'alpha')
 			bench.meter.releaseAll()
@@ -1567,7 +1621,9 @@ describe('lane.ts', () => {
 			await waitForCondition(
 				'every holder has its run record',
 				() =>
-					[1, 2, 3].every((sequence) => bench.scratch.has(join('root', renderRunName(sequence)))),
+					[1, 2, 3].every((sequence) =>
+						bench.scratch.has(join('root', renderName(sequence, RUN_SUFFIX))),
+					),
 				{ budget: 45_000, interval: 10 },
 			)
 			const json = runSkillScript(LANE_SCRIPT, ['--status', '--root', bench.root, '--json'])

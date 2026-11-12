@@ -664,23 +664,14 @@ export function renderEndpoint(root: string, token: string): string {
 }
 
 /**
- * Renders the name of a ticket.
+ * Renders the name of a ticket or a run record.
  *
  * @param sequence - The ticket's sequence.
+ * @param suffix - The name ending: `TICKET_SUFFIX` for a ticket, `RUN_SUFFIX` for its run record.
  * @returns The file name, at a fixed width.
  */
-export function renderTicketName(sequence: number): string {
-	return `${String(sequence).padStart(SEQUENCE_WIDTH, '0')}${TICKET_SUFFIX}`
-}
-
-/**
- * Renders the name of a run record.
- *
- * @param sequence - The ticket's sequence.
- * @returns The file name, at a fixed width.
- */
-export function renderRunName(sequence: number): string {
-	return `${String(sequence).padStart(SEQUENCE_WIDTH, '0')}${RUN_SUFFIX}`
+export function renderName(sequence: number, suffix: string): string {
+	return `${String(sequence).padStart(SEQUENCE_WIDTH, '0')}${suffix}`
 }
 
 /**
@@ -864,7 +855,7 @@ export function parseText(text: string): unknown {
  */
 export function readEntry(root: string, sequence: number): readonly Entry[] {
 	try {
-		const parsed = parseText(readFileSync(join(root, renderTicketName(sequence)), 'utf8'))
+		const parsed = parseText(readFileSync(join(root, renderName(sequence, TICKET_SUFFIX)), 'utf8'))
 		return [{ sequence, ticket: isTicket(parsed) ? parsed : undefined }]
 	} catch (error) {
 		return readCode(error) === 'ENOENT' ? [] : [{ sequence, ticket: undefined }]
@@ -902,7 +893,7 @@ export function readQueue(root: string): readonly Entry[] {
  */
 export function readRun(root: string, sequence: number): Run | 'absent' | 'unread' {
 	try {
-		const parsed = parseText(readFileSync(join(root, renderRunName(sequence)), 'utf8'))
+		const parsed = parseText(readFileSync(join(root, renderName(sequence, RUN_SUFFIX)), 'utf8'))
 		return isRun(parsed)
 			? {
 					started: parsed.started,
@@ -923,7 +914,7 @@ export function readRun(root: string, sequence: number): Run | 'absent' | 'unrea
  * @param run - The record.
  */
 export function writeRun(root: string, sequence: number, run: Run): void {
-	writeFileSync(join(root, renderRunName(sequence)), JSON.stringify(run))
+	writeFileSync(join(root, renderName(sequence, RUN_SUFFIX)), JSON.stringify(run))
 }
 
 /**
@@ -1337,7 +1328,10 @@ export function tryLink(from: string, to: string): boolean {
  */
 export function linkStage(root: string, token: string): number {
 	const sequence = Math.max(0, ...readSequences(readNames(root))) + 1
-	return tryLink(join(root, `${token}${STAGE_SUFFIX}`), join(root, renderTicketName(sequence)))
+	return tryLink(
+		join(root, `${token}${STAGE_SUFFIX}`),
+		join(root, renderName(sequence, TICKET_SUFFIX)),
+	)
 		? sequence
 		: linkStage(root, token)
 }
@@ -1365,7 +1359,7 @@ export function decideTurn(root: string, sequence: number, token: string, limits
 	const entries = readQueue(root)
 	const position = entries.findIndex((entry) => entry.sequence === sequence)
 	if (position === -1) {
-		return { state: 'refused', reason: `ticket ${renderTicketName(sequence)} is gone` }
+		return { state: 'refused', reason: `ticket ${renderName(sequence, TICKET_SUFFIX)} is gone` }
 	}
 	const own = entries[position]?.ticket
 	const earlier = entries.slice(0, position)
@@ -1466,23 +1460,6 @@ export function parkOn(
 			if (stage) socket.write('s')
 			if (hold) socket.write(HOLD_BYTE)
 			parked()
-		})
-	})
-}
-
-/**
- * Connects to an endpoint and leaves at once.
- *
- * @param endpoint - The endpoint.
- * @returns The connect failure's code, or undefined when the connection opened.
- */
-export function probeEndpoint(endpoint: string): Promise<string | undefined> {
-	return new Promise((resolve) => {
-		const socket = connect(endpoint)
-		socket.once('error', (error) => resolve(readCode(error)))
-		socket.once('connect', () => {
-			socket.destroy()
-			resolve(undefined)
 		})
 	})
 }
@@ -1689,7 +1666,7 @@ export function sweepTree(
  */
 export function reclaimTicket(root: string, sequence: number, ticket: Ticket): string | undefined {
 	const run = readRun(root, sequence)
-	const files = `${renderTicketName(sequence)} and ${renderRunName(sequence)} under ${root}`
+	const files = `${renderName(sequence, TICKET_SUFFIX)} and ${renderName(sequence, RUN_SUFFIX)} under ${root}`
 	if (run === 'unread' || (run !== 'absent' && run.launcher === undefined)) {
 		return `the owner of ${quote(ticket.label)} (pid ${String(ticket.pid)}) ended before its tree could be identified; end its tree, then delete ${files}`
 	}
@@ -1698,9 +1675,9 @@ export function reclaimTicket(root: string, sequence: number, ticket: Ticket): s
 		if (members === undefined || members.length > 0) {
 			return `the owner of ${quote(ticket.label)} (pid ${String(ticket.pid)}) is gone and its tree reads as ${members === undefined ? 'unread' : `present: ${members.join(', ')}`}; launcher ${String(run.launcher)}, command ${String(run.command)}, files ${files}`
 		}
-		removeFile(join(root, renderRunName(sequence)))
+		removeFile(join(root, renderName(sequence, RUN_SUFFIX)))
 	}
-	removeFile(join(root, renderTicketName(sequence)))
+	removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
 	removeFile(join(root, `${ticket.token}${SOCKET_SUFFIX}`))
 	return undefined
 }
@@ -1738,7 +1715,7 @@ export async function waitOnTicket(
 	entry: Entry,
 	announced: string | undefined,
 ): Promise<string | undefined> {
-	const name = renderTicketName(entry.sequence)
+	const name = renderName(entry.sequence, TICKET_SUFFIX)
 	const ticket = entry.ticket
 	if (ticket === undefined) return `ticket ${name} under ${root} cannot be read`
 	const foreign = describeForeign(ticket)
@@ -1796,7 +1773,7 @@ export async function waitOnTickets(
 	if (first.code === undefined) return undefined
 	return isGone(first.code)
 		? reclaimTicket(root, first.sequence, first.ticket)
-		: `the endpoint of ticket ${renderTicketName(first.sequence)} reported ${first.code}`
+		: `the endpoint of ticket ${renderName(first.sequence, TICKET_SUFFIX)} reported ${first.code}`
 }
 
 /**
@@ -1946,8 +1923,8 @@ export function tryWriteRun(root: string, sequence: number, run: Run): boolean {
  */
 export function releaseTicket(root: string, sequence: number): string | undefined {
 	try {
-		removeFile(join(root, renderRunName(sequence)))
-		removeFile(join(root, renderTicketName(sequence)))
+		removeFile(join(root, renderName(sequence, RUN_SUFFIX)))
+		removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
 		return undefined
 	} catch (error) {
 		return readCode(error)
@@ -2168,7 +2145,7 @@ export class Sampler {
  * the run record is removed.
  * @returns The launcher's code; 1 when a signal ended it; 69 when a light run passed its threshold;
  * 70 when the tree still reads as present or the ticket could not be removed; 75 when the launcher
- * could not start or the priority could not be lowered.
+ * could not start, the priority could not be lowered, or the run record could not be written.
  */
 export async function runHolder(
 	options: LaneOptions,
@@ -2184,7 +2161,13 @@ export async function runHolder(
 		return 75
 	}
 	const started = Date.now()
-	writeRun(root, sequence, { started, launcher: undefined, command: undefined })
+	if (!tryWriteRun(root, sequence, { started, launcher: undefined, command: undefined })) {
+		const refusal = releaseTicket(root, sequence)
+		console.error(
+			`lane: the run record ${renderName(sequence, RUN_SUFFIX)} under ${root} could not be written; ${refusal === undefined ? 'the ticket was removed' : `removing the ticket reported ${refusal}`}`,
+		)
+		return refusal === undefined ? 75 : HELD_CODE
+	}
 	token?.hold()
 	const child = startLauncher(launcher, options)
 	const id = child.pid
@@ -2238,7 +2221,7 @@ export async function runHolder(
 	}
 	if (!sweep.gone) {
 		console.error(
-			`lane: the tree of ${quote(options.label)} still reads as ${sweep.members.length === 0 ? 'unread' : `present: ${sweep.members.join(', ')}`}; the lane stays held by ${renderTicketName(sequence)} and ${renderRunName(sequence)} under ${root}`,
+			`lane: the tree of ${quote(options.label)} still reads as ${sweep.members.length === 0 ? 'unread' : `present: ${sweep.members.join(', ')}`}; the lane stays held by ${renderName(sequence, TICKET_SUFFIX)} and ${renderName(sequence, RUN_SUFFIX)} under ${root}`,
 		)
 		await stopped
 		return HELD_CODE
@@ -2247,7 +2230,7 @@ export async function runHolder(
 	const refusal = releaseTicket(root, sequence)
 	await stopped
 	if (refusal !== undefined) {
-		console.error(`lane: removing ${renderTicketName(sequence)} reported ${refusal}`)
+		console.error(`lane: removing ${renderName(sequence, TICKET_SUFFIX)} reported ${refusal}`)
 		return HELD_CODE
 	}
 	if (breached) {
@@ -2311,7 +2294,7 @@ export async function enterLane(
 		removeFile(join(root, `${tokenId}${STAGE_SUFFIX}`))
 		token.publish()
 		const unwatch = watchSignals(() => {
-			removeFile(join(root, renderTicketName(sequence)))
+			removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
 			removeFile(renderEndpoint(root, tokenId))
 			process.exit(75)
 		})
@@ -2320,7 +2303,7 @@ export async function enterLane(
 		if (refusal === undefined) {
 			return await runHolder(options, launcher, sequence, measure, token)
 		}
-		removeFile(join(root, renderTicketName(sequence)))
+		removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
 		console.error(`lane: ${refusal}`)
 		return 75
 	} catch (error) {
@@ -2366,9 +2349,15 @@ export async function readStatusRow(root: string, entry: Entry): Promise<StatusR
 	if (ticket === undefined || describeForeign(ticket) !== undefined) {
 		return { ...fields, state: 'unread', holding: false }
 	}
-	const code = await probeEndpoint(renderEndpoint(root, ticket.token))
+	const probe = new AbortController()
+	const code = await parkOn(
+		renderEndpoint(root, ticket.token),
+		false,
+		() => probe.abort(),
+		probe.signal,
+	)
 	if (code === undefined) {
-		const holding = existsSync(join(root, renderRunName(entry.sequence)))
+		const holding = existsSync(join(root, renderName(entry.sequence, RUN_SUFFIX)))
 		return { ...fields, state: 'live', holding }
 	}
 	return { ...fields, state: isGone(code) ? 'dead' : 'unread', holding: false }
@@ -2399,7 +2388,7 @@ export function renderStatus(status: Status): string {
 		`light: ${lights.length === 0 ? 'none' : lights.map((row) => quote(row.label ?? 'unread')).join(', ')}`,
 		...status.tickets.map(
 			(row) =>
-				`${renderTicketName(row.sequence)} ${row.state} ${renderLane(row)}${row.holding ? ' holding' : ''} ${quote(row.label ?? 'unread')} pid ${String(row.pid)}`,
+				`${renderName(row.sequence, TICKET_SUFFIX)} ${row.state} ${renderLane(row)}${row.holding ? ' holding' : ''} ${quote(row.label ?? 'unread')} pid ${String(row.pid)}`,
 		),
 	].join('\n')
 }
@@ -2434,6 +2423,18 @@ export async function runStatus(root: string, json: boolean): Promise<number> {
 }
 
 /**
+ * Parses a cap given in seconds.
+ *
+ * @param text - The value after `--cap`.
+ * @returns The cap, or undefined when the text is absent, not a finite number, not above 0, or past
+ * the launcher's limit.
+ */
+export function parseCap(text: string | undefined): number | undefined {
+	const cap = Number(text ?? Number.NaN)
+	return Number.isFinite(cap) && cap > 0 && cap <= MAX_CAP_SECONDS ? cap : undefined
+}
+
+/**
  * Validates a run's arguments.
  *
  * @param own - The arguments before the bare `--`.
@@ -2447,16 +2448,14 @@ export function readLaneOptions(
 	const label = readOption(own, '--label')
 	const journal = readOption(own, '--journal')
 	const errors = readOption(own, '--errors')
-	const cap = Number(readOption(own, '--cap') ?? Number.NaN)
+	const cap = parseCap(readOption(own, '--cap'))
 	if (
 		label === undefined ||
 		label === '' ||
 		journal === undefined ||
 		errors === undefined ||
 		journal === errors ||
-		!Number.isFinite(cap) ||
-		cap <= 0 ||
-		cap > MAX_CAP_SECONDS ||
+		cap === undefined ||
 		command[0] === undefined ||
 		command[0] === ''
 	) {
@@ -2507,6 +2506,13 @@ export async function main(argv: readonly string[]): Promise<number> {
 			return 64
 		}
 		return runStatus(resolveRoot(readOption(own, '--root')), own.includes('--json'))
+	}
+	const cap = readOption(own, '--cap')
+	if (cap !== undefined && parseCap(cap) === undefined) {
+		console.error(
+			`lane: --cap takes a number of seconds above 0 up to ${String(MAX_CAP_SECONDS)}, not ${quote(cap)}; ${USAGE}`,
+		)
+		return 64
 	}
 	const options = own.includes('--json') ? undefined : readLaneOptions(own, command)
 	if (options === undefined) {
