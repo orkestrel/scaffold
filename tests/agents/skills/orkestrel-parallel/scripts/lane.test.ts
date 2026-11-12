@@ -1014,6 +1014,13 @@ describe('lane.ts', () => {
 			['the application aggregate script', [...NPM, 'run', 'test:app'], 'heavy'],
 			['the live-service project', [...VITEST, '--project', 'service'], 'heavy'],
 			['the benchmark script', [...NPM, 'run', 'test:bench'], 'heavy'],
+			['a whole browser project', [...VITEST, '--project', 'src:browser'], 'heavy'],
+			['a whole Vue project', [...VITEST, '--project', 'app:vue'], 'heavy'],
+			[
+				'one browser test file',
+				[...VITEST, '--project', 'src:browser', 'tests/src/browser/x.test.ts'],
+				'light',
+			],
 			['a wildcard project filter', [...VITEST, '--project', 'src:*'], 'heavy'],
 			[
 				'a full run with a dotted report flag',

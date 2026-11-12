@@ -260,6 +260,9 @@ export const HEAVY_SCRIPTS: readonly string[] = [
 /** Lists the Vitest projects a seed reads heavy: the pack-and-install project and the live-service project. */
 export const HEAVY_PROJECTS: readonly string[] = ['distribution', 'service']
 
+/** Matches a browser face's Vitest project, whose whole run a seed reads heavy: `src:browser`, `app:vue`. */
+export const BROWSER_PROJECT = /(?:^|:)(?:browser|vue)$/u
+
 /** Matches a dotted flag such as `--outputFile.json`, whose separate value a seed skips. */
 export const DOTTED_FLAG = /^--[^=.]+\.[^=]+$/u
 
@@ -1237,9 +1240,9 @@ export function readScriptSeed(name: string): Seed | undefined {
  * Reads the lane a Vitest command seeds.
  *
  * @param args - The arguments after `vitest`.
- * @returns `heavy` for a run of every project, of several projects, or of a project
- * {@link HEAVY_PROJECTS} names; `light` for a run of named test files or one project; undefined for
- * any other run or mode.
+ * @returns `heavy` for a run of every project, of several projects, of a project
+ * {@link HEAVY_PROJECTS} names, or of a whole browser project; `light` for a run of named test files
+ * or one other project; undefined for any other run or mode.
  */
 export function readVitestSeed(args: readonly string[]): Seed | undefined {
 	const [mode, ...operands] = readOperands(args, VITEST_VALUE_FLAGS)
@@ -1255,6 +1258,7 @@ export function readVitestSeed(args: readonly string[]): Seed | undefined {
 		return 'heavy'
 	}
 	const files = operands.filter((operand) => /\.(?:test|spec)\./u.test(operand))
+	if (files.length === 0 && projects.some((project) => BROWSER_PROJECT.test(project))) return 'heavy'
 	if (files.length > 0 || projects.length === 1) return 'light'
 	return projects.length === 0 && operands.length === 0 ? 'heavy' : undefined
 }
