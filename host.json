@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "b7a01ef90671422f3e49e520fb046c37ef21c45703c2181a5a66529cd6faa29c"
+			"digest": "3f53674bebc544bab7787c21fe249911c7ad1de14c38d1d898813ac51bf43358"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1342,13 +1342,13 @@
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "f52fbd4346715e945b62dcaa1530a3a5d4e2c960bccfc06f5d37b2b1dae7a254"
+			"digest": "5746d26d502d9e311bda4da567a5a3d0dce80e25ad571bcc8f06a40b9383d6bd"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "de7149a4e2b47686d4509f5302993276b583a2c1c3c4800fabff9dde3132b9ec"
+			"digest": "ba3624fa4c024539298e58a0d3176fb66ba749b18da142e267e3b5f77225695e"
 		}
 	],
 	"roots": [
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "af026d36bf20bfe231afb42e6a984e5484069bc3c11e82eb32b10ea6df24d0ae"
+	"digest": "a918352b7779963b3fee56513017a2a17304beabdd3fa1d514d5471c78b58ede"
 }

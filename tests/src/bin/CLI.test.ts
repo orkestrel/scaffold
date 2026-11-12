@@ -857,6 +857,29 @@ describe('surface command', () => {
 		}
 	})
 
+	it('refuses an app-only candidate by naming that it publishes no surface', async () => {
+		const workspace = createScratch({ files: { 'package.json': '{"name":"@orkestrel/taverna"}' } })
+		try {
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'surface',
+					workspace.path,
+					'--from',
+					workspace.path,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal = JSON.parse(requireValue(sink.output[0]))
+			expect(refusal.error.code).toBe('TARGET')
+			expect(refusal.error.message).toContain('publishes no surface')
+			expect(refusal.error.message).toContain('test:policy surface rule')
+			expect(refusal.error.message).not.toContain('Add its guide or source directory')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('refuses a membership closed before its headers or timed out without requesting a guide or record', async () => {
 		const registry = await createUpstreamServer({
 			'/-/org/orkestrel/package': { status: 200, body: '{}', held: true },
