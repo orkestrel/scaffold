@@ -403,7 +403,7 @@ When instructions sit behind an index and demand-loaded bodies, keep the indexes
 
 - **Refuse.** An index alone, because “an index with no loader tool is inert for the model”. A scripted skill study as uptake or ordering evidence, because the scripted driver has no model. A fleet-wide module-count limit, a shared index ceiling, or background consolidation, because the recorded research motivates progressive disclosure only and no consumer earns these.
 - **Reading.** In the `@orkestrel/agent` package, on the scripted context study: a no-fold turn carries the acknowledgement, and the body arrives at the next run. The scripted study does not prove memo order or load rate.
-- **Example.** `@orkestrel/agent` `4d897eec`: the timing study of skill bodies, with `@orkestrel/toolbox` owning the later model-driven loader.
+- **Example.** `@orkestrel/agent` `4d897eec`: the timing study of skill bodies, with the model-driven loader built into `@orkestrel/agent` as the `load` built-in.
 
 ### Admit a declared numeric language instead of listing bad spellings
 
