@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "c852ff9886b2a2d24b8a0d69efe10f58dac37bd217d676c133048c148b5e877e"
+			"digest": "c8521d98dcca003af43e2629ddc12c202fde291a03cec6018740507839269e14"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "6419a0a43f947d90e7812d47dedcbc9e4e77e2bbe951688e6e0cc7c809e39a63"
+	"digest": "984fadd39e0cc0b09742920165d2114f6c22a4ccb7e49ca7530d9a7b157014a3"
 }
