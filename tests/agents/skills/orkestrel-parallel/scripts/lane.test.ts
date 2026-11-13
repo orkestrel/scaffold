@@ -2265,13 +2265,14 @@ describe('lane.ts', () => {
 			expect(JSON.parse(json.stdout)).toMatchObject({ tickets: [{ edits: true }] })
 		})
 
-		it('folds the case of a directory, reads a vanished one without a throw or a match, and compares by containment', () => {
-			const cwd = realpathSync(WORKSPACE_ROOT)
-			expect(normalizeDirectory(cwd.toUpperCase())).toBe(normalizeDirectory(cwd.toLowerCase()))
+		it('reads the stored name of a directory, reads a vanished one without a throw or a match, and compares by containment', () => {
+			const cwd = realpathSync.native(WORKSPACE_ROOT)
+			const upper = cwd.toUpperCase()
+			expect(normalizeDirectory(upper)).toBe(existsSync(upper) ? cwd : upper)
 			const gone = join(realpathSync(tmpdir()), `lane-gone-${randomUUID()}`)
 			expect(() => normalizeDirectory(gone)).not.toThrow()
 			expect(sharesDirectory(gone, cwd)).toBe(false)
-			expect(sharesDirectory(cwd.toUpperCase(), cwd)).toBe(true)
+			expect(sharesDirectory(upper, cwd)).toBe(existsSync(upper))
 			expect(sharesDirectory(join(cwd, 'tests'), cwd)).toBe(true)
 			expect(sharesDirectory(cwd, join(cwd, 'tests'))).toBe(true)
 			expect(sharesDirectory(`${cwd}-sibling`, cwd)).toBe(false)

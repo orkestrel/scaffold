@@ -23,8 +23,8 @@
 // on the nearest earlier ticket of its working directory in either lane, and on an earlier ticket it
 // cannot read. That last wait is the lane's existing refusal, because a ticket's endpoint token lives
 // in its record, so a mutation exits 75 on any unreadable earlier ticket, one a writer has not
-// finished included. Two directories share source when their real paths, case folded on Windows,
-// are equal or one sits inside the other. Every wait names an earlier ticket, so no cycle of waits
+// finished included. Two directories share source when their real paths, as the file system
+// stores them, are equal or one sits inside the other. Every wait names an earlier ticket, so no cycle of waits
 // forms, and each process derives from the earlier tickets alone which light tickets the rule blocks.
 // Light reading: `<root>/limits.json` holds `slots`, the `budget` and the per-run `threshold`; while
 // it is absent or malformed, or on a host other than Windows, every ticket is heavy, no sampler runs,
@@ -1486,16 +1486,18 @@ export function normalizeCommand(command: readonly string[]): readonly string[] 
  *
  * @remarks
  * Every side of the comparison passes through this one function. It reads the real path through
- * `realpathSync.native`, which returns the name the file system stores. Case folding is
- * platform-defined: a Windows file system folds case, so the path is lowercased there.
+ * `realpathSync.native`, which returns the name and the case the file system stores, so two
+ * spellings of one directory compare equal without folding case.
  *
  * @param path - The directory.
- * @returns The real path, lowercased on Windows; the path itself, folded the same way, when it
- * cannot be resolved.
+ * @returns The real path; the resolved path when it cannot be read, as for a vanished directory.
  */
 export function normalizeDirectory(path: string): string {
-	const real = readRealPath(path)
-	return process.platform === 'win32' ? real.toLowerCase() : real
+	try {
+		return realpathSync.native(path)
+	} catch {
+		return resolvePath(path)
+	}
 }
 
 /**
@@ -1526,20 +1528,6 @@ export function sharesDirectory(left: string, right: string): boolean {
  */
 export function matchesInside(inner: string, outer: string): boolean {
 	return inner.startsWith(outer.endsWith(sep) ? outer : `${outer}${sep}`)
-}
-
-/**
- * Reads a path's real path as the file system stores it.
- *
- * @param path - The path.
- * @returns The real path; the resolved path when it cannot be read, as for a vanished directory.
- */
-export function readRealPath(path: string): string {
-	try {
-		return realpathSync.native(path)
-	} catch {
-		return resolvePath(path)
-	}
 }
 
 /**
@@ -2813,7 +2801,7 @@ export function readMeasure(options: LaneOptions, token: string): Measure | unde
 		)
 	}
 	if (limits === 'absent' || limits === 'unread') return undefined
-	const key = renderKey(realpathSync(process.cwd()), normalizeCommand(options.command))
+	const key = renderKey(normalizeDirectory(process.cwd()), normalizeCommand(options.command))
 	if (options.solo) return { limits, key, token, light: undefined }
 	const mutation = extractMutation(options.command)
 	const seed = readSeed(mutation ?? options.command)
