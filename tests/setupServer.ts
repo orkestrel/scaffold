@@ -7041,6 +7041,10 @@ export const WAVE_IDENTITY: Readonly<Record<string, string>> = Object.freeze({
 /**
  * Creates the locked peer cluster whose probe re-pin npm refuses with ERESOLVE.
  *
+ * @remarks
+ * The registry also serves `pp` at 1.0.0 and 1.0.1, which the consumer does not install and the
+ * audit stub names in no reading, so a peer on it is peer-only.
+ *
  * @param prefix - The owned scratch allocation prefix.
  * @returns The committed consumer and its registry lifetime.
  * @throws Thrown when the baseline install fails.
@@ -7050,7 +7054,7 @@ export async function createWaveSession(prefix: string): Promise<TestWaveSession
 	const scratch = createScratch({ parent: join(WORKSPACE_ROOT, 'tmp', 'units'), prefix })
 	try {
 		const directories = ['1.0.0', '1.0.1'].flatMap((version) =>
-			['vt', 'bp', 'br', 'pr'].map((name) =>
+			['vt', 'bp', 'br', 'pr', 'pp'].map((name) =>
 				writeSwapPackage(scratch.path, `${name}-${version}`, {
 					name,
 					version,
@@ -7279,6 +7283,42 @@ export async function createWaveRecorder(prefix: string): Promise<TestWaveOverwr
 		throw error
 	}
 }
+
+/** Lists each declared range, served version, and the satisfaction the wave script must compute. */
+export const WAVE_SATISFACTION_CASES: ReadonlyArray<
+	readonly [range: string, version: string, satisfied: boolean | undefined]
+> = Object.freeze([
+	['1.2.3', '1.2.3', true],
+	['1.2.3', '1.2.4', false],
+	['1.2.3', '1.2.2', false],
+	['^0.0.23', '0.0.23', true],
+	['^0.0.23', '0.0.24', false],
+	['^0.0.23', '0.0.22', false],
+	['^0.2.3', '0.2.3', true],
+	['^0.2.3', '0.2.9', true],
+	['^0.2.3', '0.3.0', false],
+	['^0.2.3', '0.2.2', false],
+	['^8.3.7', '8.3.8', true],
+	['^8.3.7', '8.99.0', true],
+	['^8.3.7', '9.0.0', false],
+	['^8.3.7', '8.3.6', false],
+	['~4.1.11', '4.1.12', true],
+	['~4.1.11', '4.2.0', false],
+	['~0.0.3', '0.0.9', true],
+	['~0.0.3', '0.1.0', false],
+	['^4.1.11 || ^5.0.5', '4.1.12', true],
+	['^4.1.11 || ^5.0.5', '5.0.4', false],
+	['^4.1.11||^5.0.5', '5.1.0', true],
+	['4.1.11 || ^5.0.5', '4.1.12', false],
+	['*', '1.0.0', undefined],
+	['^8', '8.3.8', undefined],
+	['>=8.0.0', '8.3.8', undefined],
+	['^8.3.7 || ', '8.3.8', undefined],
+	['v1.2.3', '1.2.3', undefined],
+	['', '1.0.0', undefined],
+	['^8.3.7', '8.3.8-beta.1', undefined],
+	['^8.3.7', 'latest', undefined],
+])
 
 /** Lists the regeneration refusals and the reason each fixture must report. */
 export const WAVE_REFUSALS: ReadonlyArray<readonly [string, string]> = Object.freeze([

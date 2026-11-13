@@ -16,22 +16,30 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
 1. Re-pin every `dependencies` and `devDependencies` range the audit's release readings name to
    the caret of its returned release, and install before the overwrite. Keep a published
    `peerDependencies` range at the floor the release needs: raise it only when its floor fails the
-   release. No reading the visit takes names that floor, so leave every peer range as declared and
-   name each peer the registry moved past in the rewrite row. Read the audit population as the declared `@orkestrel`
+   release. The floor fails when the declared range excludes the version the registry serves. Raise
+   it to the caret of that version, and leave a range the served version satisfies as declared. Read an
+   exact version, a caret, a tilde, and `||` arms of those; leave any other form as declared. Name
+   each peer raised or kept in the rewrite row, with the reason it was kept. Read the audit
+   population as the declared `@orkestrel`
    dependencies in `dependencies` and `devDependencies`, plus declared foreign tools that the
    blueprint plans in those sections; exclude the fixed showcase tool pair from ordinary release lookups.
    Look up fleet releases with `*`; look up foreign tools with
    a caret over the declared major when one can be extracted, otherwise with the declared range.
    Do not treat a declared minor or patch bound as the lookup bound. A lookup skips a deprecated
-   version, and skips a version above `latest` when the range is `*` or sits in `latest`'s major. Peer-only dependencies produce no release reading.
+   version, and skips a version above `latest` when the range is `*` or sits in `latest`'s major.
+   A peer declared also as a dependency takes that dependency's reading. Peer-only dependencies
+   produce no audit reading, so the visit looks each one up with `npm view` under the same bounds.
    For example, with a peer `vite: ^8.3.7` and a development `vite: ^8.3.7` whose registry serves
-   `8.3.8`, apply `vite: ^8.3.7 -> ^8.3.8` to the development range and leave the peer at `^8.3.7`;
+   `8.3.8`, apply `vite: ^8.3.7 -> ^8.3.8` to the development range and leave the peer at `^8.3.7`,
+   which admits `8.3.8`; with a peer `@orkestrel/database: ^0.0.23` whose registry serves `0.0.24`,
+   apply `^0.0.23 -> ^0.0.24` to the peer, because a `0.0.x` caret admits one release;
    with a planned tool whose registry serves `8.3.4`, apply `vite: ~8.2.0 -> ^8.3.4` even though
    the tilde excludes `8.3.4`.
    Keep this pin step within each declared major; step 5 states the overwrite's lift.
    A range joined by `||` names one supported major per
    arm, so move only the arm in the release's major and keep every other arm: with
-   `vitest: ^4.1.11 || ^5.0.5` and a registry serving `4.1.12`, apply `^4.1.12 || ^5.0.5`.
+   `vitest: ^4.1.11 || ^5.0.5` and a registry serving `4.1.12`, apply `^4.1.12 || ^5.0.5` to a
+   dependency range; a peer `~4.1.11 || ^5.0.5` against `4.2.0` rises to `^4.2.0 || ^5.0.5`.
    For a workspace whose selected framework activates a
    `TOOLCHAIN_HOLDS` row, keep the tool within that range's major; read the audit question for its reason. Prove
    that framework on the later major before lifting its hold.

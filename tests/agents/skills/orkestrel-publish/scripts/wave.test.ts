@@ -21,9 +21,11 @@ import {
 	OPTIONS,
 	parseArguments,
 	collectPriorRanges,
+	collectPeerLookups,
 	collectSpecs,
 	compareRanges,
 	computeRanges,
+	computeSatisfaction,
 	moveRange,
 	describeFailure,
 	describeChange,
@@ -31,12 +33,17 @@ import {
 	failed,
 	isRecord as isScriptRecord,
 	judgeCleanup,
+	judgeLookup,
 	judgeOverwrite,
 	judgePin,
 	judgeVerify,
 	matchesLocalSpec,
 	normalizeSlashes,
 	parseJsonRecord,
+	parseJsonRecords,
+	parseRange,
+	parseVersion,
+	raisePeer,
 	readDirtyPaths,
 	parseJsonLine,
 	readLayers,
@@ -45,6 +52,7 @@ import {
 	readReceipt,
 	readReleasedRanges,
 	readReleases,
+	readServedVersion,
 	readString,
 	readVerdict,
 	removeTree,
@@ -85,6 +93,7 @@ import {
 	trackFiles,
 	WAVE_FAILURE_ROWS,
 	WAVE_REFUSALS,
+	WAVE_SATISFACTION_CASES,
 	WAVE_JOURNAL_FAILURES,
 	WAVE_SCRIPT,
 	WAVE_STEPS,
@@ -347,7 +356,9 @@ describe('wave.ts', () => {
 			)
 			if (!isRecord(vite)) throw new Error('No vite reading')
 			expect(wave).toContain(`vite: ${String(vite.range)} -> ^${String(vite.latest)}`)
-			expect(wave).toContain('Peer-only dependencies produce no release reading')
+			expect(wave.replace(/\s+/gu, ' ')).toContain(
+				'Peer-only dependencies produce no audit reading, so the visit looks each one up with `npm view` under the same bounds.',
+			)
 			expect(wave).toContain('Force-verify the same audit population and lookup bounds')
 		} finally {
 			await server.destroy()
@@ -2024,7 +2035,7 @@ describe('the manifest ranges', () => {
 			const moved: readonly Release[] = [{ name: 'a', range: '^1.0.0', latest: '1.2.0' }]
 			expect(writeRanges(scratch.path, moved)).toEqual({
 				moved: [],
-				kept: ['peer a ^1.0.0 left alone, not ^1.2.0'],
+				kept: ['peer a ^1.0.0 kept, admits 1.2.0'],
 			})
 			expect(scratch.read('package.json')).toBe(peer)
 		} finally {
@@ -2032,7 +2043,7 @@ describe('the manifest ranges', () => {
 		}
 	})
 
-	it('moves the runtime and development ranges and keeps a peer range the registry moved past', () => {
+	it('moves the runtime and development ranges and keeps a peer range the release satisfies', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-peer-' })
 		try {
 			scratch.write(
@@ -2050,7 +2061,7 @@ describe('the manifest ranges', () => {
 			]
 			expect(writeRanges(scratch.path, releases)).toEqual({
 				moved: ['@orkestrel/contract ^0.0.22 -> ^0.0.23', 'vite ^8.3.7 -> ^8.3.8'],
-				kept: ['peer vite ^8.3.7 left alone, not ^8.3.8'],
+				kept: ['peer vite ^8.3.7 kept, admits 8.3.8'],
 			})
 			expect(scratch.read('package.json')).toBe(
 				`${JSON.stringify(
@@ -2068,17 +2079,201 @@ describe('the manifest ranges', () => {
 			scratch.destroy()
 		}
 	})
+
+	it.each(WAVE_SATISFACTION_CASES)('computes whether %j admits %s', (range, version, satisfied) => {
+		expect(computeSatisfaction(range, version)).toBe(satisfied)
+	})
+
+	it('parses plain versions and the exact, caret, tilde, and disjunctive range forms alone', () => {
+		expect(parseVersion('0.0.24')).toEqual([0, 0, 24])
+		expect(parseVersion('01.0.0')).toBeUndefined()
+		expect(parseVersion('1.0')).toBeUndefined()
+		expect(parseRange('^0.0.23')).toEqual([{ floor: [0, 0, 23], ceiling: [0, 0, 24] }])
+		expect(parseRange('^0.2.3')).toEqual([{ floor: [0, 2, 3], ceiling: [0, 3, 0] }])
+		expect(parseRange('^8.3.7')).toEqual([{ floor: [8, 3, 7], ceiling: [9, 0, 0] }])
+		expect(parseRange('~4.1.11')).toEqual([{ floor: [4, 1, 11], ceiling: [4, 2, 0] }])
+		expect(parseRange('1.2.3')).toEqual([{ floor: [1, 2, 3], ceiling: [1, 2, 4] }])
+		expect(parseRange(' ^4.1.11 || 5.0.5 ')).toEqual([
+			{ floor: [4, 1, 11], ceiling: [5, 0, 0] },
+			{ floor: [5, 0, 5], ceiling: [5, 0, 6] },
+		])
+		for (const range of ['*', '^8', '>=8.0.0', '^8.3.7 ||', '8.3.7 - 9.0.0', 'workspace:^1.0.0'])
+			expect(parseRange(range)).toBeUndefined()
+	})
+
+	it('raises a peer range whose floor fails the served release and keeps every other one', () => {
+		expect(raisePeer('@orkestrel/database', '^0.0.23', '0.0.24')).toEqual({
+			range: '^0.0.24',
+			message: 'peer @orkestrel/database ^0.0.23 -> ^0.0.24',
+			raised: true,
+		})
+		expect(raisePeer('vite', '^8.3.7', '8.3.8')).toEqual({
+			range: '^8.3.7',
+			message: 'peer vite ^8.3.7 kept, admits 8.3.8',
+			raised: false,
+		})
+		expect(raisePeer('vitest', '~4.1.11 || ^5.0.5', '4.2.0')).toEqual({
+			range: '^4.2.0 || ^5.0.5',
+			message: 'peer vitest ~4.1.11 || ^5.0.5 -> ^4.2.0 || ^5.0.5',
+			raised: true,
+		})
+		expect(raisePeer('vitest', '^4.1.11 || ^5.0.5', '4.1.12').message).toBe(
+			'peer vitest ^4.1.11 || ^5.0.5 kept, admits 4.1.12',
+		)
+		expect(raisePeer('pp', '1.2.3', '1.2.4')).toEqual({
+			range: '^1.2.4',
+			message: 'peer pp 1.2.3 -> ^1.2.4',
+			raised: true,
+		})
+		expect(raisePeer('pp', '>=1.0.0', '1.2.4').message).toBe(
+			'peer pp >=1.0.0 kept, unreadable range',
+		)
+		expect(raisePeer('pp', '*', undefined).message).toBe('peer pp * kept, unreadable range')
+		expect(raisePeer('pp', '^1.0.0', undefined).message).toBe(
+			'peer pp ^1.0.0 kept, no release reading',
+		)
+		expect(raisePeer('pp', '^1.0.0', '2.0.0-rc.1').message).toBe(
+			'peer pp ^1.0.0 kept, unreadable release 2.0.0-rc.1',
+		)
+		expect(raisePeer('pp', '^4.1.11 || ^5.0.5', '6.0.0')).toEqual({
+			range: '^4.1.11 || ^5.0.5',
+			message: 'peer pp ^4.1.11 || ^5.0.5 kept, no arm in the major of 6.0.0',
+			raised: false,
+		})
+		expect(raisePeer('pp', '^1.2.0', '1.1.0').message).toBe(
+			'peer pp ^1.2.0 kept, its floor is above 1.1.0',
+		)
+		expect(raisePeer('pp', '^0.2.0', '0.1.5').message).toBe(
+			'peer pp ^0.2.0 kept, its floor is above 0.1.5',
+		)
+	})
+
+	it('raises each failing peer in the manifest from the reading that names it', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-raise-' })
+		try {
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					name: '@orkestrel/middleware',
+					peerDependencies: {
+						'@orkestrel/database': '^0.0.23',
+						vite: '^8.3.7',
+						vitest: '4.1.11 || ^5.0.5',
+						exact: '1.2.3',
+						wide: '>=1.0.0',
+						count: 1,
+					},
+					devDependencies: { vite: '^8.3.7', vitest: '^4.1.11' },
+				}),
+			)
+			const releases: readonly Release[] = [
+				{ name: 'vite', range: '^8', latest: '8.3.8' },
+				{ name: 'vitest', range: '^4', latest: '4.1.12' },
+				{ name: '@orkestrel/database', range: '*', latest: '0.0.24' },
+				{ name: 'exact', range: '^1', latest: '1.2.4' },
+				{ name: 'wide', range: '>=1.0.0', latest: '1.2.4' },
+			]
+			expect(writeRanges(scratch.path, releases)).toEqual({
+				moved: [
+					'peer @orkestrel/database ^0.0.23 -> ^0.0.24',
+					'peer vitest 4.1.11 || ^5.0.5 -> ^4.1.12 || ^5.0.5',
+					'peer exact 1.2.3 -> ^1.2.4',
+					'vite ^8.3.7 -> ^8.3.8',
+					'vitest ^4.1.11 -> ^4.1.12',
+				],
+				kept: ['peer vite ^8.3.7 kept, admits 8.3.8', 'peer wide >=1.0.0 kept, unreadable range'],
+			})
+			expect(readManifest(scratch.path)).toEqual({
+				name: '@orkestrel/middleware',
+				peerDependencies: {
+					'@orkestrel/database': '^0.0.24',
+					vite: '^8.3.7',
+					vitest: '^4.1.12 || ^5.0.5',
+					exact: '^1.2.4',
+					wide: '>=1.0.0',
+					count: 1,
+				},
+				devDependencies: { vite: '^8.3.8', vitest: '^4.1.12' },
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('looks up each peer-only dependency the audit names in no reading, bounded as a dependency', () => {
+		const manifest = {
+			peerDependencies: {
+				'@orkestrel/database': '^0.0.23',
+				vite: '^8.3.7',
+				vitest: '^4.1.11 || ^5.0.5',
+				exact: '1.2.3',
+				tilde: '~2.4.0',
+				wide: '>=1.0.0',
+				count: 1,
+			},
+			devDependencies: { vite: '^8.3.7' },
+		}
+		expect(collectPeerLookups(manifest, [{ name: 'vite', range: '^8', latest: '8.3.8' }])).toEqual([
+			{ name: '@orkestrel/database', bound: '*' },
+			{ name: 'vitest', bound: '^4.1.11 || ^5.0.5' },
+			{ name: 'exact', bound: '^1' },
+			{ name: 'tilde', bound: '^2' },
+		])
+		expect(collectPeerLookups({ peerDependencies: 'x' }, [])).toEqual([])
+		expect(collectPeerLookups({}, [])).toEqual([])
+	})
+
+	it('reads the served release out of a peer lookup, skipping deprecated and post-latest versions', () => {
+		const one = JSON.stringify({ version: '0.0.24', 'dist-tags.latest': '0.0.24' })
+		expect(readServedVersion(one, '*')).toBe('0.0.24')
+		const many = JSON.stringify([
+			{ version: '8.3.7', 'dist-tags.latest': '8.3.8' },
+			{ version: '8.4.0', 'dist-tags.latest': '8.3.8' },
+			{ version: '8.3.9', deprecated: 'broken', 'dist-tags.latest': '8.3.8' },
+			{ version: '8.3.8', 'dist-tags.latest': '8.3.8' },
+			{ version: '8.5.0-beta.1', 'dist-tags.latest': '8.3.8' },
+		])
+		expect(readServedVersion(many, '^8')).toBe('8.3.8')
+		expect(readServedVersion(many, '^8.3.7 || ^9.0.0')).toBe('8.4.0')
+		const behind = JSON.stringify([
+			{ version: '4.1.12', 'dist-tags.latest': '5.0.6' },
+			{ version: '4.1.11', 'dist-tags.latest': '5.0.6' },
+		])
+		expect(readServedVersion(behind, '^4')).toBe('4.1.12')
+		expect(readServedVersion('', '*')).toBeUndefined()
+		expect(readServedVersion('[]', '*')).toBeUndefined()
+		expect(
+			readServedVersion(JSON.stringify({ version: '1.0.0', deprecated: 'gone' }), '*'),
+		).toBeUndefined()
+		expect(parseJsonRecords('{ not json')).toEqual([])
+		expect(parseJsonRecords('[1, {"a": 2}]')).toEqual([{ a: 2 }])
+	})
+
+	it('judges a peer lookup by its exit and whether it served an eligible release', () => {
+		expect(judgeLookup(buildSpawnResult(0, JSON.stringify({ version: '1.0.1' })), '^1')).toEqual({
+			exit: 0,
+			note: 'serves 1.0.1',
+		})
+		expect(judgeLookup(buildSpawnResult(0, ''), '^1')).toEqual({
+			exit: 2,
+			note: 'the registry served no eligible release within ^1',
+		})
+		expect(judgeLookup(buildSpawnResult(1, '', 'npm error 404 Not Found'), '^1')).toEqual({
+			exit: 1,
+			note: 'npm error 404 Not Found',
+		})
+	})
 })
 
 describe('the pin step', () => {
-	it('keeps a peer range the registry has moved past and names it in the rewrite journal', async () => {
+	it('raises a failing peer-only range from its own lookup, keeps a satisfied peer, and names both', async () => {
 		const session = await createWaveSession('orkestrel-wave-peer-')
 		try {
 			session.scratch.write(
 				'consumer/package.json',
 				renderPackageManifest({
 					...readInstalledRecord(session.target),
-					peerDependencies: { pr: '^1.0.0' },
+					peerDependencies: { pr: '^1.0.0', pp: '1.0.0' },
 				}),
 			)
 			trackFiles(session.target)
@@ -2097,10 +2292,25 @@ describe('the pin step', () => {
 			)
 			if (!isRecord(row) || !isString(row.note) || !isString(row.journal))
 				throw new Error('The visit carries no rewrite row')
-			expect(row.note).toBe('pr ^1.0.0 -> ^1.0.1; peer pr ^1.0.0 left alone, not ^1.0.1')
-			expect(readFileSync(row.journal, 'utf8')).toContain('peer pr ^1.0.0 left alone, not ^1.0.1')
+			expect(row.note).toBe(
+				'peer pp 1.0.0 -> ^1.0.1, pr ^1.0.0 -> ^1.0.1; peer pr ^1.0.0 kept, admits 1.0.1',
+			)
+			expect(readFileSync(row.journal, 'utf8')).toContain('peer pr ^1.0.0 kept, admits 1.0.1')
+			expect(steps).toContainEqual(
+				expect.objectContaining({
+					step: 'pin',
+					command: 'npm view pp@^1 version deprecated dist-tags.latest --json',
+					exit: 0,
+					note: 'serves 1.0.1',
+				}),
+			)
+			expect(
+				steps.some(
+					(step) => isRecord(step) && isString(step.command) && step.command.includes('view pr@'),
+				),
+			).toBe(false)
 			const written = readInstalledRecord(session.target)
-			expect(written.peerDependencies).toEqual({ pr: '^1.0.0' })
+			expect(written.peerDependencies).toEqual({ pr: '^1.0.0', pp: '^1.0.1' })
 			expect(written.devDependencies).toEqual({
 				'@orkestrel/scaffold': '1.0.0',
 				vt: '^1.0.0',
