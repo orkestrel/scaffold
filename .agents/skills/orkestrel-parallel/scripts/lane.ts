@@ -16,23 +16,32 @@
 // fit `slots` and each budget; the earliest light ticket always fits. A light holder runs at
 // below-normal priority, and its holder ends it and exits 69 when a sample passes the memory or
 // process threshold.
+// Directories: a run of the falsify skill's `mutate` script publishes `edits` in its ticket, because
+// it edits source in its working directory. Every ticket also waits on the nearest earlier ticket
+// that carries `edits` and shares its working directory, and a ticket that carries `edits` also waits
+// on the nearest earlier ticket of its working directory in either lane, and on an earlier ticket it
+// cannot read, which refuses. Two directories compare by their real paths, case folded on Windows.
+// Every wait names an earlier ticket, so no cycle of waits forms.
 // Light reading: `<root>/limits.json` holds `slots`, the `budget` and the per-run `threshold`; while
 // it is absent or malformed, or on a host other than Windows, every ticket is heavy, no sampler runs,
 // and no record is written. Otherwise each run starts one PowerShell sampler at arrival, which readies
-// while the ticket waits and exits when its stdin closes; the holder starts its command after the
-// sampler readies, samples the tree back to back through the command's first second and once a
-// second after, and reads the handover through one more sample. The holder writes one record per run
+// while the ticket waits, with no timer until its first sample, and exits when its stdin closes. The
+// holder starts its command after the sampler readies, or unmeasured once `READY_MS` passes, samples
+// the tree back to back through the command's first second and once a second after, and reads the
+// handover through one more sample; when that sample lists a member or no sampler answers, the
+// handover reads, kills, and reads again through fresh snapshots, each a second PowerShell. The
+// holder writes one record per run
 // under `<root>/history/<key>/`, keyed by the working directory and the command, keeping the latest
 // runs. A record that opens a key prunes the history after the release, keeping only the keys written
-// inside `HISTORY_AGE_MS` (7 days), and of those at most the `HISTORY_KEYS` (512) written last. The
+// inside `HISTORY_AGE_MS` (7 days), and of those at most the `HISTORY_KEYS` (512) written last; a
+// name it cannot list or remove stays, one stderr line names it, and the exit stays the run's. The
 // command's kind seeds the reading: a format check, a lint check, a type check, and a scoped test run
 // read light until a record breaches; a full suite, a run of several projects, an install, a
 // pack-and-install suite, a release chain, a journey, a study, a capture, and a live-service run read
 // heavy; `npx` and a package manager's `exec`, `x`, or `dlx` verb read as the tool they run; any other
 // command reads light only when its latest runs each sit inside the threshold, none capped and none
-// ending 69 or 70. A run of the falsify skill's `mutate` script is keyed without its edits file and
-// seeded by the command after its own `--`, and it reads heavy while a live ticket shares its working
-// directory, because it edits source that ticket reads.
+// ending 69 or 70. A `mutate` run is keyed without its edits file and seeded by the command after its
+// own `--`, so it reads light when that command's records allow.
 // `--status` prints each ticket in arrival order with its label, `live`, `dead`, or `unread`, its
 // lane, and `holding` for a holder, and names the heavy holder and every light holder. It writes
 // nothing, removes nothing, and creates no root; an absent root reads as an empty queue. The root is
@@ -52,9 +61,9 @@
 // owner closes that connection, because a connection its synchronous allocation left unaccepted
 // would otherwise stay parked on a process that waits behind it. A light waiter writes `h` to an
 // earlier light ticket that did not hold yet, and that owner closes the connection when it holds,
-// so the waiter decides again; a byte that reaches an owner that is releasing parks until it ends. The protocol stays 1: the `light` and `solo` ticket fields are
-// optional, a ticket without them reads as heavy, and a process of the first release holds only as
-// the earliest ticket.
+// // so the waiter decides again; a byte that reaches an owner that is releasing parks until it ends.
+// The protocol stays 1: the `light`, `solo`, and `edits` ticket fields are optional, a ticket
+// without them reads as heavy, and a process of the first release holds only as the earliest ticket.
 // Limits:
 // - Process-identifier reuse, Windows. A row is matched by id and creation date, bounded by a clock
 //   comparison, so a reuse of an exited seed's id inside the clock allowance can misattribute a row.
@@ -78,10 +87,13 @@
 //   exits between samples is lost, and disk input and output are not measured. A command that ends
 //   before one process query answers, about 140 ms on the Windows host measured 2026-11-12, can
 //   record zero, so it counts nothing until a later run is read.
-// - A mutation beside a later arrival. A ticket that arrives after a light `mutate` run from the same
-//   working directory runs beside it, because an admission is never revoked.
-// - A prune beside a write. A prune that removes a key between another holder's directory creation
-//   and its record's write loses that record.
+// - Transition. A process of an earlier release reads no `edits` field, so until it exits it neither
+//   waits on a mutation of its directory nor holds a mutation back by the directory rule.
+// - A light mutation holds back later light tickets. A light `mutate` ticket that waits on an earlier
+//   ticket of its directory has not held, so every later light ticket waits for it by the light lanes'
+//   arrival order.
+// - A prune beside a write. A holder that writes a record to an existing key that is past a bound can
+//   lose that record to another holder's prune, which removes the key with the record in it.
 // - An unreaped member. On a host whose init does not reap, a killed member can keep reading as
 //   present. The lane exits 70 and stays held.
 // - Listing completeness. No probe proves that a listing returns every stable entry. The design takes
@@ -264,6 +276,16 @@ export const HISTORY_AGE_MS = 7 * 24 * 60 * 60 * 1000
 /** Holds the count of history keys kept, the latest by their newest record. */
 export const HISTORY_KEYS = 512
 
+/**
+ * Holds the longest wait in milliseconds for a sampler to ready before its holder starts the command
+ * unmeasured.
+ *
+ * @remarks
+ * The wait outlasts a sampler's start on a loaded host, and it bounds what a sampler that neither
+ * readies nor exits costs the lane.
+ */
+export const READY_MS = 5000
+
 /** Holds the pause in milliseconds between two samples of a holder's tree. */
 export const SAMPLE_MS = 1000
 
@@ -331,7 +353,13 @@ export const MANAGERS: readonly string[] = ['npm', 'pnpm', 'yarn', 'bun']
 export const EXEC_VERBS: readonly string[] = ['exec', 'x', 'dlx']
 
 /** Lists the `npm exec` and `npx` flags that take a separate value, so a seed reads no flag value as the tool. */
-export const EXEC_VALUE_FLAGS: readonly string[] = ['--package', '-p']
+export const EXEC_VALUE_FLAGS: readonly string[] = ['--package', '-p', '--workspace', '-w']
+
+/** Lists the package-manager flags before the verb that take a separate value, so a seed reads no flag value as the verb. */
+export const MANAGER_VALUE_FLAGS: readonly string[] = ['--prefix', '--workspace', '-w']
+
+/** Lists the tools that run another tool the way `npx` does. */
+export const NPX_TOOLS: readonly string[] = ['npx', 'pnpx', 'bunx']
 
 /** Lists the `npm exec` and `npx` flags that run inline shell text, which names no tool a seed reads. */
 export const EXEC_INLINE_FLAGS: readonly string[] = ['-c', '--call']
@@ -390,12 +418,12 @@ export const SAMPLE_BYTE = 's'
  * Holds the PowerShell text of a sampler.
  *
  * @remarks
- * The child loads the CIM module and prints {@link READY_LINE}. Each byte on
- * its stdin then starts one sample at once, and after the first byte it also samples every
- * {@link SAMPLE_MS}. A sample prints one line: `1` for a sample a byte asked for or `0`, a `|`,
+ * The child loads the CIM module and prints {@link READY_LINE}. Until the first byte it waits on its
+ * stdin with no timer. Each byte on its stdin starts one sample at once, and after the first byte it
+ * also samples every {@link SAMPLE_MS}. A sample prints one line: `1` for a sample a byte asked for or `0`, a `|`,
  * and the rows separated by semicolons. The child exits when its stdin closes.
  */
-export const SAMPLER_COMMAND = `$i=[Console]::OpenStandardInput();$b=New-Object byte[] 1;$t=$i.ReadAsync($b,0,1);Import-Module CimCmdlets;[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();$a=$false;$q=0;while($true){if($a){$r=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount | Where-Object { $_.CreationDate } | ForEach-Object { '{0} {1} {2} {3} {4}' -f $_.ProcessId,$_.ParentProcessId,([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(),($_.KernelModeTime+$_.UserModeTime),$_.PrivatePageCount };[Console]::Out.WriteLine([string]$q+'|'+($r -join ';'));[Console]::Out.Flush();$q=0};if($t.Wait(${String(SAMPLE_MS)})){if($t.Status -ne 'RanToCompletion' -or $t.Result -eq 0){break};$a=$true;$q=1;$t=$i.ReadAsync($b,0,1)}}`
+export const SAMPLER_COMMAND = `$i=[Console]::OpenStandardInput();$b=New-Object byte[] 1;$t=$i.ReadAsync($b,0,1);Import-Module CimCmdlets;[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();$a=$false;$q=0;$d=-1;while($true){if($a){$r=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount | Where-Object { $_.CreationDate } | ForEach-Object { '{0} {1} {2} {3} {4}' -f $_.ProcessId,$_.ParentProcessId,([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(),($_.KernelModeTime+$_.UserModeTime),$_.PrivatePageCount };[Console]::Out.WriteLine([string]$q+'|'+($r -join ';'));[Console]::Out.Flush();$q=0};if($t.Wait($d)){if($t.Status -ne 'RanToCompletion' -or $t.Result -eq 0){break};$a=$true;$q=1;$d=${String(SAMPLE_MS)};$t=$i.ReadAsync($b,0,1)}}`
 
 /** Describes the footprint the light lanes add up: average cores, peak private bytes, and peak processes. */
 export interface Usage {
@@ -434,6 +462,12 @@ export interface Gauge extends Row {
 	readonly memory: number
 }
 
+/** Describes what a history prune did: the keys it removed and the names it skipped. */
+export interface Prune {
+	readonly removed: readonly string[]
+	readonly skipped: readonly string[]
+}
+
 /** Describes one sample line: whether a byte asked for it, and its rows. */
 export interface Sample {
 	readonly requested: boolean
@@ -455,7 +489,10 @@ export interface Measure {
 	readonly light: Usage | undefined
 }
 
-/** Describes the complete record a stage file holds and a ticket publishes; `light` holds the footprint a light ticket counts. */
+/**
+ * Describes the complete record a stage file holds and a ticket publishes; `light` holds the footprint
+ * a light ticket counts, and `edits` marks a `mutate` run that edits source in its working directory.
+ */
 export interface Ticket {
 	readonly protocol: number
 	readonly token: string
@@ -467,6 +504,7 @@ export interface Ticket {
 	readonly arrived: string
 	readonly light?: Usage
 	readonly solo?: boolean
+	readonly edits?: boolean
 }
 
 /** Describes one ticket in the queue: its sequence and its record, undefined when unreadable. */
@@ -749,7 +787,8 @@ export function isTicket(value: unknown): value is Ticket {
 		'arrived' in value &&
 		typeof value.arrived === 'string' &&
 		(!('light' in value) || isUsage(value.light)) &&
-		(!('solo' in value) || typeof value.solo === 'boolean')
+		(!('solo' in value) || typeof value.solo === 'boolean') &&
+		(!('edits' in value) || typeof value.edits === 'boolean')
 	)
 }
 
@@ -952,9 +991,17 @@ export function removeFile(path: string): void {
  * @param light - The footprint a light ticket counts, or undefined for a heavy ticket.
  * @param solo - If `true`, marks a ticket that waits out every earlier light ticket; if `false`, omits
  * the field.
- * @returns The complete ticket, carrying `light` and `solo` only when they are set.
+ * @param edits - If `true`, marks a `mutate` run that edits source in its working directory; if
+ * `false`, omits the field.
+ * @returns The complete ticket, carrying `light`, `solo`, and `edits` only when they are set.
  */
-export function buildTicket(token: string, label: string, light?: Usage, solo = false): Ticket {
+export function buildTicket(
+	token: string,
+	label: string,
+	light?: Usage,
+	solo = false,
+	edits = false,
+): Ticket {
 	return {
 		protocol: PROTOCOL,
 		token,
@@ -966,6 +1013,7 @@ export function buildTicket(token: string, label: string, light?: Usage, solo = 
 		arrived: new Date().toISOString(),
 		...(light === undefined ? {} : { light }),
 		...(solo ? { solo } : {}),
+		...(edits ? { edits } : {}),
 	}
 }
 
@@ -1068,15 +1116,51 @@ export function writeOutcome(root: string, key: string, name: string, outcome: O
  * @param root - The queue root.
  * @param key - The key.
  * @returns The end time its newest record's name opens with; the directory's modification time when
- * it holds no record; undefined when the directory is gone.
+ * it holds no record; `gone` when the entry no longer exists; `unread` when the host refuses to list
+ * it, as it does for a file that is no directory.
  */
-export function readKeyTime(root: string, key: string): number | undefined {
-	const newest = readOutcomeNames(root, key).at(-1)
-	if (newest !== undefined) return Number(newest.slice(0, ENDED_WIDTH))
+export function readKeyTime(root: string, key: string): number | 'gone' | 'unread' {
 	try {
+		const newest = readOutcomeNames(root, key).at(-1)
+		if (newest !== undefined) return Number(newest.slice(0, ENDED_WIDTH))
 		return statSync(join(root, HISTORY_DIRECTORY, key)).mtimeMs
+	} catch (error) {
+		return readCode(error) === 'ENOENT' ? 'gone' : 'unread'
+	}
+}
+
+/**
+ * Lists the names under the history directory.
+ *
+ * @param root - The queue root.
+ * @returns The names, empty when the directory is absent; undefined when the host refuses to list it.
+ */
+export function readHistoryNames(root: string): readonly string[] | undefined {
+	try {
+		return readNames(join(root, HISTORY_DIRECTORY))
 	} catch {
 		return undefined
+	}
+}
+
+/**
+ * Removes one history key inside the removal budget.
+ *
+ * @param root - The queue root.
+ * @param key - The key.
+ * @returns True when the key is gone; false when the host refused the removal.
+ */
+export function removeKey(root: string, key: string): boolean {
+	try {
+		rmSync(join(root, HISTORY_DIRECTORY, key), {
+			recursive: true,
+			force: true,
+			maxRetries: REMOVAL_RETRIES,
+			retryDelay: REMOVAL_DELAY_MS,
+		})
+		return true
+	} catch {
+		return false
 	}
 }
 
@@ -1084,31 +1168,28 @@ export function readKeyTime(root: string, key: string): number | undefined {
  * Prunes the history to the keys written inside {@link HISTORY_AGE_MS}, at most the
  * {@link HISTORY_KEYS} written last.
  *
+ * @remarks
+ * The prune throws nothing, so it never changes the lane's exit: a name the host refuses to list or
+ * remove stays and is reported as skipped.
+ *
  * @param root - The queue root.
  * @param now - The current time in epoch milliseconds.
- * @returns The keys removed; a key the host refused to remove stays and is not listed.
+ * @returns The keys removed, and the names skipped: `history` itself when it cannot be listed.
  */
-export function pruneHistory(root: string, now: number): readonly string[] {
-	const keys = readNames(join(root, HISTORY_DIRECTORY)).flatMap((key) => {
-		const time = readKeyTime(root, key)
-		return time === undefined ? [] : [{ key, time }]
-	})
-	return keys
+export function pruneHistory(root: string, now: number): Prune {
+	const names = readHistoryNames(root)
+	if (names === undefined) return { removed: [], skipped: [HISTORY_DIRECTORY] }
+	const times = names.map((key) => ({ key, time: readKeyTime(root, key) }))
+	const unread = times.flatMap((item) => (item.time === 'unread' ? [item.key] : []))
+	const results = times
+		.flatMap((item) => (typeof item.time === 'number' ? [{ key: item.key, time: item.time }] : []))
 		.toSorted((left, right) => right.time - left.time)
 		.filter((item, index) => index >= HISTORY_KEYS || item.time < now - HISTORY_AGE_MS)
-		.flatMap((item) => {
-			try {
-				rmSync(join(root, HISTORY_DIRECTORY, item.key), {
-					recursive: true,
-					force: true,
-					maxRetries: REMOVAL_RETRIES,
-					retryDelay: REMOVAL_DELAY_MS,
-				})
-				return [item.key]
-			} catch {
-				return []
-			}
-		})
+		.map((item) => ({ key: item.key, removed: removeKey(root, item.key) }))
+	return {
+		removed: results.flatMap((item) => (item.removed ? [item.key] : [])),
+		skipped: [...unread, ...results.flatMap((item) => (item.removed ? [] : [item.key]))],
+	}
 }
 
 /**
@@ -1241,8 +1322,8 @@ export function readToolName(path: string): string {
 }
 
 /**
- * Reads the tool a command runs and the tool's arguments, past Node, `npx`, and a package manager's
- * `exec`, `x`, or `dlx` verb.
+ * Reads the tool a command runs and the tool's arguments, past Node, `npx`, `pnpx`, `bunx`, and a
+ * package manager's `exec`, `x`, or `dlx` verb.
  *
  * @param command - The command and its arguments.
  * @returns The tool's name followed by its arguments; empty for inline Node code, inline exec text,
@@ -1260,9 +1341,12 @@ export function readTool(command: readonly string[]): readonly string[] {
 		}
 		return readTool(rest.slice(script))
 	}
-	if (name === 'npx') return readExecTool(rest)
+	if (NPX_TOOLS.includes(name)) return readExecTool(rest)
 	if (MANAGERS.includes(name)) {
-		const verb = rest.findIndex((argument) => !argument.startsWith('-'))
+		const verb = rest.findIndex(
+			(argument, index) =>
+				!argument.startsWith('-') && !MANAGER_VALUE_FLAGS.includes(rest[index - 1] ?? ''),
+		)
 		if (EXEC_VERBS.includes(rest[verb] ?? '')) return readExecTool(rest.slice(verb + 1))
 	}
 	return [name, ...rest]
@@ -1323,17 +1407,21 @@ export function extractMutation(command: readonly string[]): readonly string[] |
  *
  * @remarks
  * A `mutate` run names a fresh edits file each time, so its key leaves the edits flag and its value
- * out, and every run of one wrapped command from one directory shares a key.
+ * out, and every run of one wrapped command from one directory shares a key. The cut reads only the
+ * script's own flags, between the script and its own bare `--`, so a launcher's `--` before the
+ * script moves nothing.
  *
  * @param command - The command and its arguments.
  * @returns A `mutate` run without its edits flag and value; any other command unchanged.
  */
 export function normalizeCommand(command: readonly string[]): readonly string[] {
 	if (extractMutation(command) === undefined) return command
-	const end = command.indexOf('--')
+	const start = command.length - readTool(command).length + 1
+	const end = command.indexOf('--', start)
 	return command.filter(
 		(argument, index) =>
-			index > end ||
+			index < start ||
+			index >= end ||
 			!(
 				argument === MUTATION_FLAG ||
 				argument.startsWith(`${MUTATION_FLAG}=`) ||
@@ -1343,14 +1431,31 @@ export function normalizeCommand(command: readonly string[]): readonly string[] 
 }
 
 /**
- * Normalizes a directory to its real path for a comparison.
+ * Normalizes a working directory for the comparison that decides whether two tickets share it.
+ *
+ * @remarks
+ * Every side of the comparison passes through this one function. It reads the real path through
+ * `realpathSync.native`, which returns the name the file system stores. Case folding is
+ * platform-defined: a Windows file system folds case, so the path is lowercased there.
  *
  * @param path - The directory.
- * @returns The real path; the path itself when it cannot be resolved.
+ * @returns The real path, lowercased on Windows; the path itself, folded the same way, when it
+ * cannot be resolved.
  */
 export function normalizeDirectory(path: string): string {
+	const real = readRealPath(path)
+	return process.platform === 'win32' ? real.toLowerCase() : real
+}
+
+/**
+ * Reads a path's real path as the file system stores it.
+ *
+ * @param path - The path.
+ * @returns The real path; the path itself when it cannot be resolved.
+ */
+export function readRealPath(path: string): string {
 	try {
-		return realpathSync(path)
+		return realpathSync.native(path)
 	} catch {
 		return path
 	}
@@ -1431,7 +1536,7 @@ export function readSeed(command: readonly string[]): Seed | undefined {
 	if (tool === undefined) return undefined
 	if (HEAVY_TOOLS.includes(tool)) return 'heavy'
 	if (MANAGERS.includes(tool)) {
-		const [verb, script] = readOperands(args, [])
+		const [verb, script] = readOperands(args, MANAGER_VALUE_FLAGS)
 		if (verb === undefined) return undefined
 		if (HEAVY_VERBS.includes(verb)) return 'heavy'
 		return (verb === 'run' || verb === 'run-script') && script !== undefined
@@ -1502,7 +1607,10 @@ export function linkStage(root: string, token: string): number {
  * @remarks
  * The two listings are separate, because one listing can miss both a ticket linked and a stage file
  * removed while it runs. A stage file absent from the first listing belongs to a process whose own
- * listing sees this ticket, or to a ticket the second listing sees.
+ * listing sees this ticket, or to a ticket the second listing sees. A ticket holds only when the
+ * directory rule of {@link decideDirectory} names no ticket to wait on and its own lane's rule admits
+ * it. Every rule names only an earlier ticket, and an earlier ticket can only leave, so no two tickets
+ * wait on each other and no cycle of waits can form.
  *
  * @param root - The queue root.
  * @param sequence - This process's sequence.
@@ -1523,9 +1631,36 @@ export function decideTurn(root: string, sequence: number, token: string, limits
 	}
 	const own = entries[position]?.ticket
 	const earlier = entries.slice(0, position)
+	const shared = own === undefined ? undefined : decideDirectory(earlier, own)
+	if (shared !== undefined) return shared
 	return own?.light === undefined || limits === undefined
 		? decideHeavy(earlier, own?.solo === true)
 		: decideLight(root, earlier, own.light, limits)
+}
+
+/**
+ * Decides which earlier ticket the directory rule makes a ticket wait on, whatever its lane.
+ *
+ * @remarks
+ * Every ticket waits on the nearest earlier ticket that carries `edits` and shares its working
+ * directory, because a `mutate` run edits source that ticket reads. A ticket that carries `edits`
+ * also waits on the nearest earlier ticket of its working directory in either lane, and on an
+ * earlier ticket it cannot read, which might share the directory; that wait refuses. The rule names
+ * only earlier tickets, which can only leave, so it adds no cycle of waits. {@link normalizeDirectory}
+ * reads both sides of every comparison.
+ *
+ * @param earlier - The tickets before this one, in arrival order.
+ * @param own - This process's ticket.
+ * @returns The ticket to wait on; undefined when the rule names none.
+ */
+export function decideDirectory(earlier: readonly Entry[], own: Ticket): Turn | undefined {
+	const directory = normalizeDirectory(own.cwd)
+	const entry = earlier.findLast((item) => {
+		if (item.ticket === undefined) return own.edits === true
+		const same = normalizeDirectory(item.ticket.cwd) === directory
+		return same && (own.edits === true || item.ticket.edits === true)
+	})
+	return entry === undefined ? undefined : { state: 'behind', entry }
 }
 
 /**
@@ -1534,7 +1669,7 @@ export function decideTurn(root: string, sequence: number, token: string, limits
  * @remarks
  * A heavy ticket waits on the nearest earlier ticket that is not light, an unreadable one included. A
  * `--solo` ticket waits on the nearest earlier ticket of either lane, so it holds with no light
- * holder beside it.
+ * holder beside it. The rule names only an earlier ticket, so it adds no cycle of waits.
  *
  * @param earlier - The tickets before this one, in arrival order.
  * @param solo - If `true`, waits on light tickets too; if `false`, passes them.
@@ -2253,13 +2388,18 @@ export class Sampler {
 	 *
 	 * @param threshold - The light run's threshold, or undefined for a heavy run.
 	 * @param breach - Called once with the seeds when a sample passes the threshold.
+	 * @param command - The PowerShell text the child runs, for a proof. Default: {@link SAMPLER_COMMAND}.
 	 */
-	constructor(threshold: Usage | undefined, breach: (seeds: readonly number[]) => void) {
+	constructor(
+		threshold: Usage | undefined,
+		breach: (seeds: readonly number[]) => void,
+		command = SAMPLER_COMMAND,
+	) {
 		this.#threshold = threshold
 		this.#breach = breach
 		this.#child = spawn(
 			'powershell.exe',
-			['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', SAMPLER_COMMAND],
+			['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command],
 			{ stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true },
 		)
 		this.#closed = waitForClose(this.#child).then(() => {
@@ -2292,12 +2432,19 @@ export class Sampler {
 	}
 
 	/**
-	 * Waits until the child can sample at once.
+	 * Waits until the child can sample at once, within a budget.
 	 *
-	 * @returns A promise of true when the child readied; false when it ended first.
+	 * @param budget - The longest wait in milliseconds.
+	 * @returns A promise of true when the child readied; false when it ended first or the budget ran out.
 	 */
-	ready(): Promise<boolean> {
-		return this.#ready.promise
+	async ready(budget: number): Promise<boolean> {
+		const timer = Promise.withResolvers<boolean>()
+		const handle = setTimeout(() => timer.resolve(false), budget)
+		try {
+			return await Promise.race([this.#ready.promise, timer.promise])
+		} finally {
+			clearTimeout(handle)
+		}
 	}
 
 	/**
@@ -2358,6 +2505,17 @@ export class Sampler {
 		return this.#closed
 	}
 
+	/**
+	 * Ends the child at once, for a sampler that did not ready and might not read its stdin.
+	 *
+	 * @returns A promise that resolves when the child has exited.
+	 */
+	destroy(): Promise<void> {
+		this.#child.stdin?.end()
+		this.#child.kill()
+		return this.#closed
+	}
+
 	// A sample a byte asked for answers the oldest open request, because the child answers bytes in order.
 	#read(line: string): void {
 		if (line === READY_LINE) {
@@ -2391,9 +2549,12 @@ export class Sampler {
  * Runs the command as the holder, reads the tree at handover, and releases.
  *
  * @remarks
- * A measured holder starts its command after its sampler readies, samples the tree at once when the
- * command starts and every {@link SAMPLE_MS} after, reads the handover through one more sample, and
- * writes the run's record before it releases, so the command's next arrival reads it. A record that
+ * A measured holder starts its command after its sampler readies, samples the tree back to back
+ * through the command's first {@link SAMPLE_MS} and once every {@link SAMPLE_MS} after, reads the
+ * handover through one more sample, and writes the run's record before it releases, so the command's
+ * next arrival reads it. When that sample lists a member, the handover reads, kills, and reads again
+ * through fresh snapshots, each a second PowerShell. A sampler that does not ready within
+ * {@link READY_MS} is destroyed, and the command runs unmeasured and records nothing. A record that
  * opened a key prunes the history after the release. A light holder lowers its own priority before
  * the spawn, and ends its tree when a sample passes the threshold.
  *
@@ -2422,7 +2583,14 @@ export async function runHolder(
 		console.error('lane: the host refused the light run its below-normal priority')
 		return 75
 	}
-	await sampler?.ready()
+	const measured = sampler !== undefined && (await sampler.ready(READY_MS))
+	if (sampler !== undefined && !measured) {
+		await sampler.destroy()
+		console.error(
+			`lane: the sampler did not ready within ${String(READY_MS)} ms; ${quote(options.label)} runs unmeasured`,
+		)
+	}
+	const active = measured ? sampler : undefined
 	const started = Date.now()
 	if (!tryWriteRun(root, sequence, { started, launcher: undefined, command: undefined })) {
 		const refusal = releaseTicket(root, sequence)
@@ -2443,7 +2611,7 @@ export async function runHolder(
 	tryWriteRun(root, sequence, { started, launcher: id, command: undefined })
 	const floor = started - CLOCK_ALLOWANCE_MS
 	const early = new AbortController()
-	sampler?.seed([id], floor)
+	active?.seed([id], floor)
 	const unwatch = watchSignals(() => killMembers([id]))
 	const closed = waitForClose(child)
 	if (child.stdout !== null) {
@@ -2454,8 +2622,8 @@ export async function runHolder(
 			const command = readCommandId(line)
 			if (command === undefined) return
 			tryWriteRun(root, sequence, { started, launcher: id, command })
-			sampler?.seed([id, command], floor)
-			void sampler?.burst(Date.now() + SAMPLE_MS, early.signal)
+			active?.seed([id, command], floor)
+			void active?.burst(Date.now() + SAMPLE_MS, early.signal)
 		})
 	}
 	const code = await closed
@@ -2463,7 +2631,7 @@ export async function runHolder(
 	unwatch()
 	const ended = Date.now()
 	const run = readRun(root, sequence)
-	const rows = typeof run === 'object' ? await sampler?.sample() : undefined
+	const rows = typeof run === 'object' ? await active?.sample() : undefined
 	const quick =
 		rows !== undefined && typeof run === 'object' ? selectTree(rows, run, ended) : undefined
 	const sweep =
@@ -2472,17 +2640,17 @@ export async function runHolder(
 			: quick?.length === 0
 				? { gone: true, members: [] }
 				: sweepTree(() => readTree(run, ended), killMembers, KILL_BUDGET)
-	const stopped = sampler?.stop()
-	const breached = sampler?.breached === true
+	const stopped = active?.stop()
+	const breached = active?.breached === true
 	const result = !sweep.gone ? HELD_CODE : breached ? BREACH_CODE : (code ?? 1)
 	const opened =
 		measure !== undefined &&
-		sampler !== undefined &&
+		active !== undefined &&
 		tryWriteOutcome(
 			root,
 			measure.key,
 			renderOutcomeName(ended, measure.token),
-			buildOutcome(sampler.tally, ended - started, result),
+			buildOutcome(active.tally, ended - started, result),
 		)
 	if (!sweep.gone) {
 		console.error(
@@ -2493,7 +2661,12 @@ export async function runHolder(
 	}
 	token?.leave()
 	const refusal = releaseTicket(root, sequence)
-	if (opened) pruneHistory(root, Date.now())
+	const prune = opened ? pruneHistory(root, Date.now()) : undefined
+	if (prune !== undefined && prune.skipped.length > 0) {
+		console.error(
+			`lane: the history prune under ${root} skipped ${String(prune.skipped.length)} entries it could not list or remove, such as ${quote(prune.skipped.join(', '))}`,
+		)
+	}
 	await stopped
 	if (refusal !== undefined) {
 		console.error(`lane: removing ${renderName(sequence, TICKET_SUFFIX)} reported ${refusal}`)
@@ -2513,18 +2686,15 @@ export async function runHolder(
  * @remarks
  * A host other than Windows has no sampler, so it measures nothing and every ticket there is heavy.
  * A `--solo` run is heavy whatever its command reads. A `mutate` run is keyed without its edits
- * file and seeded by its wrapped command, and it is heavy while a live ticket shares its working
- * directory, because it edits source that ticket reads.
+ * file and seeded by its wrapped command; {@link decideDirectory} keeps it apart from the tickets of
+ * its working directory.
  *
  * @param options - The run.
  * @param token - This process's token.
  * @returns What the holder measures, or undefined when `limits.json` is absent or malformed or the
  * host has no sampler.
  */
-export async function readMeasure(
-	options: LaneOptions,
-	token: string,
-): Promise<Measure | undefined> {
+export function readMeasure(options: LaneOptions, token: string): Measure | undefined {
 	if (process.platform !== 'win32') return undefined
 	const limits = readLimits(options.root)
 	if (limits === 'unread') {
@@ -2533,36 +2703,12 @@ export async function readMeasure(
 		)
 	}
 	if (limits === 'absent' || limits === 'unread') return undefined
-	const cwd = realpathSync(process.cwd())
-	const key = renderKey(cwd, normalizeCommand(options.command))
+	const key = renderKey(realpathSync(process.cwd()), normalizeCommand(options.command))
 	if (options.solo) return { limits, key, token, light: undefined }
 	const mutation = extractMutation(options.command)
-	const seed =
-		mutation === undefined
-			? readSeed(options.command)
-			: (await collectNeighbors(options.root, cwd)).length > 0
-				? 'heavy'
-				: readSeed(mutation)
+	const seed = readSeed(mutation ?? options.command)
 	const light = classifyLight(seed, readOutcomes(options.root, key), limits)
 	return { limits, key, token, light }
-}
-
-/**
- * Collects the live tickets of this host that share a working directory.
- *
- * @param root - The queue root.
- * @param cwd - The real working directory.
- * @returns The rows of the live tickets whose real working directory is `cwd`.
- */
-export async function collectNeighbors(root: string, cwd: string): Promise<readonly StatusRow[]> {
-	const entries = readQueue(root).filter(
-		(entry) =>
-			entry.ticket !== undefined &&
-			describeForeign(entry.ticket) === undefined &&
-			normalizeDirectory(entry.ticket.cwd) === cwd,
-	)
-	const rows = await Promise.all(entries.map((entry) => readStatusRow(root, entry)))
-	return rows.filter((row) => row.state === 'live')
 }
 
 /**
@@ -2583,7 +2729,7 @@ export async function enterLane(
 	const { root } = options
 	try {
 		mkdirSync(root, { recursive: true })
-		const measure = await readMeasure(options, tokenId)
+		const measure = readMeasure(options, tokenId)
 		const sampler =
 			measure === undefined
 				? undefined
@@ -2592,7 +2738,8 @@ export async function enterLane(
 					)
 		try {
 			await token.listen(renderEndpoint(root, tokenId))
-			writeStage(root, buildTicket(tokenId, options.label, measure?.light, options.solo))
+			const edits = extractMutation(options.command) !== undefined
+			writeStage(root, buildTicket(tokenId, options.label, measure?.light, options.solo, edits))
 			const sequence = linkStage(root, tokenId)
 			removeFile(join(root, `${tokenId}${STAGE_SUFFIX}`))
 			token.publish()

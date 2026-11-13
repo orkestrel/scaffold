@@ -49,6 +49,7 @@ import {
 	SAMPLE_MS,
 	quote,
 	READY_LINE,
+	READY_MS,
 	readExecTool,
 	readCommandId,
 	readLimits,
@@ -1173,6 +1174,34 @@ describe('lane.ts', () => {
 				'light',
 			],
 			['inline code through npm exec', [...NPM, 'exec', '-c', 'vitest run'], undefined],
+			[
+				'a type check through npm --prefix exec',
+				[...NPM, '--prefix', 'packages/a', 'exec', '--', 'tsc', '--noEmit'],
+				'light',
+			],
+			[
+				'a type check through npm -w before exec',
+				[...NPM, '-w', 'packages/a', 'exec', 'tsc', '--noEmit'],
+				'light',
+			],
+			[
+				'a format check through npm --workspace before exec',
+				[...NPM, '--workspace', 'a', 'exec', '--', 'oxfmt', '--check', '.'],
+				'light',
+			],
+			[
+				'one project through npm exec -w',
+				[...NPM, 'exec', '-w', 'packages/a', '--', 'vitest', 'run', '--project', 'skills'],
+				'light',
+			],
+			[
+				'a type check through npm exec --workspace',
+				[...NPM, 'exec', '--workspace', 'a', 'tsc', '--noEmit'],
+				'light',
+			],
+			['a script beside npm --prefix', [...NPM, '--prefix', 'a', 'run', 'test:skills'], 'light'],
+			['a type check through pnpx', ['pnpx', 'tsc', '--noEmit'], 'light'],
+			['a format check through bunx', ['bunx.exe', 'oxfmt', '--check', '.'], 'light'],
 		])('seeds %s', (_name, command, expected) => {
 			expect(readSeed(command)).toBe(expected)
 		})
@@ -1302,9 +1331,38 @@ describe('lane.ts', () => {
 				'{}',
 			)
 			bench.scratch.ensure(join(history, 'empty'))
-			expect(pruneHistory(bench.root, now)).toStrictEqual(['stale'])
+			expect(pruneHistory(bench.root, now)).toStrictEqual({ removed: ['stale'], skipped: [] })
 			expect(bench.scratch.names(history).toSorted()).toStrictEqual(['edge', 'empty'])
-			expect(pruneHistory(bench.root, now)).toStrictEqual([])
+			expect(pruneHistory(bench.root, now)).toStrictEqual({ removed: [], skipped: [] })
+		})
+
+		it('skips a stray file under the history and a history that is a file, and throws neither', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const now = Date.now()
+			const history = join('root', HISTORY_DIRECTORY)
+			bench.scratch.write(join(history, 'stray'), 'x')
+			bench.scratch.write(
+				join(history, 'stale', renderOutcomeName(now - HISTORY_AGE_MS - 1, FIRST_TOKEN)),
+				'{}',
+			)
+			expect(pruneHistory(bench.root, now)).toStrictEqual({
+				removed: ['stale'],
+				skipped: ['stray'],
+			})
+			bench.scratch.remove(history)
+			bench.scratch.write(history, 'x')
+			expect(pruneHistory(bench.root, now)).toStrictEqual({
+				removed: [],
+				skipped: [HISTORY_DIRECTORY],
+			})
+		})
+
+		it('keys a mutation wrapped by npm exec without its edits file, at its own bare --', () => {
+			const mutate = ['node', '.agents/skills/orkestrel-falsify/scripts/mutate.ts']
+			expect(
+				normalizeCommand([...NPM, 'exec', '--', ...mutate, '--edits', 'a.md', '--', 'x']),
+			).toStrictEqual([...NPM, 'exec', '--', ...mutate, '--', 'x'])
 		})
 
 		it('tallies samples by member and peak and builds the record', () => {
@@ -1403,6 +1461,132 @@ describe('lane.ts', () => {
 			}
 			const limits = { ...LIMITS, slots: 3 }
 			expect(decideTurn(bench.root, earlier.length + 1, SECOND_TOKEN, limits).state).toBe(expected)
+		})
+
+		it.each([
+			[
+				'a light arrival behind a light mutation of its directory that holds',
+				{ lane: 'light', edits: false },
+				[{ lane: 'light', edits: true, directory: 'same' }],
+				[1],
+				'behind',
+				1,
+			],
+			[
+				'a heavy arrival behind a light mutation of its directory that holds',
+				{ lane: 'heavy', edits: false },
+				[{ lane: 'light', edits: true, directory: 'same' }],
+				[1],
+				'behind',
+				1,
+			],
+			[
+				'a heavy mutation behind a light holder of its directory',
+				{ lane: 'heavy', edits: true },
+				[{ lane: 'light', edits: false, directory: 'same' }],
+				[1],
+				'behind',
+				1,
+			],
+			[
+				'a light mutation behind a light holder of its directory',
+				{ lane: 'light', edits: true },
+				[{ lane: 'light', edits: false, directory: 'same' }],
+				[1],
+				'behind',
+				1,
+			],
+			[
+				'a light mutation behind a heavy holder of its directory',
+				{ lane: 'light', edits: true },
+				[{ lane: 'heavy', edits: false, directory: 'same' }],
+				[1],
+				'behind',
+				1,
+			],
+			[
+				'a heavy mutation behind the nearest earlier ticket of its directory',
+				{ lane: 'heavy', edits: true },
+				[
+					{ lane: 'light', edits: false, directory: 'same' },
+					{ lane: 'light', edits: false, directory: 'other' },
+					{ lane: 'light', edits: false, directory: 'same' },
+				],
+				[1, 2, 3],
+				'behind',
+				3,
+			],
+			[
+				'a heavy mutation behind an unreadable ticket',
+				{ lane: 'heavy', edits: true },
+				[{ lane: 'light', edits: false, directory: 'unread' }],
+				[],
+				'behind',
+				1,
+			],
+			[
+				'a light arrival beside a light mutation of another directory',
+				{ lane: 'light', edits: false },
+				[{ lane: 'light', edits: true, directory: 'other' }],
+				[1],
+				'holder',
+				undefined,
+			],
+			[
+				'a light mutation beside a heavy holder of another directory',
+				{ lane: 'light', edits: true },
+				[{ lane: 'heavy', edits: false, directory: 'other' }],
+				[1],
+				'holder',
+				undefined,
+			],
+			[
+				'a heavy mutation beside a light holder of another directory',
+				{ lane: 'heavy', edits: true },
+				[{ lane: 'light', edits: false, directory: 'other' }],
+				[1],
+				'holder',
+				undefined,
+			],
+		])('decides by directory: %s', async (_name, own, earlier, holding, expected, entry) => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			for (const [index, item] of earlier.entries()) {
+				const token = `${String(index + 1).repeat(8)}-1111-4111-8111-111111111111`
+				if (item.directory === 'unread') {
+					bench.scratch.write(join('root', renderName(index + 1, TICKET_SUFFIX)), '{')
+				} else {
+					const ticket = buildTicket(
+						token,
+						`earlier-${String(index + 1)}`,
+						item.lane === 'light' ? USAGE : undefined,
+						false,
+						item.edits,
+					)
+					writeStage(
+						bench.root,
+						item.directory === 'same' ? ticket : { ...ticket, cwd: realpathSync(tmpdir()) },
+					)
+					linkStage(bench.root, token)
+					bench.scratch.remove(join('root', `${token}.stage`))
+				}
+			}
+			const ticket = buildTicket(
+				SECOND_TOKEN,
+				'own',
+				own.lane === 'light' ? USAGE : undefined,
+				false,
+				own.edits,
+			)
+			writeStage(bench.root, ticket)
+			linkStage(bench.root, SECOND_TOKEN)
+			bench.scratch.remove(join('root', `${SECOND_TOKEN}.stage`))
+			for (const sequence of holding) {
+				writeRun(bench.root, sequence, { started: 0, launcher: undefined, command: undefined })
+			}
+			const turn = decideTurn(bench.root, earlier.length + 1, SECOND_TOKEN, LIMITS)
+			expect(turn.state).toBe(expected)
+			expect(turn.state === 'behind' ? turn.entry.sequence : undefined).toBe(entry)
 		})
 	})
 
@@ -1729,7 +1913,7 @@ describe('lane.ts', () => {
 			)
 			const own = new Sampler(undefined, () => undefined)
 			const pid = own.pid
-			expect(await own.ready()).toBe(true)
+			expect(await own.ready(READY_MS)).toBe(true)
 			const rows = await own.sample()
 			expect(rows?.some((row) => row.pid === process.pid)).toBe(true)
 			await own.stop()
@@ -1844,7 +2028,8 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.limit(LIMITS)
-			const command = [process.execPath, '-e', 'setTimeout(() => undefined, 300)']
+			// The command ends before a sampler that starts beside the launcher can read it.
+			const command = [process.execPath, '-e', 'setTimeout(() => undefined, 150)']
 			const run = bench.spawn([
 				...renderLaneFlags(bench.root, bench.journals, 'short'),
 				'--',
@@ -1856,10 +2041,11 @@ describe('lane.ts', () => {
 			expect(outcome?.memory).toBeGreaterThan(0)
 		})
 
-		it('exits within one sample interval of the command exit', async () => {
+		it('exits within half a sample interval of its release', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.limit(LIMITS)
+			const ticket = join('root', renderName(1, TICKET_SUFFIX))
 			const run = bench.spawn([
 				...renderLaneFlags(bench.root, bench.journals, 'quick'),
 				'--',
@@ -1867,13 +2053,85 @@ describe('lane.ts', () => {
 				'-e',
 				'',
 			])
-			await run.reach('"exit"')
-			const exited = performance.now()
+			await waitForCondition('the ticket is published', () => bench.scratch.has(ticket), {
+				budget: 45_000,
+				interval: 5,
+			})
+			await waitForCondition('the ticket is released', () => !bench.scratch.has(ticket), {
+				budget: 45_000,
+				interval: 5,
+			})
+			const released = performance.now()
 			expect(await run.exit()).toBe(0)
-			expect(performance.now() - exited).toBeLessThan(SAMPLE_MS)
+			expect(performance.now() - released).toBeLessThan(SAMPLE_MS / 2)
 		})
 
-		it('classes a mutation by its wrapped command under one key, and heavy beside a live ticket of its directory', async () => {
+		it('keeps the exit when a stray file sits under the history', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.scratch.write(join('root', HISTORY_DIRECTORY, 'stray'), 'x')
+			const run = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'opener'),
+				'--',
+				process.execPath,
+				'-e',
+				'',
+			])
+			expect(await run.exit()).toBe(0)
+			expect(run.output).not.toContain('refused the run')
+			expect(run.output.split(/\r\n|\n/u).filter((line) => line.includes('prune'))).toHaveLength(1)
+		})
+
+		it('leaves no sampler process after a refused arrival', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			bench.scratch.write(join('root', renderName(1, TICKET_SUFFIX)), '{')
+			const refused = bench.lane('one')
+			expect(await refused.exit()).toBe(75)
+			expect(refused.output).toContain('cannot be read')
+			expect(readSnapshot()?.some((row) => row.parent === refused.pid)).toBe(false)
+		})
+
+		it('bounds the wait for a sampler that never readies, and destroys it', async () => {
+			const stalled = new Sampler(undefined, () => undefined, 'Start-Sleep -Seconds 60')
+			const pid = stalled.pid
+			expect(await stalled.ready(200)).toBe(false)
+			await stalled.destroy()
+			expect(readSnapshot()?.some((row) => row.pid === pid)).toBe(false)
+			expect(READY_MS).toBeGreaterThan(SAMPLE_MS)
+		})
+
+		it('holds a light arrival back behind a live mutation of its directory', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+			const mutation = new Token()
+			onTestFinished(() => mutation.destroy())
+			await mutation.listen(renderEndpoint(bench.root, THIRD_TOKEN))
+			writeStage(bench.root, buildTicket(THIRD_TOKEN, 'mutation', USAGE, false, true))
+			linkStage(bench.root, THIRD_TOKEN)
+			bench.scratch.remove(join('root', `${THIRD_TOKEN}.stage`))
+			writeRun(bench.root, 1, { started: Date.now(), launcher: undefined, command: undefined })
+			mutation.publish()
+			mutation.hold()
+			const one = bench.lane('one')
+			await Promise.race([
+				one.reach('lane: waiting behind "mutation"'),
+				bench.meter.reach('enter', 'one'),
+			])
+			expect(bench.meter.present).not.toContain('one')
+			bench.scratch.remove(join('root', renderName(1, RUN_SUFFIX)))
+			await mutation.destroy()
+			await bench.meter.reach('enter', 'one')
+			bench.meter.release('one')
+			expect(await one.exit()).toBe(0)
+		})
+
+		it('classes a mutation by its wrapped command under one key, light beside a live ticket of its directory', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.limit(LIMITS)
@@ -1917,7 +2175,7 @@ describe('lane.ts', () => {
 				FIRST_TOKEN,
 			)
 			expect(beside?.key).toBe(first?.key)
-			expect(beside?.light).toBeUndefined()
+			expect(beside?.light).toStrictEqual({ cores, memory, processes })
 		})
 	})
 })
