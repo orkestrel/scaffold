@@ -145,6 +145,8 @@ Use these orthogonal contract mechanisms:
 - Declare a parser's whole admitted language and its adjacent refusals, and prove them with a table of the class; never tune the parser example by example. On a parser change, run a seeded differential against its parent build, and read a passing suite as no evidence of what the change moved.
 - Derive a decision from validated inputs; an editable prior result never substitutes for them.
 - Project a value outward by its authorship and trust origin, and accept no authority channel from a client.
+- When a handler acts on a resource a run selects, take the resource from the execution context that run supplies, accept it only as the instance the handler's own registry holds, and never read a pointer other runs share.
+- When a list bounds what a run reads from a resource, hold every handler that reaches that resource to the same list at the call: refuse a member outside it with one text whether or not it exists, and pass the list into any operation that walks the resource.
 
 ### Foreign contracts
 

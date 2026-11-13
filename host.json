@@ -700,7 +700,7 @@
 			"storage": "claude/rules/patterns.md",
 			"destination": ".claude/rules/patterns.md",
 			"executable": false,
-			"digest": "35d0257569ae788bededb744713cdbc3e5f2239381ea1180bf53cd4cf7b09f18"
+			"digest": "d5c9907bb544ef5f5ddcb702d52bf39aa05b3f934b8341ec7ff30600b27568fc"
 		},
 		{
 			"storage": "claude/rules/portability.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "b2f8f9aace9c0007c4de654ca8f44fe4b1133c7a3f89ddcc67a01ae6f3548a41"
+	"digest": "736c986b9fd0ebad2e892d9c6212e5b5927c2ddd612de2cea9f7a5a898409118"
 }
