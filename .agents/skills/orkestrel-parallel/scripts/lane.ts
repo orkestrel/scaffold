@@ -18,13 +18,21 @@
 // process threshold.
 // Light reading: `<root>/limits.json` holds `slots`, the `budget` and the per-run `threshold`; while
 // it is absent or malformed, or on a host other than Windows, every ticket is heavy, no sampler runs,
-// and no record is written. Otherwise each holder samples its tree through one PowerShell child that
-// exits when its stdin closes, and writes one record per run under `<root>/history/<key>/`, keyed by
-// the working directory and the command, keeping the latest runs. The command's kind seeds the
-// reading: a format check, a lint check, a type check, and a scoped test run read light until a
-// record breaches; a full suite, a run of several projects, an install, a pack-and-install suite, a
-// release chain, a journey, a study, a capture, and a live-service run read heavy; any other command reads light only when its latest runs each sit
-// inside the threshold, none capped and none ending 69 or 70.
+// and no record is written. Otherwise each run starts one PowerShell sampler at arrival, which readies
+// while the ticket waits and exits when its stdin closes; the holder starts its command after the
+// sampler readies, samples the tree back to back through the command's first second and once a
+// second after, and reads the handover through one more sample. The holder writes one record per run
+// under `<root>/history/<key>/`, keyed by the working directory and the command, keeping the latest
+// runs. A record that opens a key prunes the history after the release, keeping only the keys written
+// inside `HISTORY_AGE_MS` (7 days), and of those at most the `HISTORY_KEYS` (512) written last. The
+// command's kind seeds the reading: a format check, a lint check, a type check, and a scoped test run
+// read light until a record breaches; a full suite, a run of several projects, an install, a
+// pack-and-install suite, a release chain, a journey, a study, a capture, and a live-service run read
+// heavy; `npx` and a package manager's `exec`, `x`, or `dlx` verb read as the tool they run; any other
+// command reads light only when its latest runs each sit inside the threshold, none capped and none
+// ending 69 or 70. A run of the falsify skill's `mutate` script is keyed without its edits file and
+// seeded by the command after its own `--`, and it reads heavy while a live ticket shares its working
+// directory, because it edits source that ticket reads.
 // `--status` prints each ticket in arrival order with its label, `live`, `dead`, or `unread`, its
 // lane, and `holding` for a holder, and names the heavy holder and every light holder. It writes
 // nothing, removes nothing, and creates no root; an absent root reads as an empty queue. The root is
@@ -67,7 +75,13 @@
 // - A dead light holder with a live tree. Light arrivals exit 75 until that tree is gone; heavy
 //   arrivals do not wait on it.
 // - Sampling. A process that lives between two samples goes uncounted, the CPU time of a member that
-//   exits between samples is lost, and disk input and output are not measured.
+//   exits between samples is lost, and disk input and output are not measured. A command that ends
+//   before one process query answers, about 140 ms on the Windows host measured 2026-11-12, can
+//   record zero, so it counts nothing until a later run is read.
+// - A mutation beside a later arrival. A ticket that arrives after a light `mutate` run from the same
+//   working directory runs beside it, because an admission is never revoked.
+// - A prune beside a write. A prune that removes a key between another holder's directory creation
+//   and its record's write loses that record.
 // - An unreaped member. On a host whose init does not reap, a killed member can keep reading as
 //   present. The lane exits 70 and stays held.
 // - Listing completeness. No probe proves that a listing returns every stable entry. The design takes
@@ -95,6 +109,7 @@ import {
 	readFileSync,
 	realpathSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from 'node:fs'
 import { connect, createServer } from 'node:net'
@@ -243,6 +258,12 @@ export const ENDED_WIDTH = 15
 /** Holds the count of latest records the light reading takes, which is also the count each key keeps. */
 export const RECENT_RUNS = 3
 
+/** Holds the age in milliseconds past which a history key is pruned. */
+export const HISTORY_AGE_MS = 7 * 24 * 60 * 60 * 1000
+
+/** Holds the count of history keys kept, the latest by their newest record. */
+export const HISTORY_KEYS = 512
+
 /** Holds the pause in milliseconds between two samples of a holder's tree. */
 export const SAMPLE_MS = 1000
 
@@ -306,6 +327,21 @@ export const DOTTED_FLAG = /^--[^=.]+\.[^=]+$/u
 /** Lists the package managers whose verbs and scripts a seed reads. */
 export const MANAGERS: readonly string[] = ['npm', 'pnpm', 'yarn', 'bun']
 
+/** Lists the package-manager verbs that run a tool, which a seed reads through to the tool. */
+export const EXEC_VERBS: readonly string[] = ['exec', 'x', 'dlx']
+
+/** Lists the `npm exec` and `npx` flags that take a separate value, so a seed reads no flag value as the tool. */
+export const EXEC_VALUE_FLAGS: readonly string[] = ['--package', '-p']
+
+/** Lists the `npm exec` and `npx` flags that run inline shell text, which names no tool a seed reads. */
+export const EXEC_INLINE_FLAGS: readonly string[] = ['-c', '--call']
+
+/** Holds the tool name of the falsify skill's `mutate` script, whose run a seed reads by its wrapped command. */
+export const MUTATION_TOOL = 'mutate'
+
+/** Holds the `mutate` flag that names the edits file, which a run's key leaves out. */
+export const MUTATION_FLAG = '--edits'
+
 /** Lists the tools a seed reads heavy by name: the release chain's step runner. */
 export const HEAVY_TOOLS: readonly string[] = ['steps']
 
@@ -344,8 +380,22 @@ export const SCOPED_SCRIPT = /^test:/u
 /** Matches one sampler row: process id, parent id, creation time in milliseconds, CPU time in 100 ns units, and private bytes. */
 export const GAUGE_PATTERN = /^(\d+) (\d+) (\d+) (\d+) (\d+)$/u
 
-/** Holds the PowerShell text that prints one line of rows per sample until its stdin closes. */
-export const SAMPLER_COMMAND = `$i=[Console]::OpenStandardInput();$b=New-Object byte[] 1;$t=$i.ReadAsync($b,0,1);while(-not $t.IsCompleted){$r=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount | Where-Object { $_.CreationDate } | ForEach-Object { '{0} {1} {2} {3} {4}' -f $_.ProcessId,$_.ParentProcessId,([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(),($_.KernelModeTime+$_.UserModeTime),$_.PrivatePageCount };[Console]::Out.WriteLine($r -join ';');[Console]::Out.Flush();Start-Sleep -Milliseconds ${String(SAMPLE_MS)}}`
+/** Holds the line a sampler prints when its first process query has run, which readies it. */
+export const READY_LINE = 'ready'
+
+/** Holds the byte a holder writes to its sampler to ask for one sample at once. */
+export const SAMPLE_BYTE = 's'
+
+/**
+ * Holds the PowerShell text of a sampler.
+ *
+ * @remarks
+ * The child loads the CIM module and prints {@link READY_LINE}. Each byte on
+ * its stdin then starts one sample at once, and after the first byte it also samples every
+ * {@link SAMPLE_MS}. A sample prints one line: `1` for a sample a byte asked for or `0`, a `|`,
+ * and the rows separated by semicolons. The child exits when its stdin closes.
+ */
+export const SAMPLER_COMMAND = `$i=[Console]::OpenStandardInput();$b=New-Object byte[] 1;$t=$i.ReadAsync($b,0,1);Import-Module CimCmdlets;[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();$a=$false;$q=0;while($true){if($a){$r=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount | Where-Object { $_.CreationDate } | ForEach-Object { '{0} {1} {2} {3} {4}' -f $_.ProcessId,$_.ParentProcessId,([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(),($_.KernelModeTime+$_.UserModeTime),$_.PrivatePageCount };[Console]::Out.WriteLine([string]$q+'|'+($r -join ';'));[Console]::Out.Flush();$q=0};if($t.Wait(${String(SAMPLE_MS)})){if($t.Status -ne 'RanToCompletion' -or $t.Result -eq 0){break};$a=$true;$q=1;$t=$i.ReadAsync($b,0,1)}}`
 
 /** Describes the footprint the light lanes add up: average cores, peak private bytes, and peak processes. */
 export interface Usage {
@@ -382,6 +432,12 @@ export type Seed = 'light' | 'heavy'
 export interface Gauge extends Row {
 	readonly cpu: number
 	readonly memory: number
+}
+
+/** Describes one sample line: whether a byte asked for it, and its rows. */
+export interface Sample {
+	readonly requested: boolean
+	readonly gauges: readonly Gauge[]
 }
 
 /** Describes what a sampler has read: each member's latest CPU time by id and creation date, and the peaks. */
@@ -994,14 +1050,65 @@ export function readOutcomes(root: string, key: string): ReadonlyArray<Outcome |
  * @param key - The command's key.
  * @param name - The record's name.
  * @param outcome - The record.
+ * @returns True when the write created the key's directory; false when the key existed.
  */
-export function writeOutcome(root: string, key: string, name: string, outcome: Outcome): void {
+export function writeOutcome(root: string, key: string, name: string, outcome: Outcome): boolean {
 	const directory = join(root, HISTORY_DIRECTORY, key)
-	mkdirSync(directory, { recursive: true })
+	const created = mkdirSync(directory, { recursive: true }) !== undefined
 	writeFileSync(join(directory, name), JSON.stringify(outcome), { flag: 'wx' })
 	for (const stale of readOutcomeNames(root, key).slice(0, -RECENT_RUNS)) {
 		removeFile(join(directory, stale))
 	}
+	return created
+}
+
+/**
+ * Reads when a history key was last written.
+ *
+ * @param root - The queue root.
+ * @param key - The key.
+ * @returns The end time its newest record's name opens with; the directory's modification time when
+ * it holds no record; undefined when the directory is gone.
+ */
+export function readKeyTime(root: string, key: string): number | undefined {
+	const newest = readOutcomeNames(root, key).at(-1)
+	if (newest !== undefined) return Number(newest.slice(0, ENDED_WIDTH))
+	try {
+		return statSync(join(root, HISTORY_DIRECTORY, key)).mtimeMs
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Prunes the history to the keys written inside {@link HISTORY_AGE_MS}, at most the
+ * {@link HISTORY_KEYS} written last.
+ *
+ * @param root - The queue root.
+ * @param now - The current time in epoch milliseconds.
+ * @returns The keys removed; a key the host refused to remove stays and is not listed.
+ */
+export function pruneHistory(root: string, now: number): readonly string[] {
+	const keys = readNames(join(root, HISTORY_DIRECTORY)).flatMap((key) => {
+		const time = readKeyTime(root, key)
+		return time === undefined ? [] : [{ key, time }]
+	})
+	return keys
+		.toSorted((left, right) => right.time - left.time)
+		.filter((item, index) => index >= HISTORY_KEYS || item.time < now - HISTORY_AGE_MS)
+		.flatMap((item) => {
+			try {
+				rmSync(join(root, HISTORY_DIRECTORY, item.key), {
+					recursive: true,
+					force: true,
+					maxRetries: REMOVAL_RETRIES,
+					retryDelay: REMOVAL_DELAY_MS,
+				})
+				return [item.key]
+			} catch {
+				return []
+			}
+		})
 }
 
 /**
@@ -1134,10 +1241,12 @@ export function readToolName(path: string): string {
 }
 
 /**
- * Reads the tool a command runs and the tool's arguments, past Node and `npx`.
+ * Reads the tool a command runs and the tool's arguments, past Node, `npx`, and a package manager's
+ * `exec`, `x`, or `dlx` verb.
  *
  * @param command - The command and its arguments.
- * @returns The tool's name followed by its arguments; empty for inline Node code or no script.
+ * @returns The tool's name followed by its arguments; empty for inline Node code, inline exec text,
+ * or no script.
  */
 export function readTool(command: readonly string[]): readonly string[] {
 	const [executable, ...rest] = command
@@ -1151,11 +1260,100 @@ export function readTool(command: readonly string[]): readonly string[] {
 		}
 		return readTool(rest.slice(script))
 	}
-	if (name === 'npx') {
-		const tool = rest.findIndex((argument) => !argument.startsWith('-'))
-		return tool === -1 ? [] : readTool(rest.slice(tool))
+	if (name === 'npx') return readExecTool(rest)
+	if (MANAGERS.includes(name)) {
+		const verb = rest.findIndex((argument) => !argument.startsWith('-'))
+		if (EXEC_VERBS.includes(rest[verb] ?? '')) return readExecTool(rest.slice(verb + 1))
 	}
 	return [name, ...rest]
+}
+
+/**
+ * Reads the tool an `npx` or `npm exec` call runs, from the arguments after the verb.
+ *
+ * @remarks
+ * The tool is the first argument before a bare `--` that is neither a flag nor the value of a flag
+ * {@link EXEC_VALUE_FLAGS} names, else the first argument after the bare `--`. A flag
+ * {@link EXEC_INLINE_FLAGS} names before the tool runs shell text instead.
+ *
+ * @param args - The arguments after `npx` or after the exec verb.
+ * @returns The tool's name followed by its arguments; empty for inline text or no tool.
+ */
+export function readExecTool(args: readonly string[]): readonly string[] {
+	const end = args.indexOf('--')
+	const named = args.findIndex(
+		(argument, index) =>
+			(end === -1 || index < end) &&
+			!argument.startsWith('-') &&
+			!EXEC_VALUE_FLAGS.includes(args[index - 1] ?? ''),
+	)
+	const start = named !== -1 ? named : end === -1 ? -1 : end + 1
+	if (start === -1 || start >= args.length) return []
+	const inline = args
+		.slice(0, start)
+		.some(
+			(flag) =>
+				EXEC_INLINE_FLAGS.includes(flag) ||
+				EXEC_INLINE_FLAGS.some((name) => flag.startsWith(`${name}=`)),
+		)
+	return inline ? [] : readTool(args.slice(start))
+}
+
+/**
+ * Extracts the command a `mutate` run wraps.
+ *
+ * @param command - The command and its arguments.
+ * @returns The arguments after the run's own bare `--`; undefined for any other command, or a
+ * `mutate` call with no edits file or no wrapped command.
+ */
+export function extractMutation(command: readonly string[]): readonly string[] | undefined {
+	const [tool, ...args] = readTool(command)
+	if (tool !== MUTATION_TOOL) return undefined
+	const end = args.indexOf('--')
+	if (end === -1) return undefined
+	const edits = args
+		.slice(0, end)
+		.some((flag) => flag === MUTATION_FLAG || flag.startsWith(`${MUTATION_FLAG}=`))
+	const wrapped = args.slice(end + 1)
+	return edits && wrapped.length > 0 ? wrapped : undefined
+}
+
+/**
+ * Normalizes a command to the arguments its key hashes.
+ *
+ * @remarks
+ * A `mutate` run names a fresh edits file each time, so its key leaves the edits flag and its value
+ * out, and every run of one wrapped command from one directory shares a key.
+ *
+ * @param command - The command and its arguments.
+ * @returns A `mutate` run without its edits flag and value; any other command unchanged.
+ */
+export function normalizeCommand(command: readonly string[]): readonly string[] {
+	if (extractMutation(command) === undefined) return command
+	const end = command.indexOf('--')
+	return command.filter(
+		(argument, index) =>
+			index > end ||
+			!(
+				argument === MUTATION_FLAG ||
+				argument.startsWith(`${MUTATION_FLAG}=`) ||
+				command[index - 1] === MUTATION_FLAG
+			),
+	)
+}
+
+/**
+ * Normalizes a directory to its real path for a comparison.
+ *
+ * @param path - The directory.
+ * @returns The real path; the path itself when it cannot be resolved.
+ */
+export function normalizeDirectory(path: string): string {
+	try {
+		return realpathSync(path)
+	} catch {
+		return path
+	}
 }
 
 /**
@@ -1557,14 +1755,29 @@ export function readTree(run: Run, ceiling: number): readonly number[] | undefin
 	if (run.launcher === undefined) return undefined
 	if (process.platform !== 'win32') return readGroup(run.launcher)
 	const rows = readSnapshot()
-	return rows === undefined
-		? undefined
-		: selectMembers(
-				rows,
-				run.command === undefined ? [run.launcher] : [run.launcher, run.command],
-				run.started - CLOCK_ALLOWANCE_MS,
-				ceiling,
-			).map((row) => row.pid)
+	return rows === undefined ? undefined : selectTree(rows, run, ceiling)
+}
+
+/**
+ * Selects the members of one run's process tree from a Windows snapshot.
+ *
+ * @param rows - The snapshot.
+ * @param run - The run record.
+ * @param ceiling - The latest creation date a row of an exited seed can carry.
+ * @returns The members' ids, or undefined when the record names no launcher.
+ */
+export function selectTree(
+	rows: readonly Row[],
+	run: Run,
+	ceiling: number,
+): readonly number[] | undefined {
+	if (run.launcher === undefined) return undefined
+	return selectMembers(
+		rows,
+		run.command === undefined ? [run.launcher] : [run.launcher, run.command],
+		run.started - CLOCK_ALLOWANCE_MS,
+		ceiling,
+	).map((row) => row.pid)
 }
 
 /**
@@ -1917,6 +2130,19 @@ export function parseGauges(line: string): readonly Gauge[] {
 }
 
 /**
+ * Parses one sample line of a sampler.
+ *
+ * @param line - One line of the sampler's stdout: `1` or `0`, a `|`, and the rows.
+ * @returns Whether a byte asked for the sample, with its gauges; undefined for a line without the
+ * marker, such as {@link READY_LINE}.
+ */
+export function parseSample(line: string): Sample | undefined {
+	const split = line.indexOf('|')
+	if (split === -1) return undefined
+	return { requested: line.slice(0, split) === '1', gauges: parseGauges(line.slice(split + 1)) }
+}
+
+/**
  * Folds one sample's members into a tally.
  *
  * @param tally - The tally so far.
@@ -1981,7 +2207,8 @@ export function lowerPriority(pid: number): boolean {
  * @param key - The command's key.
  * @param name - The record's name.
  * @param outcome - The record.
- * @returns True when the record was written; false otherwise.
+ * @returns True when the write created the key's directory; false when the key existed or the host
+ * refused the write.
  */
 export function tryWriteOutcome(
 	root: string,
@@ -1990,8 +2217,7 @@ export function tryWriteOutcome(
 	outcome: Outcome,
 ): boolean {
 	try {
-		writeOutcome(root, key, name, outcome)
-		return true
+		return writeOutcome(root, key, name, outcome)
 	} catch {
 		return false
 	}
@@ -2001,37 +2227,46 @@ export function tryWriteOutcome(
  * Samples one holder's process tree through one PowerShell child at below-normal priority.
  *
  * @remarks
- * The child exits when its stdin closes, which {@link Sampler.stop} and the end of this process both
- * do. A threshold, given for a light run, calls the breach handler once, on the first sample whose
- * memory or process count passes it.
+ * The child starts at arrival and readies while the ticket waits, so a holder starts its command
+ * only after the child can answer at once. A {@link Sampler.sample} call starts one sample at once;
+ * after the first, the child also samples every {@link SAMPLE_MS}. The child exits when its stdin
+ * closes, which {@link Sampler.stop} and the end of this process both do. A threshold, given for a
+ * light run, calls the breach handler once with the seeds, on the first sample whose memory or
+ * process count passes it.
  */
 export class Sampler {
 	readonly #child: ChildProcess
 	readonly #closed: Promise<void>
-	readonly #floor: number
+	readonly #ready = Promise.withResolvers<boolean>()
+	readonly #waiters = new Map<number, (gauges: readonly Gauge[] | undefined) => void>()
 	readonly #threshold: Usage | undefined
-	readonly #breach: () => void
+	readonly #breach: (seeds: readonly number[]) => void
 	#seeds: readonly number[] = []
+	#floor: number | undefined
 	#tally: Tally = { cpu: new Map(), memory: 0, processes: 0 }
 	#breached = false
+	#asked = 0
+	#answered = 0
 
 	/**
 	 * Starts the sampler.
 	 *
-	 * @param floor - The earliest creation date the tree can carry.
 	 * @param threshold - The light run's threshold, or undefined for a heavy run.
-	 * @param breach - Called once when a sample passes the threshold.
+	 * @param breach - Called once with the seeds when a sample passes the threshold.
 	 */
-	constructor(floor: number, threshold: Usage | undefined, breach: () => void) {
-		this.#floor = floor
+	constructor(threshold: Usage | undefined, breach: (seeds: readonly number[]) => void) {
 		this.#threshold = threshold
 		this.#breach = breach
 		this.#child = spawn(
 			'powershell.exe',
-			['-NoProfile', '-NonInteractive', '-Command', SAMPLER_COMMAND],
+			['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', SAMPLER_COMMAND],
 			{ stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true },
 		)
-		this.#closed = waitForClose(this.#child).then(() => undefined)
+		this.#closed = waitForClose(this.#child).then(() => {
+			this.#ready.resolve(false)
+			for (const resolve of this.#waiters.values()) resolve(undefined)
+			this.#waiters.clear()
+		})
 		this.#child.stdin?.on('error', () => undefined)
 		if (this.#child.pid !== undefined) lowerPriority(this.#child.pid)
 		if (this.#child.stdout !== null) {
@@ -2057,12 +2292,60 @@ export class Sampler {
 	}
 
 	/**
+	 * Waits until the child can sample at once.
+	 *
+	 * @returns A promise of true when the child readied; false when it ended first.
+	 */
+	ready(): Promise<boolean> {
+		return this.#ready.promise
+	}
+
+	/**
 	 * Names the ids whose trees later samples read.
 	 *
 	 * @param seeds - The launcher id and, once known, the command id.
+	 * @param floor - The earliest creation date the tree can carry.
 	 */
-	seed(seeds: readonly number[]): void {
+	seed(seeds: readonly number[], floor: number): void {
 		this.#seeds = seeds
+		this.#floor = floor
+	}
+
+	/**
+	 * Starts one sample at once.
+	 *
+	 * @returns A promise of every row the sample read, taken after this call; undefined when the
+	 * child ends first or cannot take the request.
+	 */
+	sample(): Promise<readonly Gauge[] | undefined> {
+		const stdin = this.#child.stdin
+		if (
+			stdin === null ||
+			stdin.writableEnded ||
+			this.#child.pid === undefined ||
+			this.#child.exitCode !== null ||
+			this.#child.signalCode !== null
+		) {
+			return Promise.resolve(undefined)
+		}
+		this.#asked += 1
+		const answer = Promise.withResolvers<readonly Gauge[] | undefined>()
+		this.#waiters.set(this.#asked, answer.resolve)
+		stdin.write(SAMPLE_BYTE)
+		return answer.promise
+	}
+
+	/**
+	 * Samples back to back until a time or an abort, one sample after the previous one answers.
+	 *
+	 * @param until - The epoch millisecond after which no further sample starts.
+	 * @param signal - Ends the burst after the sample in flight.
+	 * @returns A promise that resolves when the burst ends.
+	 */
+	async burst(until: number, signal: AbortSignal): Promise<void> {
+		const rows = await this.sample()
+		if (rows === undefined || signal.aborted || Date.now() >= until) return
+		await this.burst(until, signal)
 	}
 
 	/**
@@ -2075,8 +2358,21 @@ export class Sampler {
 		return this.#closed
 	}
 
+	// A sample a byte asked for answers the oldest open request, because the child answers bytes in order.
 	#read(line: string): void {
-		const members = selectMembers(parseGauges(line), this.#seeds, this.#floor, Date.now())
+		if (line === READY_LINE) {
+			this.#ready.resolve(true)
+			return
+		}
+		const sample = parseSample(line)
+		if (sample === undefined) return
+		if (sample.requested) {
+			this.#answered += 1
+			this.#waiters.get(this.#answered)?.(sample.gauges)
+			this.#waiters.delete(this.#answered)
+		}
+		if (this.#floor === undefined) return
+		const members = selectMembers(sample.gauges, this.#seeds, this.#floor, Date.now())
 		this.#tally = tallySample(this.#tally, members)
 		const threshold = this.#threshold
 		if (
@@ -2087,7 +2383,7 @@ export class Sampler {
 			return
 		}
 		this.#breached = true
-		this.#breach()
+		this.#breach(this.#seeds)
 	}
 }
 
@@ -2095,9 +2391,11 @@ export class Sampler {
  * Runs the command as the holder, reads the tree at handover, and releases.
  *
  * @remarks
- * A measured holder samples its tree and writes the run's record before it releases, so the
- * command's next arrival reads it. A light holder lowers its own priority before the spawn, and ends
- * its tree when a sample passes the threshold.
+ * A measured holder starts its command after its sampler readies, samples the tree at once when the
+ * command starts and every {@link SAMPLE_MS} after, reads the handover through one more sample, and
+ * writes the run's record before it releases, so the command's next arrival reads it. A record that
+ * opened a key prunes the history after the release. A light holder lowers its own priority before
+ * the spawn, and ends its tree when a sample passes the threshold.
  *
  * @param options - The run.
  * @param launcher - The launcher's path.
@@ -2105,6 +2403,7 @@ export class Sampler {
  * @param measure - What a measured holder needs, or undefined when no limits apply.
  * @param token - This process's endpoint, which holds after the run record exists and leaves before
  * the run record is removed.
+ * @param sampler - The measured holder's sampler, started at arrival; the caller stops it.
  * @returns The launcher's code; 1 when a signal ended it; 69 when a light run passed its threshold;
  * 70 when the tree still reads as present or the ticket could not be removed; 75 when the launcher
  * could not start, the priority could not be lowered, or the run record could not be written.
@@ -2115,6 +2414,7 @@ export async function runHolder(
 	sequence: number,
 	measure?: Measure,
 	token?: Token,
+	sampler?: Sampler,
 ): Promise<number> {
 	const { root } = options
 	if (measure?.light !== undefined && !lowerPriority(process.pid)) {
@@ -2122,6 +2422,7 @@ export async function runHolder(
 		console.error('lane: the host refused the light run its below-normal priority')
 		return 75
 	}
+	await sampler?.ready()
 	const started = Date.now()
 	if (!tryWriteRun(root, sequence, { started, launcher: undefined, command: undefined })) {
 		const refusal = releaseTicket(root, sequence)
@@ -2140,15 +2441,9 @@ export async function runHolder(
 		return 75
 	}
 	tryWriteRun(root, sequence, { started, launcher: id, command: undefined })
-	const sampler =
-		measure === undefined
-			? undefined
-			: new Sampler(
-					started - CLOCK_ALLOWANCE_MS,
-					measure.light === undefined ? undefined : measure.limits.threshold,
-					() => killMembers([id]),
-				)
-	sampler?.seed([id])
+	const floor = started - CLOCK_ALLOWANCE_MS
+	const early = new AbortController()
+	sampler?.seed([id], floor)
 	const unwatch = watchSignals(() => killMembers([id]))
 	const closed = waitForClose(child)
 	if (child.stdout !== null) {
@@ -2159,28 +2454,36 @@ export async function runHolder(
 			const command = readCommandId(line)
 			if (command === undefined) return
 			tryWriteRun(root, sequence, { started, launcher: id, command })
-			sampler?.seed([id, command])
+			sampler?.seed([id, command], floor)
+			void sampler?.burst(Date.now() + SAMPLE_MS, early.signal)
 		})
 	}
 	const code = await closed
+	early.abort()
 	unwatch()
 	const ended = Date.now()
-	const stopped = sampler?.stop()
 	const run = readRun(root, sequence)
+	const rows = typeof run === 'object' ? await sampler?.sample() : undefined
+	const quick =
+		rows !== undefined && typeof run === 'object' ? selectTree(rows, run, ended) : undefined
 	const sweep =
-		run === 'absent' || run === 'unread'
+		typeof run !== 'object'
 			? { gone: false, members: [] }
-			: sweepTree(() => readTree(run, ended), killMembers, KILL_BUDGET)
+			: quick?.length === 0
+				? { gone: true, members: [] }
+				: sweepTree(() => readTree(run, ended), killMembers, KILL_BUDGET)
+	const stopped = sampler?.stop()
 	const breached = sampler?.breached === true
 	const result = !sweep.gone ? HELD_CODE : breached ? BREACH_CODE : (code ?? 1)
-	if (measure !== undefined && sampler !== undefined) {
+	const opened =
+		measure !== undefined &&
+		sampler !== undefined &&
 		tryWriteOutcome(
 			root,
 			measure.key,
 			renderOutcomeName(ended, measure.token),
 			buildOutcome(sampler.tally, ended - started, result),
 		)
-	}
 	if (!sweep.gone) {
 		console.error(
 			`lane: the tree of ${quote(options.label)} still reads as ${sweep.members.length === 0 ? 'unread' : `present: ${sweep.members.join(', ')}`}; the lane stays held by ${renderName(sequence, TICKET_SUFFIX)} and ${renderName(sequence, RUN_SUFFIX)} under ${root}`,
@@ -2190,6 +2493,7 @@ export async function runHolder(
 	}
 	token?.leave()
 	const refusal = releaseTicket(root, sequence)
+	if (opened) pruneHistory(root, Date.now())
 	await stopped
 	if (refusal !== undefined) {
 		console.error(`lane: removing ${renderName(sequence, TICKET_SUFFIX)} reported ${refusal}`)
@@ -2208,14 +2512,19 @@ export async function runHolder(
  *
  * @remarks
  * A host other than Windows has no sampler, so it measures nothing and every ticket there is heavy.
- * A `--solo` run is heavy whatever its command reads.
+ * A `--solo` run is heavy whatever its command reads. A `mutate` run is keyed without its edits
+ * file and seeded by its wrapped command, and it is heavy while a live ticket shares its working
+ * directory, because it edits source that ticket reads.
  *
  * @param options - The run.
  * @param token - This process's token.
  * @returns What the holder measures, or undefined when `limits.json` is absent or malformed or the
  * host has no sampler.
  */
-export function readMeasure(options: LaneOptions, token: string): Measure | undefined {
+export async function readMeasure(
+	options: LaneOptions,
+	token: string,
+): Promise<Measure | undefined> {
 	if (process.platform !== 'win32') return undefined
 	const limits = readLimits(options.root)
 	if (limits === 'unread') {
@@ -2224,11 +2533,36 @@ export function readMeasure(options: LaneOptions, token: string): Measure | unde
 		)
 	}
 	if (limits === 'absent' || limits === 'unread') return undefined
-	const key = renderKey(realpathSync(process.cwd()), options.command)
-	const light = options.solo
-		? undefined
-		: classifyLight(readSeed(options.command), readOutcomes(options.root, key), limits)
+	const cwd = realpathSync(process.cwd())
+	const key = renderKey(cwd, normalizeCommand(options.command))
+	if (options.solo) return { limits, key, token, light: undefined }
+	const mutation = extractMutation(options.command)
+	const seed =
+		mutation === undefined
+			? readSeed(options.command)
+			: (await collectNeighbors(options.root, cwd)).length > 0
+				? 'heavy'
+				: readSeed(mutation)
+	const light = classifyLight(seed, readOutcomes(options.root, key), limits)
 	return { limits, key, token, light }
+}
+
+/**
+ * Collects the live tickets of this host that share a working directory.
+ *
+ * @param root - The queue root.
+ * @param cwd - The real working directory.
+ * @returns The rows of the live tickets whose real working directory is `cwd`.
+ */
+export async function collectNeighbors(root: string, cwd: string): Promise<readonly StatusRow[]> {
+	const entries = readQueue(root).filter(
+		(entry) =>
+			entry.ticket !== undefined &&
+			describeForeign(entry.ticket) === undefined &&
+			normalizeDirectory(entry.ticket.cwd) === cwd,
+	)
+	const rows = await Promise.all(entries.map((entry) => readStatusRow(root, entry)))
+	return rows.filter((row) => row.state === 'live')
 }
 
 /**
@@ -2249,25 +2583,35 @@ export async function enterLane(
 	const { root } = options
 	try {
 		mkdirSync(root, { recursive: true })
-		const measure = readMeasure(options, tokenId)
-		await token.listen(renderEndpoint(root, tokenId))
-		writeStage(root, buildTicket(tokenId, options.label, measure?.light, options.solo))
-		const sequence = linkStage(root, tokenId)
-		removeFile(join(root, `${tokenId}${STAGE_SUFFIX}`))
-		token.publish()
-		const unwatch = watchSignals(() => {
+		const measure = await readMeasure(options, tokenId)
+		const sampler =
+			measure === undefined
+				? undefined
+				: new Sampler(measure.light === undefined ? undefined : measure.limits.threshold, (seeds) =>
+						killMembers(seeds),
+					)
+		try {
+			await token.listen(renderEndpoint(root, tokenId))
+			writeStage(root, buildTicket(tokenId, options.label, measure?.light, options.solo))
+			const sequence = linkStage(root, tokenId)
+			removeFile(join(root, `${tokenId}${STAGE_SUFFIX}`))
+			token.publish()
+			const unwatch = watchSignals(() => {
+				removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
+				removeFile(renderEndpoint(root, tokenId))
+				process.exit(75)
+			})
+			const refusal = await waitForTurn(root, sequence, tokenId, measure?.limits)
+			unwatch()
+			if (refusal === undefined) {
+				return await runHolder(options, launcher, sequence, measure, token, sampler)
+			}
 			removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
-			removeFile(renderEndpoint(root, tokenId))
-			process.exit(75)
-		})
-		const refusal = await waitForTurn(root, sequence, tokenId, measure?.limits)
-		unwatch()
-		if (refusal === undefined) {
-			return await runHolder(options, launcher, sequence, measure, token)
+			console.error(`lane: ${refusal}`)
+			return 75
+		} finally {
+			await sampler?.stop()
 		}
-		removeFile(join(root, renderName(sequence, TICKET_SUFFIX)))
-		console.error(`lane: ${refusal}`)
-		return 75
 	} catch (error) {
 		console.error(`lane: the queue under ${root} refused the run: ${String(error)}`)
 		return 75

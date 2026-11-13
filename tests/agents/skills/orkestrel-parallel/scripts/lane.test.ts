@@ -23,8 +23,11 @@ import {
 	buildTicket,
 	classifyLight,
 	decideTurn,
+	extractMutation,
 	fitsBudget,
+	HISTORY_AGE_MS,
 	HISTORY_DIRECTORY,
+	HISTORY_KEYS,
 	isBreach,
 	isGone,
 	isLimits,
@@ -34,15 +37,22 @@ import {
 	linkStage,
 	MAX_CAP_SECONDS,
 	measurePeak,
+	normalizeCommand,
 	parkOn,
 	parseCap,
 	parseGauges,
 	parseRows,
+	parseSample,
+	pruneHistory,
 	RECENT_RUNS,
 	RUN_SUFFIX,
+	SAMPLE_MS,
 	quote,
+	READY_LINE,
+	readExecTool,
 	readCommandId,
 	readLimits,
+	readMeasure,
 	readNames,
 	readOutcomeNames,
 	readOutcomes,
@@ -62,6 +72,7 @@ import {
 	resolveLauncher,
 	resolveRoot,
 	Sampler,
+	selectTree,
 	selectMembers,
 	sweepTree,
 	tallySample,
@@ -1137,6 +1148,31 @@ describe('lane.ts', () => {
 			['one project of the source aggregate', [...NPM, 'run', 'test:src:core'], 'light'],
 			['inline code', ['node', '-e', 'process.exit(0)'], undefined],
 			['a checkout path that holds a heavy word', ['/live/node', '/live/oxlint', '.'], 'light'],
+			[
+				'one project through npm exec',
+				[...NPM, 'exec', '--', 'vitest', 'run', '--project', 'skills'],
+				'light',
+			],
+			['the full suite through npm exec', [...NPM, 'exec', '--', 'vitest', 'run'], 'heavy'],
+			['a format check through npm exec', [...NPM, 'exec', '--', 'oxfmt', '--check', '.'], 'light'],
+			['a type check through npm x', [...NPM, 'x', '--', 'tsc', '--noEmit'], 'light'],
+			['a type check through pnpm exec', ['pnpm', 'exec', 'tsc', '--noEmit'], 'light'],
+			[
+				'a tool before the bare -- of npm exec',
+				[...NPM, 'exec', 'vitest', '--', 'run', '--project=skills'],
+				'light',
+			],
+			[
+				'a package flag through npx',
+				['npx', '--package', 'typescript', 'tsc', '--noEmit'],
+				'light',
+			],
+			[
+				'a tool flag -c through npx',
+				['npx', 'vitest', 'run', '-c', 'vite.config.ts', '--project', 'skills'],
+				'light',
+			],
+			['inline code through npm exec', [...NPM, 'exec', '-c', 'vitest run'], undefined],
 		])('seeds %s', (_name, command, expected) => {
 			expect(readSeed(command)).toBe(expected)
 		})
@@ -1206,6 +1242,69 @@ describe('lane.ts', () => {
 			const light = buildTicket(FIRST_TOKEN, 'light', USAGE, true)
 			expect(light).toMatchObject({ light: USAGE, solo: true })
 			expect(isTicket(light)).toBe(true)
+		})
+
+		it('parses a sample line by its marker and reads the ready line as no sample', () => {
+			expect(parseSample('1|10 1 1000 20000 300;bad')).toStrictEqual({
+				requested: true,
+				gauges: [{ pid: 10, parent: 1, created: 1000, cpu: 2, memory: 300 }],
+			})
+			expect(parseSample('0|')).toStrictEqual({ requested: false, gauges: [] })
+			expect(parseSample(READY_LINE)).toBeUndefined()
+		})
+
+		it('selects a run tree from rows, and none for a record without a launcher', () => {
+			const rows = parseRows('10 1 1000\n11 10 1001\n12 1 1002')
+			const run = { started: 1000, launcher: 10, command: undefined }
+			expect(selectTree(rows, run, 2000)).toStrictEqual([10, 11])
+			expect(selectTree(rows, { ...run, launcher: undefined }, 2000)).toBeUndefined()
+		})
+
+		it('extracts the command a mutation wraps and keys a mutation without its edits file', () => {
+			const mutate = ['node', '.agents/skills/orkestrel-falsify/scripts/mutate.ts']
+			expect(extractMutation([...mutate, '--edits', 'a.md', '--', 'npm', 'test'])).toStrictEqual([
+				'npm',
+				'test',
+			])
+			expect(extractMutation([...mutate, '--edits=a.md', '--', 'npm', 'test'])).toStrictEqual([
+				'npm',
+				'test',
+			])
+			expect(extractMutation([...mutate, '--restore', 'tmp/probes/mutate/run-x'])).toBeUndefined()
+			expect(extractMutation([...mutate, '--edits', 'a.md', '--'])).toBeUndefined()
+			expect(extractMutation(['node', 'cases.ts', '--edits', 'a.md', '--', 'x'])).toBeUndefined()
+			expect(
+				normalizeCommand([...mutate, '--edits', 'a.md', '--', 'x', '--edits', 'b.md']),
+			).toStrictEqual([...mutate, '--', 'x', '--edits', 'b.md'])
+			expect(normalizeCommand([...mutate, '--edits=a.md', '--', 'x'])).toStrictEqual([
+				...mutate,
+				'--',
+				'x',
+			])
+			const other = ['node', 'cases.ts', '--edits', 'a.md', '--', 'x']
+			expect(normalizeCommand(other)).toBe(other)
+			expect(readExecTool(['--yes', '--', 'tsc', '--noEmit'])).toStrictEqual(['tsc', '--noEmit'])
+			expect(readExecTool(['--yes'])).toStrictEqual([])
+			expect(readExecTool(['--call=tsc'])).toStrictEqual([])
+		})
+
+		it('prunes keys past the age bound and past the count bound, newest kept', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const now = Date.now()
+			const history = join('root', HISTORY_DIRECTORY)
+			bench.scratch.write(
+				join(history, 'stale', renderOutcomeName(now - HISTORY_AGE_MS - 1, FIRST_TOKEN)),
+				'{}',
+			)
+			bench.scratch.write(
+				join(history, 'edge', renderOutcomeName(now - HISTORY_AGE_MS, FIRST_TOKEN)),
+				'{}',
+			)
+			bench.scratch.ensure(join(history, 'empty'))
+			expect(pruneHistory(bench.root, now)).toStrictEqual(['stale'])
+			expect(bench.scratch.names(history).toSorted()).toStrictEqual(['edge', 'empty'])
+			expect(pruneHistory(bench.root, now)).toStrictEqual([])
 		})
 
 		it('tallies samples by member and peak and builds the record', () => {
@@ -1628,10 +1727,14 @@ describe('lane.ts', () => {
 				() => readSnapshot()?.every((row) => row.pid !== sampler) === true,
 				{ budget: 45_000, interval: 10 },
 			)
-			const own = new Sampler(Date.now(), undefined, () => undefined)
+			const own = new Sampler(undefined, () => undefined)
 			const pid = own.pid
+			expect(await own.ready()).toBe(true)
+			const rows = await own.sample()
+			expect(rows?.some((row) => row.pid === process.pid)).toBe(true)
 			await own.stop()
 			expect(readSnapshot()?.some((row) => row.pid === pid)).toBe(false)
+			expect(await own.sample()).toBeUndefined()
 		})
 
 		it('names each ticket lane and every holder in --status', async () => {
@@ -1676,6 +1779,145 @@ describe('lane.ts', () => {
 			await bench.meter.reach('enter', 'beta')
 			bench.meter.release('beta')
 			expect(await Promise.all(runs.map((run) => run.exit()))).toStrictEqual([0, 0, 0, 0])
+		})
+	})
+
+	describe.runIf(process.platform === 'win32')('the light-lane follow-ups', () => {
+		it('prunes a history key past the age bound when a run opens a key, and keeps a recent one', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const history = join('root', HISTORY_DIRECTORY)
+			const now = Date.now()
+			bench.scratch.write(
+				join(history, 'stale', renderOutcomeName(now - HISTORY_AGE_MS - 60_000, FIRST_TOKEN)),
+				JSON.stringify(CLEAN),
+			)
+			bench.scratch.write(
+				join(history, 'recent', renderOutcomeName(now - 60_000, FIRST_TOKEN)),
+				JSON.stringify(CLEAN),
+			)
+			const command = [process.execPath, '-e', '']
+			const run = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'opener'),
+				'--',
+				...command,
+			])
+			expect(await run.exit()).toBe(0)
+			const key = renderKey(realpathSync(WORKSPACE_ROOT), command)
+			expect(bench.scratch.names(history).toSorted()).toStrictEqual(['recent', key].toSorted())
+		})
+
+		it('keeps the latest keys up to the count bound when a run opens a key', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const history = join('root', HISTORY_DIRECTORY)
+			const now = Date.now()
+			const extra = 5
+			for (const index of Array.from({ length: HISTORY_KEYS + extra }, (_value, item) => item)) {
+				bench.scratch.write(
+					join(
+						history,
+						`key${String(index).padStart(4, '0')}`,
+						renderOutcomeName(now - 600_000 + index, FIRST_TOKEN),
+					),
+					JSON.stringify(CLEAN),
+				)
+			}
+			const command = [process.execPath, '-e', '']
+			const run = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'opener'),
+				'--',
+				...command,
+			])
+			expect(await run.exit()).toBe(0)
+			const names = bench.scratch.names(history)
+			expect(names).toHaveLength(HISTORY_KEYS)
+			expect(names).toContain(renderKey(realpathSync(WORKSPACE_ROOT), command))
+			expect(names).not.toContain('key0000')
+			expect(names).not.toContain(`key${String(extra).padStart(4, '0')}`)
+			expect(names).toContain(`key${String(extra + 1).padStart(4, '0')}`)
+		})
+
+		it('measures a run shorter than the sample interval', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const command = [process.execPath, '-e', 'setTimeout(() => undefined, 300)']
+			const run = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'short'),
+				'--',
+				...command,
+			])
+			expect(await run.exit()).toBe(0)
+			const [outcome] = readOutcomes(bench.root, renderKey(realpathSync(WORKSPACE_ROOT), command))
+			expect(outcome?.processes).toBeGreaterThanOrEqual(2)
+			expect(outcome?.memory).toBeGreaterThan(0)
+		})
+
+		it('exits within one sample interval of the command exit', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const run = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'quick'),
+				'--',
+				process.execPath,
+				'-e',
+				'',
+			])
+			await run.reach('"exit"')
+			const exited = performance.now()
+			expect(await run.exit()).toBe(0)
+			expect(performance.now() - exited).toBeLessThan(SAMPLE_MS)
+		})
+
+		it('classes a mutation by its wrapped command under one key, and heavy beside a live ticket of its directory', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.limit(LIMITS)
+			const run = {
+				root: bench.root,
+				label: 'mutation',
+				journal: 'run.jsonl',
+				errors: 'run.err',
+				cap: 40,
+				solo: false,
+			}
+			const script = ['node', '.agents/skills/orkestrel-falsify/scripts/mutate.ts', '--edits']
+			const wrapped = ['--', ...NPM, 'run', 'test:skills']
+			const { cores, memory, processes } = LIMITS.threshold
+			const first = await readMeasure(
+				{ ...run, command: [...script, 'tmp/units/one/edits.md', ...wrapped] },
+				FIRST_TOKEN,
+			)
+			const second = await readMeasure(
+				{ ...run, command: [...script, 'tmp/units/live-two/edits.md', ...wrapped] },
+				SECOND_TOKEN,
+			)
+			expect(first?.light).toStrictEqual({ cores, memory, processes })
+			expect(second?.light).toStrictEqual({ cores, memory, processes })
+			expect(first?.key).toBe(second?.key)
+			// The control: a wrapped command that seeds nothing keeps a mutation heavy before its records.
+			const unseeded = await readMeasure(
+				{ ...run, command: [...script, 'tmp/units/four/edits.md', '--', 'node', '-e', ''] },
+				FIRST_TOKEN,
+			)
+			expect(unseeded?.light).toBeUndefined()
+			const neighbor = new Token()
+			onTestFinished(() => neighbor.destroy())
+			await neighbor.listen(renderEndpoint(bench.root, THIRD_TOKEN))
+			writeStage(bench.root, buildTicket(THIRD_TOKEN, 'neighbor'))
+			linkStage(bench.root, THIRD_TOKEN)
+			bench.scratch.remove(join('root', `${THIRD_TOKEN}.stage`))
+			neighbor.publish()
+			const beside = await readMeasure(
+				{ ...run, command: [...script, 'tmp/units/three/edits.md', ...wrapped] },
+				FIRST_TOKEN,
+			)
+			expect(beside?.key).toBe(first?.key)
+			expect(beside?.light).toBeUndefined()
 		})
 	})
 })

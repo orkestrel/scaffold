@@ -394,7 +394,7 @@
 			"storage": "agents/skills/orkestrel-parallel/SKILL.md",
 			"destination": ".agents/skills/orkestrel-parallel/SKILL.md",
 			"executable": false,
-			"digest": "2219ca7ee78963b43ed26497a174fa474fda8a652e10c86f2ba9a4068c35c299"
+			"digest": "6557cc7508fe86ea11a136a4bc39dd444ea2de2abf9bd3bd5d07ab4e3ed7360a"
 		},
 		{
 			"storage": "agents/skills/orkestrel-parallel/agents/openai.yaml",
@@ -442,7 +442,7 @@
 			"storage": "agents/skills/orkestrel-parallel/scripts/lane.ts",
 			"destination": ".agents/skills/orkestrel-parallel/scripts/lane.ts",
 			"executable": false,
-			"digest": "f5ee0216b68bbed2a9115e5a86972e520fad97300832c64c7a229b12e88becc6"
+			"digest": "001afc65d850b7cd371ea08981380e79d59edcfe4ace7da414d7c1c1b2768c09"
 		},
 		{
 			"storage": "agents/skills/orkestrel-polish/SKILL.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "54848202cf4e35b7010c12aeef8d80ba25fe2e4fe204ed458e956f3427187d85"
+	"digest": "9258c4b4978da75146d870589729fa80af37dbdb6f28608a07066641cfd6a748"
 }
