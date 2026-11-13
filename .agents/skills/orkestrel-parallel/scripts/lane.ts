@@ -12,16 +12,20 @@
 // Lanes: a ticket is heavy unless its arrival reads it light, and the reading is frozen in the
 // ticket. A heavy ticket holds when it is the earliest live non-light ticket; a `--solo` ticket is
 // heavy and also waits out every earlier light ticket. A light ticket holds when every earlier light
-// ticket holds, no earlier `--solo` ticket is live, and the light holders' summed peaks with its own
-// fit `slots` and each budget; the earliest light ticket always fits. A light holder runs at
+// ticket that the directory rule does not block holds, no earlier `--solo` ticket is live, and the
+// earlier light tickets' summed peaks with its own fit `slots` and each budget; the earliest light
+// ticket always fits. A light holder runs at
 // below-normal priority, and its holder ends it and exits 69 when a sample passes the memory or
 // process threshold.
 // Directories: a run of the falsify skill's `mutate` script publishes `edits` in its ticket, because
 // it edits source in its working directory. Every ticket also waits on the nearest earlier ticket
 // that carries `edits` and shares its working directory, and a ticket that carries `edits` also waits
 // on the nearest earlier ticket of its working directory in either lane, and on an earlier ticket it
-// cannot read, which refuses. Two directories compare by their real paths, case folded on Windows.
-// Every wait names an earlier ticket, so no cycle of waits forms.
+// cannot read. That last wait is the lane's existing refusal, because a ticket's endpoint token lives
+// in its record, so a mutation exits 75 on any unreadable earlier ticket, one a writer has not
+// finished included. Two directories share source when their real paths, case folded on Windows,
+// are equal or one sits inside the other. Every wait names an earlier ticket, so no cycle of waits
+// forms, and each process derives from the earlier tickets alone which light tickets the rule blocks.
 // Light reading: `<root>/limits.json` holds `slots`, the `budget` and the per-run `threshold`; while
 // it is absent or malformed, or on a host other than Windows, every ticket is heavy, no sampler runs,
 // and no record is written. Otherwise each run starts one PowerShell sampler at arrival, which readies
@@ -61,7 +65,7 @@
 // owner closes that connection, because a connection its synchronous allocation left unaccepted
 // would otherwise stay parked on a process that waits behind it. A light waiter writes `h` to an
 // earlier light ticket that did not hold yet, and that owner closes the connection when it holds,
-// // so the waiter decides again; a byte that reaches an owner that is releasing parks until it ends.
+// so the waiter decides again; a byte that reaches an owner that is releasing parks until it ends.
 // The protocol stays 1: the `light`, `solo`, and `edits` ticket fields are optional, a ticket
 // without them reads as heavy, and a process of the first release holds only as the earliest ticket.
 // Limits:
@@ -87,11 +91,12 @@
 //   exits between samples is lost, and disk input and output are not measured. A command that ends
 //   before one process query answers, about 140 ms on the Windows host measured 2026-11-12, can
 //   record zero, so it counts nothing until a later run is read.
-// - Transition. A process of an earlier release reads no `edits` field, so until it exits it neither
-//   waits on a mutation of its directory nor holds a mutation back by the directory rule.
-// - A light mutation holds back later light tickets. A light `mutate` ticket that waits on an earlier
-//   ticket of its directory has not held, so every later light ticket waits for it by the light lanes'
-//   arrival order.
+// - Transition. A process of an earlier release reads no `edits` field, so until it exits it does not
+//   wait on a mutation of its directory, and a `mutate` run it carries publishes no `edits`, so the
+//   directory rule cannot see that run. A mutation of this release does wait on an earlier ticket of
+//   its directory, whichever release wrote it.
+// - Heavy throughput. A heavy ticket that the directory rule blocks still keeps every later heavy
+//   ticket out, from every directory, because passing it would let two heavy tickets hold at once.
 // - A prune beside a write. A holder that writes a record to an existing key that is past a bound can
 //   lose that record to another holder's prune, which removes the key with the record in it.
 // - An unreaped member. On a host whose init does not reap, a killed member can keep reading as
@@ -126,7 +131,15 @@ import {
 } from 'node:fs'
 import { connect, createServer } from 'node:net'
 import { constants, hostname, setPriority, userInfo } from 'node:os'
-import { basename, dirname, extname, isAbsolute, join } from 'node:path'
+import {
+	basename,
+	dirname,
+	extname,
+	isAbsolute,
+	join,
+	resolve as resolvePath,
+	sep,
+} from 'node:path'
 import { createInterface } from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -286,6 +299,17 @@ export const HISTORY_KEYS = 512
  */
 export const READY_MS = 5000
 
+/**
+ * Holds the longest wait in milliseconds for a sampler's handover sample and for its exit after its
+ * stdin closes.
+ *
+ * @remarks
+ * A warm process query answered in about 140 ms on the Windows host measured 2026-11-12, so the wait
+ * outlasts a query on a loaded host, and it bounds what a sampler that hangs after it readied costs
+ * the lane at handover.
+ */
+export const HANDOVER_MS = 5000
+
 /** Holds the pause in milliseconds between two samples of a holder's tree. */
 export const SAMPLE_MS = 1000
 
@@ -352,11 +376,30 @@ export const MANAGERS: readonly string[] = ['npm', 'pnpm', 'yarn', 'bun']
 /** Lists the package-manager verbs that run a tool, which a seed reads through to the tool. */
 export const EXEC_VERBS: readonly string[] = ['exec', 'x', 'dlx']
 
-/** Lists the `npm exec` and `npx` flags that take a separate value, so a seed reads no flag value as the tool. */
-export const EXEC_VALUE_FLAGS: readonly string[] = ['--package', '-p', '--workspace', '-w']
+/** Lists, by tool, the exec flags that take a separate value, so a seed reads no flag value as the tool. */
+export const EXEC_VALUE_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+	npm: Object.freeze(['--package', '-p', '--workspace', '-w']),
+	npx: Object.freeze(['--package', '-p', '--workspace', '-w']),
+	pnpm: Object.freeze(['--package']),
+	pnpx: Object.freeze(['--package']),
+	yarn: Object.freeze(['--package']),
+	bun: Object.freeze(['--package']),
+	bunx: Object.freeze(['--package']),
+})
 
-/** Lists the package-manager flags before the verb that take a separate value, so a seed reads no flag value as the verb. */
-export const MANAGER_VALUE_FLAGS: readonly string[] = ['--prefix', '--workspace', '-w']
+/**
+ * Lists, by package manager, the flags before the verb that take a separate value, so a seed reads no
+ * flag value as the verb.
+ *
+ * @remarks
+ * npm's `-w` names a workspace and takes a value; pnpm's `-w` is the boolean `--workspace-root`.
+ */
+export const MANAGER_VALUE_FLAGS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+	npm: Object.freeze(['--prefix', '--workspace', '-w']),
+	pnpm: Object.freeze(['--dir', '-C', '--filter', '-F']),
+	yarn: Object.freeze(['--cwd']),
+	bun: Object.freeze(['--cwd']),
+})
 
 /** Lists the tools that run another tool the way `npx` does. */
 export const NPX_TOOLS: readonly string[] = ['npx', 'pnpx', 'bunx']
@@ -548,7 +591,7 @@ export interface Sweep {
 	readonly members: readonly number[]
 }
 
-/** Describes one ticket as `--status` reports it; `holding` marks a live ticket with a run record. */
+/** Describes one ticket as `--status` reports it; `edits` marks a `mutate` run, and `holding` a live ticket with a run record. */
 export interface StatusRow {
 	readonly sequence: number
 	readonly label: string | undefined
@@ -556,6 +599,7 @@ export interface StatusRow {
 	readonly state: 'live' | 'dead' | 'unread'
 	readonly light: boolean
 	readonly solo: boolean
+	readonly edits: boolean
 	readonly holding: boolean
 }
 
@@ -1341,13 +1385,15 @@ export function readTool(command: readonly string[]): readonly string[] {
 		}
 		return readTool(rest.slice(script))
 	}
-	if (NPX_TOOLS.includes(name)) return readExecTool(rest)
+	if (NPX_TOOLS.includes(name)) return readExecTool(rest, EXEC_VALUE_FLAGS[name])
 	if (MANAGERS.includes(name)) {
+		const flags = MANAGER_VALUE_FLAGS[name] ?? []
 		const verb = rest.findIndex(
-			(argument, index) =>
-				!argument.startsWith('-') && !MANAGER_VALUE_FLAGS.includes(rest[index - 1] ?? ''),
+			(argument, index) => !argument.startsWith('-') && !flags.includes(rest[index - 1] ?? ''),
 		)
-		if (EXEC_VERBS.includes(rest[verb] ?? '')) return readExecTool(rest.slice(verb + 1))
+		if (EXEC_VERBS.includes(rest[verb] ?? '')) {
+			return readExecTool(rest.slice(verb + 1), EXEC_VALUE_FLAGS[name])
+		}
 	}
 	return [name, ...rest]
 }
@@ -1356,20 +1402,25 @@ export function readTool(command: readonly string[]): readonly string[] {
  * Reads the tool an `npx` or `npm exec` call runs, from the arguments after the verb.
  *
  * @remarks
- * The tool is the first argument before a bare `--` that is neither a flag nor the value of a flag
- * {@link EXEC_VALUE_FLAGS} names, else the first argument after the bare `--`. A flag
- * {@link EXEC_INLINE_FLAGS} names before the tool runs shell text instead.
+ * The tool is the first argument before a bare `--` that is neither a flag nor the value of a
+ * listed flag, else the first argument after the bare `--`. A flag {@link EXEC_INLINE_FLAGS} names
+ * before the tool runs shell text instead.
  *
  * @param args - The arguments after `npx` or after the exec verb.
+ * @param valueFlags - The flags that take a separate value, from {@link EXEC_VALUE_FLAGS}. Default:
+ * none.
  * @returns The tool's name followed by its arguments; empty for inline text or no tool.
  */
-export function readExecTool(args: readonly string[]): readonly string[] {
+export function readExecTool(
+	args: readonly string[],
+	valueFlags: readonly string[] = [],
+): readonly string[] {
 	const end = args.indexOf('--')
 	const named = args.findIndex(
 		(argument, index) =>
 			(end === -1 || index < end) &&
 			!argument.startsWith('-') &&
-			!EXEC_VALUE_FLAGS.includes(args[index - 1] ?? ''),
+			!valueFlags.includes(args[index - 1] ?? ''),
 	)
 	const start = named !== -1 ? named : end === -1 ? -1 : end + 1
 	if (start === -1 || start >= args.length) return []
@@ -1448,16 +1499,46 @@ export function normalizeDirectory(path: string): string {
 }
 
 /**
+ * Checks whether two working directories share source.
+ *
+ * @remarks
+ * Both sides pass through {@link normalizeDirectory}, so a child directory, such as a check run from
+ * `packages/a`, shares source with a mutation at the checkout root, and the reverse.
+ *
+ * @param left - One directory.
+ * @param right - The other directory.
+ * @returns True when the two normalize to one directory or one sits inside the other at a separator
+ * boundary; false otherwise.
+ */
+export function sharesDirectory(left: string, right: string): boolean {
+	const one = normalizeDirectory(left)
+	const other = normalizeDirectory(right)
+	return one === other || matchesInside(one, other) || matchesInside(other, one)
+}
+
+/**
+ * Checks whether a normalized path sits inside another at a separator boundary.
+ *
+ * @param inner - The path that might sit inside.
+ * @param outer - The path that might contain it.
+ * @returns True when `inner` opens with `outer` and a separator; false otherwise, the same path
+ * included.
+ */
+export function matchesInside(inner: string, outer: string): boolean {
+	return inner.startsWith(outer.endsWith(sep) ? outer : `${outer}${sep}`)
+}
+
+/**
  * Reads a path's real path as the file system stores it.
  *
  * @param path - The path.
- * @returns The real path; the path itself when it cannot be resolved.
+ * @returns The real path; the resolved path when it cannot be read, as for a vanished directory.
  */
 export function readRealPath(path: string): string {
 	try {
 		return realpathSync.native(path)
 	} catch {
-		return path
+		return resolvePath(path)
 	}
 }
 
@@ -1536,7 +1617,7 @@ export function readSeed(command: readonly string[]): Seed | undefined {
 	if (tool === undefined) return undefined
 	if (HEAVY_TOOLS.includes(tool)) return 'heavy'
 	if (MANAGERS.includes(tool)) {
-		const [verb, script] = readOperands(args, MANAGER_VALUE_FLAGS)
+		const [verb, script] = readOperands(args, MANAGER_VALUE_FLAGS[tool] ?? [])
 		if (verb === undefined) return undefined
 		if (HEAVY_VERBS.includes(verb)) return 'heavy'
 		return (verb === 'run' || verb === 'run-script') && script !== undefined
@@ -1654,11 +1735,12 @@ export function decideTurn(root: string, sequence: number, token: string, limits
  * @returns The ticket to wait on; undefined when the rule names none.
  */
 export function decideDirectory(earlier: readonly Entry[], own: Ticket): Turn | undefined {
-	const directory = normalizeDirectory(own.cwd)
 	const entry = earlier.findLast((item) => {
 		if (item.ticket === undefined) return own.edits === true
-		const same = normalizeDirectory(item.ticket.cwd) === directory
-		return same && (own.edits === true || item.ticket.edits === true)
+		return (
+			(own.edits === true || item.ticket.edits === true) &&
+			sharesDirectory(own.cwd, item.ticket.cwd)
+		)
 	})
 	return entry === undefined ? undefined : { state: 'behind', entry }
 }
@@ -1708,9 +1790,12 @@ export function decideLight(
 	if (unread !== undefined) return { state: 'behind', entry: unread }
 	const lights = earlier.filter((entry) => entry.ticket?.light !== undefined)
 	const solos = earlier.filter((entry) => entry.ticket?.solo === true)
-	const pending = lights.flatMap((entry) =>
-		readRun(root, entry.sequence) === 'absent' ? [entry.sequence] : [],
-	)
+	const pending = lights.flatMap((entry) => {
+		const blocked =
+			entry.ticket !== undefined &&
+			decideDirectory(earlier.slice(0, earlier.indexOf(entry)), entry.ticket) !== undefined
+		return !blocked && readRun(root, entry.sequence) === 'absent' ? [entry.sequence] : []
+	})
 	const usages = lights.flatMap((entry) =>
 		entry.ticket?.light === undefined ? [] : [entry.ticket.light],
 	)
@@ -2265,6 +2350,23 @@ export function parseGauges(line: string): readonly Gauge[] {
 }
 
 /**
+ * Waits for a promise within a bound.
+ *
+ * @param promise - The promise.
+ * @param budget - The longest wait in milliseconds.
+ * @returns The promise's value; undefined when the budget runs out first.
+ */
+export async function waitForBound<T>(promise: Promise<T>, budget: number): Promise<T | undefined> {
+	const timer = Promise.withResolvers<undefined>()
+	const handle = setTimeout(() => timer.resolve(undefined), budget)
+	try {
+		return await Promise.race([promise, timer.promise])
+	} finally {
+		clearTimeout(handle)
+	}
+}
+
+/**
  * Parses one sample line of a sampler.
  *
  * @param line - One line of the sampler's stdout: `1` or `0`, a `|`, and the rows.
@@ -2438,13 +2540,7 @@ export class Sampler {
 	 * @returns A promise of true when the child readied; false when it ended first or the budget ran out.
 	 */
 	async ready(budget: number): Promise<boolean> {
-		const timer = Promise.withResolvers<boolean>()
-		const handle = setTimeout(() => timer.resolve(false), budget)
-		try {
-			return await Promise.race([this.#ready.promise, timer.promise])
-		} finally {
-			clearTimeout(handle)
-		}
+		return (await waitForBound(this.#ready.promise, budget)) ?? false
 	}
 
 	/**
@@ -2461,10 +2557,11 @@ export class Sampler {
 	/**
 	 * Starts one sample at once.
 	 *
+	 * @param budget - The longest wait in milliseconds for the answer. Default: no bound.
 	 * @returns A promise of every row the sample read, taken after this call; undefined when the
-	 * child ends first or cannot take the request.
+	 * child ends first, cannot take the request, or does not answer within the budget.
 	 */
-	sample(): Promise<readonly Gauge[] | undefined> {
+	sample(budget?: number): Promise<readonly Gauge[] | undefined> {
 		const stdin = this.#child.stdin
 		if (
 			stdin === null ||
@@ -2479,7 +2576,7 @@ export class Sampler {
 		const answer = Promise.withResolvers<readonly Gauge[] | undefined>()
 		this.#waiters.set(this.#asked, answer.resolve)
 		stdin.write(SAMPLE_BYTE)
-		return answer.promise
+		return budget === undefined ? answer.promise : waitForBound(answer.promise, budget)
 	}
 
 	/**
@@ -2496,13 +2593,18 @@ export class Sampler {
 	}
 
 	/**
-	 * Closes the sampler's stdin, which ends it.
+	 * Closes the sampler's stdin, which ends it, and ends the child at once when it has not exited
+	 * within {@link HANDOVER_MS}.
 	 *
 	 * @returns A promise that resolves when the sampler has exited.
 	 */
-	stop(): Promise<void> {
+	async stop(): Promise<void> {
 		this.#child.stdin?.end()
-		return this.#closed
+		const exited = await waitForBound(
+			this.#closed.then(() => true),
+			HANDOVER_MS,
+		)
+		if (exited === undefined) await this.destroy()
 	}
 
 	/**
@@ -2631,7 +2733,14 @@ export async function runHolder(
 	unwatch()
 	const ended = Date.now()
 	const run = readRun(root, sequence)
-	const rows = typeof run === 'object' ? await active?.sample() : undefined
+	const rows = typeof run === 'object' ? await active?.sample(HANDOVER_MS) : undefined
+	const hung = active !== undefined && typeof run === 'object' && rows === undefined
+	if (hung) {
+		await active.destroy()
+		console.error(
+			`lane: the sampler did not answer the handover within ${String(HANDOVER_MS)} ms; ${quote(options.label)} records nothing`,
+		)
+	}
 	const quick =
 		rows !== undefined && typeof run === 'object' ? selectTree(rows, run, ended) : undefined
 	const sweep =
@@ -2646,6 +2755,7 @@ export async function runHolder(
 	const opened =
 		measure !== undefined &&
 		active !== undefined &&
+		!hung &&
 		tryWriteOutcome(
 			root,
 			measure.key,
@@ -2798,6 +2908,7 @@ export async function readStatusRow(root: string, entry: Entry): Promise<StatusR
 		pid: ticket?.pid,
 		light: ticket?.light !== undefined,
 		solo: ticket?.solo === true,
+		edits: ticket?.edits === true,
 	}
 	if (ticket === undefined || describeForeign(ticket) !== undefined) {
 		return { ...fields, state: 'unread', holding: false }
@@ -2841,7 +2952,7 @@ export function renderStatus(status: Status): string {
 		`light: ${lights.length === 0 ? 'none' : lights.map((row) => quote(row.label ?? 'unread')).join(', ')}`,
 		...status.tickets.map(
 			(row) =>
-				`${renderName(row.sequence, TICKET_SUFFIX)} ${row.state} ${renderLane(row)}${row.holding ? ' holding' : ''} ${quote(row.label ?? 'unread')} pid ${String(row.pid)}`,
+				`${renderName(row.sequence, TICKET_SUFFIX)} ${row.state} ${renderLane(row)}${row.edits ? ' edits' : ''}${row.holding ? ' holding' : ''} ${quote(row.label ?? 'unread')} pid ${String(row.pid)}`,
 		),
 	].join('\n')
 }
