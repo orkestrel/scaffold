@@ -853,7 +853,7 @@ describe('installed package consumer', () => {
 			const source = [
 				`const core = await import(${JSON.stringify(core)})`,
 				`const server = await import(${JSON.stringify(server)})`,
-				"const blueprint = core.createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
+				"const blueprint = core.createBlueprint('proof', { src: ['core', 'server'], bin: ['main'], integration: true })",
 				'const compiler = new core.Compiler()',
 				'const plan = compiler.compile(blueprint).plan',
 				"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
@@ -1306,7 +1306,7 @@ describe('installed package consumer', () => {
 				const generated = installGeneratedWorkspace(
 					workspace,
 					archive,
-					"createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
+					"createBlueprint('proof', { src: ['core', 'server'], bin: ['main'], integration: true })",
 					environment,
 				)
 				// The re-pin's claims. The compiler emitted the version this checkout declares,

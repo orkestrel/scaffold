@@ -202,7 +202,7 @@ export class TestSample {
  *
  * @example
  * ```ts
- * buildBlueprint({ src: ['core', 'server'], bin: true, setup: ['node'] })
+ * buildBlueprint({ src: ['core', 'server'], bin: ['main'], setup: ['node'] })
  * ```
  */
 export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {

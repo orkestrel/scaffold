@@ -989,7 +989,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * const blueprint = createBlueprint('router', { src: ['core'] })
  *
- * blueprintToWritableScripts(blueprint)[0]?.name // 'test:src:core'
+ * blueprintToWritableScripts(blueprint)[0]?.name // 'check:src:core'
  * ```
  */
 export function blueprintToWritableScripts(blueprint: Blueprint): readonly ManifestScript[] {
