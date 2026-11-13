@@ -283,7 +283,7 @@ export interface Override {
  * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
- * `bin`, `reporter`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
+ * `bin`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
  * `vendors`, `studies`, `global`, `showcase`, `journey`, `base`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
@@ -293,6 +293,10 @@ export interface Override {
  * `setup` lists the runtimes required by root setup proofs: `node` for generic
  * and server proofs, and `browser` for `tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts`.
  * `journey` selects the birth-owned variant wrapper for a browser application.
+ * `bin` lists the stems of the direct `.ts` modules of `src/bin` in name order: each stem
+ * {@link NAME_PATTERN} admits and {@link CENTRAL_FILE_NAMES} does not name. `main` is the
+ * executable the manifest's `bin` field runs, and every other module publishes the ES-only
+ * `./<name>` subpath with its declaration, for a host tool that loads the module by specifier.
  * `skills` registers the `skills` Vitest project over the mirrored proofs of the skill
  * scripts a workspace ships under each `.agents/skills/<skill>/scripts/` directory, and adds their
  * scoped typecheck.
@@ -332,9 +336,7 @@ export interface Blueprint {
 	readonly version: string
 	readonly engines: string
 	readonly overrides: readonly Override[]
-	readonly bin: boolean
-	/** Selects the exact-case `src/reporter/main.ts` entry of the published Vitest reporter. */
-	readonly reporter: boolean
+	readonly bin: readonly string[]
 	readonly setup: readonly SetupRuntime[]
 	readonly guides: boolean
 	readonly integration: boolean
@@ -848,7 +850,6 @@ export interface ConfigTemplateSet {
 			readonly browser: string
 			readonly server: string
 			readonly bin: string
-			readonly reporter: string
 		}
 		readonly app: {
 			readonly core: string
@@ -879,7 +880,6 @@ export interface ConfigTemplateSet {
 		readonly src: { readonly core: string; readonly browser: string; readonly server: string }
 		readonly app: { readonly core: string; readonly browser: string; readonly server: string }
 		readonly bin: string
-		readonly reporter: string
 		readonly skills: string
 	}
 	readonly vites: {
@@ -891,7 +891,6 @@ export interface ConfigTemplateSet {
 			readonly server: string
 		}
 		readonly bin: string
-		readonly reporter: string
 		readonly app: {
 			readonly vue: string
 			readonly browser: string
@@ -938,7 +937,6 @@ export interface ArtifactTemplateSet {
 		readonly global: { readonly module: string; readonly proof: string }
 		readonly entry: string
 		readonly bin: string
-		readonly reporter: string
 		readonly distribution: {
 			readonly module: string
 			readonly proof: string

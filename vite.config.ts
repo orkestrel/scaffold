@@ -220,8 +220,8 @@ export function srcServer(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 
-function resolveBinFilename(): string {
-	return 'main.js'
+function resolveBinFilename(_format: string, entry: string): string {
+	return `${entry}.js`
 }
 
 function resolveBinExternal(id: string): boolean {
@@ -238,7 +238,9 @@ export function srcBin(override?: UserConfig): UserConfig {
 			sourcemap: true,
 			minify: false,
 			lib: {
-				entry: resolveWorkspacePath('src/bin/main.ts'),
+				entry: {
+					main: resolveWorkspacePath('src/bin/main.ts'),
+				},
 				formats: ['es'],
 				fileName: resolveBinFilename,
 			},

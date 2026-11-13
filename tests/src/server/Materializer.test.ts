@@ -1725,7 +1725,7 @@ describe('Materializer declare entries', () => {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
 			const planned = blueprintToEntries(
-				createBlueprint('sample', { src: ['core', 'server'], reporter: true }),
+				createBlueprint('sample', { src: ['core', 'server'], bin: ['reporter'] }),
 			)
 			const born = blueprintToManifest(createBlueprint('sample', { src: ['core', 'server'] }))
 			workspace.write('project/package.json', born)

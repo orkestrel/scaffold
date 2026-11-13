@@ -163,7 +163,7 @@ describe('configuration templates', () => {
 		const blueprint = createBlueprint('widget', {
 			src: ['core', 'browser', 'server'],
 			app: ['core', 'browser', 'server'],
-			bin: true,
+			bin: ['main'],
 			integration: true,
 			global: true,
 			showcase: true,
@@ -270,8 +270,7 @@ describe('configuration templates', () => {
 				createBlueprint('core-only', { src: ['core'] }),
 				createBlueprint('published', {
 					src: ['core', 'browser', 'server'],
-					bin: true,
-					reporter: true,
+					bin: ['main', 'reporter'],
 					vendors: ['ollama'],
 				}),
 				createBlueprint('server-only', { src: ['server'] }),
@@ -303,7 +302,7 @@ describe('configuration templates', () => {
 				createBlueprint('a'.repeat(MAX_NAME_LENGTH), {
 					src: ['core', 'browser', 'server'],
 					app: ['core', 'browser', 'server'],
-					bin: true,
+					bin: ['main'],
 					integration: true,
 					global: true,
 					showcase: true,
@@ -327,7 +326,7 @@ describe('configuration templates', () => {
 				}),
 				...[46, 47].flatMap((length) =>
 					blueprintToTestArtifacts(
-						createBlueprint('a'.repeat(length), { src: ['core'], bin: true }),
+						createBlueprint('a'.repeat(length), { src: ['core'], bin: ['main'] }),
 					).map((artifact): [string, string] => {
 						const target = `corpus/bin-boundary-${length}/${artifact.path}`
 						workspace.write(target, artifact.content)
@@ -597,7 +596,7 @@ describe('emitted workspaces under their own gates', () => {
 				guides: true,
 				integration: true,
 				setup: ['node', 'browser'],
-				bin: true,
+				bin: ['main'],
 				conformance: true,
 				skills: true,
 				tree: true,
@@ -773,7 +772,7 @@ describe('emitted workspaces under their own gates', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-log-merge-' })
 		const root = workspace.ensure('merged')
 		try {
-			const blueprint = createBlueprint('sample', { src: ['core'], bin: true })
+			const blueprint = createBlueprint('sample', { src: ['core'], bin: ['main'] })
 			stageRootConfig(blueprint, workspace, 'merged')
 			const wrappers = blueprintToConfigArtifacts(blueprint).filter(({ path }) =>
 				['configs/src/vite.core.config.ts', 'configs/src/vite.bin.config.ts'].includes(path),
@@ -1580,14 +1579,15 @@ export default appServer(override)
 		// three because the cost under a full suite run is contention rather than work.
 	}, 360_000)
 
-	// This checkout holds no `src/reporter/main.ts`, so the vendored reporter case takes its
-	// absence branch here. The case stages a target with `src/core`, `src/server`, and the
-	// reporter entry, copies the real vendored files, and runs the reporter case through a nested
-	// Vitest. Three further staged copies carry one mutation each in the emitted reporter wrapper:
-	// no `output.paths` row for the server, no declaration rewrite, and no source map. Each has to
-	// fail at the assertion on its own output file, so a pass cannot be a run that reached none.
-	it('runs the vendored reporter proof in a staged target and fails under mutation', async () => {
-		const title = 'builds the reporter entry to one ES module whose default is the server class'
+	// This checkout holds no `src/bin` module other than `main`, so the vendored bin case builds
+	// nothing here. The case stages a target with `src/core`, `src/server`, `src/bin/main.ts`, and
+	// `src/bin/reporter.ts`, copies the real vendored files, and runs the bin case through a nested
+	// Vitest. Five further staged copies carry one mutation each in the emitted bin wrapper: no
+	// `output.paths` row for the server, no declaration rewrite, no module named for a roll-up, no
+	// source map, and no banner. Each has to fail at the assertion on its own output file, so a pass
+	// cannot be a run that reached none.
+	it('runs the vendored bin proof in a staged target and fails under mutation', async () => {
+		const title = 'builds each src/bin module to one ES module whose default an environment exports'
 		expect(readFileSync(resolve('tests/config.test.ts'), 'utf8')).toContain(title)
 		const cases = [
 			{ prefix: 'present', from: '', to: '', code: 0, text: '1 passed' },
@@ -1596,31 +1596,48 @@ export default appServer(override)
 				from: "\t\t\t\t\t\t'@src/server': '../src/server/index.js',\n",
 				to: '',
 				code: 1,
-				text: '"file": "main.js",',
+				text: '"file": "reporter.js",',
 			},
 			{
 				prefix: 'unrewritten',
-				from: '\t\t\t\trewrite: rewriteServerSpecifier,\n',
+				from: '\t\t\t\trewrite: rewriteSourceSpecifier,\n',
 				to: '',
 				code: 1,
-				text: '"file": "main.d.ts"',
+				text: '"file": "reporter.d.ts"',
+			},
+			{
+				prefix: 'unrolled',
+				from: "\t\t\t\tentries: ['reporter'],\n",
+				to: '\t\t\t\tentries: [],\n',
+				code: 1,
+				text: '"present": false',
 			},
 			{
 				prefix: 'unmapped',
 				from: '\t\tbuild: {\n\t\t\trolldownOptions: {',
 				to: '\t\tbuild: {\n\t\t\tsourcemap: false,\n\t\t\trolldownOptions: {',
 				code: 1,
-				text: '"file": "main.js.map"',
+				text: '"file": "reporter.js.map"',
+			},
+			{
+				prefix: 'unbannered',
+				from: "\t\t\t\t\tbanner: (chunk) => (chunk.name === 'main' ? '#!/usr/bin/env node' : ''),\n",
+				to: '',
+				code: 1,
+				text: '"file": "main.js"',
 			},
 		]
-		const wrapper = 'configs/src/vite.reporter.config.ts'
+		const wrapper = 'configs/src/vite.bin.config.ts'
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
-			prefix: 'scaffold-reporter-vendored-',
+			prefix: 'scaffold-bin-vendored-',
 		})
 		try {
 			for (const { prefix, from, to, code, text } of cases) {
-				const blueprint = createBlueprint('sample', { src: ['core', 'server'], reporter: true })
+				const blueprint = createBlueprint('sample', {
+					src: ['core', 'server'],
+					bin: ['main', 'reporter'],
+				})
 				stageRootConfig(blueprint, workspace, prefix)
 				workspace.link(`${prefix}/node_modules/@orkestrel/scaffold`, resolve('.'))
 				for (const artifact of [
@@ -1636,7 +1653,7 @@ export default appServer(override)
 					'export class SampleReporter {\n\treadonly name = "sample"\n}\n',
 				)
 				workspace.write(
-					`${prefix}/src/reporter/main.ts`,
+					`${prefix}/src/bin/reporter.ts`,
 					"import { SampleReporter } from '@src/server'\n\nexport default SampleReporter\n",
 				)
 				for (const path of ['tests/config.test.ts', 'tests/setupPolicy.ts', 'configs/policy.ts']) {
@@ -1669,10 +1686,10 @@ export default appServer(override)
 		} finally {
 			workspace.destroy()
 		}
-		// Four nested Vitest runs, each loading the staged configuration and the vendored policy
+		// Six nested Vitest runs, each loading the staged configuration and the vendored policy
 		// modules and running three real builds, two with a declaration roll-up; the budget carries
-		// room for all four because the cost under a full suite run is contention rather than work.
-	}, 640_000)
+		// room for all six because the cost under a full suite run is contention rather than work.
+	}, 960_000)
 
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)
@@ -1926,14 +1943,16 @@ export default appServer(override)
 			)
 			expect(workspace.read('studied/vite.config.ts')).toContain('export function appBarrel(')
 			expect(checkTypes(workspace.ensure('studied'))).toBe('')
-			// A reporter selection adds the reporter factory to a source server configuration.
+			// A `src/bin` module joins the one bin factory as a named entry beside the executable.
 			stageRootConfig(
-				createBlueprint('sample', { src: ['core', 'server'], reporter: true }),
+				createBlueprint('sample', { src: ['core', 'server'], bin: ['main', 'reporter'] }),
 				workspace,
-				'reported',
+				'modules',
 			)
-			expect(workspace.read('reported/vite.config.ts')).toContain('export function srcReporter(')
-			expect(checkTypes(workspace.ensure('reported'))).toBe('')
+			expect(workspace.read('modules/vite.config.ts')).toContain(
+				"\t\t\t\t\treporter: resolveWorkspacePath('src/bin/reporter.ts'),",
+			)
+			expect(checkTypes(workspace.ensure('modules'))).toBe('')
 
 			const control = emitted.replace('codeSplitting: false', "codeSplitting: 'never'")
 			expect(control).not.toBe(emitted)
@@ -2074,7 +2093,7 @@ export default appServer(override)
 			...Array.from({ length: MAX_NAME_LENGTH }, (_, offset) => offset + 1).flatMap((length) =>
 				[
 					...buildModules(
-						createBlueprint('a'.repeat(length), { src: ['core', 'server'], bin: true }),
+						createBlueprint('a'.repeat(length), { src: ['core', 'server'], bin: ['main'] }),
 					),
 				].flatMap(([path, content]) =>
 					findWide(content).map((line) => `${length} ${path} ${line.trim()}`),
@@ -2456,35 +2475,35 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	// A relative server import in the reporter entry bundles the server class into
-	// `dist/reporter/main.js`, so the scan reads that face and names the copied server source; the
-	// control map lists the entry alone. An output outside every named face stays unread.
-	it('A8.1 reads the reporter face and reports a server source copied into it', () => {
-		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-reporter-' })
+	// A relative server import in a `src/bin` module bundles the server class into
+	// `dist/bin/reporter.js`, so the scan reads that face and names the copied server source; the
+	// control map lists the module alone. An output outside every named face stays unread.
+	it('A8.1 reads the bin face and reports a server source copied into a module', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-map-bin-' })
 		try {
 			const file = writeDistributionHarness(workspace)
 			const installed = writeDistributionFixture(workspace, {})
-			workspace.write('installed/dist/reporter/main.js', 'export const reporter = 1\n')
+			workspace.write('installed/dist/bin/reporter.js', 'export const reporter = 1\n')
 			workspace.write(
-				'installed/dist/reporter/main.js.map',
+				'installed/dist/bin/reporter.js.map',
 				JSON.stringify({
 					version: 3,
-					sources: ['../../src/reporter/main.ts', '../../src/server/index.ts'],
+					sources: ['../../src/bin/reporter.ts', '../../src/server/index.ts'],
 				}),
 			)
 			const faces = [
-				`scan.readDistributionFace(${JSON.stringify(installed)}, ${JSON.stringify(join(installed, 'dist/reporter/main.js'))})`,
+				`scan.readDistributionFace(${JSON.stringify(installed)}, ${JSON.stringify(join(installed, 'dist/bin/reporter.js'))})`,
 				`scan.readDistributionFace(${JSON.stringify(installed)}, ${JSON.stringify(join(installed, 'dist/other/x.js'))})`,
 				`scan.scanDistributionSourceMaps(${JSON.stringify(installed)})`,
 			]
 			expect(driveModule(file, 'scan', faces)).toEqual([
-				'reporter',
+				'bin',
 				undefined,
-				['dist/reporter/main.js.map: src/server/index.ts'],
+				['dist/bin/reporter.js.map: src/server/index.ts'],
 			])
 			workspace.write(
-				'installed/dist/reporter/main.js.map',
-				JSON.stringify({ version: 3, sources: ['../../src/reporter/main.ts'] }),
+				'installed/dist/bin/reporter.js.map',
+				JSON.stringify({ version: 3, sources: ['../../src/bin/reporter.ts'] }),
 			)
 			expect(
 				driveModule(file, 'scan', [
@@ -2922,7 +2941,7 @@ describe('emitted distribution classifier', () => {
 			).toEqual([{ actual: ['bin'], expected: [] }])
 			expect(workspace.read('installed/package.json')).toBe(text)
 			const blueprint = blueprintToManifest(
-				createBlueprint('widget', { src: ['core', 'server'], bin: true }),
+				createBlueprint('widget', { src: ['core', 'server'], bin: ['main'] }),
 			)
 			const generated: unknown = JSON.parse(blueprint)
 			expect(generated).toHaveProperty('bin', { widget: 'dist/bin/main.js' })

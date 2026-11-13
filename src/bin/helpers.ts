@@ -588,7 +588,7 @@ export function sheetTestToQuestion(
  * and every step it runs matches a planned step, in the planned order, as {@link matchesStep}
  * reads it. That is the chain a birth or an earlier write left before a structural fact planned
  * another step, such as a root `tests/setupBrowser.test.ts` proof planning
- * `npm run test:setup:browser`, `src/reporter/main.ts` planning `npm run check:src:reporter`, or
+ * `npm run test:setup:browser`, `src/bin/main.ts` planning `npm run check:src:bin`, or
  * studies beside the server application planning `npm run build:app:barrel`, so the write lands
  * the planned chain in its place. A chain running a step the plan does not generate, or running
  * the planned steps in another order, is one the package owns, and no entry names it.
@@ -661,7 +661,7 @@ export function manifestToWritableScripts(
  * ```ts
  * import { renderManifestEntries } from './helpers.js'
  *
- * renderManifestEntries({ bin: {}, files: ['dist/reporter'], exports: {} }) // ['files[] "dist/reporter"']
+ * renderManifestEntries({ bin: {}, files: ['dist/bin'], exports: {} }) // ['files[] "dist/bin"']
  * ```
  */
 export function renderManifestEntries(entries: ManifestEntrySet): readonly string[] {
@@ -738,14 +738,14 @@ export function describeEntryRefusal(
  *
  * @remarks
  * The second form is the `test:src` aggregate a birth or an earlier write left before a structural
- * fact planned another project, such as `src/reporter/main.ts` planning `--project src:reporter`.
+ * fact planned another project, such as `src/bin/main.ts` planning `--project src:bin`.
  * A step naming no project runs every project, so it is no predecessor of a step naming some.
  *
  * @example
  * ```ts
  * import { matchesStep } from './helpers.js'
  *
- * matchesStep('vitest run --project src:core', 'vitest run --project src:core --project src:reporter') // true
+ * matchesStep('vitest run --project src:core', 'vitest run --project src:core --project src:bin') // true
  * matchesStep('vitest run', 'vitest run --project src:core') // false
  * ```
  */

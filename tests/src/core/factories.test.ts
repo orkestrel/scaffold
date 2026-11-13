@@ -32,7 +32,7 @@ describe('createBlueprint defaults', () => {
 
 	it('clears every flag the caller omitted', () => {
 		const blueprint = createBlueprint('router')
-		expect(blueprint.bin).toBe(false)
+		expect(blueprint.bin).toStrictEqual([])
 		expect(blueprint.styles).toBe(false)
 		expect(blueprint.themes).toBe(false)
 		expect(blueprint.guides).toBe(false)
@@ -57,11 +57,11 @@ describe('createBlueprint supplied fields', () => {
 		const blueprint = createBlueprint('router', {
 			version: '1.2.3',
 			src: ['core', 'server'],
-			bin: true,
+			bin: ['main'],
 		})
 		expect(blueprint.version).toBe('1.2.3')
 		expect(blueprint.src).toStrictEqual(['core', 'server'])
-		expect(blueprint.bin).toBe(true)
+		expect(blueprint.bin).toStrictEqual(['main'])
 		expect(createBlueprint('router', { studies: true }).studies).toBe(true)
 	})
 

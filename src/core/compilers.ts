@@ -68,8 +68,6 @@ import {
 	NAME_PATTERN,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
-	REPORTER_CONFIGS,
-	REPORTER_OUTPUT_PATH,
 	SEED_GUIDE_PATHS,
 	SERVICE_SCRIPT_PATH,
 	SERVICE_SETUP_PATH,
@@ -101,7 +99,7 @@ import {
 	srcToRoot,
 } from './helpers.js'
 import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
-import { isSheetName, isSubpathMap } from './validators.js'
+import { isBinModule, isSheetName, isSubpathMap } from './validators.js'
 
 /**
  * Projects a blueprint into browser extensions restricted to occupied browser axes.
@@ -145,10 +143,10 @@ export function blueprintToSheets(blueprint: Blueprint): readonly string[] {
 }
 
 /**
- * Projects published environments, sheets, and the reporter entry into the manifest export map.
+ * Projects published environments, sheets, and `src/bin` modules into the manifest export map.
  * @param blueprint - The workspace specification.
- * @returns JavaScript conditions, CSS and SCSS subpaths, and the ES-only `./reporter` subpath,
- * without an invented JavaScript root.
+ * @returns JavaScript conditions, CSS and SCSS subpaths, and the ES-only `./<name>` subpath of
+ * each `src/bin` module other than `main`, without an invented JavaScript root.
  * @example
  * ```ts
  * import { blueprintToExports, createBlueprint } from '@orkestrel/scaffold'
@@ -184,9 +182,11 @@ export function blueprintToExports(blueprint: Blueprint): Readonly<Record<string
 				],
 			),
 		),
-		...(blueprint.reporter
-			? { './reporter': pathToCondition(`./${REPORTER_OUTPUT_PATH.replace(/\.js$/u, '')}`, ['es']) }
-			: {}),
+		...Object.fromEntries(
+			blueprint.bin.flatMap((name): ReadonlyArray<readonly [string, unknown]> =>
+				name === 'main' ? [] : [[`./${name}`, pathToCondition(`./dist/bin/${name}`, ['es'])]],
+			),
+		),
 	}
 	return Object.keys(exported).length > 0
 		? { ...exported, './package.json': './package.json' }
@@ -372,9 +372,7 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 			? CAPTURE_DEV_DEPENDENCIES
 			: {}),
 		...(sheets ? STYLES_DEV_DEPENDENCIES : {}),
-		...(blueprint.src.length > 0 || blueprint.bin || blueprint.reporter
-			? DECLARATION_DEV_DEPENDENCIES
-			: {}),
+		...(blueprint.src.length > 0 || blueprint.bin.length > 0 ? DECLARATION_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser') || sheets
 			? SOURCE_BROWSER_DEV_DEPENDENCIES
 			: {}),
@@ -645,7 +643,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	const checker = application.includes('vue') ? FRAMEWORK_MATRIX.vue.checker : 'tsc'
 	const publishes = blueprint.src.length > 0 || targets.length > 0
 	const integrates = blueprint.integration
-	const compiles = publishes || blueprint.bin || blueprint.reporter
+	const compiles = publishes || blueprint.bin.length > 0
 	const runtime = blueprint.app.filter(
 		(environment) => environment !== 'core' && (environment !== 'browser' || base),
 	)
@@ -658,8 +656,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...blueprint.src,
 		...source,
 		...sheets,
-		...(blueprint.bin ? ['bin'] : []),
-		...(blueprint.reporter ? ['reporter'] : []),
+		...(blueprint.bin.length > 0 ? ['bin'] : []),
 	].map((name) => `npm run check:src:${name}`)
 	const journey = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
 	const showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
@@ -688,11 +685,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 							])
 							.toArray(),
 					),
-					...(blueprint.bin
+					...(blueprint.bin.length > 0
 						? { 'check:src:bin': 'tsc --noEmit -p configs/src/tsconfig.bin.json' }
-						: {}),
-					...(blueprint.reporter
-						? { 'check:src:reporter': 'tsc --noEmit -p configs/src/tsconfig.reporter.json' }
 						: {}),
 					...Object.fromEntries(
 						[...sheets, ...source].map((name) => [
@@ -750,7 +744,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 					// targets extend, so it is computed once rather than written and then rewritten. It is
 					// computed here, after the checks, so the environments are read where the baseline read them.
 					'test:src': [
-						...(blueprint.src.length > 0 || blueprint.bin || blueprint.reporter
+						...(blueprint.src.length > 0 || blueprint.bin.length > 0
 							? [
 									[
 										vitest,
@@ -758,8 +752,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 											(environment) => `--project ${SRC_MATRIX[environment].project}`,
 										),
 										...source.map((name) => `--project src:${name}`),
-										...(blueprint.bin ? ['--project src:bin'] : []),
-										...(blueprint.reporter ? ['--project src:reporter'] : []),
+										...(blueprint.bin.length > 0 ? ['--project src:bin'] : []),
 									].join(' '),
 								]
 							: []),
@@ -773,10 +766,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 							])
 							.toArray(),
 					),
-					...(blueprint.bin ? { 'test:src:bin': `${vitest} --project src:bin` } : {}),
-					...(blueprint.reporter
-						? { 'test:src:reporter': `${vitest} --project src:reporter` }
-						: {}),
+					...(blueprint.bin.length > 0 ? { 'test:src:bin': `${vitest} --project src:bin` } : {}),
 					...Object.fromEntries(
 						source.map((name) => [`test:src:${name}`, `${vitest} --project src:${name}`]),
 					),
@@ -857,8 +847,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 						...blueprint.src.map((environment) => `npm run build:src:${environment}`),
 						...source.map((name) => `npm run build:src:${name}`),
 						...targets.map((name) => `npm run build:src:${name}`),
-						...(blueprint.bin ? ['npm run build:src:bin'] : []),
-						...(blueprint.reporter ? ['npm run build:src:reporter'] : []),
+						...(blueprint.bin.length > 0 ? ['npm run build:src:bin'] : []),
 					].join(' && '),
 					...Object.fromEntries(
 						Iterator.from(blueprint.src)
@@ -870,11 +859,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 							])
 							.toArray(),
 					),
-					...(blueprint.bin
+					...(blueprint.bin.length > 0
 						? { 'build:src:bin': 'vite build --config configs/src/vite.bin.config.ts' }
-						: {}),
-					...(blueprint.reporter
-						? { 'build:src:reporter': 'vite build --config configs/src/vite.reporter.config.ts' }
 						: {}),
 					...Object.fromEntries(
 						source.map((name) => [
@@ -972,8 +958,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
  * whose package-owned entry runs the guides project and handles explicit parity
  * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication
- * lifecycle scripts. Library environments, sheet faces, framework faces, and the executable and
- * reporter entries add their check and build scripts, application
+ * lifecycle scripts. Library environments, sheet faces, framework faces, and `src/bin` modules
+ * add their check and build scripts, application
  * frameworks add dev scripts, and selected showcases and journeys add their mode scripts.
  * A base browser application's journey axis also adds `journey` and `capture`, and each
  * app-side browser face adds `journey:<name>` and `capture:<name>`. Their generated
@@ -1017,7 +1003,7 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
 		// The plan carries an entry's or an environment's scripts only when it plans it.
-		const entry = [...blueprint.src, 'bin', 'reporter'].some(
+		const entry = [...blueprint.src, 'bin'].some(
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
 		// The faces are read for each script, so the extensions are read as many times as before.
@@ -1107,7 +1093,7 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
  * ```ts
  * import { blueprintToEntries, createBlueprint } from '@orkestrel/scaffold'
  *
- * blueprintToEntries(createBlueprint('router', { src: ['core'], bin: true })).files
+ * blueprintToEntries(createBlueprint('router', { src: ['core'], bin: ['main'] })).files
  * // ['dist/src', 'dist/bin', 'README.md']
  * ```
  */
@@ -1116,11 +1102,10 @@ export function blueprintToEntries(blueprint: Blueprint): ManifestEntrySet {
 	const targets = [...sheets, ...(blueprint.themes ? ['styles/themes'] : [])]
 	const publishes = blueprint.src.length > 0 || targets.length > 0
 	return {
-		bin: blueprint.bin ? { [blueprint.name]: BIN_OUTPUT_PATH } : {},
+		bin: blueprint.bin.includes('main') ? { [blueprint.name]: BIN_OUTPUT_PATH } : {},
 		files: [
 			...(publishes ? ['dist/src'] : blueprint.app.length > 0 ? ['dist/app'] : []),
-			...(blueprint.bin ? ['dist/bin'] : []),
-			...(blueprint.reporter ? ['dist/reporter'] : []),
+			...(blueprint.bin.length > 0 ? ['dist/bin'] : []),
 			...targets.map((face) => `!dist/src/${face}/index.js`),
 			...sheets.map((face) => `src/${face}/**/*.scss`),
 			...(blueprint.themes && !blueprint.styles ? ['src/styles/themes/**/*.scss'] : []),
@@ -1205,16 +1190,18 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 					},
 				}
 			: {}),
-		...(blueprint.bin ? { bin: entries.bin } : {}),
+		...(blueprint.bin.includes('main') ? { bin: entries.bin } : {}),
 		files: entries.files,
 		type: 'module',
 		...(publishes
 			? {
 					sideEffects:
-						targets.length > 0 || blueprint.bin
+						targets.length > 0 || blueprint.bin.includes('main')
 							? [
 									...(targets.length > 0 ? ['**/*.css', '**/*.scss'] : []),
-									...(blueprint.bin ? [`./${BIN_ENTRY_PATH}`, `./${BIN_OUTPUT_PATH}`] : []),
+									...(blueprint.bin.includes('main')
+										? [`./${BIN_ENTRY_PATH}`, `./${BIN_OUTPUT_PATH}`]
+										: []),
 								]
 							: false,
 					...(blueprint.src.length > 0 ? entry : {}),
@@ -1284,8 +1271,7 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
 		frameworks,
 		output:
 			blueprint.src.length > 0 ||
-			blueprint.bin ||
-			blueprint.reporter ||
+			blueprint.bin.length > 0 ||
 			hosted ||
 			blueprintToSheets(blueprint).length > 0 ||
 			blueprint.themes,
@@ -1420,8 +1406,7 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 					(axis !== 'app' || environment !== 'server') && blueprint[axis].includes(environment),
 			).map((environment) => `${axis}:${environment}`),
 			...faces.filter((face) => face.axes.includes(axis)).map((face) => `${axis}:${face.name}`),
-			...(axis === 'src' && blueprint.bin ? ['src:bin'] : []),
-			...(axis === 'src' && blueprint.reporter ? ['src:reporter'] : []),
+			...(axis === 'src' && blueprint.bin.length > 0 ? ['src:bin'] : []),
 			...(axis === 'app' && blueprint.app.includes('server') ? ['app:server'] : []),
 		]),
 		'policy',
@@ -1602,8 +1587,18 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 				)
 			: []),
 		...(planned.has('src:vue') ? [CONFIG_TEMPLATES.factories.src.vue] : []),
-		...(planned.has('src:bin') ? [CONFIG_TEMPLATES.factories.src.bin] : []),
-		...(planned.has('src:reporter') ? [CONFIG_TEMPLATES.factories.src.reporter] : []),
+		...(planned.has('src:bin')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.src.bin, {
+						entries: blueprint.bin
+							.map(
+								(name) =>
+									`\t\t\t\t\t${name.includes('-') ? serializeTypeScriptString(name) : name}: resolveWorkspacePath(${serializeTypeScriptString(`src/bin/${name}.ts`)}),`,
+							)
+							.join('\n'),
+					}),
+				]
+			: []),
 		...(planned.has('app:core') ? [CONFIG_TEMPLATES.factories.app.core] : []),
 		...(planned.has('app:browser')
 			? [
@@ -1678,7 +1673,6 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		...(planned.has('src:server') ? ['srcServer'] : []),
 		...(planned.has('src:vue') ? ['srcVue'] : []),
 		...(planned.has('src:bin') ? ['srcBin'] : []),
-		...(planned.has('src:reporter') ? ['srcReporter'] : []),
 		...(planned.has('app:core') ? ['appCore'] : []),
 		...(planned.has('app:browser') ? ['appBrowser'] : []),
 		...(planned.has('app:vue') ? ['appVue'] : []),
@@ -1861,9 +1855,9 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 			})),
 		)
 		.toArray()
-	// The paths are read only for a bin or reporter selection, once, after the sources.
+	// The paths are read only for a bin selection, once, after the sources.
 	const paths =
-		blueprint.bin || blueprint.reporter
+		blueprint.bin.length > 0
 			? blueprint.src.map(
 					(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
 				)
@@ -1874,30 +1868,25 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 			: `\t\t\t\t\tpaths: {
 ${paths.join('\n')}
 					},`
-	const bins: readonly Artifact[] = blueprint.bin
-		? BIN_CONFIGS.map((path): Artifact => ({
-				path,
-				group: 'configs',
-				ownership: 'content',
-				origin: 'template',
-				content:
-					path === 'configs/src/tsconfig.bin.json'
-						? CONFIG_TEMPLATES.tsconfigs.bin
-						: fillTemplate(CONFIG_TEMPLATES.vites.bin, { paths: renderedPaths }),
-			}))
-		: []
-	const reporters: readonly Artifact[] = blueprint.reporter
-		? REPORTER_CONFIGS.map((path): Artifact => ({
-				path,
-				group: 'configs',
-				ownership: 'content',
-				origin: 'template',
-				content:
-					path === 'configs/src/tsconfig.reporter.json'
-						? CONFIG_TEMPLATES.tsconfigs.reporter
-						: fillTemplate(CONFIG_TEMPLATES.vites.reporter, { paths: renderedPaths }),
-			}))
-		: []
+	const bins: readonly Artifact[] =
+		blueprint.bin.length > 0
+			? BIN_CONFIGS.map((path): Artifact => ({
+					path,
+					group: 'configs',
+					ownership: 'content',
+					origin: 'template',
+					content:
+						path === 'configs/src/tsconfig.bin.json'
+							? CONFIG_TEMPLATES.tsconfigs.bin
+							: fillTemplate(CONFIG_TEMPLATES.vites.bin, {
+									modules: blueprint.bin
+										.filter((name) => name !== 'main')
+										.map((name) => serializeTypeScriptString(name))
+										.join(', '),
+									paths: renderedPaths,
+								}),
+				}))
+			: []
 	const barrels: readonly Artifact[] = matchesBarrel(blueprint)
 		? BARREL_CONFIGS.map((path): Artifact => ({
 				path,
@@ -2066,7 +2055,6 @@ ${paths.join('\n')}
 		...sheets,
 		...sources,
 		...bins,
-		...reporters,
 		...applications,
 		...barrels,
 		...faces,
@@ -2223,7 +2211,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 				: [barrel]
 		}),
 	)
-	const bin: readonly ContentArtifact[] = blueprint.bin
+	const bin: readonly ContentArtifact[] = blueprint.bin.includes('main')
 		? [
 				{
 					path: BIN_ENTRY_PATH,
@@ -2339,8 +2327,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	const servers: readonly ContentArtifact[] =
 		blueprint.src.includes('server') ||
 		blueprint.app.includes('server') ||
-		blueprint.bin ||
-		blueprint.reporter ||
+		blueprint.bin.length > 0 ||
 		blueprint.conformance ||
 		blueprint.tree
 			? [
@@ -2445,7 +2432,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 		.toArray()
 	const binSpecifier = serializeTypeScriptString('../../../src/bin/main.js')
 	const joinedImport = `\t\tconst entry = await import(${binSpecifier})`
-	const bins: readonly ContentArtifact[] = blueprint.bin
+	const bins: readonly ContentArtifact[] = blueprint.bin.includes('main')
 		? [
 				{
 					path: 'tests/src/bin/main.test.ts',
@@ -2457,17 +2444,6 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 							? joinedImport
 							: `\t\tconst entry =\n\t\t\tawait import(${binSpecifier})`,
 					}),
-				},
-			]
-		: []
-	const reporters: readonly ContentArtifact[] = blueprint.reporter
-		? [
-				{
-					path: 'tests/src/reporter/main.test.ts',
-					group: 'tests',
-					ownership: 'birth',
-					origin: 'template',
-					content: ARTIFACT_TEMPLATES.tests.reporter,
 				},
 			]
 		: []
@@ -2605,7 +2581,6 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 		...journeys,
 		...sources,
 		...bins,
-		...reporters,
 		...applications,
 		...distributions,
 		...integrations,
@@ -2641,8 +2616,7 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
 			directory: `src/${environment}`,
 			test: `tests/src/${environment}`,
 		})),
-		...(blueprint.bin ? [{ directory: 'src/bin', test: 'tests/src/bin' }] : []),
-		...(blueprint.reporter ? [{ directory: 'src/reporter', test: 'tests/src/reporter' }] : []),
+		...(blueprint.bin.length > 0 ? [{ directory: 'src/bin', test: 'tests/src/bin' }] : []),
 		...[
 			...blueprint.app,
 			...blueprintToFaces(blueprint)
@@ -3249,10 +3223,10 @@ export function insertManifestSection(
  *
  * insertManifestEntries('{\n\t"files": [\n\t\t"dist/src",\n\t\t"README.md"\n\t]\n}\n', {
  *   bin: {},
- *   files: ['dist/src', 'dist/reporter', 'README.md'],
+ *   files: ['dist/src', 'dist/bin', 'README.md'],
  *   exports: {},
  * })
- * // '{\n\t"files": [\n\t\t"dist/src",\n\t\t"dist/reporter",\n\t\t"README.md"\n\t]\n}\n'
+ * // '{\n\t"files": [\n\t\t"dist/src",\n\t\t"dist/bin",\n\t\t"README.md"\n\t]\n}\n'
  * ```
  */
 export function insertManifestEntries(
@@ -3988,6 +3962,47 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					},
 				]
 			: []),
+		// A module other than `main` takes the `./<name>` subpath, so it is read against the subpaths
+		// the rest of the blueprint plans.
+		...Iterator.from(blueprint.bin)
+			.map((name) => ({ name, valid: isBinModule(name) }))
+			.toArray()
+			.flatMap(({ name, valid }, index, declared): readonly Question[] => {
+				if (!valid) {
+					return [
+						{
+							field: 'bin',
+							message: `${name} is not a src/bin module name: write a lowercase alphanumeric name starting with a letter that names no centralized file.`,
+							blocking: true,
+						},
+					]
+				}
+				if (declared.findIndex((other) => other.name === name) < index) {
+					return [
+						{ field: 'bin', message: `${name} is declared more than once on bin.`, blocking: true },
+					]
+				}
+				if (name === 'main') return []
+				const subpaths = blueprintToExports({ ...blueprint, bin: [] })
+				if (Object.hasOwn(subpaths, `./${name}`)) {
+					return [
+						{
+							field: 'bin',
+							message: `src/bin/${name}.ts publishes ./${name}, which src/${name} already publishes. Rename the module.`,
+							blocking: true,
+						},
+					]
+				}
+				return Object.keys(subpaths).length === 0
+					? [
+							{
+								field: 'bin',
+								message: `src/bin/${name}.ts publishes ./${name} through the exports map, and this workspace publishes no library environment or sheet, so its manifest carries no exports map.`,
+								blocking: false,
+							},
+						]
+					: []
+			}),
 		...Iterator.from(blueprint.vendors)
 			.map((vendor) => ({
 				vendor,

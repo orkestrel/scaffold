@@ -1038,7 +1038,7 @@ export function listCanonPaths(
  *
  * @remarks
  * The population sits under `configs/src` and `configs/app`, and the widest blueprint
- * compiles it: every environment on both axes, `bin`, `reporter`, `styles`, `themes`, `showcase`,
+ * compiles it: every environment on both axes, `bin`, `styles`, `themes`, `showcase`,
  * `journey`, and each framework on both axes. A wrapper the plan claims pairs with its
  * artifact, and the rest report `foreign`, which lets the deletion verb take the wrappers
  * an environment left behind.
@@ -1062,8 +1062,7 @@ export function listWrapperPaths(
 		src: ENVIRONMENTS,
 		app: ENVIRONMENTS,
 		extensions: FRAMEWORKS.map((name) => ({ surface: 'browser', name, axes: AXES })),
-		bin: true,
-		reporter: true,
+		bin: ['main'],
 		styles: true,
 		themes: true,
 		showcase: true,

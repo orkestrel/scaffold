@@ -53,6 +53,7 @@ import {
 	AXES,
 	BIN_ENTRY_PATH,
 	BIN_OUTPUT_PATH,
+	isBinModule,
 	blueprintToConfigArtifacts,
 	blueprintToEntries,
 	blueprintToDevDependencies,
@@ -90,7 +91,6 @@ import {
 	replaceManifestScripts,
 	replaceManifestOverrides,
 	replacePlanRanges,
-	REPORTER_ENTRY_PATH,
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
 	SKILLS_CONFIG_PATH,
@@ -499,7 +499,7 @@ export class CLI implements CLIInterface {
 			showcase: command.showcase === true,
 			journey: app.includes('browser'),
 			base: app.includes('browser'),
-			bin: command.bin === true,
+			bin: command.bin === true ? ['main'] : [],
 			setup: [],
 			dependencies: selectionToPackages(command.dependencies).map((name) => ({
 				name,
@@ -1391,8 +1391,7 @@ export class CLI implements CLIInterface {
 				target,
 			})
 		}
-		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
-		const reporter = resolveContainedPath(target, REPORTER_ENTRY_PATH)
+		const bin = resolveContainedPath(target, 'src/bin')
 		const tests = resolveContainedPath(target, 'tests')
 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
@@ -1437,8 +1436,20 @@ export class CLI implements CLIInterface {
 			src: targetToEnvironments(target, 'src'),
 			app: targetToEnvironments(target, 'app'),
 			dependencies: manifestToDependencies(manifest).runtime,
-			bin: bin !== undefined && isExactCaseFile(bin),
-			reporter: reporter !== undefined && isExactCaseFile(reporter),
+			// A module is a direct exact-case `.ts` child whose stem names no centralized file.
+			bin:
+				bin === undefined
+					? []
+					: listFiles(bin).flatMap((path) => {
+							const name = path.endsWith('.ts') ? path.slice(0, -'.ts'.length) : path
+							const file = resolveContainedPath(bin, path)
+							return name !== path &&
+								isBinModule(name) &&
+								file !== undefined &&
+								isExactCaseFile(file)
+								? [name]
+								: []
+						}),
 			setup: [...setup],
 			guides: guides !== undefined && isExactCaseFile(guides),
 			integration: integration !== undefined && isExactCaseFile(integration),
@@ -1735,11 +1746,11 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Report a planned executable or reporter script that no chain from `check` or `build`
+	// Report a planned `src/bin` script that no chain from `check` or `build`
 	// reaches. The projection carries the writable predecessor aggregates, so a `check:src` or
 	// `build:src` a write replaces raises nothing and only a package-owned chain is reported.
 	#chainQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
-		const faces = [...(blueprint.bin ? ['bin'] : []), ...(blueprint.reporter ? ['reporter'] : [])]
+		const faces = blueprint.bin.length > 0 ? ['bin'] : []
 		if (faces.length === 0) return undefined
 		const text = this.#manifest(target)
 		const manifest =
@@ -1804,7 +1815,7 @@ export class CLI implements CLIInterface {
 	// Note a planned executable beside `sideEffects: false`. The value is the package's, so the
 	// note names the value a born manifest carries and no verb writes it.
 	#effectQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
-		if (!blueprint.bin) return undefined
+		if (!blueprint.bin.includes('main')) return undefined
 		const parsed = parseJSON(this.#manifest(target))
 		if (!isRecord(parsed) || parsed.sideEffects !== false) return undefined
 		const born = parseJSON(blueprintToManifest(blueprint))

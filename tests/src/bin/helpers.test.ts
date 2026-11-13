@@ -862,7 +862,7 @@ describe('describeEntryRefusal', () => {
 	const missing = {
 		bin: { router: 'dist/bin/main.js' },
 		files: ['dist/bin'],
-		exports: { './reporter': './dist/reporter/main.js' },
+		exports: { './reporter': './dist/bin/reporter.js' },
 	}
 
 	it('names each section whose shape refuses its missing entries', () => {
@@ -910,12 +910,12 @@ describe('renderManifestEntries', () => {
 			renderManifestEntries({
 				bin: { router: 'dist/bin/main.js' },
 				files: ['dist/bin'],
-				exports: { './reporter': { import: './dist/reporter/main.js' } },
+				exports: { './reporter': { import: './dist/bin/reporter.js' } },
 			}),
 		).toStrictEqual([
 			'bin["router"] "dist/bin/main.js"',
 			'files[] "dist/bin"',
-			'exports["./reporter"] {"import":"./dist/reporter/main.js"}',
+			'exports["./reporter"] {"import":"./dist/bin/reporter.js"}',
 		])
 		expect(renderManifestEntries({ bin: {}, files: [], exports: {} })).toStrictEqual([])
 	})
@@ -1160,14 +1160,14 @@ describe('manifestToWritableScripts', () => {
 		})
 	})
 
-	it('writes a generated predecessor of each src aggregate a reporter entry extends', () => {
+	it('writes a generated predecessor of each src aggregate a src/bin module extends', () => {
 		const before = blueprintToScripts(createBlueprint('sample', { src: ['core', 'server'] }))
-		const reporter = createBlueprint('sample', { src: ['core', 'server'], reporter: true })
-		const after = blueprintToScripts(reporter)
-		const region = blueprintToWritableScripts(reporter)
+		const extended = createBlueprint('sample', { src: ['core', 'server'], bin: ['reporter'] })
+		const after = blueprintToScripts(extended)
+		const region = blueprintToWritableScripts(extended)
 		const aggregates = ['test:src', 'check:src', 'build:src']
 		expect(
-			manifestToWritableScripts(JSON.stringify({ scripts: before }), reporter).filter(({ name }) =>
+			manifestToWritableScripts(JSON.stringify({ scripts: before }), extended).filter(({ name }) =>
 				aggregates.includes(name),
 			),
 		).toStrictEqual(
@@ -1190,7 +1190,7 @@ describe('manifestToWritableScripts', () => {
 			expect(
 				manifestToWritableScripts(
 					JSON.stringify({ scripts: { ...after, ...owned } }),
-					reporter,
+					extended,
 				).map((script) => script.name),
 			).toStrictEqual(region.map((script) => script.name))
 		}

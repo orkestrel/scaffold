@@ -1414,9 +1414,9 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
  *
  * manifestToEntries('{"files": ["dist/src"]}', {
  *   bin: {},
- *   files: ['dist/src', 'dist/reporter'],
+ *   files: ['dist/src', 'dist/bin'],
  *   exports: {},
- * }).files // ['dist/reporter']
+ * }).files // ['dist/bin']
  * ```
  */
 export function manifestToEntries(manifest: string, planned: ManifestEntrySet): ManifestEntrySet {

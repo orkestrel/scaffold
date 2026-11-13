@@ -191,7 +191,7 @@ describe('Compiler artifacts', () => {
 			createBlueprint('widget', {
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
-				bin: true,
+				bin: ['main'],
 				integration: true,
 				global: true,
 				showcase: true,

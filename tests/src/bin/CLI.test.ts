@@ -100,7 +100,7 @@ import {
 	omitDependencies,
 	readCommitted,
 	REFUSED_MANIFEST_TEXT,
-	REPORTER_ENTRY_TEXT,
+	BIN_MODULE_TEXT,
 	removeEnvironment,
 	SCRATCH_PREFIX,
 	SKILL_CANON_FILES,
@@ -3986,7 +3986,6 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			workspace.ensure('target/src/bin')
-			workspace.ensure('target/src/reporter')
 			workspace.ensure('target/tests')
 			workspace.write('target/configs/app/other.config.ts', 'export {}\n')
 			expect(
@@ -4002,7 +4001,6 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const absent = workspace.read('target/vite.config.ts')
 			expect(absent).not.toContain("label: 'src:bin'")
-			expect(absent).not.toContain("label: 'src:reporter'")
 			expect(absent).not.toContain("label: 'guides'")
 			expect(absent).not.toContain("label: 'integration'")
 			expect(absent).not.toContain("label: 'conformance'")
@@ -4012,7 +4010,8 @@ describe('CLI audit', () => {
 			expect(absent).not.toContain('appShowcase')
 
 			workspace.write('target/src/bin/Main.ts', 'export {}\n')
-			workspace.write('target/src/reporter/Main.ts', 'export {}\n')
+			// A centralized kind file is no module, so it plans no `src/bin` build either.
+			workspace.write('target/src/bin/helpers.ts', 'export {}\n')
 			workspace.write('target/tests/Guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/Tree.test.ts', 'export {}\n')
 			workspace.write('target/tests/Setup.test.ts', 'export {}\n')
@@ -4029,18 +4028,16 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:bin'")
-			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:reporter'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'guides'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'tree'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'setup'")
 			workspace.remove('target/src/bin/Main.ts')
-			workspace.remove('target/src/reporter/Main.ts')
 			workspace.remove('target/tests/Guides.test.ts')
 			workspace.remove('target/tests/Tree.test.ts')
 			workspace.remove('target/tests/Setup.test.ts')
 
 			workspace.write('target/src/bin/main.ts', 'export {}\n')
-			workspace.write('target/src/reporter/main.ts', 'export {}\n')
+			workspace.write('target/src/bin/reporter.ts', 'export {}\n')
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
 			workspace.write('target/tests/guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
@@ -4053,8 +4050,7 @@ describe('CLI audit', () => {
 			const blueprint = createBlueprint('sample', {
 				src: ['core'],
 				app: ['browser'],
-				bin: true,
-				reporter: true,
+				bin: ['main', 'reporter'],
 				setup: ['node'],
 				guides: true,
 				integration: true,
@@ -4078,7 +4074,8 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const present = workspace.read('target/vite.config.ts')
 			expect(present).toContain("label: 'src:bin'")
-			expect(present).toContain("label: 'src:reporter'")
+			expect(present).toContain("reporter: resolveWorkspacePath('src/bin/reporter.ts'),")
+			expect(present).not.toContain("resolveWorkspacePath('src/bin/helpers.ts')")
 			expect(present).toContain("label: 'setup'")
 			expect(present).toContain("label: 'guides'")
 			expect(present).toContain("label: 'integration'")
@@ -9311,15 +9308,15 @@ describe('CLI wrappers an environment leaves behind', { timeout: 60_000 }, () =>
 })
 
 describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
-	it('writes every manifest row a reporter entry plans and reports each one before the write', async () => {
+	it('writes every manifest row a src/bin module plans and reports each one before the write', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
 				'--src',
 				'core,server',
 			])
-			workspace.write('fixture/src/reporter/main.ts', REPORTER_ENTRY_TEXT)
-			const planned = createBlueprint('fixture', { src: ['core', 'server'], reporter: true })
+			workspace.write('fixture/src/bin/reporter.ts', BIN_MODULE_TEXT)
+			const planned = createBlueprint('fixture', { src: ['core', 'server'], bin: ['reporter'] })
 			const scripts = blueprintToScripts(planned)
 			const sink = createSink()
 			expect(await new CLI(sink.options).execute(['audit', ...args])).toBe(EXIT_DRIFT)
@@ -9327,10 +9324,10 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			expect(audit.questions).toContainEqual({
 				field: 'entries',
 				blocking: false,
-				message: `The manifest at ${target} does not declare planned entries: files[] "dist/reporter", exports["./reporter"] {"import":{"types":"./dist/reporter/main.d.ts","default":"./dist/reporter/main.js"}}. Run overwrite to insert each one, or add each one to package.json by hand.`,
+				message: `The manifest at ${target} does not declare planned entries: files[] "dist/bin", exports["./reporter"] {"import":{"types":"./dist/bin/reporter.d.ts","default":"./dist/bin/reporter.js"}}. Run overwrite to insert each one, or add each one to package.json by hand.`,
 			})
 			expect(audit.questions.find(({ field }) => field === 'scripts')?.message).toContain(
-				'does not declare planned scripts: check:src:reporter, test:src:reporter, build:src:reporter.',
+				'does not declare planned scripts: check:src:bin, test:src:bin, build:src:bin.',
 			)
 			expect(audit.questions.find(({ field }) => field === 'projects')?.message).toContain(
 				'The test:src chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
@@ -9341,7 +9338,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			const kept: unknown = JSON.parse(requireValue(workspace.read('fixture/package.json')))
 			expect(kept).toMatchObject({
 				files: ['dist/src', 'README.md'],
-				scripts: { 'check:src:reporter': scripts['check:src:reporter'] },
+				scripts: { 'check:src:bin': scripts['check:src:bin'] },
 			})
 			expect(
 				isRecord(kept) && isRecord(kept.exports) ? Object.keys(kept.exports) : [],
@@ -9351,24 +9348,26 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			expect(
 				await new CLI(human.options).execute(['overwrite', '--dirty', ...args.slice(0, -1)]),
 			).toBe(EXIT_DRIFT)
-			expect(human.output).toContain('Inserted files[] "dist/reporter" in package.json.')
+			expect(human.output).toContain('Inserted files[] "dist/bin" in package.json.')
 			const text = requireValue(workspace.read('fixture/package.json'))
-			expect(text).toContain('\t\t"dist/src",\n\t\t"dist/reporter",\n\t\t"README.md"\n')
+			expect(text).toContain('\t\t"dist/src",\n\t\t"dist/bin",\n\t\t"README.md"\n')
 			expect(text).toContain(
-				'\t\t"./package.json": "./package.json",\n\t\t"./reporter": {\n\t\t\t"import": {\n\t\t\t\t"types": "./dist/reporter/main.d.ts",\n\t\t\t\t"default": "./dist/reporter/main.js"\n\t\t\t}\n\t\t}\n\t},\n',
+				'\t\t"./package.json": "./package.json",\n\t\t"./reporter": {\n\t\t\t"import": {\n\t\t\t\t"types": "./dist/bin/reporter.d.ts",\n\t\t\t\t"default": "./dist/bin/reporter.js"\n\t\t\t}\n\t\t}\n\t},\n',
 			)
 			expect(JSON.parse(text)).toMatchObject({
-				files: ['dist/src', 'dist/reporter', 'README.md'],
+				files: ['dist/src', 'dist/bin', 'README.md'],
 				exports: blueprintToEntries(planned).exports,
 				scripts: {
 					'test:src': scripts['test:src'],
 					'check:src': scripts['check:src'],
 					'build:src': scripts['build:src'],
-					'test:src:reporter': scripts['test:src:reporter'],
-					'check:src:reporter': scripts['check:src:reporter'],
-					'build:src:reporter': scripts['build:src:reporter'],
+					'test:src:bin': scripts['test:src:bin'],
+					'check:src:bin': scripts['check:src:bin'],
+					'build:src:bin': scripts['build:src:bin'],
 				},
 			})
+			// Without `src/bin/main.ts` the plan names no executable, so no `bin` key is written.
+			expect(JSON.parse(text)).not.toHaveProperty('bin')
 			const after = createSink()
 			await new CLI(after.options).execute(['audit', ...args])
 			const settled: AuditResult = JSON.parse(after.output[0] ?? '')
@@ -9388,7 +9387,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 				'core,server',
 			])
 			workspace.write('fixture/src/bin/main.ts', 'export {}\n')
-			const planned = createBlueprint('fixture', { src: ['core', 'server'], bin: true })
+			const planned = createBlueprint('fixture', { src: ['core', 'server'], bin: ['main'] })
 			const scripts = blueprintToScripts(planned)
 			const sink = createSink()
 			await new CLI(sink.options).execute(['audit', ...args])
@@ -9503,7 +9502,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 				'--src',
 				'core,server',
 			])
-			workspace.write('fixture/src/reporter/main.ts', REPORTER_ENTRY_TEXT)
+			workspace.write('fixture/src/bin/reporter.ts', BIN_MODULE_TEXT)
 			const born = requireValue(workspace.read('fixture/package.json'))
 			const skipped = born.replace(
 				'"tsc --noEmit --project tsconfig.json && npm run check:src"',
@@ -9519,7 +9518,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 				{
 					manifest: owned,
 					remedy:
-						'The check chain does not run npm run check:src, and check:src does not run npm run check:src:reporter: invoke npm run check:src:reporter from the check:src chain, and npm run check:src from the check chain.',
+						'The check chain does not run npm run check:src, and check:src does not run npm run check:src:bin: invoke npm run check:src:bin from the check:src chain, and npm run check:src from the check chain.',
 				},
 				// A generated check:src gains the step from the write, so only the gate step is missing.
 				{
@@ -9536,7 +9535,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 				expect(audit.questions).toContainEqual({
 					field: 'scripts',
 					blocking: false,
-					message: `The manifest at ${target} does not reach the planned script check:src:reporter from check. ${remedy}`,
+					message: `The manifest at ${target} does not reach the planned script check:src:bin from check. ${remedy}`,
 				})
 			}
 		} finally {
@@ -9581,7 +9580,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 				'--src',
 				'core,server',
 			])
-			workspace.write('fixture/src/reporter/main.ts', REPORTER_ENTRY_TEXT)
+			workspace.write('fixture/src/bin/reporter.ts', BIN_MODULE_TEXT)
 			const born = requireValue(workspace.read('fixture/package.json'))
 			// Each aggregate runs a step or a flag the plan does not generate, so the package owns it.
 			const owned = born
@@ -9597,14 +9596,14 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			expect(audit.questions).toContainEqual({
 				field: 'scripts',
 				blocking: false,
-				message: `The manifest at ${target} does not reach the planned scripts check:src:reporter from check, build:src:reporter from build. The check:src chain runs steps the plan does not generate, so invoke npm run check:src:reporter from it. The build:src chain runs steps the plan does not generate, so invoke npm run build:src:reporter from it.`,
+				message: `The manifest at ${target} does not reach the planned scripts check:src:bin from check, build:src:bin from build. The check:src chain runs steps the plan does not generate, so invoke npm run check:src:bin from it. The build:src chain runs steps the plan does not generate, so invoke npm run build:src:bin from it.`,
 			})
 			const step =
-				'The test or prepublishOnly chain runs test:src, which does not pass --project src:reporter: add --project src:reporter to test:src, or invoke npm run test:src:reporter by name from the test or prepublishOnly chain.'
+				'The test or prepublishOnly chain runs test:src, which does not pass --project src:bin: add --project src:bin to test:src, or invoke npm run test:src:bin by name from the test or prepublishOnly chain.'
 			expect(audit.questions).toContainEqual({
 				field: 'projects',
 				blocking: false,
-				message: `The manifest at ${target} does not reach a Vitest project the planned configuration registers: src:reporter. No chain from test or prepublishOnly invokes it. ${step}`,
+				message: `The manifest at ${target} does not reach a Vitest project the planned configuration registers: src:bin. No chain from test or prepublishOnly invokes it. ${step}`,
 			})
 			const refused = createSink()
 			expect(await new CLI(refused.options).execute(['overwrite', '--dirty', ...args])).toBe(
@@ -9613,7 +9612,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			const envelope: ErrorEnvelope = JSON.parse(refused.output[0] ?? '')
 			expect(envelope.error.code).toBe('TARGET')
 			expect(envelope.error.message).toBe(
-				`The configs group is blocked because the manifest at ${target} does not reach a Vitest project the planned configuration registers: src:reporter. No chain from test or prepublishOnly invokes it. ${step} Exclude configs from --groups to write another group.`,
+				`The configs group is blocked because the manifest at ${target} does not reach a Vitest project the planned configuration registers: src:bin. No chain from test or prepublishOnly invokes it. ${step} Exclude configs from --groups to write another group.`,
 			)
 			expect(workspace.read('fixture/package.json')).toBe(owned)
 		} finally {

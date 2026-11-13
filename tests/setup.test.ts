@@ -202,13 +202,13 @@ describe('buildBlueprint', () => {
 		expect(base.src).toStrictEqual(['core'])
 		expect(base.app).toStrictEqual([])
 		expect(base.dependencies).toStrictEqual([])
-		expect(base.bin).toBe(false)
+		expect(base.bin).toStrictEqual([])
 		expect(base.setup).toStrictEqual([])
 		expect(base.showcase).toBe(false)
 		expect('description' in base).toBe(false)
-		const replaced = buildBlueprint({ src: ['core', 'server'], bin: true })
+		const replaced = buildBlueprint({ src: ['core', 'server'], bin: ['main'] })
 		expect(replaced.src).toStrictEqual(['core', 'server'])
-		expect(replaced.bin).toBe(true)
+		expect(replaced.bin).toStrictEqual(['main'])
 		// Every field the caller did not name survives, so a replacement is focused
 		// rather than a second blueprint written beside the default.
 		expect({ ...replaced, src: base.src, bin: base.bin }).toStrictEqual(base)
@@ -914,8 +914,10 @@ describe('the emitted-template fixtures', () => {
 		const blueprints = buildSelections()
 		expect(blueprints).toHaveLength((ENVIRONMENT_SELECTIONS.length ** 2 - 1) * 2)
 		expect(blueprints.some(({ src, app }) => src.length === 0 && app.length === 0)).toBe(false)
-		expect(blueprints.filter(({ bin }) => bin)).toHaveLength(blueprints.length / 2)
-		expect(blueprints.filter(({ reporter }) => reporter)).toHaveLength(blueprints.length / 2)
+		expect(blueprints.filter(({ bin }) => bin.includes('main'))).toHaveLength(blueprints.length / 2)
+		expect(blueprints.filter(({ bin }) => bin.includes('reporter'))).toHaveLength(
+			blueprints.length / 2,
+		)
 		expect(blueprints.every(({ name }) => name === 'sample')).toBe(true)
 	})
 
@@ -942,7 +944,7 @@ describe('the emitted-template fixtures', () => {
 
 	it('counts, per path, the blueprints that emit it', () => {
 		const plain = buildBlueprint({ src: ['core'] })
-		const binned = buildBlueprint({ src: ['core'], bin: true })
+		const binned = buildBlueprint({ src: ['core'], bin: ['main'] })
 		const counts = countEmitters([plain, binned])
 		expect(counts['src/core/index.ts']).toBe(2)
 		expect(counts['src/bin/main.ts']).toBe(1)

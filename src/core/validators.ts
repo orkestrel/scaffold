@@ -40,6 +40,7 @@ import {
 import {
 	ARTIFACT_GROUPS,
 	AXES,
+	CENTRAL_FILE_NAMES,
 	CONTROL_CHARACTER_PATTERN,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
@@ -223,6 +224,27 @@ export function isSheetName(value: unknown): value is string {
 		value.length <= MAX_NAME_LENGTH &&
 		NAME_PATTERN.test(value) &&
 		!RESERVED_SHEET_NAMES.includes(value)
+	)
+}
+
+/**
+ * Narrows a value to the stem of a `src/bin` module.
+ * @param value - The candidate stem.
+ * @returns True if the stem matches the workspace pattern and names no centralized file; false otherwise.
+ * @example
+ * ```ts
+ * import { isBinModule } from '@orkestrel/scaffold'
+ *
+ * isBinModule('reporter') // true
+ * isBinModule('helpers') // false
+ * ```
+ */
+export function isBinModule(value: unknown): value is string {
+	return (
+		isString(value) &&
+		value.length <= MAX_NAME_LENGTH &&
+		NAME_PATTERN.test(value) &&
+		!CENTRAL_FILE_NAMES.includes(value)
 	)
 }
 
@@ -416,8 +438,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		version: isString,
 		engines: isString,
 		overrides: andOf(isCollection, arrayOf(isOverride)),
-		bin: isBoolean,
-		reporter: isBoolean,
+		bin: andOf(isCollection, arrayOf(isString)),
 		setup: andOf(isCollection, arrayOf(literalOf('node', 'browser'))),
 		guides: isBoolean,
 		integration: isBoolean,

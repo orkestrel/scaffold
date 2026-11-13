@@ -51,7 +51,7 @@ describe('guard totality', () => {
 		const entries = {
 			bin: { router: 'dist/bin/main.js' },
 			files: ['dist/bin'],
-			exports: { './reporter': { import: './dist/reporter/main.js' } },
+			exports: { './reporter': { import: './dist/bin/reporter.js' } },
 		}
 		expect(isManifestRegionSet({ ...base, entries })).toBe(true)
 		for (const malformed of [

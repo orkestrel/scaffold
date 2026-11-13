@@ -1,4 +1,4 @@
-import type { Axis, Environment } from '@src/core'
+import type { Axis, Environment, Question } from '@src/core'
 import type { PluginOption, UserConfig } from 'vite'
 import { isRecord } from '@orkestrel/contract'
 import { createGuide } from '@orkestrel/guide'
@@ -425,7 +425,7 @@ describe('blueprintToProjects', () => {
 			app: ['core', 'browser', 'server'],
 			styles: true,
 			themes: true,
-			bin: true,
+			bin: ['main'],
 			setup: ['node', 'browser'],
 			guides: true,
 			skills: true,
@@ -1194,7 +1194,7 @@ describe('sheet planning', () => {
 	it('sorts named faces, retains bin side effects, and selects declared optimization imports', () => {
 		const blueprint = buildBlueprint({
 			styles: true,
-			bin: true,
+			bin: ['main'],
 			integration: true,
 			setup: ['node'],
 			dependencies: [{ name: '@orkestrel/contract', range: '^0.0.18' }],
@@ -1587,14 +1587,14 @@ describe('replaceManifestOverride', () => {
 })
 
 describe('blueprintToEntries', () => {
-	it('plans the executable command, the entry paths, and the reporter subpath', () => {
+	it('plans the executable command, the entry paths, and each module subpath', () => {
 		expect(
 			blueprintToEntries(
-				createBlueprint('router', { src: ['core', 'server'], bin: true, reporter: true }),
+				createBlueprint('router', { src: ['core', 'server'], bin: ['main', 'reporter'] }),
 			),
 		).toStrictEqual({
 			bin: { router: 'dist/bin/main.js' },
-			files: ['dist/src', 'dist/bin', 'dist/reporter', 'README.md'],
+			files: ['dist/src', 'dist/bin', 'README.md'],
 			exports: {
 				'.': {
 					import: { types: './dist/src/core/index.d.ts', default: './dist/src/core/index.js' },
@@ -1611,7 +1611,7 @@ describe('blueprintToEntries', () => {
 					},
 				},
 				'./reporter': {
-					import: { types: './dist/reporter/main.d.ts', default: './dist/reporter/main.js' },
+					import: { types: './dist/bin/reporter.d.ts', default: './dist/bin/reporter.js' },
 				},
 				'./package.json': './package.json',
 			},
@@ -1627,14 +1627,14 @@ describe('blueprintToEntries', () => {
 	})
 
 	it('packs dist/src only where a library environment or a sheet builds into it', () => {
-		expect(blueprintToEntries(createBlueprint('desk', { app: ['core'], bin: true }))).toStrictEqual(
-			{
-				bin: { desk: 'dist/bin/main.js' },
-				files: ['dist/app', 'dist/bin', 'README.md'],
-				exports: {},
-			},
-		)
-		expect(blueprintToEntries(createBlueprint('desk', { bin: true })).files).toStrictEqual([
+		expect(
+			blueprintToEntries(createBlueprint('desk', { app: ['core'], bin: ['main'] })),
+		).toStrictEqual({
+			bin: { desk: 'dist/bin/main.js' },
+			files: ['dist/app', 'dist/bin', 'README.md'],
+			exports: {},
+		})
+		expect(blueprintToEntries(createBlueprint('desk', { bin: ['main'] })).files).toStrictEqual([
 			'dist/bin',
 			'README.md',
 		])
@@ -1644,7 +1644,7 @@ describe('blueprintToEntries', () => {
 	})
 
 	it('emits the entries a born manifest carries, in the key order the writer anchors to', () => {
-		const blueprint = createBlueprint('router', { src: ['core'], bin: true, styles: true })
+		const blueprint = createBlueprint('router', { src: ['core'], bin: ['main'], styles: true })
 		const manifest: unknown = JSON.parse(blueprintToManifest(blueprint))
 		expect(manifest).toMatchObject(blueprintToEntries(blueprint))
 		const keys = Object.keys(isRecord(manifest) ? manifest : {})
@@ -1656,13 +1656,13 @@ describe('blueprintToEntries', () => {
 describe('insertManifestEntries', () => {
 	it('inserts a planned subpath and packed path before the entries the plan orders after them', () => {
 		const planned = blueprintToEntries(
-			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+			createBlueprint('router', { src: ['core', 'server'], bin: ['reporter'] }),
 		)
 		const born = blueprintToManifest(createBlueprint('router', { src: ['core', 'server'] }))
 		const written = insertManifestEntries(born, planned)
-		expect(written).toContain('\t\t"dist/src",\n\t\t"dist/reporter",\n\t\t"README.md"\n')
+		expect(written).toContain('\t\t"dist/src",\n\t\t"dist/bin",\n\t\t"README.md"\n')
 		expect(written).toContain(
-			'\t\t"./package.json": "./package.json",\n\t\t"./reporter": {\n\t\t\t"import": {\n\t\t\t\t"types": "./dist/reporter/main.d.ts",\n\t\t\t\t"default": "./dist/reporter/main.js"\n\t\t\t}\n\t\t}\n\t},\n',
+			'\t\t"./package.json": "./package.json",\n\t\t"./reporter": {\n\t\t\t"import": {\n\t\t\t\t"types": "./dist/bin/reporter.d.ts",\n\t\t\t\t"default": "./dist/bin/reporter.js"\n\t\t\t}\n\t\t}\n\t},\n',
 		)
 		expect(JSON.parse(written ?? '')).toStrictEqual({
 			...JSON.parse(born),
@@ -1674,14 +1674,14 @@ describe('insertManifestEntries', () => {
 
 	it('keeps a declared value and an unplanned entry byte for byte', () => {
 		const planned = blueprintToEntries(
-			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+			createBlueprint('router', { src: ['core', 'server'], bin: ['reporter'] }),
 		)
 		const manifest =
 			'{\n  "files": [\n    "lib",\n    "dist/src"\n  ],\n  "exports": {\n    "./reporter": "./custom.js",\n    "./extra": "./extra.js"\n  }\n}\n'
 		// A planned entry lands before the first declared entry the plan orders after it, and an
 		// unplanned entry anchors nothing.
 		expect(insertManifestEntries(manifest, planned)).toBe(
-			'{\n  "files": [\n    "lib",\n    "dist/src",\n    "dist/reporter",\n    "README.md"\n  ],\n  "exports": {\n    ".": {\n      "import": {\n        "types": "./dist/src/core/index.d.ts",\n        "default": "./dist/src/core/index.js"\n      },\n      "require": {\n        "types": "./dist/src/core/index.d.cts",\n        "default": "./dist/src/core/index.cjs"\n      }\n    },\n    "./server": {\n      "import": {\n        "types": "./dist/src/server/index.d.ts",\n        "default": "./dist/src/server/index.js"\n      },\n      "require": {\n        "types": "./dist/src/server/index.d.cts",\n        "default": "./dist/src/server/index.cjs"\n      }\n    },\n    "./package.json": "./package.json",\n    "./reporter": "./custom.js",\n    "./extra": "./extra.js"\n  }\n}\n',
+			'{\n  "files": [\n    "lib",\n    "dist/src",\n    "dist/bin",\n    "README.md"\n  ],\n  "exports": {\n    ".": {\n      "import": {\n        "types": "./dist/src/core/index.d.ts",\n        "default": "./dist/src/core/index.js"\n      },\n      "require": {\n        "types": "./dist/src/core/index.d.cts",\n        "default": "./dist/src/core/index.cjs"\n      }\n    },\n    "./server": {\n      "import": {\n        "types": "./dist/src/server/index.d.ts",\n        "default": "./dist/src/server/index.js"\n      },\n      "require": {\n        "types": "./dist/src/server/index.d.cts",\n        "default": "./dist/src/server/index.cjs"\n      }\n    },\n    "./package.json": "./package.json",\n    "./reporter": "./custom.js",\n    "./extra": "./extra.js"\n  }\n}\n',
 		)
 	})
 
@@ -1706,7 +1706,7 @@ describe('insertManifestEntries', () => {
 
 	it('refuses an exports value of conditions or a string, which Node reads as the root export', () => {
 		const planned = blueprintToEntries(
-			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+			createBlueprint('router', { src: ['core', 'server'], bin: ['reporter'] }),
 		)
 		for (const exports of [
 			'{"import":"./index.js","require":"./index.cjs"}',
@@ -1721,7 +1721,7 @@ describe('insertManifestEntries', () => {
 
 	it('refuses a section holding another shape and a text that is not a manifest object', () => {
 		const planned = blueprintToEntries(
-			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+			createBlueprint('router', { src: ['core', 'server'], bin: ['reporter'] }),
 		)
 		expect(insertManifestEntries('{"name":"router","exports":"./index.js"}', planned)).toBe(
 			undefined,
@@ -1740,7 +1740,7 @@ describe('insertManifestEntries', () => {
 describe('blueprintToWritableScripts', () => {
 	it('owns the check and build scripts of each library environment and entry', () => {
 		const names = blueprintToWritableScripts(
-			createBlueprint('sample', { src: ['core', 'server'], bin: true, reporter: true }),
+			createBlueprint('sample', { src: ['core', 'server'], bin: ['main', 'reporter'] }),
 		).map(({ name }) => name)
 		for (const name of [
 			'check:src:core',
@@ -1749,8 +1749,6 @@ describe('blueprintToWritableScripts', () => {
 			'build:src:server',
 			'check:src:bin',
 			'build:src:bin',
-			'check:src:reporter',
-			'build:src:reporter',
 		]) {
 			expect(names).toContain(name)
 		}
@@ -2371,7 +2369,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 	it('omits library publishing tools from an app-only workspace', () => {
 		const planned = blueprintToDevDependencies(
-			buildBlueprint({ src: [], app: ['core', 'browser'], bin: false }),
+			buildBlueprint({ src: [], app: ['core', 'browser'], bin: [] }),
 		)
 
 		expect(planned['@microsoft/api-extractor']).toBeUndefined()
@@ -2392,7 +2390,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	})
 
 	it('keeps library publishing tools in an executable workspace', () => {
-		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
+		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: ['main'] }))
 
 		expect(planned['@microsoft/api-extractor']).toBe('^7.60.1')
 	})
@@ -2402,7 +2400,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({
 				src: [],
 				app: ['core', 'browser'],
-				bin: false,
+				bin: [],
 				extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
 			}),
 		)
@@ -3653,7 +3651,7 @@ describe('blueprintToScripts config projects', () => {
 			buildBlueprint({
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
-				bin: true,
+				bin: ['main'],
 				setup: ['node'],
 				guides: true,
 				conformance: true,
@@ -3968,7 +3966,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('gives every bin project its contended-suite timeout and reason', () => {
-		const configuration = blueprintToRootVite(buildBlueprint({ bin: true }))
+		const configuration = blueprintToRootVite(buildBlueprint({ bin: ['main'] }))
 		const start = configuration.indexOf('export function srcBin')
 		const end = configuration.indexOf('export function policy')
 		const bin = configuration.slice(start, end)
@@ -4012,7 +4010,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 	it('keeps generated configurations byte-identical with the local templates project overlay', () => {
 		const blueprint = createBlueprint('scaffold', {
 			src: ['core', 'server'],
-			bin: true,
+			bin: ['main'],
 			guides: true,
 			setup: ['node'],
 			skills: true,
@@ -4080,12 +4078,12 @@ describe('blueprintToRootVite fixed proofs', () => {
 			src: ['core', 'browser', 'server'],
 			app: ['browser', 'server'],
 			peers: [peer],
-			bin: true,
+			bin: ['main'],
 		})
 		const absent = buildBlueprint({
 			src: ['core', 'browser', 'server'],
 			app: ['browser', 'server'],
-			bin: true,
+			bin: ['main'],
 		})
 		const configuration = blueprintToRootVite(selected)
 		const contents = blueprintToConfigArtifacts(selected)
@@ -4178,7 +4176,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			const plan = compiler.compile(
 				createBlueprint('desk', {
 					src: ['core', 'server'],
-					bin: true,
+					bin: ['main'],
 					service: true,
 					studies: true,
 				}),
@@ -4204,7 +4202,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
 			"import { enforceBuildLog } from './configs/helpers.js'\n",
 		)
-		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: true }))).toContain(
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: ['main'] }))).toContain(
 			"import { enforceBuildLog, outputBoundary, resolveExternal } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: [], app: ['core'] }))).toContain(
@@ -4227,7 +4225,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			buildBlueprint({
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
-				bin: true,
+				bin: ['main'],
 				showcase: true,
 			}),
 		)
@@ -4258,7 +4256,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		}
 		for (const blueprint of [
 			buildBlueprint({ src: ['core'] }),
-			buildBlueprint({ src: ['core', 'server'], bin: true }),
+			buildBlueprint({ src: ['core', 'server'], bin: ['main'] }),
 			buildBlueprint({ src: [], app: ['core', 'server'] }),
 		]) {
 			const artifacts = blueprintToConfigArtifacts(blueprint)
@@ -4615,12 +4613,12 @@ export function appShowcase(mode: string, override?: UserConfig): UserConfig {
 	})
 
 	it('explains the executable build in every emitted bin workspace', () => {
-		const bin = blueprintToConfigArtifacts(buildBlueprint({ bin: true })).find(
+		const bin = blueprintToConfigArtifacts(buildBlueprint({ bin: ['main'] })).find(
 			({ path }) => path === 'configs/src/vite.bin.config.ts',
 		)
-		expect(bin?.content).toContain('a single ESM lib file, no declarations')
-		expect(bin?.content).toContain('rolldown strips shebangs from source during bundling')
-		expect(bin?.content).toContain('relative to `dist/bin/`')
+		expect(bin?.content).toContain('One ES file per `src/bin` module.')
+		expect(bin?.content).toContain('Rolldown strips a source shebang, so `main` alone takes')
+		expect(bin?.content).toContain('built environment beside `dist/bin/`.')
 	})
 })
 
@@ -4647,7 +4645,7 @@ describe('browser commands', () => {
 		}
 		for (const blueprint of [
 			buildBlueprint({ src: ['core'] }),
-			buildBlueprint({ src: ['core', 'server'], bin: true }),
+			buildBlueprint({ src: ['core', 'server'], bin: ['main'] }),
 			buildBlueprint({ src: [], app: ['core', 'server'] }),
 		]) {
 			const paths = blueprintToConfigArtifacts(blueprint).map(({ path }) => path)
@@ -5083,7 +5081,7 @@ describe('content artifact compilers', () => {
 				name: 'widget',
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
-				bin: true,
+				bin: ['main'],
 			}),
 		)
 		expect(artifacts.map(({ path }) => path)).toStrictEqual([
@@ -5136,7 +5134,7 @@ describe('content artifact compilers', () => {
 				name: 'widget',
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
-				bin: true,
+				bin: ['main'],
 				global: true,
 				integration: true,
 			}),
@@ -6580,16 +6578,18 @@ describe('compilers over a list that serves one iterator read it where the loops
 	})
 })
 
-// A workspace publishes a Vitest reporter when it holds `src/reporter/main.ts`. Each case reads
-// the fact present beside the same selection with the fact absent, so an output the fact adds is
-// named and a selection without it keeps the output it had.
-describe('reporter entry', () => {
+// Every direct `src/bin` module other than `main` publishes `./<name>` from `dist/bin`. Each case
+// reads a blueprint with the modules beside the same selection without them, so an output a module
+// adds is named and a selection without it keeps the output it had.
+describe('src/bin modules', () => {
 	const absent = buildBlueprint({ src: ['core', 'server'] })
-	const present = buildBlueprint({ src: ['core', 'server'], reporter: true })
+	const executable = buildBlueprint({ src: ['core', 'server'], bin: ['main'] })
+	const present = buildBlueprint({ src: ['core', 'server'], bin: ['main', 'reporter'] })
+	const solo = buildBlueprint({ src: ['core', 'server'], bin: ['reporter'] })
 
-	it('publishes the ES-only reporter subpath and its output directory', () => {
+	it('publishes each module but main as an ES-only subpath of dist/bin', () => {
 		expect(blueprintToExports(present)['./reporter']).toStrictEqual({
-			import: { types: './dist/reporter/main.d.ts', default: './dist/reporter/main.js' },
+			import: { types: './dist/bin/reporter.d.ts', default: './dist/bin/reporter.js' },
 		})
 		expect(Object.keys(blueprintToExports(present))).toStrictEqual([
 			'.',
@@ -6597,81 +6597,165 @@ describe('reporter entry', () => {
 			'./package.json',
 			'./reporter',
 		])
-		expect(blueprintToExports(absent)['./reporter']).toBeUndefined()
-		const manifest: unknown = JSON.parse(blueprintToManifest(present))
-		const control: unknown = JSON.parse(blueprintToManifest(absent))
-		expect(isRecord(manifest) ? manifest.files : undefined).toContain('dist/reporter')
-		expect(isRecord(control) ? control.files : undefined).not.toContain('dist/reporter')
-		expect(isRecord(manifest) ? manifest.sideEffects : undefined).toBe(false)
-	})
-
-	it('plans the reporter check, build, and test scripts beside the source environments', () => {
-		const scripts = blueprintToScripts(present)
-		expect(scripts['check:src:reporter']).toBe('tsc --noEmit -p configs/src/tsconfig.reporter.json')
-		expect(scripts['build:src:reporter']).toBe(
-			'vite build --config configs/src/vite.reporter.config.ts',
-		)
-		expect(scripts['test:src:reporter']).toBe(
-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:reporter',
-		)
-		expect(scripts['check:src']).toBe(
-			'npm run check:src:core && npm run check:src:server && npm run check:src:reporter',
-		)
-		expect(scripts['build:src']).toBe(
-			'npm run build:src:core && npm run build:src:server && npm run build:src:reporter',
-		)
-		expect(scripts['test:src']).toContain('--project src:server --project src:reporter')
-		const control = blueprintToScripts(absent)
-		for (const name of ['check:src:reporter', 'build:src:reporter', 'test:src:reporter']) {
-			expect(control[name]).toBeUndefined()
-		}
-		expect(Object.values(control).join('\n')).not.toMatch(/src:reporter|\.reporter\./u)
-	})
-
-	it('registers the src:reporter project, its root factory, and its wrappers', () => {
-		expect(blueprintToProjects(present)).toContain('src:reporter')
-		expect(blueprintToProjects(absent)).not.toContain('src:reporter')
-		const root = blueprintToRootVite(present)
-		expect(root).toContain(CONFIG_TEMPLATES.factories.src.reporter)
-		expect(root).toMatch(/projects: \[[^\]]*srcReporter/u)
-		expect(listUndeclaredIdentifiers(root)).toStrictEqual([])
-		expect(blueprintToRootVite(absent)).not.toContain('Reporter')
-
-		const wrappers = blueprintToConfigArtifacts(present).filter(({ path }) =>
-			path.includes('reporter'),
-		)
-		expect(wrappers.map(({ path }) => path)).toStrictEqual([
-			'configs/src/vite.reporter.config.ts',
-			'configs/src/tsconfig.reporter.json',
+		expect(Object.keys(blueprintToExports(executable))).toStrictEqual([
+			'.',
+			'./server',
+			'./package.json',
 		])
-		const vite = wrappers.find(({ path }) => path === 'configs/src/vite.reporter.config.ts')
-		expect(vite?.content).toContain(
+		expect(blueprintToExports(absent)['./reporter']).toBeUndefined()
+		expect(blueprintToEntries(present)).toMatchObject({
+			bin: { sample: 'dist/bin/main.js' },
+			files: ['dist/src', 'dist/bin', 'README.md'],
+		})
+	})
+
+	it('plans the bin key and the executable side effects only for main', () => {
+		const manifest: unknown = JSON.parse(blueprintToManifest(present))
+		expect(isRecord(manifest) ? manifest.bin : undefined).toStrictEqual({
+			sample: 'dist/bin/main.js',
+		})
+		const alone: unknown = JSON.parse(blueprintToManifest(solo))
+		expect(isRecord(alone) ? Object.keys(alone) : []).not.toContain('bin')
+		expect(isRecord(alone) ? alone.sideEffects : undefined).toBe(false)
+		expect(isRecord(alone) ? alone.files : undefined).toStrictEqual([
+			'dist/src',
+			'dist/bin',
+			'README.md',
+		])
+		expect(blueprintToEntries(solo).bin).toStrictEqual({})
+		expect(blueprintToEntries(solo).exports).toHaveProperty('./reporter')
+	})
+
+	it('builds every module through the one bin engine and its scripts', () => {
+		expect(blueprintToScripts(solo)).toMatchObject({
+			'check:src:bin': 'tsc --noEmit -p configs/src/tsconfig.bin.json',
+			'build:src:bin': 'vite build --config configs/src/vite.bin.config.ts',
+			'test:src:bin':
+				'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin',
+		})
+		expect(Object.keys(blueprintToScripts(present))).toStrictEqual(
+			Object.keys(blueprintToScripts(executable)),
+		)
+		expect(Object.keys(blueprintToScripts(present)).join('\n')).not.toContain(':reporter')
+		expect(blueprintToProjects(solo)).toContain('src:bin')
+		expect(blueprintToProjects(absent)).not.toContain('src:bin')
+	})
+
+	it('lists each module as a named entry of srcBin and rolls up each declaration but main', () => {
+		const root = blueprintToRootVite(present)
+		expect(root).toContain(
+			"\t\t\tlib: {\n\t\t\t\tentry: {\n\t\t\t\t\tmain: resolveWorkspacePath('src/bin/main.ts'),\n\t\t\t\t\treporter: resolveWorkspacePath('src/bin/reporter.ts'),\n\t\t\t\t},",
+		)
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: ['my-tool'] }))).toContain(
+			"\t\t\t\t\t'my-tool': resolveWorkspacePath('src/bin/my-tool.ts'),",
+		)
+		expect(listUndeclaredIdentifiers(root)).toStrictEqual([])
+		expect(blueprintToRootVite(absent)).not.toContain('srcBin')
+		const [modules, alone] = [present, executable].map(
+			(blueprint) =>
+				blueprintToConfigArtifacts(blueprint).find(
+					({ path }) => path === 'configs/src/vite.bin.config.ts',
+				)?.content ?? '',
+		)
+		expect(modules).toContain("\t\t\t\tentries: ['reporter'],\n")
+		expect(alone).toContain('\t\t\t\tentries: [],\n')
+		expect(modules).toContain('\t\t\t\trewrite: rewriteSourceSpecifier,\n')
+		expect(modules).toContain(
+			"\t\t\t\t\tbanner: (chunk) => (chunk.name === 'main' ? '#!/usr/bin/env node' : ''),\n",
+		)
+		expect(modules).toContain(
 			"\t\t\t\t\tpaths: {\n\t\t\t\t\t\t'@src/core': '../src/core/index.js',\n\t\t\t\t\t\t'@src/server': '../src/server/index.js',\n\t\t\t\t\t},",
 		)
-		expect(vite?.content).toContain('rewrite: rewriteServerSpecifier,')
 		expect(
-			blueprintToConfigArtifacts(absent).filter(({ path }) => path.includes('reporter')),
+			blueprintToConfigArtifacts(present)
+				.map(({ path }) => path)
+				.filter((path) => path.includes('reporter')),
 		).toStrictEqual([])
 	})
 
-	it('seeds the reporter proof and the server setup it runs under', () => {
-		const seeded = blueprintToTestArtifacts(present).find(
-			({ path }) => path === 'tests/src/reporter/main.test.ts',
+	it('seeds the executable entry and its proof, and nothing for another module', () => {
+		expect(blueprintToSourceArtifacts(present).map(({ path }) => path)).toContain('src/bin/main.ts')
+		expect(blueprintToSourceArtifacts(solo).map(({ path }) => path)).not.toContain(
+			'src/bin/main.ts',
 		)
-		expect(seeded).toMatchObject({ group: 'tests', ownership: 'birth', origin: 'template' })
 		expect(
-			blueprintToTestArtifacts(buildBlueprint({ src: ['core'], reporter: true })).map(
+			blueprintToTestArtifacts(solo)
+				.map(({ path }) => path)
+				.filter((path) => path.startsWith('tests/src/bin/')),
+		).toStrictEqual([])
+		expect(blueprintToTestArtifacts(present).map(({ path }) => path)).toContain(
+			'tests/src/bin/main.test.ts',
+		)
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ src: ['core'], bin: ['reporter'] })).map(
 				({ path }) => path,
 			),
 		).toContain('tests/setupServer.ts')
+	})
+
+	it('refuses a module whose subpath another planned subpath takes, naming both', () => {
+		const [server, vue, styles] = [
+			['server', 'src/server'],
+			['vue', 'src/vue'],
+			['styles', 'src/styles'],
+		].map(([name, owner]): Question => ({
+			field: 'bin',
+			message: `src/bin/${name}.ts publishes ./${name}, which ${owner} already publishes. Rename the module.`,
+			blocking: true,
+		}))
 		expect(
-			blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).map(({ path }) => path),
-		).not.toContain('tests/setupServer.ts')
-		expect(blueprintToSourceArtifacts(present).map(({ path }) => path)).not.toContain(
-			'src/reporter/main.ts',
+			blueprintToQuestions(buildBlueprint({ src: ['core', 'server'], bin: ['server'] })),
+		).toContainEqual(server)
+		expect(
+			blueprintToQuestions(
+				buildBlueprint({
+					src: ['core', 'browser'],
+					bin: ['vue'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+				}),
+			),
+		).toContainEqual(vue)
+		expect(
+			blueprintToQuestions(buildBlueprint({ src: ['core'], styles: true, bin: ['styles'] })),
+		).toContainEqual(styles)
+		// The control: a module beside no subpath of its name, and the executable, pass the gate.
+		expect(
+			blueprintToQuestions(buildBlueprint({ src: ['core'], bin: ['main', 'server', 'reporter'] })),
+		).toStrictEqual([])
+	})
+
+	it('refuses a module name the bin law rejects and a repeated module', () => {
+		const questions = blueprintToQuestions(
+			buildBlueprint({ src: ['core'], bin: ['helpers', 'Main', 'reporter', 'reporter'] }),
 		)
-		expect(blueprintToTestArtifacts(absent).map(({ path }) => path)).not.toContain(
-			'tests/src/reporter/main.test.ts',
-		)
+		expect(questions.filter(({ field }) => field === 'bin')).toStrictEqual([
+			{
+				field: 'bin',
+				message:
+					'helpers is not a src/bin module name: write a lowercase alphanumeric name starting with a letter that names no centralized file.',
+				blocking: true,
+			},
+			{
+				field: 'bin',
+				message:
+					'Main is not a src/bin module name: write a lowercase alphanumeric name starting with a letter that names no centralized file.',
+				blocking: true,
+			},
+			{ field: 'bin', message: 'reporter is declared more than once on bin.', blocking: true },
+		])
+	})
+
+	it('advises that a module of a workspace publishing nothing reaches no exports map', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ src: [], app: ['server'], bin: ['reporter'] })),
+		).toContainEqual({
+			field: 'bin',
+			message:
+				'src/bin/reporter.ts publishes ./reporter through the exports map, and this workspace publishes no library environment or sheet, so its manifest carries no exports map.',
+			blocking: false,
+		})
+		expect(
+			blueprintToQuestions(buildBlueprint({ src: [], app: ['server'], bin: ['main'] })),
+		).toStrictEqual([])
 	})
 })

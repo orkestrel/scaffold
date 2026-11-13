@@ -1,12 +1,10 @@
 import type { ArtifactTemplateSet, ConfigTemplateSet } from './types.js'
 import {
-	BIN_ENTRY_PATH,
 	CONFORMANCE_TEST_PATH,
 	TREE_TEST_PATH,
 	DISTRIBUTION_TEST_PATH,
 	GUIDES_TEST_PATH,
 	INTEGRATION_TEST_PATH,
-	REPORTER_ENTRY_PATH,
 	SERVICE_TEST_INCLUDE,
 	STUDIES_TEST_INCLUDE,
 } from './constants.js'
@@ -381,8 +379,8 @@ export function srcServer(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 `,
-			bin: `function resolveBinFilename(): string {
-	return 'main.js'
+			bin: `function resolveBinFilename(_format: string, entry: string): string {
+	return \`\${entry}.js\`
 }
 
 function resolveBinExternal(id: string): boolean {
@@ -399,7 +397,9 @@ export function srcBin(override?: UserConfig): UserConfig {
 			sourcemap: true,
 			minify: false,
 			lib: {
-				entry: resolveWorkspacePath('${BIN_ENTRY_PATH}'),
+				entry: {
+{{entries}}
+				},
 				formats: ['es'],
 				fileName: resolveBinFilename,
 			},
@@ -420,46 +420,6 @@ export function srcBin(override?: UserConfig): UserConfig {
 			// spends seconds in process startup and filesystem work rather than milliseconds.
 			// Vitest's five-second default clears one alone and times out under a full suite.
 			testTimeout: 15_000,
-		},
-	}
-	return mergeOverride(project, override)
-}
-`,
-			reporter: `function resolveReporterFilename(): string {
-	return 'main.js'
-}
-
-function resolveReporterExternal(id: string): boolean {
-	return id.startsWith('@src/') || resolveExternal(id, { peers, refused: [], siblings: [] })
-}
-
-export function srcReporter(override?: UserConfig): UserConfig {
-	const project: UserConfig = {
-		resolve,
-		publicDir: false,
-		plugins: [outputBoundary('dist/reporter')],
-		build: {
-			emptyOutDir: true,
-			sourcemap: true,
-			minify: false,
-			lib: {
-				entry: resolveWorkspacePath('${REPORTER_ENTRY_PATH}'),
-				formats: ['es'],
-				fileName: resolveReporterFilename,
-			},
-			outDir: 'dist/reporter',
-			target: 'node22',
-			rolldownOptions: {
-				onLog: enforceBuildLog,
-				external: resolveReporterExternal,
-			},
-		},
-		test: {
-			name: { label: 'src:reporter', color: 'cyan' },
-			include: ['tests/src/reporter/**/*.test.ts'],
-			setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-			environment: 'node',
-			browser: { enabled: false },
 		},
 	}
 	return mergeOverride(project, override)
@@ -1153,25 +1113,6 @@ export function probe(override?: UserConfig): UserConfig {
 	]
 }
 `,
-		reporter: `{
-	"extends": "../../tsconfig.json",
-	"compilerOptions": {
-		"lib": ["ESNext"],
-		"types": ["node"],
-		"noEmit": false,
-		"declaration": true,
-		"emitDeclarationOnly": true,
-		"rootDir": "../../src",
-		"outDir": "../../dist/reporter"
-	},
-	"include": [
-		"../../src/reporter/**/*.cts",
-		"../../src/reporter/**/*.mts",
-		"../../src/reporter/**/*.ts",
-		"../../src/reporter/**/*.tsx"
-	]
-}
-`,
 		skills: `{
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
@@ -1314,45 +1255,28 @@ export default defineConfig(
 `,
 		}),
 		bin: `import { defineConfig } from 'vite'
-import { resolveExternal } from '../helpers.js'
-import { peers, srcBin } from '../../vite.config.ts'
+import { declarationRollup, resolveExternal, rewriteSourceSpecifier } from '../helpers.js'
+import { peers, resolveWorkspacePath, srcBin } from '../../vite.config.ts'
 
-// The \`scaffold\` executable build — a single ESM lib file, no declarations (an
-// executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted through
-// \`output.banner\` (rolldown strips shebangs from source during bundling), and
-// \`output.paths\` rewriting the externalized \`@src/*\` specifiers to the built sibling
-// src environments (relative to \`dist/bin/\`), so the emitted bin resolves at runtime.
+// One ES file per \`src/bin\` module. Rolldown strips a source shebang, so \`main\` alone takes
+// the \`#!/usr/bin/env node\` banner; every other module ships its rolled-up declaration.
+// \`output.paths\` and the declaration rewrite point each external \`@src/*\` specifier at the
+// built environment beside \`dist/bin/\`.
 export default defineConfig(
 	srcBin({
+		plugins: [
+			declarationRollup({
+				project: resolveWorkspacePath('configs/src/tsconfig.bin.json'),
+				entries: [{{modules}}],
+				rewrite: rewriteSourceSpecifier,
+			}),
+		],
 		build: {
 			rolldownOptions: {
 				external: (id: string) =>
 					id.startsWith('@src/') || resolveExternal(id, { peers, refused: [], siblings: [] }),
 				output: {
-					banner: '#!/usr/bin/env node',
-{{paths}}
-				},
-			},
-		},
-	}),
-)
-`,
-		reporter: `import { defineConfig } from 'vite'
-import { declarationRollup, rewriteServerSpecifier } from '../helpers.js'
-import { resolveWorkspacePath, srcReporter } from '../../vite.config.ts'
-
-// Each external \`@src/*\` path resolves from \`dist/reporter/\` to the built environment.
-export default defineConfig(
-	srcReporter({
-		plugins: [
-			declarationRollup({
-				project: resolveWorkspacePath('configs/src/tsconfig.reporter.json'),
-				rewrite: rewriteServerSpecifier,
-			}),
-		],
-		build: {
-			rolldownOptions: {
-				output: {
+					banner: (chunk) => (chunk.name === 'main' ? '#!/usr/bin/env node' : ''),
 {{paths}}
 				},
 			},
@@ -1958,15 +1882,6 @@ describe('bin entry', () => {
 	it('has no starter exports', async () => {
 {{import}}
 		expect(Object.keys(entry)).toStrictEqual([])
-	})
-})
-`,
-		reporter: `import { describe, expect, it } from 'vitest'
-import reporter from '../../../src/reporter/main.js'
-
-describe('reporter entry', () => {
-	it('exports the reporter class by default', () => {
-		expect(reporter).toBeTypeOf('function')
 	})
 })
 `,
@@ -3190,13 +3105,7 @@ export function collectDistributionFiles(directory: string): readonly string[] {
  */
 export function readDistributionFace(installed: string, path: string): string | undefined {
 	const [output, axis, face] = relativePath(installed, path).split(sep)
-	return output === 'dist'
-		? axis === 'src'
-			? face
-			: axis === 'bin' || axis === 'reporter'
-				? axis
-				: undefined
-		: undefined
+	return output === 'dist' ? (axis === 'src' ? face : axis === 'bin' ? axis : undefined) : undefined
 }
 
 /**

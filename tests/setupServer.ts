@@ -5032,8 +5032,8 @@ export const FLEET_MIRROR_REPLIES: Readonly<Record<string, TestUpstreamReply>> =
 	[FLEET_UPSTREAM_PATHS.mirrors.test]: { status: 200, body: '# Test\n', type: 'text/plain' },
 })
 
-/** Holds the reporter entry body `.claude/rules/workspace.md` fixes: the server class, default-exported. */
-export const REPORTER_ENTRY_TEXT =
+/** Holds a `src/bin` module body a host tool loads by specifier: the server class, default-exported. */
+export const BIN_MODULE_TEXT =
 	"import { ProgressReporter } from '@src/server'\n\nexport default ProgressReporter\n"
 
 /**

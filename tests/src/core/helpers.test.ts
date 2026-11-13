@@ -1135,8 +1135,8 @@ describe('manifestToDependencies', () => {
 describe('manifestToEntries', () => {
 	const planned = {
 		bin: { router: 'dist/bin/main.js' },
-		files: ['dist/src', 'dist/bin', 'dist/reporter', 'README.md'],
-		exports: { '.': './dist/src/core/index.js', './reporter': './dist/reporter/main.js' },
+		files: ['dist/src', 'dist/bin', 'README.md'],
+		exports: { '.': './dist/src/core/index.js', './reporter': './dist/bin/reporter.js' },
 	}
 
 	it('answers the planned entries a manifest lacks, each in planned order', () => {
@@ -1147,8 +1147,8 @@ describe('manifestToEntries', () => {
 			),
 		).toStrictEqual({
 			bin: { router: 'dist/bin/main.js' },
-			files: ['dist/bin', 'dist/reporter'],
-			exports: { './reporter': './dist/reporter/main.js' },
+			files: ['dist/bin'],
+			exports: { './reporter': './dist/bin/reporter.js' },
 		})
 	})
 
@@ -1195,7 +1195,7 @@ describe('manifestToEntries', () => {
 			'{"import":"./index.js","require":"./index.cjs"}',
 		]) {
 			expect(manifestToEntries(`{"exports":${exports}}`, planned).exports).toStrictEqual({
-				'./reporter': './dist/reporter/main.js',
+				'./reporter': './dist/bin/reporter.js',
 			})
 		}
 	})

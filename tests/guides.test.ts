@@ -203,7 +203,7 @@ await new GuideCommand({
 			const blueprint = createBlueprint('router', {
 				src: ['core', 'server'],
 				dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
-				bin: true,
+				bin: ['main'],
 			})
 
 			expect(blueprint.version).toBe('0.0.1')
@@ -352,7 +352,7 @@ await new GuideCommand({
 			const surfaces = [isSurface('browser'), isSurface('styles'), isSurface('themes')]
 			expect(surfaces).toStrictEqual([true, true, false])
 			expect(FRAMEWORKS).toStrictEqual(['vue'])
-			const reserved = ['core', 'browser', 'server', 'bin', 'reporter', 'styles', 'themes', 'vue']
+			const reserved = ['core', 'browser', 'server', 'bin', 'styles', 'themes', 'vue']
 			expect(RESERVED_SHEET_NAMES).toStrictEqual(reserved)
 			const names = [isSheetName('print'), isSheetName('styles'), isSheetName('Print')]
 			expect(names).toStrictEqual([true, false, false])
@@ -579,14 +579,12 @@ await new GuideCommand({
 
 		it('writes the entry scripts an existing workspace lacks and the entries only overwrite inserts', () => {
 			const markdown = requireValue(files['guides/scaffold.md'])
-			expect(markdown).toContain(
-				'The executable and reporter entries add `check:src:bin`, `build:src:bin`, `check:src:reporter`,\nand `build:src:reporter`.',
-			)
+			expect(markdown).toContain('The `src/bin` modules add `check:src:bin` and `build:src:bin`.')
 			expect(markdown).toContain(
 				'Each library environment adds its `check:src:<environment>` and `build:src:<environment>` scripts.',
 			)
 			const names = blueprintToWritableScripts(
-				createBlueprint('router', { src: ['core', 'server'], bin: true, reporter: true }),
+				createBlueprint('router', { src: ['core', 'server'], bin: ['main', 'reporter'] }),
 			).map(({ name }) => name)
 			expect(names).toEqual(
 				expect.arrayContaining([
@@ -594,8 +592,6 @@ await new GuideCommand({
 					'build:src:server',
 					'check:src:bin',
 					'build:src:bin',
-					'check:src:reporter',
-					'build:src:reporter',
 				]),
 			)
 			// The aggregates stay outside the blueprint region; only a generated predecessor joins it.
@@ -1316,7 +1312,7 @@ await new GuideCommand({
 						createBlueprint('desk', {
 							src: ['core', 'browser', 'server'],
 							app: ['core', 'browser', 'server'],
-							bin: true,
+							bin: ['main'],
 							styles: true,
 							themes: true,
 							showcase: true,

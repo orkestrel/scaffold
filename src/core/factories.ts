@@ -40,7 +40,7 @@ import { parseBlueprint } from './parsers.js'
  * const blueprint = createBlueprint('router', {
  * 	src: ['core', 'server'],
  * 	dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
- * 	bin: true,
+ * 	bin: ['main'],
  * })
  *
  * blueprint.version // '0.0.1'
@@ -63,8 +63,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		version: input?.version ?? DEFAULT_VERSION,
 		engines: input?.engines ?? DEFAULT_ENGINES,
 		overrides: input?.overrides ?? [],
-		bin: input?.bin ?? false,
-		reporter: input?.reporter ?? false,
+		bin: input?.bin ?? [],
 		setup: input?.setup ?? [],
 		guides: input?.guides ?? false,
 		integration: input?.integration ?? false,
