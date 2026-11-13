@@ -306,9 +306,12 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `matchesBarrel`                    | function | `(blueprint: Blueprint) => boolean`                                                                                                                | Tests whether a workspace plans the application server barrel build.                                |
 | `matchesEngines`                   | function | `(engines: string) => boolean`                                                                                                                     | Tests whether a declared engines floor is at or above the supported minimum.                        |
 | `matchesOrchestrationPath`         | function | `(path: string) => boolean`                                                                                                                        | Tests whether a path instructs or wires an agent rather than the toolchain.                         |
+| `matchesPackedPath`                | function | `(declared: string, planned: string) => boolean`                                                                                                   | Checks whether a declared `files` entry packs a planned one.                                        |
 | `matchesPrintWidth`                | function | `(line: string) => boolean`                                                                                                                        | Tests whether one emitted line fits the vendored formatter width.                                   |
 | `matchesRange`                     | function | `(range: string, latest: string) => boolean`                                                                                                       | Tests whether a declared range already admits a published version.                                  |
+| `matchesSubpathMap`                | function | `(value: unknown) => value is Readonly<Record<string, unknown>>`                                                                                   | Checks whether a manifest `exports` value is a map of subpaths.                                     |
 | `nameToGuide`                      | function | `(name: string) => string`                                                                                                                         | Derives the guide mirror path a package name answers for.                                           |
+| `normalizePackagePath`             | function | `(path: string) => string`                                                                                                                         | Returns the canonical form of a path a manifest names inside its package.                           |
 | `parseOwnedJSONValue`              | function | `(value: unknown) => JSONValue \| undefined`                                                                                                       | Snapshots an untrusted value into exact JSON data the caller owns.                                  |
 | `planToSummary`                    | function | `(plan: Plan) => PlanSummary`                                                                                                                      | Projects a plan into its tally by artifact origin.                                                  |
 | `renderSkillPointer`               | function | `(canonical: string, name: string) => string \| undefined`                                                                                         | Renders the `SKILL.md` pointer a target carries in place of a canonical skill.                      |
@@ -728,11 +731,17 @@ where each still holds a value an earlier plan generated. `repair` writes the sc
 the entries. Before the write, `audit` reports the missing entries in its `entries` question and the
 missing scripts in its `scripts` question. Where the package owns `check:src` or `build:src`, the
 `scripts` question asks you to invoke `npm run check:src:reporter` from the `check:src` chain and
-`npm run build:src:reporter` from the `build:src` chain. Where the package owns `test:src`, the
+`npm run build:src:reporter` from the `build:src` chain. Where the manifest declares no
+`check:src` or `build:src`, the question names the script to add and the `check` or `build`
+chain that invokes it. Where the package owns `test:src`, the
 `projects` question asks you to add `--project src:reporter` to it, and `overwrite` refuses the
 `configs` group with that same step named until a chain from `test` reaches the project. The same
 rows follow `src/bin/main.ts`: the `bin` command, `dist/bin` in `files`, `check:src:bin`,
-`build:src:bin`, `test:src:bin`, and the aggregates.
+`build:src:bin`, `test:src:bin`, and the aggregates. An executable reaches `dist/src` only through
+the `@src/*` specifiers its build rewrites, one per library environment, so a workspace with no
+library environment packs `dist/bin` and no `dist/src`. An added library environment follows the
+same rule: `overwrite` writes its subpath, `check:src:<environment>`, `build:src:<environment>`,
+and `test:src:<environment>`, and extends the generated aggregates.
 
 The `new --app browser` command selects the journey axis, creates its birth-owned wrapper,
 defines `appJourney` in the root configuration, and excludes the browser integration suite from
@@ -1027,6 +1036,7 @@ Scaffold writes one part of the manifest rather than advising on it: the writabl
 `repair` and `overwrite` write every direct `test:<project>` script the blueprint computes,
 `test:probe`, and `test:bench`. A publishing workspace also receives `test:distribution`, `prepack`,
 and `prepublishOnly`. Each sheet face adds its `check:src:<face>` and `build:src:<face>` scripts.
+Each library environment adds its `check:src:<environment>` and `build:src:<environment>` scripts.
 The executable and reporter entries add `check:src:bin`, `build:src:bin`, `check:src:reporter`,
 and `build:src:reporter`.
 Each occupied framework face adds `check:<axis>:vue` and `build:<axis>:vue`; the application face also adds `dev:vue`.
@@ -1090,11 +1100,28 @@ manifest lacks, whatever `--groups` selects, and `repair` inserts none. The entr
 offline half beside the dependency declarations, so a catalog step that cannot complete keeps them.
 An inserted entry lands before the first declared entry the plan orders after it and copies the
 section's indentation; an absent section is created before the first declared key the born
-manifest orders after it. A declared name keeps its value whatever the plan holds, and a string
-`bin` declares its one command. A `bin` or `exports` value that is not an object, or a `files`
-value that is not an array of strings, takes no entry. `audit` reports every missing entry in its
-non-blocking `entries` question, which names each entry with its JSON value, and the human report
-of `overwrite` prints one `Inserted <entry> in package.json.` line per entry it wrote.
+manifest orders after it. A declared entry keeps its value whatever the plan holds, and each
+section reads a planned entry as declared by its own rule:
+
+- A planned command is declared when `bin` names it, or when any declared command runs the planned
+  file, so a package that publishes its executable under another name, such as `browse`, keeps
+  that name. A string `bin` declares the planned command when it names the planned file.
+- A planned `files` path is declared when a declared path equals it or names a directory above it,
+  compared by path segments, so `dist` packs `dist/app` and `dist-old` does not. A negated path is
+  declared only by an equal entry.
+- A planned subpath is declared when the `exports` map names it. A string `exports`, or an object
+  whose keys are conditions such as `import` and `require`, publishes the root export alone, so it
+  declares `.` and takes no other subpath: Node refuses an object that mixes conditions with
+  subpaths.
+
+A `bin` value that is not an object, an `exports` value that is not a map of subpaths, or a
+`files` value that is not an array of strings takes no entry. `audit` reports every missing entry
+in its non-blocking `entries` question, which names each entry with its JSON value and each section
+whose shape refuses it, with the shape that admits the entry. The human report of `overwrite`
+prints one `Inserted <entry> in package.json.` line per entry it wrote. When a workspace plans an
+executable and declares `"sideEffects": false`, `audit` adds a non-blocking `sideEffects` note
+that a bundler may drop the imports the executable runs only for their side effects, and names
+the value a born manifest carries. No verb changes the declared value.
 
 Before resolving overwrite's version ranges, the declaration step lifts each planned foreign tool
 whose `devDependencies` major is earlier than the canon's to the blueprint's planned range,

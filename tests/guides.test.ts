@@ -582,11 +582,16 @@ await new GuideCommand({
 			expect(markdown).toContain(
 				'The executable and reporter entries add `check:src:bin`, `build:src:bin`, `check:src:reporter`,\nand `build:src:reporter`.',
 			)
+			expect(markdown).toContain(
+				'Each library environment adds its `check:src:<environment>` and `build:src:<environment>` scripts.',
+			)
 			const names = blueprintToWritableScripts(
 				createBlueprint('router', { src: ['core', 'server'], bin: true, reporter: true }),
 			).map(({ name }) => name)
 			expect(names).toEqual(
 				expect.arrayContaining([
+					'check:src:core',
+					'build:src:server',
 					'check:src:bin',
 					'build:src:bin',
 					'check:src:reporter',

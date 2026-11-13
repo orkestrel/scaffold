@@ -48,13 +48,15 @@ import type {
 	VersionResolution,
 } from './types.js'
 import { renderTable } from '@orkestrel/console'
-import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import { attempt, isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
 	AXES,
 	BIN_ENTRY_PATH,
+	BIN_OUTPUT_PATH,
 	blueprintToConfigArtifacts,
 	blueprintToEntries,
 	blueprintToDevDependencies,
+	blueprintToManifest,
 	blueprintToManifestOverrides,
 	blueprintToFaces,
 	blueprintToProjects,
@@ -80,7 +82,6 @@ import {
 	isScaffoldError,
 	matchesBarrel,
 	matchesGuideRefusal,
-	insertManifestEntries,
 	manifestToDependencies,
 	manifestToEntries,
 	manifestToName,
@@ -122,7 +123,8 @@ import {
 	auditToSummary,
 	catalogToNames,
 	collectScriptChain,
-	entriesToLines,
+	describeEntryRefusal,
+	renderManifestEntries,
 	dependenciesToFloors,
 	dependenciesToFleet,
 	entriesToReleases,
@@ -888,9 +890,9 @@ export class CLI implements CLIInterface {
 					}
 				}
 				const remaining = new Set(
-					entriesToLines(manifestToEntries(this.#manifest(target), entries)),
+					renderManifestEntries(manifestToEntries(this.#manifest(target), entries)),
 				)
-				for (const line of entriesToLines(absent)) {
+				for (const line of renderManifestEntries(absent)) {
 					if (!remaining.has(line)) this.#say(`Inserted ${line} in package.json.`)
 				}
 				if (remainder.note !== undefined) this.#warn(remainder.note)
@@ -1720,13 +1722,14 @@ export class CLI implements CLIInterface {
 	#entryQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
 		const text = this.#manifest(target)
 		const planned = blueprintToEntries(blueprint)
-		const lines = entriesToLines(manifestToEntries(text, planned))
+		const missing = manifestToEntries(text, planned)
+		const lines = renderManifestEntries(missing)
 		if (lines.length === 0) return undefined
 		const single = lines.length === 1
-		const refused = insertManifestEntries(text, planned) === undefined
+		const refusals = describeEntryRefusal(text, missing)
 		return {
 			field: 'entries',
-			message: `The manifest at ${target} does not declare ${single ? 'a planned entry' : 'planned entries'}: ${lines.join(', ')}. ${refused ? `Its bin or exports value is not an object, or its files value is not an array of strings, so overwrite cannot insert ${single ? 'it' : 'them'}: add ${single ? 'it' : 'each one'} to package.json by hand.` : `Run overwrite to insert ${single ? 'it' : 'each one'}, or add ${single ? 'it' : 'each one'} to package.json by hand.`}`,
+			message: `The manifest at ${target} does not declare ${single ? 'a planned entry' : 'planned entries'}: ${lines.join(', ')}. ${refusals.length > 0 ? `Overwrite cannot insert ${single ? 'it' : 'them'}, because ${refusals.join('; and ')}. Then run overwrite, or add ${single ? 'it' : 'each one'} to package.json by hand.` : `Run overwrite to insert ${single ? 'it' : 'each one'}, or add ${single ? 'it' : 'each one'} to package.json by hand.`}`,
 			blocking: false,
 			groups: ['manifest'],
 		}
@@ -1761,9 +1764,42 @@ export class CLI implements CLIInterface {
 				groups: ['manifest'],
 			}
 		}
+		// An absent aggregate is never written, so its remedy names the script to add.
+		const planned = blueprintToScripts(blueprint)
+		const remedies = ['check', 'build'].flatMap((gate) => {
+			const chain = `${gate}:src`
+			const steps = missing
+				.filter((entry) => entry.gate === gate)
+				.map(({ name }) => `npm run ${name}`)
+			if (steps.length === 0) return []
+			return [
+				isString(scripts[chain])
+					? `The ${chain} chain runs steps the plan does not generate, so invoke ${steps.join(' and ')} from it.`
+					: `The manifest declares no ${chain} script: add ${JSON.stringify(chain)}: ${JSON.stringify(planned[chain] ?? steps.join(' && '))} and invoke npm run ${chain} from the ${gate} chain.`,
+			]
+		})
 		return {
 			field: 'scripts',
-			message: `The manifest at ${target} does not reach the planned ${missing.length === 1 ? 'script' : 'scripts'} ${missing.map(({ gate, name }) => `${name} from ${gate}`).join(', ')}, and the package owns the chain that would. Invoke ${missing.map(({ gate, name }) => `npm run ${name} from the ${gate}:src chain`).join(', and ')}.`,
+			message: `The manifest at ${target} does not reach the planned ${missing.length === 1 ? 'script' : 'scripts'} ${missing.map(({ gate, name }) => `${name} from ${gate}`).join(', ')}. ${remedies.join(' ')}`,
+			blocking: false,
+			groups: ['manifest'],
+		}
+	}
+
+	// Note a planned executable beside `sideEffects: false`. The value is the package's, so the
+	// note names the value a born manifest carries and no verb writes it.
+	#effectQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
+		if (!blueprint.bin) return undefined
+		const parsed = parseJSON(this.#manifest(target))
+		if (!isRecord(parsed) || parsed.sideEffects !== false) return undefined
+		const born = parseJSON(blueprintToManifest(blueprint))
+		const planned =
+			isRecord(born) && isArray(born.sideEffects)
+				? born.sideEffects
+				: [`./${BIN_ENTRY_PATH}`, `./${BIN_OUTPUT_PATH}`]
+		return {
+			field: 'sideEffects',
+			message: `The manifest at ${target} declares "sideEffects": false, and the plan builds the executable ${BIN_ENTRY_PATH}. A bundler that reads that value may drop the imports the executable runs only for their side effects; "sideEffects": ${JSON.stringify(planned)} keeps them. Scaffold leaves the value to the package.`,
 			blocking: false,
 			groups: ['manifest'],
 		}
@@ -2031,6 +2067,8 @@ export class CLI implements CLIInterface {
 			if (chain !== undefined) questions.push(chain)
 			const entry = this.#entryQuestion(target, blueprint)
 			if (entry !== undefined) questions.push(entry)
+			const effect = this.#effectQuestion(target, blueprint)
+			if (effect !== undefined) questions.push(effect)
 		}
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)

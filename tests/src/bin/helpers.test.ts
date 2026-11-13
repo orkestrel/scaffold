@@ -46,7 +46,8 @@ import {
 	collectScriptChain,
 	dependenciesToFloors,
 	dependenciesToFleet,
-	entriesToLines,
+	describeEntryRefusal,
+	renderManifestEntries,
 	entriesToReleases,
 	environmentToUpstream,
 	errorToEnvelope,
@@ -857,10 +858,53 @@ describe('matchesStep', () => {
 	})
 })
 
-describe('entriesToLines', () => {
+describe('describeEntryRefusal', () => {
+	const missing = {
+		bin: { router: 'dist/bin/main.js' },
+		files: ['dist/bin'],
+		exports: { './reporter': './dist/reporter/main.js' },
+	}
+
+	it('names each section whose shape refuses its missing entries', () => {
+		expect(
+			describeEntryRefusal(
+				'{"bin":"cli.js","files":"dist","exports":{"import":"./index.js","require":"./index.cjs"}}',
+				missing,
+			),
+		).toStrictEqual([
+			'its bin value is the string "cli.js", which runs another file: declare bin as an object of commands',
+			'its files value is not an array of strings: declare files as an array of paths',
+			'its exports value is an object of conditions (import, require), which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."',
+		])
+		expect(describeEntryRefusal('{"bin":7,"exports":"./index.js"}', missing)).toStrictEqual([
+			'its bin value is not an object: declare bin as an object of commands',
+			'its exports value is a string, which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."',
+		])
+		expect(describeEntryRefusal('{"exports":7}', missing)).toStrictEqual([
+			'its exports value is not an object: declare exports as a map of subpaths',
+		])
+	})
+
+	it('names nothing for an absent or admitting section, a section with nothing missing, or a non-object', () => {
+		expect(
+			describeEntryRefusal('{"bin":{},"files":[],"exports":{".":"./index.js"}}', missing),
+		).toStrictEqual([])
+		expect(describeEntryRefusal('{}', missing)).toStrictEqual([])
+		expect(
+			describeEntryRefusal('{"bin":"cli.js","files":"dist","exports":"./index.js"}', {
+				bin: {},
+				files: [],
+				exports: {},
+			}),
+		).toStrictEqual([])
+		expect(describeEntryRefusal('[]', missing)).toStrictEqual([])
+	})
+})
+
+describe('renderManifestEntries', () => {
 	it('renders each command, packed path, and subpath with its JSON value', () => {
 		expect(
-			entriesToLines({
+			renderManifestEntries({
 				bin: { router: 'dist/bin/main.js' },
 				files: ['dist/bin'],
 				exports: { './reporter': { import: './dist/reporter/main.js' } },
@@ -870,7 +914,7 @@ describe('entriesToLines', () => {
 			'files[] "dist/bin"',
 			'exports["./reporter"] {"import":"./dist/reporter/main.js"}',
 		])
-		expect(entriesToLines({ bin: {}, files: [], exports: {} })).toStrictEqual([])
+		expect(renderManifestEntries({ bin: {}, files: [], exports: {} })).toStrictEqual([])
 	})
 })
 

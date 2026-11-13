@@ -95,6 +95,7 @@ import {
 	matchesEngines,
 	matchesPrintWidth,
 	manifestToEntries,
+	matchesSubpathMap,
 	scanManifestTokens,
 	serializeTypeScriptString,
 	selectHostPaths,
@@ -972,8 +973,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
  * whose package-owned entry runs the guides project and handles explicit parity
  * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication
- * lifecycle scripts. Sheet faces, framework faces, and the executable and reporter entries add
- * their check and build scripts, application
+ * lifecycle scripts. Library environments, sheet faces, framework faces, and the executable and
+ * reporter entries add their check and build scripts, application
  * frameworks add dev scripts, and selected showcases and journeys add their mode scripts.
  * A base browser application's journey axis also adds `journey` and `capture`, and each
  * app-side browser face adds `journey:<name>` and `capture:<name>`. Their generated
@@ -1016,8 +1017,8 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 		const sheet = sheets.some(
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
-		// The plan carries an entry's scripts only when it plans the entry.
-		const entry = ['bin', 'reporter'].some(
+		// The plan carries an entry's or an environment's scripts only when it plans it.
+		const entry = [...blueprint.src, 'bin', 'reporter'].some(
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
 		// The faces are read for each script, so the extensions are read as many times as before.
@@ -1097,7 +1098,11 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
  *
  * @remarks
  * A workspace without an executable plans no command, and one publishing nothing plans no
- * subpath, because its manifest carries no `exports` map.
+ * subpath, because its manifest carries no `exports` map. `dist/src` is packed only where a
+ * library environment or a sheet builds into it: an executable reaches `dist/src` only through
+ * the `@src/*` specifiers its build rewrites, one per library environment, so an executable
+ * beside no library environment bundles what it imports and packs `dist/bin` alone. A workspace
+ * publishing nothing packs `dist/app` when it builds an application.
  *
  * @example
  * ```ts
@@ -1114,7 +1119,7 @@ export function blueprintToEntries(blueprint: Blueprint): ManifestEntrySet {
 	return {
 		bin: blueprint.bin ? { [blueprint.name]: BIN_OUTPUT_PATH } : {},
 		files: [
-			blueprint.bin || publishes ? 'dist/src' : 'dist/app',
+			...(publishes ? ['dist/src'] : blueprint.app.length > 0 ? ['dist/app'] : []),
 			...(blueprint.bin ? ['dist/bin'] : []),
 			...(blueprint.reporter ? ['dist/reporter'] : []),
 			...targets.map((face) => `!dist/src/${face}/index.js`),
@@ -3227,8 +3232,8 @@ export function insertManifestSection(
  * @param manifest - The manifest text to compile.
  * @param planned - The entries the plan emits, each in planned order.
  * @returns The manifest declaring every planned entry, or `undefined` when the text is not a
- * manifest object, or a section that must take an entry holds a value of another shape: `bin` or
- * `exports` not an object, or `files` not an array of strings.
+ * manifest object, or a section that must take an entry holds a value of another shape: `bin` not
+ * an object, `exports` not a map of subpaths, or `files` not an array of strings.
  *
  * @remarks
  * The compiler inserts text instead of serializing the manifest, so every declared byte survives,
@@ -3317,6 +3322,7 @@ export function insertManifestEntries(
 		const length = isArray(current) && current.every(isString) ? current.length : undefined
 		if (manifest.charAt(key.value) !== (section.array ? '[' : '{')) return undefined
 		if (section.array && length === undefined) return undefined
+		if (section.name === 'exports' && !matchesSubpathMap(current)) return undefined
 		const following = tokens.slice(key.at + 1)
 		// An array of strings holds no brace, so its strings are the tokens that follow its key and
 		// it closes at the first `]` after the last of them. An object closes at the brace that

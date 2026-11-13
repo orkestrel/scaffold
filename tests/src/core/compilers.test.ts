@@ -1626,6 +1626,23 @@ describe('blueprintToEntries', () => {
 		})
 	})
 
+	it('packs dist/src only where a library environment or a sheet builds into it', () => {
+		expect(blueprintToEntries(createBlueprint('desk', { app: ['core'], bin: true }))).toStrictEqual(
+			{
+				bin: { desk: 'dist/bin/main.js' },
+				files: ['dist/app', 'dist/bin', 'README.md'],
+				exports: {},
+			},
+		)
+		expect(blueprintToEntries(createBlueprint('desk', { bin: true })).files).toStrictEqual([
+			'dist/bin',
+			'README.md',
+		])
+		expect(blueprintToEntries(createBlueprint('desk', { styles: true })).files).toContain(
+			'dist/src',
+		)
+	})
+
 	it('emits the entries a born manifest carries, in the key order the writer anchors to', () => {
 		const blueprint = createBlueprint('router', { src: ['core'], bin: true, styles: true })
 		const manifest: unknown = JSON.parse(blueprintToManifest(blueprint))
@@ -1687,6 +1704,17 @@ describe('insertManifestEntries', () => {
 		).toBe('{"name":"router","files":["dist/src","README.md"]}')
 	})
 
+	it('refuses an exports value of conditions or a string, which Node reads as the root export', () => {
+		const planned = blueprintToEntries(
+			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+		)
+		for (const exports of ['{"import":"./index.js","require":"./index.cjs"}', '"./index.js"']) {
+			expect(
+				insertManifestEntries(`{"name":"router","files":[],"exports":${exports}}`, planned),
+			).toBe(undefined)
+		}
+	})
+
 	it('refuses a section holding another shape and a text that is not a manifest object', () => {
 		const planned = blueprintToEntries(
 			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
@@ -1696,22 +1724,25 @@ describe('insertManifestEntries', () => {
 		)
 		expect(insertManifestEntries('{"name":"router","files":[1]}', planned)).toBe(undefined)
 		expect(insertManifestEntries('[]', planned)).toBe(undefined)
-		expect(
-			insertManifestEntries('{"name":"router","bin":"cli.js"}', {
-				bin: { router: 'dist/bin/main.js' },
-				files: [],
-				exports: {},
-			}),
-		).toBe('{"name":"router","bin":"cli.js"}')
+		const bin = { bin: { router: 'dist/bin/main.js' }, files: [], exports: {} }
+		// A string bin naming another file declares no planned command and takes none.
+		expect(insertManifestEntries('{"name":"router","bin":"cli.js"}', bin)).toBe(undefined)
+		expect(insertManifestEntries('{"name":"router","bin":"./dist/bin/main.js"}', bin)).toBe(
+			'{"name":"router","bin":"./dist/bin/main.js"}',
+		)
 	})
 })
 
 describe('blueprintToWritableScripts', () => {
-	it('owns the check and build scripts of the executable and reporter entries', () => {
+	it('owns the check and build scripts of each library environment and entry', () => {
 		const names = blueprintToWritableScripts(
 			createBlueprint('sample', { src: ['core', 'server'], bin: true, reporter: true }),
 		).map(({ name }) => name)
 		for (const name of [
+			'check:src:core',
+			'build:src:core',
+			'check:src:server',
+			'build:src:server',
 			'check:src:bin',
 			'build:src:bin',
 			'check:src:reporter',
@@ -1719,13 +1750,7 @@ describe('blueprintToWritableScripts', () => {
 		]) {
 			expect(names).toContain(name)
 		}
-		for (const name of [
-			'check:src',
-			'build:src',
-			'test:src',
-			'check:src:core',
-			'build:src:server',
-		]) {
+		for (const name of ['check:src', 'build:src', 'test:src', 'check:src:browser']) {
 			expect(names).not.toContain(name)
 		}
 	})
@@ -1839,40 +1864,44 @@ describe('blueprintToWritableScripts', () => {
 		const scripts = blueprintToScripts(blueprint)
 
 		expect(region.map((script) => script.name)).toEqual([
+			'check:src:core',
 			'test:src:core',
 			'test:policy',
 			'test:config',
 			'test:probe',
 			'test:bench',
 			'test:distribution',
+			'build:src:core',
 			'prepack',
 			'prepublishOnly',
 		])
 		expect(region.map((script) => script.command)).toEqual([
+			scripts['check:src:core'],
 			scripts['test:src:core'],
 			scripts['test:policy'],
 			scripts['test:config'],
 			scripts['test:probe'],
 			scripts['test:bench'],
 			scripts['test:distribution'],
+			scripts['build:src:core'],
 			scripts.prepack,
 			scripts.prepublishOnly,
 		])
-		for (const script of region.slice(0, 6).filter(({ name }) => name !== 'test:bench')) {
+		for (const script of region.slice(0, 8).filter(({ name }) => name !== 'test:bench')) {
 			expect(script.accepted).toEqual([])
 		}
-		expect(region[4]?.accepted).toEqual([
+		expect(region[5]?.accepted).toEqual([
 			'vitest bench --config vite.config.ts --no-cache --project probe',
 		])
 		// The generated predecessor copied the build chain instead of delegating to
 		// it, so the region accepts that value while moving targets to the delegate.
-		expect(region[6]?.accepted).toEqual([scripts.build])
+		expect(region[8]?.accepted).toEqual([scripts.build])
 		// The publish predecessor is the same chain without the release row, which
 		// is what a target scaffolded before the proof existed still holds.
-		expect(region[7]?.accepted).toEqual([
+		expect(region[9]?.accepted).toEqual([
 			`${scripts.prepublishOnly ?? ''}`.replace(` && ${RELEASE_PROOF_COMMAND}`, ''),
 		])
-		expect(region[7]?.accepted[0]).not.toContain(RELEASE_PROOF_COMMAND)
+		expect(region[9]?.accepted[0]).not.toContain(RELEASE_PROOF_COMMAND)
 		for (const name of [
 			'test',
 			'test:src',

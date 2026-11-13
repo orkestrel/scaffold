@@ -9335,6 +9335,18 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			expect(audit.questions.find(({ field }) => field === 'projects')?.message).toContain(
 				'The test:src chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
 			)
+			const repair = createSink()
+			await new CLI(repair.options).execute(['repair', ...args])
+			const repaired: RepairResult = JSON.parse(repair.output[0] ?? '')
+			const kept: unknown = JSON.parse(requireValue(workspace.read('fixture/package.json')))
+			expect(kept).toMatchObject({
+				files: ['dist/src', 'README.md'],
+				scripts: { 'check:src:reporter': scripts['check:src:reporter'] },
+			})
+			expect(
+				isRecord(kept) && isRecord(kept.exports) ? Object.keys(kept.exports) : [],
+			).not.toContain('./reporter')
+			expect(repaired.audit.questions.map(({ field }) => field)).toContain('entries')
 			const human = createSink()
 			expect(
 				await new CLI(human.options).execute(['overwrite', '--dirty', ...args.slice(0, -1)]),
@@ -9386,6 +9398,12 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 				blocking: false,
 				message: `The manifest at ${target} does not declare planned entries: bin["fixture"] "dist/bin/main.js", files[] "dist/bin". Run overwrite to insert each one, or add each one to package.json by hand.`,
 			})
+			const effect = {
+				field: 'sideEffects',
+				blocking: false,
+				message: `The manifest at ${target} declares "sideEffects": false, and the plan builds the executable src/bin/main.ts. A bundler that reads that value may drop the imports the executable runs only for their side effects; "sideEffects": ["./src/bin/main.ts","./dist/bin/main.js"] keeps them. Scaffold leaves the value to the package.`,
+			}
+			expect(audit.questions).toContainEqual(effect)
 			const overwrite = createSink()
 			expect(await new CLI(overwrite.options).execute(['overwrite', '--dirty', ...args])).toBe(
 				EXIT_DRIFT,
@@ -9396,7 +9414,9 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			expect(text).toContain(
 				'\t"bin": {\n\t\t"fixture": "dist/bin/main.js"\n\t},\n\t"files": [\n\t\t"dist/src",\n\t\t"dist/bin",\n\t\t"README.md"\n\t],\n',
 			)
+			expect(result.audit.questions).toContainEqual(effect)
 			expect(JSON.parse(text)).toMatchObject({
+				sideEffects: false,
 				scripts: {
 					'test:src': scripts['test:src'],
 					'check:src': scripts['check:src'],
@@ -9411,6 +9431,66 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 					['entries', 'scripts', 'projects'].includes(field),
 				),
 			).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('writes the check and build scripts of an added library environment beside its export', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+			])
+			workspace.write('fixture/src/browser/index.ts', 'export {}\n')
+			const planned = createBlueprint('fixture', { src: ['core', 'browser', 'server'] })
+			const scripts = blueprintToScripts(planned)
+			const sink = createSink()
+			await new CLI(sink.options).execute(['audit', ...args])
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions.find(({ field }) => field === 'scripts')?.message).toContain(
+				'does not declare planned scripts: check:src:browser, test:src:browser, build:src:browser.',
+			)
+			const overwrite = createSink()
+			await new CLI(overwrite.options).execute(['overwrite', '--dirty', ...args])
+			const written: unknown = JSON.parse(requireValue(workspace.read('fixture/package.json')))
+			expect(written).toMatchObject({
+				exports: { './browser': blueprintToEntries(planned).exports['./browser'] },
+				scripts: {
+					'check:src': scripts['check:src'],
+					'build:src': scripts['build:src'],
+					'check:src:browser': scripts['check:src:browser'],
+					'build:src:browser': scripts['build:src:browser'],
+				},
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('names the aggregate an application workspace lacks when it adds an executable', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--app',
+				'core',
+			])
+			workspace.write('fixture/src/bin/main.ts', 'export {}\n')
+			const sink = createSink()
+			await new CLI(sink.options).execute(['audit', ...args])
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toContainEqual({
+				field: 'scripts',
+				blocking: false,
+				message: `The manifest at ${target} does not reach the planned scripts check:src:bin from check, build:src:bin from build. The manifest declares no check:src script: add "check:src": "npm run check:src:bin" and invoke npm run check:src from the check chain. The manifest declares no build:src script: add "build:src": "npm run build:src:bin" and invoke npm run build:src from the build chain.`,
+			})
+			// The executable imports no library environment, so it packs dist/bin and no dist/src.
+			expect(audit.questions).toContainEqual({
+				field: 'entries',
+				blocking: false,
+				message: `The manifest at ${target} does not declare planned entries: bin["fixture"] "dist/bin/main.js", files[] "dist/bin". Run overwrite to insert each one, or add each one to package.json by hand.`,
+			})
 		} finally {
 			workspace.destroy()
 		}
@@ -9439,7 +9519,7 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 			expect(audit.questions).toContainEqual({
 				field: 'scripts',
 				blocking: false,
-				message: `The manifest at ${target} does not reach the planned scripts check:src:reporter from check, build:src:reporter from build, and the package owns the chain that would. Invoke npm run check:src:reporter from the check:src chain, and npm run build:src:reporter from the build:src chain.`,
+				message: `The manifest at ${target} does not reach the planned scripts check:src:reporter from check, build:src:reporter from build. The check:src chain runs steps the plan does not generate, so invoke npm run check:src:reporter from it. The build:src chain runs steps the plan does not generate, so invoke npm run build:src:reporter from it.`,
 			})
 			const step =
 				'The test or prepublishOnly chain runs test:src, which does not pass --project src:reporter: add --project src:reporter to test:src, or invoke npm run test:src:reporter by name from the test or prepublishOnly chain.'

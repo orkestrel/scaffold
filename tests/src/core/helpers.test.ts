@@ -41,6 +41,9 @@ import {
 	iterateAnswers,
 	manifestToDependencies,
 	manifestToEntries,
+	matchesPackedPath,
+	matchesSubpathMap,
+	normalizePackagePath,
 	manifestToName,
 	matchesArtifactDriftReachability,
 	matchesBarrel,
@@ -1150,22 +1153,84 @@ describe('manifestToEntries', () => {
 		})
 	})
 
-	it('reads a declared name as present whatever value it holds, and a string bin as every command', () => {
-		expect(
-			manifestToEntries(
-				'{"bin":"cli.js","files":["dist/src","dist/bin","dist/reporter","README.md"],"exports":{".":null,"./reporter":false}}',
-				planned,
-			),
-		).toStrictEqual({ bin: {}, files: [], exports: {} })
+	it('reads a command as declared by its name or by a declared command running the planned file', () => {
+		// The browser package publishes its executable as `browse`, not under the package name.
+		expect(manifestToEntries('{"bin":{"browse":"dist/bin/main.js"}}', planned).bin).toStrictEqual(
+			{},
+		)
+		expect(manifestToEntries('{"bin":{"browse":"./dist/bin/main.js"}}', planned).bin).toStrictEqual(
+			{},
+		)
+		expect(manifestToEntries('{"bin":{"router":"cli.js"}}', planned).bin).toStrictEqual({})
+		expect(manifestToEntries('{"bin":"./dist/bin/main.js"}', planned).bin).toStrictEqual({})
+		expect(manifestToEntries('{"bin":"cli.js"}', planned).bin).toStrictEqual(planned.bin)
 		expect(manifestToEntries('{"bin":{"other":"x.js"}}', planned).bin).toStrictEqual(planned.bin)
 	})
 
+	it('reads a packed path as declared by an equal entry or a directory above it', () => {
+		const app = { bin: {}, files: ['dist/app', 'README.md'], exports: {} }
+		expect(manifestToEntries('{"files":["dist","README.md"]}', app).files).toStrictEqual([])
+		expect(manifestToEntries('{"files":["./dist/","README.md"]}', app).files).toStrictEqual([])
+		expect(manifestToEntries('{"files":["dist-old","README.md"]}', app).files).toStrictEqual([
+			'dist/app',
+		])
+	})
+
+	it('reads a string or condition exports value as declaring the root subpath alone', () => {
+		for (const exports of ['"./index.js"', '{"import":"./index.js","require":"./index.cjs"}']) {
+			expect(manifestToEntries(`{"exports":${exports}}`, planned).exports).toStrictEqual({
+				'./reporter': './dist/reporter/main.js',
+			})
+		}
+	})
+
 	it('reads a section of another shape as declaring nothing, and a non-object as lacking nothing', () => {
-		expect(
-			manifestToEntries('{"bin":7,"files":"dist","exports":"./index.js"}', planned),
-		).toStrictEqual(planned)
+		expect(manifestToEntries('{"bin":7,"files":"dist","exports":7}', planned)).toStrictEqual(
+			planned,
+		)
 		expect(manifestToEntries('[]', planned)).toStrictEqual({ bin: {}, files: [], exports: {} })
 		expect(manifestToEntries('{', planned)).toStrictEqual({ bin: {}, files: [], exports: {} })
+	})
+})
+
+describe('normalizePackagePath', () => {
+	it('drops a leading ./ and trailing slashes and keeps every other byte', () => {
+		expect(normalizePackagePath('./dist/bin/main.js')).toBe('dist/bin/main.js')
+		expect(normalizePackagePath('././dist//')).toBe('dist')
+		expect(normalizePackagePath('dist/app')).toBe('dist/app')
+		expect(normalizePackagePath('')).toBe('')
+	})
+})
+
+describe('matchesPackedPath', () => {
+	it('matches an equal entry and a directory whose segments open the planned path', () => {
+		expect(matchesPackedPath('dist/app', 'dist/app')).toBe(true)
+		expect(matchesPackedPath('dist', 'dist/app')).toBe(true)
+		expect(matchesPackedPath('./dist/', 'dist/src')).toBe(true)
+		expect(matchesPackedPath('!dist/src/styles/index.js', '!dist/src/styles/index.js')).toBe(true)
+	})
+
+	it('refuses a sibling prefix, a deeper entry, an empty entry, and a negation it does not equal', () => {
+		expect(matchesPackedPath('dist-old', 'dist/app')).toBe(false)
+		expect(matchesPackedPath('dist/app/main.cjs', 'dist/app')).toBe(false)
+		expect(matchesPackedPath('', 'dist/app')).toBe(false)
+		expect(matchesPackedPath('dist', '!dist/src/styles/index.js')).toBe(false)
+		expect(matchesPackedPath('!dist', 'dist/src')).toBe(false)
+	})
+})
+
+describe('matchesSubpathMap', () => {
+	it('accepts an object whose every key opens with a dot, the empty object included', () => {
+		expect(matchesSubpathMap({ '.': './index.js', './server': './server.js' })).toBe(true)
+		expect(matchesSubpathMap({})).toBe(true)
+	})
+
+	it('refuses conditions, a mix, a string, an array, and null', () => {
+		expect(matchesSubpathMap({ import: './index.js' })).toBe(false)
+		expect(matchesSubpathMap({ '.': './index.js', import: './index.js' })).toBe(false)
+		expect(matchesSubpathMap('./index.js')).toBe(false)
+		expect(matchesSubpathMap([])).toBe(false)
+		expect(matchesSubpathMap(null)).toBe(false)
 	})
 })
 

@@ -1397,11 +1397,15 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
  * @returns The planned entries the manifest does not declare, each in planned order.
  *
  * @remarks
- * A command, a packed path, and a subpath count as declared by name alone, so a declared entry
- * holding another value stays the package's. A string `bin` declares the one command npm derives
- * from the package name, so it lacks no planned command. A section holding another shape declares
- * none of its planned entries. A manifest that is not an object lacks nothing, because no entry
- * can be read from it or written into it.
+ * A planned command counts as declared when the manifest names it, or when any declared command
+ * runs the planned file: a package keeps the command name it publishes. A string `bin` declares
+ * the planned command when it names the planned file. A planned packed path counts as declared
+ * when a declared path equals it or names a directory above it, as {@link matchesPackedPath} reads
+ * the pair. A subpath counts as declared by name alone, so a declared entry holding another value
+ * stays the package's. A string `exports` or an object whose keys are conditions rather than
+ * subpaths declares the root subpath `.` alone. A section holding any other shape declares none of
+ * its planned entries. A manifest that is not an object lacks nothing, because no entry can be read
+ * from it or written into it.
  *
  * @example
  * ```ts
@@ -1418,21 +1422,108 @@ export function manifestToEntries(manifest: string, planned: ManifestEntrySet): 
 	const parsed = parseJSON(manifest)
 	if (!isRecord(parsed)) return { bin: {}, files: [], exports: {} }
 	const { bin, files, exports } = parsed
-	const commands = isString(bin) ? undefined : isRecord(bin) ? bin : {}
-	const packed = isArray(files) ? files : []
-	const subpaths = isRecord(exports) ? exports : {}
+	const commands: Readonly<Record<string, unknown>> = isString(bin)
+		? { '': bin }
+		: isRecord(bin)
+			? bin
+			: {}
+	const runs = Object.values(commands).flatMap((path) =>
+		isString(path) ? [normalizePackagePath(path)] : [],
+	)
+	const packed = isArray(files) ? files.filter(isString) : []
+	const subpaths = matchesSubpathMap(exports)
+		? exports
+		: isString(exports) || isRecord(exports)
+			? { '.': exports }
+			: {}
 	return {
-		bin:
-			commands === undefined
-				? {}
-				: Object.fromEntries(
-						Object.entries(planned.bin).filter(([name]) => !Object.hasOwn(commands, name)),
-					),
-		files: planned.files.filter((path) => !packed.includes(path)),
+		bin: Object.fromEntries(
+			Object.entries(planned.bin).filter(
+				([name, path]) =>
+					!(isRecord(bin) && Object.hasOwn(bin, name)) &&
+					!runs.includes(normalizePackagePath(path)),
+			),
+		),
+		files: planned.files.filter(
+			(path) => !packed.some((declared) => matchesPackedPath(declared, path)),
+		),
 		exports: Object.fromEntries(
 			Object.entries(planned.exports).filter(([path]) => !Object.hasOwn(subpaths, path)),
 		),
 	}
+}
+
+/**
+ * Returns the canonical form of a path a manifest names inside its package.
+ *
+ * @param path - A `bin` target or a `files` entry.
+ * @returns The path without a leading `./` and without trailing `/` characters.
+ *
+ * @example
+ * ```ts
+ * import { normalizePackagePath } from '@orkestrel/scaffold'
+ *
+ * normalizePackagePath('./dist/bin/main.js') // 'dist/bin/main.js'
+ * normalizePackagePath('dist/') // 'dist'
+ * ```
+ */
+export function normalizePackagePath(path: string): string {
+	return path.replace(/^(\.\/)+/u, '').replace(/\/+$/u, '')
+}
+
+/**
+ * Checks whether a declared `files` entry packs a planned one.
+ *
+ * @param declared - The entry the manifest declares.
+ * @param planned - The entry the plan emits.
+ * @returns True if the entries are equal, or the declared entry names a directory whose path
+ * segments open the planned entry's; false otherwise.
+ *
+ * @remarks
+ * A negated entry such as `!dist/src/styles/index.js` excludes a path rather than packing one, so
+ * only an equal entry declares it.
+ *
+ * @example
+ * ```ts
+ * import { matchesPackedPath } from '@orkestrel/scaffold'
+ *
+ * matchesPackedPath('dist', 'dist/app') // true
+ * matchesPackedPath('dist-old', 'dist/app') // false
+ * ```
+ */
+export function matchesPackedPath(declared: string, planned: string): boolean {
+	const left = normalizePackagePath(declared)
+	const right = normalizePackagePath(planned)
+	if (left === right) return true
+	if (left.startsWith('!') || right.startsWith('!') || left === '') return false
+	const segments = left.split('/')
+	const target = right.split('/')
+	return (
+		segments.length < target.length && segments.every((segment, index) => segment === target[index])
+	)
+}
+
+/**
+ * Checks whether a manifest `exports` value is a map of subpaths.
+ *
+ * @param value - The declared `exports` value.
+ * @returns True if the value is an object whose every key opens with `.`; false otherwise.
+ *
+ * @remarks
+ * Node reads an object whose keys are conditions, such as `import` and `require`, as the root
+ * export alone, and refuses an object that mixes conditions with subpaths, so a subpath can be
+ * added only to a subpath map.
+ *
+ * @example
+ * ```ts
+ * import { matchesSubpathMap } from '@orkestrel/scaffold'
+ *
+ * matchesSubpathMap({ '.': './index.js' }) // true
+ * matchesSubpathMap({ import: './index.js' }) // false
+ * ```
+ */
+export function matchesSubpathMap(value: unknown): value is Readonly<Record<string, unknown>> {
+	return isRecord(value) && Object.keys(value).every((key) => key.startsWith('.'))
 }
 
 /**

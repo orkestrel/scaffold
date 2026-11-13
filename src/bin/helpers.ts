@@ -58,6 +58,7 @@ import {
 	isSheetName,
 	iterateAnswers,
 	manifestToDependencies,
+	matchesSubpathMap,
 	MAX_PATH_LENGTH,
 	MAX_RANGE_LENGTH,
 	parseExtension,
@@ -658,12 +659,12 @@ export function manifestToWritableScripts(
  *
  * @example
  * ```ts
- * import { entriesToLines } from './helpers.js'
+ * import { renderManifestEntries } from './helpers.js'
  *
- * entriesToLines({ bin: {}, files: ['dist/reporter'], exports: {} }) // ['files[] "dist/reporter"']
+ * renderManifestEntries({ bin: {}, files: ['dist/reporter'], exports: {} }) // ['files[] "dist/reporter"']
  * ```
  */
-export function entriesToLines(entries: ManifestEntrySet): readonly string[] {
+export function renderManifestEntries(entries: ManifestEntrySet): readonly string[] {
 	return [
 		...Object.entries(entries.bin).map(
 			([name, path]) => `bin[${JSON.stringify(name)}] ${JSON.stringify(path)}`,
@@ -672,6 +673,59 @@ export function entriesToLines(entries: ManifestEntrySet): readonly string[] {
 		...Object.entries(entries.exports).map(
 			([path, value]) => `exports[${JSON.stringify(path)}] ${JSON.stringify(value)}`,
 		),
+	]
+}
+
+/**
+ * Describes each manifest section whose shape refuses the planned entries it lacks.
+ *
+ * @param manifest - The target manifest text.
+ * @param missing - The planned entries the manifest lacks.
+ * @returns One clause per refusing section, naming the shape it holds and the change that admits
+ * the entries; empty when every section can take its missing entries.
+ *
+ * @remarks
+ * A string `exports` and an object of conditions each publish the root export alone, and Node
+ * refuses an object that mixes conditions with subpaths, so the clause asks for a subpath map that
+ * keeps the declared value under `.`.
+ *
+ * @example
+ * ```ts
+ * import { describeEntryRefusal } from './helpers.js'
+ *
+ * describeEntryRefusal('{"files": "dist"}', { bin: {}, files: ['dist/bin'], exports: {} })
+ * // ['its files value is not an array of strings: declare files as an array of paths']
+ * ```
+ */
+export function describeEntryRefusal(
+	manifest: string,
+	missing: ManifestEntrySet,
+): readonly string[] {
+	const parsed = parseJSON(manifest)
+	if (!isRecord(parsed)) return []
+	const { bin, files, exports } = parsed
+	return [
+		...(Object.keys(missing.bin).length === 0 || bin === undefined || isRecord(bin)
+			? []
+			: [
+					isString(bin)
+						? `its bin value is the string ${JSON.stringify(bin)}, which runs another file: declare bin as an object of commands`
+						: 'its bin value is not an object: declare bin as an object of commands',
+				]),
+		...(missing.files.length === 0 ||
+		files === undefined ||
+		(isArray(files) && files.every(isString))
+			? []
+			: ['its files value is not an array of strings: declare files as an array of paths']),
+		...(Object.keys(missing.exports).length === 0 ||
+		exports === undefined ||
+		matchesSubpathMap(exports)
+			? []
+			: [
+					isString(exports) || isRecord(exports)
+						? `its exports value is ${isString(exports) ? 'a string' : `an object of conditions (${Object.keys(exports).join(', ')})`}, which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."`
+						: 'its exports value is not an object: declare exports as a map of subpaths',
+				]),
 	]
 }
 
