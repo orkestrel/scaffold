@@ -14,18 +14,19 @@
 // heavy and also waits out every earlier light ticket. A light ticket holds when every earlier light
 // ticket that the directory rule does not block holds, no earlier `--solo` ticket is live, and the
 // earlier light tickets' summed peaks with its own fit `slots` and each budget; the earliest light
-// ticket always fits. A light holder runs at
-// below-normal priority, and its holder ends it and exits 69 when a sample passes the memory or
-// process threshold.
-// Directories: a run of the falsify skill's `mutate` script publishes `edits` in its ticket, because
-// it edits source in its working directory. Every ticket also waits on the nearest earlier ticket
-// that carries `edits` and shares its working directory, and a ticket that carries `edits` also waits
-// on the nearest earlier ticket of its working directory in either lane, and on an earlier ticket it
-// cannot read. That last wait is the lane's existing refusal, because a ticket's endpoint token lives
-// in its record, so a mutation exits 75 on any unreadable earlier ticket, one a writer has not
-// finished included. Two directories share source when their real paths, as the file system
-// stores them, are equal or one sits inside the other. Every wait names an earlier ticket, so no cycle of waits
-// forms, and each process derives from the earlier tickets alone which light tickets the rule blocks.
+// ticket always fits. A light holder runs at below-normal priority, and its holder ends it and exits
+// 69 when a sample taken before the launcher exits passes the memory or process threshold; a sample
+// after the exit reads no member created after it and ends nothing.
+// Directories: a run of the falsify skill's `mutate` script, `--restore` included, publishes
+// `edits` in its ticket, because it edits source in its working directory. Every ticket also waits
+// on the nearest earlier ticket that carries `edits` and shares its working directory, and a ticket
+// that carries `edits` also waits on the nearest earlier ticket of its working directory in either
+// lane, and on an earlier ticket it cannot read. That last wait is the lane's existing refusal,
+// because a ticket's endpoint token lives in its record, so a mutation exits 75 on any unreadable
+// earlier ticket, one a writer has not finished included. Two directories share source when their
+// real paths, as the file system stores them, are equal or one sits inside the other. Every wait
+// names an earlier ticket, so no cycle of waits forms, and each process derives from the earlier
+// tickets alone which light tickets the rule blocks.
 // Light reading: `<root>/limits.json` holds `slots`, the `budget` and the per-run `threshold`; while
 // it is absent or malformed, or on a host other than Windows, every ticket is heavy, no sampler runs,
 // and no record is written. Otherwise each run starts one PowerShell sampler at arrival, which readies
@@ -34,10 +35,10 @@
 // the tree back to back through the command's first second and once a second after, and reads the
 // handover through one more sample; when that sample lists a member or no sampler answers, the
 // handover reads, kills, and reads again through fresh snapshots, each a second PowerShell. The
-// holder writes one record per run
-// under `<root>/history/<key>/`, keyed by the working directory and the command, keeping the latest
-// runs. A record that opens a key prunes the history after the release, keeping only the keys written
-// inside `HISTORY_AGE_MS` (7 days), and of those at most the `HISTORY_KEYS` (512) written last; a
+// holder writes one record per run under `<root>/history/<key>/`, keyed by the working directory and
+// the command, keeping the latest runs. A record that opens a key prunes the history after the
+// release, keeping only the keys written inside `HISTORY_AGE_MS` (7 days), and of those at most the
+// `HISTORY_KEYS` (512) written last; a
 // name it cannot list or remove stays, one stderr line names it, and the exit stays the run's. The
 // command's kind seeds the reading: a format check, a lint check, a type check, and a scoped test run
 // read light until a record breaches; a full suite, a run of several projects, an install, a
@@ -45,13 +46,14 @@
 // heavy; `npx` and a package manager's `exec`, `x`, or `dlx` verb read as the tool they run; any other
 // command reads light only when its latest runs each sit inside the threshold, none capped and none
 // ending 69 or 70. A `mutate` run is keyed without its edits file and seeded by the command after its
-// own `--`, so it reads light when that command's records allow.
+// own `--`, so it reads light when that command's records allow; a `mutate --restore` run wraps no
+// command and reads heavy.
 // `--status` prints each ticket in arrival order with its label, `live`, `dead`, or `unread`, its
-// lane, and `holding` for a holder, and names the heavy holder and every light holder. It writes
-// nothing, removes nothing, and creates no root; an absent root reads as an empty queue. The root is
-// `.orkestrel/lane` under the account's home directory, read from the account record and never from
-// an environment variable; `--root DIR` is for a proof. Bench execs stay outside the lane, because
-// the host bound counts process-running commands.
+// lane, `edits` for a `mutate` run, and `holding` for a holder, and names the heavy holder and every
+// light holder. It writes nothing, removes nothing, and creates no root; an absent root reads as an
+// empty queue. The root is `.orkestrel/lane` under the account's home directory, read from the
+// account record and never from an environment variable; `--root DIR` is for a proof. Bench execs
+// stay outside the lane, because the host bound counts process-running commands.
 // Exit: the launcher's code (the command's code, 124 when capped, 127 when the command could not
 // start); 1 when a signal ended the launcher; 64 on usage; 69 when a light run passed its threshold
 // and its holder ended it; 75 when the lane refused before the command ran; 70 when the command ran
@@ -85,18 +87,34 @@
 // - An owner ended between the run record and the launcher id. The tree cannot be identified. Arrivals
 //   exit 75 until a person deletes the named files. An owner ended between the launcher id and the
 //   command id leaves the command as no seed, so its tree reads through the launcher alone.
-// - A dead light holder with a live tree. Light arrivals exit 75 until that tree is gone; heavy
-//   arrivals do not wait on it.
+// - A dead light holder with a live tree. Light arrivals exit 75 until that tree is gone. A heavy
+//   arrival passes it, unless the directory rule points the arrival at it; that arrival waits on it,
+//   then exits 75 while its tree lives.
 // - Sampling. A process that lives between two samples goes uncounted, the CPU time of a member that
 //   exits between samples is lost, and disk input and output are not measured. A command that ends
 //   before one process query answers, about 140 ms on the Windows host measured 2026-11-12, can
 //   record zero, so it counts nothing until a later run is read.
-// - Transition. A process of an earlier release reads no `edits` field, so until it exits it does not
-//   wait on a mutation of its directory, and a `mutate` run it carries publishes no `edits`, so the
-//   directory rule cannot see that run. A mutation of this release does wait on an earlier ticket of
-//   its directory, whichever release wrote it.
+// - Transition. A process of an earlier release reads no `edits` field: it does not wait on a mutation
+//   of its directory, a `mutate` run it carries publishes no `edits`, so the directory rule cannot see
+//   that run, and as a light ticket it counts a directory-blocked light ticket of this release as one
+//   that has not held, so it queues behind it. Every checkout on an earlier `@orkestrel/scaffold`
+//   keeps starting such processes on the shared root until that checkout adopts this release, so the
+//   bound is the last adoption, not one process's exit. A mutation of this release does wait on an
+//   earlier ticket of its directory, whichever release wrote it.
 // - Heavy throughput. A heavy ticket that the directory rule blocks still keeps every later heavy
 //   ticket out, from every directory, because passing it would let two heavy tickets hold at once.
+// - Light budget. A light ticket that the directory rule blocks is not one later light tickets wait to
+//   hold, but its footprint still counts in their budget sums and their slot count. Where the per-run
+//   threshold is over the budget, as in the live `limits.json` of 2026-11-12, one blocked ticket with
+//   fewer than `RECENT_RUNS` records fills the budget, so every later light ticket on the host queues
+//   until the mutation ends and that ticket runs. The count stays, because leaving the ticket out and
+//   counting later holders when it unblocks would race two processes on one budget.
+// - The ready wait. A holder waits for its sampler before it writes its run record and signals that
+//   it holds, so later light tickets count it as one that has not held for up to `READY_MS` when its
+//   sampler never reports ready.
+// - The idle sampler. Each queued measured ticket keeps its PowerShell sampler from arrival, about
+//   75 MB of private memory once ready on the Windows host measured 2026-11-13, and no budget counts
+//   that memory, so a long queue of measured tickets costs that much per ticket.
 // - A prune beside a write. A holder that writes a record to an existing key that is past a bound can
 //   lose that record to another holder's prune, which removes the key with the record in it.
 // - An unreaped member. On a host whose init does not reap, a killed member can keep reading as
@@ -413,6 +431,9 @@ export const MUTATION_TOOL = 'mutate'
 /** Holds the `mutate` flag that names the edits file, which a run's key leaves out. */
 export const MUTATION_FLAG = '--edits'
 
+/** Holds the `mutate` flag that writes saved originals back, which edits source and wraps no command. */
+export const RESTORE_FLAG = '--restore'
+
 /** Lists the tools a seed reads heavy by name: the release chain's step runner. */
 export const HEAVY_TOOLS: readonly string[] = ['steps']
 
@@ -461,12 +482,13 @@ export const SAMPLE_BYTE = 's'
  * Holds the PowerShell text of a sampler.
  *
  * @remarks
- * The child loads the CIM module and prints {@link READY_LINE}. Until the first byte it waits on its
+ * The child runs one process query, the one a sample runs, so its first sample answers warm, and
+ * prints {@link READY_LINE}. Until the first byte it waits on its
  * stdin with no timer. Each byte on its stdin starts one sample at once, and after the first byte it
  * also samples every {@link SAMPLE_MS}. A sample prints one line: `1` for a sample a byte asked for or `0`, a `|`,
  * and the rows separated by semicolons. The child exits when its stdin closes.
  */
-export const SAMPLER_COMMAND = `$i=[Console]::OpenStandardInput();$b=New-Object byte[] 1;$t=$i.ReadAsync($b,0,1);Import-Module CimCmdlets;[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();$a=$false;$q=0;$d=-1;while($true){if($a){$r=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount | Where-Object { $_.CreationDate } | ForEach-Object { '{0} {1} {2} {3} {4}' -f $_.ProcessId,$_.ParentProcessId,([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(),($_.KernelModeTime+$_.UserModeTime),$_.PrivatePageCount };[Console]::Out.WriteLine([string]$q+'|'+($r -join ';'));[Console]::Out.Flush();$q=0};if($t.Wait($d)){if($t.Status -ne 'RanToCompletion' -or $t.Result -eq 0){break};$a=$true;$q=1;$d=${String(SAMPLE_MS)};$t=$i.ReadAsync($b,0,1)}}`
+export const SAMPLER_COMMAND = `$i=[Console]::OpenStandardInput();$b=New-Object byte[] 1;$t=$i.ReadAsync($b,0,1);$null=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount;[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();$a=$false;$q=0;$d=-1;while($true){if($a){$r=Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate,KernelModeTime,UserModeTime,PrivatePageCount | Where-Object { $_.CreationDate } | ForEach-Object { '{0} {1} {2} {3} {4}' -f $_.ProcessId,$_.ParentProcessId,([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds(),($_.KernelModeTime+$_.UserModeTime),$_.PrivatePageCount };[Console]::Out.WriteLine([string]$q+'|'+($r -join ';'));[Console]::Out.Flush();$q=0};if($t.Wait($d)){if($t.Status -ne 'RanToCompletion' -or $t.Result -eq 0){break};$a=$true;$q=1;$d=${String(SAMPLE_MS)};$t=$i.ReadAsync($b,0,1)}}`
 
 /** Describes the footprint the light lanes add up: average cores, peak private bytes, and peak processes. */
 export interface Usage {
@@ -1435,6 +1457,21 @@ export function readExecTool(
 }
 
 /**
+ * Checks whether a command is a `mutate --restore` run, which writes source files back.
+ *
+ * @param command - The command and its arguments.
+ * @returns True for a `mutate` call with its restore flag before any bare `--`; false otherwise.
+ */
+export function matchesRestore(command: readonly string[]): boolean {
+	const [tool, ...args] = readTool(command)
+	if (tool !== MUTATION_TOOL) return false
+	const end = args.indexOf('--')
+	return (end === -1 ? args : args.slice(0, end)).some(
+		(flag) => flag === RESTORE_FLAG || flag.startsWith(`${RESTORE_FLAG}=`),
+	)
+}
+
+/**
  * Extracts the command a `mutate` run wraps.
  *
  * @param command - The command and its arguments.
@@ -1594,7 +1631,8 @@ export function readVitestSeed(args: readonly string[]): Seed | undefined {
  *
  * @remarks
  * Heavy wins: a word that names a journey, a study, a capture, a live-service run, or the release
- * chain seeds heavy wherever it appears, before any light kind is read.
+ * chain seeds heavy wherever it appears, before any light kind is read. A `mutate --restore` run,
+ * which writes source files back and wraps no command, seeds heavy.
  *
  * @param command - The command and its arguments.
  * @returns The seeded lane, or undefined when no kind names the command.
@@ -1603,7 +1641,7 @@ export function readSeed(command: readonly string[]): Seed | undefined {
 	if (readWords(command.slice(1)).some((word) => HEAVY_WORDS.includes(word))) return 'heavy'
 	const [tool, ...args] = readTool(command)
 	if (tool === undefined) return undefined
-	if (HEAVY_TOOLS.includes(tool)) return 'heavy'
+	if (HEAVY_TOOLS.includes(tool) || matchesRestore(command)) return 'heavy'
 	if (MANAGERS.includes(tool)) {
 		const [verb, script] = readOperands(args, MANAGER_VALUE_FLAGS[tool] ?? [])
 		if (verb === undefined) return undefined
@@ -2468,6 +2506,7 @@ export class Sampler {
 	readonly #breach: (seeds: readonly number[]) => void
 	#seeds: readonly number[] = []
 	#floor: number | undefined
+	#ceiling: number | undefined
 	#tally: Tally = { cpu: new Map(), memory: 0, processes: 0 }
 	#breached = false
 	#asked = 0
@@ -2540,6 +2579,16 @@ export class Sampler {
 	seed(seeds: readonly number[], floor: number): void {
 		this.#seeds = seeds
 		this.#floor = floor
+	}
+
+	/**
+	 * Marks the launcher's exit: a later sample reads no member created after it and triggers no
+	 * breach, so a reused id after the exit is never ended.
+	 *
+	 * @param ceiling - When the launcher exited, in epoch milliseconds.
+	 */
+	seal(ceiling: number): void {
+		this.#ceiling = ceiling
 	}
 
 	/**
@@ -2620,11 +2669,17 @@ export class Sampler {
 			this.#waiters.delete(this.#answered)
 		}
 		if (this.#floor === undefined) return
-		const members = selectMembers(sample.gauges, this.#seeds, this.#floor, Date.now())
+		const members = selectMembers(
+			sample.gauges,
+			this.#seeds,
+			this.#floor,
+			this.#ceiling ?? Date.now(),
+		)
 		this.#tally = tallySample(this.#tally, members)
 		const threshold = this.#threshold
 		if (
 			threshold === undefined ||
+			this.#ceiling !== undefined ||
 			this.#breached ||
 			(this.#tally.memory <= threshold.memory && this.#tally.processes <= threshold.processes)
 		) {
@@ -2720,6 +2775,7 @@ export async function runHolder(
 	early.abort()
 	unwatch()
 	const ended = Date.now()
+	active?.seal(ended)
 	const run = readRun(root, sequence)
 	const rows = typeof run === 'object' ? await active?.sample(HANDOVER_MS) : undefined
 	const hung = active !== undefined && typeof run === 'object' && rows === undefined
@@ -2836,7 +2892,8 @@ export async function enterLane(
 					)
 		try {
 			await token.listen(renderEndpoint(root, tokenId))
-			const edits = extractMutation(options.command) !== undefined
+			const edits =
+				extractMutation(options.command) !== undefined || matchesRestore(options.command)
 			writeStage(root, buildTicket(tokenId, options.label, measure?.light, options.solo, edits))
 			const sequence = linkStage(root, tokenId)
 			removeFile(join(root, `${tokenId}${STAGE_SUFFIX}`))

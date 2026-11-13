@@ -4,7 +4,7 @@ import { tmpdir, userInfo } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
-import { waitForCondition, waitForDelay } from '@orkestrel/test'
+import { createRecorder, waitForCondition, waitForDelay } from '@orkestrel/test'
 import {
 	LAUNCH_SCRIPT,
 	LANE_SCRIPT,
@@ -1215,6 +1215,31 @@ describe('lane.ts', () => {
 				['pnpm', '--filter', 'a', 'exec', 'tsc', '--noEmit'],
 				'light',
 			],
+			[
+				'a type check through pnpm -C exec',
+				['pnpm', '-C', 'a', 'exec', 'tsc', '--noEmit'],
+				'light',
+			],
+			['a type check through pnpm --dir run', ['pnpm', '--dir', 'a', 'run', 'check'], 'light'],
+			[
+				'a type check through pnpm -F exec',
+				['pnpm', '-F', 'a', 'exec', 'tsc', '--noEmit'],
+				'light',
+			],
+			['a type check through yarn --cwd run', ['yarn', '--cwd', 'a', 'run', 'check'], 'light'],
+			['a type check through bun --cwd run', ['bun', '--cwd', 'a', 'run', 'check'], 'light'],
+			['a type check through pnpm dlx', ['pnpm', 'dlx', 'tsc', '--noEmit'], 'light'],
+			['inline text through npx --call', ['npx', '--call', 'tsc --noEmit'], undefined],
+			[
+				'a mutate --restore run',
+				[
+					'node',
+					'.agents/skills/orkestrel-falsify/scripts/mutate.ts',
+					'--restore',
+					'tmp/probes/mutate/run-x',
+				],
+				'heavy',
+			],
 		])('seeds %s', (_name, command, expected) => {
 			expect(readSeed(command)).toBe(expected)
 		})
@@ -1658,6 +1683,34 @@ describe('lane.ts', () => {
 			expect(turn.state).toBe(expected)
 			expect(turn.state === 'behind' ? turn.entry.sequence : undefined).toBe(entry)
 		})
+
+		it('counts a light ticket the directory rule blocks in the budget, which queues a later light ticket when the threshold is over the budget', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const live = {
+				slots: 2,
+				budget: { cores: 6.36, memory: 2_445_656_064, processes: 8 },
+				threshold: { duration: 396_388, cores: 3.18, memory: 3_110_184_960, processes: 35 },
+			}
+			const seeded = { cores: 3.18, memory: 3_110_184_960, processes: 35 }
+			const other = realpathSync(tmpdir())
+			const tickets = [
+				{ ...buildTicket(FIRST_TOKEN, 'mutation', undefined, false, true), cwd: other },
+				{ ...buildTicket(THIRD_TOKEN, 'blocked', seeded), cwd: other },
+				buildTicket(SECOND_TOKEN, 'own', seeded),
+			]
+			for (const ticket of tickets) {
+				writeStage(bench.root, ticket)
+				linkStage(bench.root, ticket.token)
+				bench.scratch.remove(join('root', `${ticket.token}.stage`))
+			}
+			writeRun(bench.root, 1, { started: 0, launcher: undefined, command: undefined })
+			expect(decideTurn(bench.root, 2, THIRD_TOKEN, live)).toMatchObject({ state: 'behind' })
+			expect(decideTurn(bench.root, 3, SECOND_TOKEN, live)).toMatchObject({
+				state: 'queued',
+				pending: [],
+			})
+		})
 	})
 
 	// The sampler reads `Win32_Process` through PowerShell, which only Windows serves; on any other host
@@ -2098,7 +2151,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			bench.limit(LIMITS)
-			// The command ends before a sampler that starts beside the launcher can read it.
+			// The command and its launcher end before a sampler that starts beside the launcher can read either.
 			const command = [process.execPath, '-e', 'setTimeout(() => undefined, 150)']
 			const run = bench.spawn([
 				...renderLaneFlags(bench.root, bench.journals, 'short'),
@@ -2107,7 +2160,7 @@ describe('lane.ts', () => {
 			])
 			expect(await run.exit()).toBe(0)
 			const [outcome] = readOutcomes(bench.root, renderKey(realpathSync(WORKSPACE_ROOT), command))
-			expect(outcome?.processes).toBeGreaterThanOrEqual(2)
+			expect(outcome?.processes).toBeGreaterThanOrEqual(1)
 			expect(outcome?.memory).toBeGreaterThan(0)
 		})
 
@@ -2276,6 +2329,79 @@ describe('lane.ts', () => {
 			expect(sharesDirectory(join(cwd, 'tests'), cwd)).toBe(true)
 			expect(sharesDirectory(cwd, join(cwd, 'tests'))).toBe(true)
 			expect(sharesDirectory(`${cwd}-sibling`, cwd)).toBe(false)
+		})
+
+		it('triggers no breach from a sample after the launcher exited, beside a control that does', async () => {
+			const exited = Date.now()
+			const command = `$i=[Console]::OpenStandardInput();[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();while($i.ReadByte() -ge 0){[Console]::Out.WriteLine('1|4242 1 ${String(exited + 1)} 0 999999999');[Console]::Out.Flush()}`
+			const threshold = { cores: 1, memory: 1000, processes: 100 }
+			const control = createRecorder<[readonly number[]]>()
+			const unsealed = new Sampler(threshold, control.handler, command)
+			onTestFinished(() => unsealed.destroy())
+			expect(await unsealed.ready(READY_MS)).toBe(true)
+			unsealed.seed([4242], exited - 1000)
+			await waitForDelay(5)
+			expect(await unsealed.sample()).toHaveLength(1)
+			expect(control.calls).toStrictEqual([[[4242]]])
+			const breach = createRecorder<[readonly number[]]>()
+			const sealed = new Sampler(threshold, breach.handler, command)
+			onTestFinished(() => sealed.destroy())
+			expect(await sealed.ready(READY_MS)).toBe(true)
+			sealed.seed([4242], exited - 1000)
+			sealed.seal(exited)
+			await waitForDelay(5)
+			expect(await sealed.sample()).toHaveLength(1)
+			expect(breach.count).toBe(0)
+			expect(sealed.breached).toBe(false)
+		})
+
+		it('publishes edits in the ticket of a mutate --restore run, which waits on its directory', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			const holder = new Token()
+			onTestFinished(() => holder.destroy())
+			await holder.listen(renderEndpoint(bench.root, FIRST_TOKEN))
+			writeStage(bench.root, buildTicket(FIRST_TOKEN, 'holder', USAGE))
+			linkStage(bench.root, FIRST_TOKEN)
+			bench.scratch.remove(join('root', `${FIRST_TOKEN}.stage`))
+			writeRun(bench.root, 1, { started: Date.now(), launcher: undefined, command: undefined })
+			holder.publish()
+			holder.hold()
+			const restore = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'restore'),
+				'--',
+				process.execPath,
+				'.agents/skills/orkestrel-falsify/scripts/mutate.ts',
+				'--restore',
+				'tmp/probes/mutate/run-absent',
+			])
+			await restore.reach('lane: waiting behind "holder"')
+			expect(readQueue(bench.root).map((entry) => entry.ticket?.edits)).toStrictEqual([
+				undefined,
+				true,
+			])
+			await restore.kill()
+		})
+
+		it('refuses a real mutate run behind an earlier ticket it cannot read', async () => {
+			const bench = await startLaneBench()
+			onTestFinished(() => bench.destroy())
+			bench.scratch.write(join('root', renderName(1, TICKET_SUFFIX)), '{')
+			const mutation = bench.spawn([
+				...renderLaneFlags(bench.root, bench.journals, 'mutation'),
+				'--',
+				process.execPath,
+				'.agents/skills/orkestrel-falsify/scripts/mutate.ts',
+				'--edits',
+				join(bench.journals, 'edits.md'),
+				'--',
+				process.execPath,
+				'-e',
+				'',
+			])
+			expect(await mutation.exit()).toBe(75)
+			expect(mutation.output).toContain('cannot be read')
+			expect(bench.scratch.has(join('root', renderName(2, TICKET_SUFFIX)))).toBe(false)
 		})
 
 		it('publishes edits in the ticket of a real mutate command', async () => {
