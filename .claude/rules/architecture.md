@@ -304,7 +304,7 @@ export * from './greeters/Greeter.js'
 
 `AGENTS.md` § Design laws owns the minimal-API, shim, polling, and product-policy laws. This section adds:
 
-- For multiple backends, implement shared querying/paging/aggregation in one engine over the smallest primitives. A backend may override an operation only with a genuine native fast path and otherwise falls back to the engine.
+- For multiple backends, have each backend answer every part of an operation its engine performs natively, such as filtering, ordering, paging, counting, aggregating, and transactions. Implement one shared engine over the smallest primitives, and run it only over the part a backend's engine cannot answer, for that backend alone. Never run the shared engine where a native path exists.
 - Centralize any pattern repeated twice.
 - Keep everything generic/reusable and free of unrelated-project logic.
 - Mechanism in a framework or server utility means HMAC, CORS, parsing, sessions, cookies, CSRF, and static serving; product policy means user models, login flow, and authorization.

@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "b00de3b210c6a1afc13b870d687d9892e47de877cef27f27eda34e6e68bb524b"
+			"digest": "2f0362ce23fd870c5279ceb6ad818b8d4895f191b0ef9a5919013e4dd89a8ac6"
 		},
 		{
 			"storage": "LICENSE",
@@ -670,7 +670,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "e096a38930147d66c04948f02d4f797935bd8633ed98abf04f8732618dab8133"
+			"digest": "dff1adae3da831d43ca339af8e96ed95f33239abdc20ed0eeedbb28f2f628d45"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "e6fd77f5f3748fd490e93e8e8fc2454c8c2cf34c1ba5dfc00a584761f135cf28"
+	"digest": "4efdd684e373385e3d10df88626914d4203692088bcdd0681a07b2c3f26e0bc5"
 }
