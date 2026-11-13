@@ -143,6 +143,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `BASE_DEV_DEPENDENCIES`           | const | `Readonly<Record<string, string>>`                                                                | Holds the baseline tooling versions, before framework holds apply.                                                                                                                     |
 | `BIN_CONFIGS`                     | const | `readonly string[]`                                                                               | Lists the configuration files a workspace that ships its own executable adds, frozen.                                                                                                  |
 | `BIN_ENTRY_PATH`                  | const | `"src/bin/main.ts"`                                                                               | Names the executable entry, the `main` module of `src/bin`.                                                                                                                            |
+| `BIN_MODULE_PATTERN`              | const | `RegExp`                                                                                          | Matches the stem of a `src/bin` module: lowercase letters and digits, letter first, no hyphen.                                                                                         |
 | `BIN_OUTPUT_PATH`                 | const | `"dist/bin/main.js"`                                                                              | Names the built executable a bin workspace's manifest command runs.                                                                                                                    |
 | `BROWSE_DEV_DEPENDENCIES`         | const | `Readonly<Record<string, string>>`                                                                | Names the development dependency a browser or styles surface adds.                                                                                                                     |
 | `BROWSE_UPSTREAM`                 | const | `readonly string[]`                                                                               | Lists the packages `@orkestrel/browser` depends on at runtime, directly or transitively, frozen.                                                                                       |
@@ -709,10 +710,12 @@ answers a read and grant no verb write authority that it did not already have.
 `new --bin` creates the executable entry, its test, and its scoped Vite and TypeScript wrappers.
 
 A `src/bin` module takes no creation option. Write it as a direct child `src/bin/<name>.ts` whose
-name `NAME_PATTERN` admits and `CENTRAL_FILE_NAMES` does not name, as an import from a library
+name `BIN_MODULE_PATTERN` admits and `CENTRAL_FILE_NAMES` does not name, as an import from a library
 environment through its `@src/*` alias followed by `export default` of the imported value, because
 a host tool such as Vitest's `--reporter=<specifier>` loads the module's default export. The reading
-verbs list every such module in `bin`, and `main` stays the executable. Each module other than
+verbs list every direct `.ts` file whose name opens with a lowercase letter and names no
+centralized file in `bin`, and the gate refuses one `isBinModule` rejects, such as `my-tool`.
+`main` stays the executable. Each module other than
 `main` builds through `srcBin` and `configs/src/vite.bin.config.ts` to the ES-only
 `dist/bin/<name>.js` with its rolled-up `dist/bin/<name>.d.ts`, and the manifest exports it as
 `./<name>`. Only `main.js` carries the `#!/usr/bin/env node` banner, and only `main` plans the `bin`

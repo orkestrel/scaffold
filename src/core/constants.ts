@@ -565,6 +565,9 @@ export const SKILLS_CONFIG_PATH = 'configs/agents/tsconfig.skills.json'
 /** Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 
+/** Matches the stem of a `src/bin` module: lowercase letters and digits, letter first, no hyphen. */
+export const BIN_MODULE_PATTERN = /^[a-z][a-z0-9]*$/
+
 /**
  * Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.
  *

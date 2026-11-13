@@ -6,6 +6,7 @@ import {
 	BROWSE_UPSTREAM,
 	CAPTURE_DEV_DEPENDENCIES,
 	CAPTURE_UPSTREAM,
+	CENTRAL_FILE_NAMES,
 	extractRangeMajor,
 	MAX_REGISTRY_BYTES,
 	MAX_TOTAL_REGISTRY_BYTES,
@@ -22,9 +23,21 @@ import {
 	selectSeededNames,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
+import { CENTRAL_SOURCE_FILES } from '../../../configs/policy.js'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+
+// `configs/policy.ts` imports nothing and `src` imports no `configs` leaf, so neither list can
+// derive from the other; this case holds them to one set.
+describe('centralized file names', () => {
+	it('holds the stems of the files the policy plugin reads as centralized kinds', () => {
+		expect(CENTRAL_FILE_NAMES).toStrictEqual(
+			CENTRAL_SOURCE_FILES.map((file) => file.slice(0, -'.ts'.length)),
+		)
+		expect(CENTRAL_SOURCE_FILES.every((file) => file.endsWith('.ts'))).toBe(true)
+	})
+})
 
 describe('browse upstream', () => {
 	// A re-pin of the browser package can move its closure, and the omission it

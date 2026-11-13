@@ -293,8 +293,9 @@ export interface Override {
  * `setup` lists the runtimes required by root setup proofs: `node` for generic
  * and server proofs, and `browser` for `tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts`.
  * `journey` selects the birth-owned variant wrapper for a browser application.
- * `bin` lists the stems of the direct `.ts` modules of `src/bin` in name order: each stem
- * {@link NAME_PATTERN} admits and {@link CENTRAL_FILE_NAMES} does not name. `main` is the
+ * `bin` lists the stems of the direct `.ts` files of `src/bin`, sorted: each stem that opens with
+ * a lowercase letter and that {@link CENTRAL_FILE_NAMES} does not name. The gate refuses a stem
+ * {@link isBinModule} rejects. `main` is the
  * executable the manifest's `bin` field runs, and every other module publishes the ES-only
  * `./<name>` subpath with its declaration, for a host tool that loads the module by specifier.
  * `skills` registers the `skills` Vitest project over the mirrored proofs of the skill

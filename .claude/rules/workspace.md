@@ -40,7 +40,7 @@ Use only the environments a project needs, and keep the root dependency model in
 - `src/bin/main.ts` is the executable entry, built to `dist/bin/main.js` and published through the
   manifest's `bin` field. The name is fixed, as it is for `app/browser/main.ts` and
   `app/server/main.ts`, so every runtime entry in a workspace is found at the same name.
-- Every other direct `src/bin/<name>.ts` whose stem `NAME_PATTERN` admits and
+- Every other direct `src/bin/<name>.ts` whose stem `BIN_MODULE_PATTERN` admits and
   `CENTRAL_FILE_NAMES` does not name is a module for a host tool that loads it by specifier and
   reads its default export, as Vitest reads a reporter. It builds through the same bin build to the
   ES-only `dist/bin/<name>.js` and its `dist/bin/<name>.d.ts`, and publishes as

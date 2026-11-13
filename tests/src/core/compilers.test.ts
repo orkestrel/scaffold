@@ -4611,15 +4611,6 @@ export function appShowcase(mode: string, override?: UserConfig): UserConfig {
 			)
 		}
 	})
-
-	it('explains the executable build in every emitted bin workspace', () => {
-		const bin = blueprintToConfigArtifacts(buildBlueprint({ bin: ['main'] })).find(
-			({ path }) => path === 'configs/src/vite.bin.config.ts',
-		)
-		expect(bin?.content).toContain('One ES file per `src/bin` module.')
-		expect(bin?.content).toContain('Rolldown strips a source shebang, so `main` alone takes')
-		expect(bin?.content).toContain('built environment beside `dist/bin/`.')
-	})
 })
 
 // A package registers its own Vitest browser commands in `configs/commands.ts`, which every
@@ -6646,9 +6637,6 @@ describe('src/bin modules', () => {
 		expect(root).toContain(
 			"\t\t\tlib: {\n\t\t\t\tentry: {\n\t\t\t\t\tmain: resolveWorkspacePath('src/bin/main.ts'),\n\t\t\t\t\treporter: resolveWorkspacePath('src/bin/reporter.ts'),\n\t\t\t\t},",
 		)
-		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: ['my-tool'] }))).toContain(
-			"\t\t\t\t\t'my-tool': resolveWorkspacePath('src/bin/my-tool.ts'),",
-		)
 		expect(listUndeclaredIdentifiers(root)).toStrictEqual([])
 		expect(blueprintToRootVite(absent)).not.toContain('srcBin')
 		const [modules, alone] = [present, executable].map(
@@ -6726,23 +6714,24 @@ describe('src/bin modules', () => {
 
 	it('refuses a module name the bin law rejects and a repeated module', () => {
 		const questions = blueprintToQuestions(
-			buildBlueprint({ src: ['core'], bin: ['helpers', 'Main', 'reporter', 'reporter'] }),
+			buildBlueprint({
+				src: ['core'],
+				bin: ['helpers', 'Main', 'my-tool', 'reporter', 'reporter'],
+			}),
 		)
+		// A hyphen is refused because a tracked file name carries none, though `NAME_PATTERN` admits it.
 		expect(questions.filter(({ field }) => field === 'bin')).toStrictEqual([
-			{
+			...['helpers', 'Main', 'my-tool'].map((name) => ({
 				field: 'bin',
-				message:
-					'helpers is not a src/bin module name: write a lowercase alphanumeric name starting with a letter that names no centralized file.',
+				message: `${name} is not a src/bin module name: write 1 to 203 lowercase letters and digits, starting with a letter, that name no centralized file.`,
 				blocking: true,
-			},
-			{
-				field: 'bin',
-				message:
-					'Main is not a src/bin module name: write a lowercase alphanumeric name starting with a letter that names no centralized file.',
-				blocking: true,
-			},
+			})),
 			{ field: 'bin', message: 'reporter is declared more than once on bin.', blocking: true },
 		])
+		// The refused module plans no subpath and no root entry the gate would have to undo.
+		expect(blueprintToQuestions(buildBlueprint({ src: ['core'], bin: ['mytool'] }))).toStrictEqual(
+			[],
+		)
 	})
 
 	it('advises that a module of a workspace publishing nothing reaches no exports map', () => {

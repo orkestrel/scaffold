@@ -47,6 +47,7 @@ import {
 	blueprintToScripts,
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
+	CENTRAL_FILE_NAMES,
 	compareVersions,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
@@ -1446,6 +1447,46 @@ export function targetToEnvironments(target: string, axis: string): readonly Env
 		const full = resolveContainedPath(target, `${axis}/${environment}`)
 		return full !== undefined && isPhysicalDirectory(full)
 	})
+}
+
+/**
+ * Reads the `src/bin` modules a target physically holds.
+ *
+ * @param target - The target directory to read.
+ * @returns The stem of each direct `.ts` file of `src/bin` that opens with a lowercase letter and
+ * names no centralized file, sorted by stem, and `[]` when `src/bin` is absent.
+ * @throws `ScaffoldError` when `src/bin` holds more entries than one inventory may report.
+ *
+ * @remarks
+ * The read takes the direct children alone, so a nested file is never a module. A capitalized
+ * stem is an implementation file and stays out. Every other stem enters the list whether or not
+ * `isBinModule` admits it, so the blueprint gate refuses a malformed module name rather than the
+ * read dropping it.
+ *
+ * @example
+ * ```ts
+ * import { targetToModules } from './helpers.js'
+ *
+ * targetToModules('./packages/router') // ['main', 'reporter']
+ * ```
+ */
+export function targetToModules(target: string): readonly string[] {
+	const directory = resolveContainedPath(target, 'src/bin')
+	if (directory === undefined || !isPhysicalDirectory(directory)) return []
+	const entries = readdirSync(directory, { withFileTypes: true })
+	if (entries.length > MAX_INVENTORY_PATHS)
+		throw new ScaffoldError('TARGET', 'The src/bin directory exceeds the inventory limit.')
+	return entries
+		.flatMap((entry) => {
+			const stem = entry.name.slice(0, -'.ts'.length)
+			return entry.isFile() &&
+				entry.name.endsWith('.ts') &&
+				/^[a-z]/u.test(stem) &&
+				!CENTRAL_FILE_NAMES.includes(stem)
+				? [stem]
+				: []
+		})
+		.sort()
 }
 
 /**

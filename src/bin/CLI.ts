@@ -53,7 +53,6 @@ import {
 	AXES,
 	BIN_ENTRY_PATH,
 	BIN_OUTPUT_PATH,
-	isBinModule,
 	blueprintToConfigArtifacts,
 	blueprintToEntries,
 	blueprintToDevDependencies,
@@ -150,6 +149,7 @@ import {
 	sheetTestToQuestion,
 	targetToEnvironments,
 	targetToExtensions,
+	targetToModules,
 	targetToFacts,
 	versionsToRefusal,
 	writeDiagnostic,
@@ -1391,7 +1391,6 @@ export class CLI implements CLIInterface {
 				target,
 			})
 		}
-		const bin = resolveContainedPath(target, 'src/bin')
 		const tests = resolveContainedPath(target, 'tests')
 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
@@ -1436,20 +1435,7 @@ export class CLI implements CLIInterface {
 			src: targetToEnvironments(target, 'src'),
 			app: targetToEnvironments(target, 'app'),
 			dependencies: manifestToDependencies(manifest).runtime,
-			// A module is a direct exact-case `.ts` child whose stem names no centralized file.
-			bin:
-				bin === undefined
-					? []
-					: listFiles(bin).flatMap((path) => {
-							const name = path.endsWith('.ts') ? path.slice(0, -'.ts'.length) : path
-							const file = resolveContainedPath(bin, path)
-							return name !== path &&
-								isBinModule(name) &&
-								file !== undefined &&
-								isExactCaseFile(file)
-								? [name]
-								: []
-						}),
+			bin: targetToModules(target),
 			setup: [...setup],
 			guides: guides !== undefined && isExactCaseFile(guides),
 			integration: integration !== undefined && isExactCaseFile(integration),

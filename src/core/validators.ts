@@ -40,6 +40,7 @@ import {
 import {
 	ARTIFACT_GROUPS,
 	AXES,
+	BIN_MODULE_PATTERN,
 	CENTRAL_FILE_NAMES,
 	CONTROL_CHARACTER_PATTERN,
 	DEPENDENCY_NAME_PATTERN,
@@ -230,7 +231,8 @@ export function isSheetName(value: unknown): value is string {
 /**
  * Narrows a value to the stem of a `src/bin` module.
  * @param value - The candidate stem.
- * @returns True if the stem matches the workspace pattern and names no centralized file; false otherwise.
+ * @returns True if the stem matches `BIN_MODULE_PATTERN` within the name length cap and names no
+ * centralized file; false otherwise.
  * @example
  * ```ts
  * import { isBinModule } from '@orkestrel/scaffold'
@@ -243,7 +245,7 @@ export function isBinModule(value: unknown): value is string {
 	return (
 		isString(value) &&
 		value.length <= MAX_NAME_LENGTH &&
-		NAME_PATTERN.test(value) &&
+		BIN_MODULE_PATTERN.test(value) &&
 		!CENTRAL_FILE_NAMES.includes(value)
 	)
 }

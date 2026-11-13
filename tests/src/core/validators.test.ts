@@ -10,6 +10,7 @@ import {
 	isCompilerOptions,
 	isCatalogEntry,
 	isBlueprint,
+	isBinModule,
 	isBrowserExtension,
 	isStylesExtension,
 	isSurface,
@@ -25,6 +26,8 @@ import {
 	MANIFEST_PATH,
 	MAX_AUDIT_FINDINGS,
 	MAX_COLLECTION_ITEMS,
+	MAX_NAME_LENGTH,
+	CENTRAL_FILE_NAMES,
 } from '@src/core'
 import { createRecorder } from '@orkestrel/test'
 import {
@@ -84,6 +87,38 @@ describe('extension guards', () => {
 		expect(
 			isBlueprint({ ...blueprint, extensions: [{ surface: 'browser', name: 'react', axes: [] }] }),
 		).toBe(false)
+	})
+})
+
+describe('isBinModule', () => {
+	it('admits lowercase letters and digits that open with a letter up to the name cap', () => {
+		expect(['main', 'reporter', 'tool2', 'a'].map((name) => isBinModule(name))).toStrictEqual([
+			true,
+			true,
+			true,
+			true,
+		])
+		expect(isBinModule('a'.repeat(MAX_NAME_LENGTH))).toBe(true)
+		expect(isBinModule('a'.repeat(MAX_NAME_LENGTH + 1))).toBe(false)
+	})
+
+	it('refuses a hyphen, a capital, a leading digit, a dot, and every centralized file name', () => {
+		for (const name of [
+			'my-tool',
+			'Main',
+			'cliTool',
+			'2tool',
+			'main.test',
+			'',
+			'index',
+			'helpers',
+		]) {
+			expect({ name, admitted: isBinModule(name) }).toStrictEqual({ name, admitted: false })
+		}
+		expect(CENTRAL_FILE_NAMES.filter((name) => isBinModule(name))).toStrictEqual([])
+		expect([undefined, 1, ['main'], { name: 'main' }].some((value) => isBinModule(value))).toBe(
+			false,
+		)
 	})
 })
 

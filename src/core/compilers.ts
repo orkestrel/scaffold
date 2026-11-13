@@ -64,6 +64,7 @@ import {
 	MANIFEST_KEY_ORDER,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
+	MAX_NAME_LENGTH,
 	MAX_TOTAL_ARTIFACT_BYTES,
 	NAME_PATTERN,
 	ORKESTREL_RANGE_PATTERN,
@@ -1593,7 +1594,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 						entries: blueprint.bin
 							.map(
 								(name) =>
-									`\t\t\t\t\t${name.includes('-') ? serializeTypeScriptString(name) : name}: resolveWorkspacePath(${serializeTypeScriptString(`src/bin/${name}.ts`)}),`,
+									`\t\t\t\t\t${name}: resolveWorkspacePath(${serializeTypeScriptString(`src/bin/${name}.ts`)}),`,
 							)
 							.join('\n'),
 					}),
@@ -3972,7 +3973,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					return [
 						{
 							field: 'bin',
-							message: `${name} is not a src/bin module name: write a lowercase alphanumeric name starting with a letter that names no centralized file.`,
+							message: `${name} is not a src/bin module name: write 1 to ${String(MAX_NAME_LENGTH)} lowercase letters and digits, starting with a letter, that name no centralized file.`,
 							blocking: true,
 						},
 					]

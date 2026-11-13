@@ -78,6 +78,7 @@ import {
 	targetToEnvironments,
 	targetToExtensions,
 	targetToFacts,
+	targetToModules,
 	verbToSyntax,
 	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
@@ -245,6 +246,41 @@ describe('extension selections', () => {
 		expect(() => selectionToExtensions('styles:print,styles:print', [], true)).toThrow(UsageError)
 		expect(() => selectionToExtensions('browser:vue', [], false)).toThrow(UsageError)
 		expect(() => selectionToExtensions('styles:print', [], false)).toThrow(UsageError)
+	})
+})
+
+describe('target src/bin modules', () => {
+	// `my-tool.ts` precedes `my.ts` in file-name order because `-` sorts before `.`, so the stems
+	// read sorted only when the read sorts the stems themselves.
+	it('reads the direct lowercase .ts children by stem, sorted, and nothing nested', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(targetToModules(scratch.path)).toStrictEqual([])
+			for (const file of [
+				'tool2.ts',
+				'tool.ts',
+				'my.ts',
+				'my-tool.ts',
+				'main.ts',
+				'helpers.ts',
+				'index.ts',
+				'CLI.ts',
+				'notes.md',
+				'nested/deep.ts',
+			]) {
+				scratch.write(`src/bin/${file}`, 'export {}\n')
+			}
+			scratch.ensure('src/bin/folder.ts')
+			expect(targetToModules(scratch.path)).toStrictEqual([
+				'main',
+				'my',
+				'my-tool',
+				'tool',
+				'tool2',
+			])
+		} finally {
+			scratch.destroy()
+		}
 	})
 })
 

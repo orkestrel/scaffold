@@ -1562,7 +1562,7 @@ describe('root configuration', () => {
 		const modules = existsSync(directory)
 			? readdirSync(directory)
 					.filter(
-						(file) => /^[a-z][a-z0-9-]*\.ts$/u.test(file) && !CENTRAL_SOURCE_FILES.includes(file),
+						(file) => /^[a-z][a-z0-9]*\.ts$/u.test(file) && !CENTRAL_SOURCE_FILES.includes(file),
 					)
 					.map((file) => file.slice(0, -'.ts'.length))
 			: []
