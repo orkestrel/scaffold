@@ -107,7 +107,7 @@
 //   hold, but its footprint still counts in their budget sums and their slot count. Where the per-run
 //   threshold is over the budget, as in the live `limits.json` of 2026-11-12, one blocked ticket with
 //   fewer than `RECENT_RUNS` records fills the budget, so every later light ticket on the host queues
-//   until the mutation ends and that ticket runs. The count stays, because leaving the ticket out and
+//   until the mutation ends and that ticket has run and left. The count stays, because leaving the ticket out and
 //   counting later holders when it unblocks would race two processes on one budget.
 // - The ready wait. A holder waits for its sampler before it writes its run record and signals that
 //   it holds, so later light tickets count it as one that has not held for up to `READY_MS` when its
@@ -2319,6 +2319,19 @@ export function waitForClose(child: ChildProcess): Promise<number | undefined> {
 }
 
 /**
+ * Waits for a started launcher to exit, which precedes the close of its streams.
+ *
+ * @param child - The started launcher.
+ * @returns When it exited or failed, in epoch milliseconds.
+ */
+export function waitForExit(child: ChildProcess): Promise<number> {
+	return new Promise((resolve) => {
+		child.once('error', () => resolve(Date.now()))
+		child.once('exit', () => resolve(Date.now()))
+	})
+}
+
+/**
  * Writes a run record, leaving an unwritten id to the handover reading.
  *
  * @param root - The queue root.
@@ -2494,8 +2507,8 @@ export function tryWriteOutcome(
  * only after the child can answer at once. A {@link Sampler.sample} call starts one sample at once;
  * after the first, the child also samples every {@link SAMPLE_MS}. The child exits when its stdin
  * closes, which {@link Sampler.stop} and the end of this process both do. A threshold, given for a
- * light run, calls the breach handler once with the seeds, on the first sample whose memory or
- * process count passes it.
+ * light run, calls the breach handler once with the launcher's id, on the first sample before
+ * {@link Sampler.seal} whose memory or process count passes it.
  */
 export class Sampler {
 	readonly #child: ChildProcess
@@ -2503,7 +2516,7 @@ export class Sampler {
 	readonly #ready = Promise.withResolvers<boolean>()
 	readonly #waiters = new Map<number, (gauges: readonly Gauge[] | undefined) => void>()
 	readonly #threshold: Usage | undefined
-	readonly #breach: (seeds: readonly number[]) => void
+	readonly #breach: (launcher: number) => void
 	#seeds: readonly number[] = []
 	#floor: number | undefined
 	#ceiling: number | undefined
@@ -2516,12 +2529,14 @@ export class Sampler {
 	 * Starts the sampler.
 	 *
 	 * @param threshold - The light run's threshold, or undefined for a heavy run.
-	 * @param breach - Called once with the seeds when a sample passes the threshold.
+	 * @param breach - Called once with the launcher's id when a sample passes the threshold. The
+	 * launcher is the one seed the lane holds a live handle on until it exits, so ending its tree
+	 * reaches the command and never a reused id.
 	 * @param command - The PowerShell text the child runs, for a proof. Default: {@link SAMPLER_COMMAND}.
 	 */
 	constructor(
 		threshold: Usage | undefined,
-		breach: (seeds: readonly number[]) => void,
+		breach: (launcher: number) => void,
 		command = SAMPLER_COMMAND,
 	) {
 		this.#threshold = threshold
@@ -2685,8 +2700,10 @@ export class Sampler {
 		) {
 			return
 		}
+		const [launcher] = this.#seeds
+		if (launcher === undefined) return
 		this.#breached = true
-		this.#breach(this.#seeds)
+		this.#breach(launcher)
 	}
 }
 
@@ -2759,6 +2776,10 @@ export async function runHolder(
 	active?.seed([id], floor)
 	const unwatch = watchSignals(() => killMembers([id]))
 	const closed = waitForClose(child)
+	const exited = waitForExit(child).then((at) => {
+		active?.seal(at)
+		return at
+	})
 	if (child.stdout !== null) {
 		const lines = createInterface({ input: child.stdout, crlfDelay: Infinity })
 		lines.on('error', () => undefined)
@@ -2772,10 +2793,9 @@ export async function runHolder(
 		})
 	}
 	const code = await closed
+	const ended = await exited
 	early.abort()
 	unwatch()
-	const ended = Date.now()
-	active?.seal(ended)
 	const run = readRun(root, sequence)
 	const rows = typeof run === 'object' ? await active?.sample(HANDOVER_MS) : undefined
 	const hung = active !== undefined && typeof run === 'object' && rows === undefined
@@ -2887,8 +2907,8 @@ export async function enterLane(
 		const sampler =
 			measure === undefined
 				? undefined
-				: new Sampler(measure.light === undefined ? undefined : measure.limits.threshold, (seeds) =>
-						killMembers(seeds),
+				: new Sampler(measure.light === undefined ? undefined : measure.limits.threshold, (pid) =>
+						killMembers([pid]),
 					)
 		try {
 			await token.listen(renderEndpoint(root, tokenId))

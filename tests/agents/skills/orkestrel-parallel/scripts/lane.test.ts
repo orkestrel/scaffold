@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, readFileSync, realpathSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { randomUUID } from 'node:crypto'
@@ -86,6 +86,7 @@ import {
 	Token,
 	TICKET_SUFFIX,
 	TOKEN_PATTERN,
+	waitForExit,
 	writeOutcome,
 	writeRun,
 	writeStage,
@@ -2333,26 +2334,33 @@ describe('lane.ts', () => {
 
 		it('triggers no breach from a sample after the launcher exited, beside a control that does', async () => {
 			const exited = Date.now()
-			const command = `$i=[Console]::OpenStandardInput();[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();while($i.ReadByte() -ge 0){[Console]::Out.WriteLine('1|4242 1 ${String(exited + 1)} 0 999999999');[Console]::Out.Flush()}`
+			const command = `$i=[Console]::OpenStandardInput();[Console]::Out.WriteLine('${READY_LINE}');[Console]::Out.Flush();while($i.ReadByte() -ge 0){[Console]::Out.WriteLine('1|4242 1 ${String(exited - 500)} 0 999999999');[Console]::Out.Flush()}`
 			const threshold = { cores: 1, memory: 1000, processes: 100 }
-			const control = createRecorder<[readonly number[]]>()
+			const control = createRecorder<[number]>()
 			const unsealed = new Sampler(threshold, control.handler, command)
 			onTestFinished(() => unsealed.destroy())
 			expect(await unsealed.ready(READY_MS)).toBe(true)
-			unsealed.seed([4242], exited - 1000)
-			await waitForDelay(5)
+			unsealed.seed([4242, 4343], exited - 1000)
 			expect(await unsealed.sample()).toHaveLength(1)
-			expect(control.calls).toStrictEqual([[[4242]]])
-			const breach = createRecorder<[readonly number[]]>()
+			expect(control.calls).toStrictEqual([[4242]])
+			const breach = createRecorder<[number]>()
 			const sealed = new Sampler(threshold, breach.handler, command)
 			onTestFinished(() => sealed.destroy())
 			expect(await sealed.ready(READY_MS)).toBe(true)
-			sealed.seed([4242], exited - 1000)
+			sealed.seed([4242, 4343], exited - 1000)
 			sealed.seal(exited)
-			await waitForDelay(5)
 			expect(await sealed.sample()).toHaveLength(1)
+			expect(sealed.tally.processes).toBe(1)
 			expect(breach.count).toBe(0)
 			expect(sealed.breached).toBe(false)
+		})
+
+		it('reads when a launcher exited, before its streams close', async () => {
+			const before = Date.now()
+			const child = spawn(process.execPath, ['-e', ''], { stdio: 'ignore' })
+			const at = await waitForExit(child)
+			expect(at).toBeGreaterThanOrEqual(before)
+			expect(at).toBeLessThanOrEqual(Date.now())
 		})
 
 		it('publishes edits in the ticket of a mutate --restore run, which waits on its directory', async () => {
