@@ -28,7 +28,16 @@ overwrite receipts are written only where the work tree ignores `tmp/`.
    Do not treat a declared minor or patch bound as the lookup bound. A lookup skips a deprecated
    version, and skips a version above `latest` when the range is `*` or sits in `latest`'s major.
    A peer declared also as a dependency takes that dependency's reading. Peer-only dependencies
-   produce no audit reading, so the visit looks each one up with `npm view` under the same bounds.
+   produce no audit reading, so the visit looks each one up with `npm view` under the same bounds:
+   a fleet package with `*`, and a foreign tool with a caret over its declared major, or with its
+   declared range when its arms span several majors. A peer-only reading moves `peerDependencies`
+   ranges alone and never a dependency range the audit did not read. When a lookup exits non-zero,
+   stop the step before the rewrite and the install. When a lookup exits 0 and serves no eligible
+   release, keep the peer and name it `no eligible release`. Offline, look up nothing and keep each
+   peer-only dependency as `no release reading`. When more than one arm of a peer range sits in the
+   release's major, keep the peer and name it `several arms in the major of` the release. A peer
+   whose arms span several majors and that no dependency reading names never rises, because its
+   own range bounds its lookup and admits every release the lookup serves.
    For example, with a peer `vite: ^8.3.7` and a development `vite: ^8.3.7` whose registry serves
    `8.3.8`, apply `vite: ^8.3.7 -> ^8.3.8` to the development range and leave the peer at `^8.3.7`,
    which admits `8.3.8`; with a peer `@orkestrel/database: ^0.0.23` whose registry serves `0.0.24`,

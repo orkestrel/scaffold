@@ -4,10 +4,13 @@
 // --visit runs the visit `wave.md` § Visit a repository fixes, in order, stopping at the first step
 // that fails: pin (read `scaffold audit --json`, whose drift exit is the reading the pin closes, then
 // re-pin every `dependencies` and `devDependencies` range the audit release readings name to the registry caret,
-// look up each peer-only dependency with `npm view` as the audit bounds a dependency, raise a `peerDependencies`
-// range to the caret of its served version only when the declared exact, caret, tilde, or `||` range excludes that
-// version, moving only the arm in the release's major, keep every other peer as declared, name each peer raised
-// or kept in the rewrite row, and install), commit (`git commit --only` of
+// look up each peer-only dependency with `npm view` as the audit bounds a dependency, stopping when a lookup
+// exits non-zero, raise a `peerDependencies` range from its reading, never a dependency range from a peer-only
+// reading, to the caret of its served version only when the declared exact, caret, tilde, or `||` range excludes
+// that version, moving the one arm in the release's major, keep every other peer as declared, including one with
+// several arms in that major, no eligible release, or no reading offline, and one spanning several majors whose
+// lookup bound is its own range and never rises, name each peer raised or kept in the rewrite row, and install),
+// commit (`git commit --only` of
 // the manifest and lockfile as the preparation commit), overwrite (`scaffold overwrite --json`, then
 // `scaffold audit` exiting 0; offline, an exit of 1 whose note names the skipped catalog step is
 // accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
@@ -1684,40 +1687,46 @@ export function computeSatisfaction(range: string, version: string): boolean | u
  *
  * @remarks
  * A range the served version satisfies stays as declared. A failing range moves per
- * {@link moveRange}: only the arm in the release's major becomes the caret of the release. A range
- * that is unreadable, carries no arm in that major, or whose arm in that major opens above the
- * release stays as declared, and the message names why.
+ * {@link moveRange}: the one arm in the release's major becomes the caret of the release. A range
+ * that is unreadable, carries no arm or several arms in that major, or whose arm in that major opens
+ * above the release stays as declared, and the message names why. A reading that names the peer and
+ * carries no release keeps it as `no eligible release`; no reading keeps it as `no release reading`.
  *
  * @param name - The peer's package name.
  * @param range - The declared peer range.
- * @param latest - The served release, or undefined when no reading names the peer.
+ * @param reading - The release reading that names the peer, or undefined when none does.
  * @returns The range after the decision and the rewrite row message: `peer NAME OLD -> NEW` when it
  * rose, `peer NAME OLD kept, REASON` otherwise.
  * @example
  * ```ts
- * raisePeer('@orkestrel/database', '^0.0.23', '0.0.24')
+ * raisePeer('@orkestrel/database', '^0.0.23', { name: '@orkestrel/database', range: '*', latest: '0.0.24' })
  * // { range: '^0.0.24', message: 'peer @orkestrel/database ^0.0.23 -> ^0.0.24', raised: true }
  * ```
  */
-export function raisePeer(name: string, range: string, latest: string | undefined): PeerMove {
+export function raisePeer(name: string, range: string, reading: Release | undefined): PeerMove {
 	const arms = parseRange(range)
+	const latest = reading?.latest
 	const version = latest === undefined ? undefined : parseVersion(latest)
-	const arm =
-		version === undefined ? undefined : arms?.find((entry) => entry.floor[0] === version[0])
+	const matched =
+		version === undefined ? [] : (arms ?? []).filter((entry) => entry.floor[0] === version[0])
 	const reason =
 		arms === undefined
 			? 'unreadable range'
-			: latest === undefined
+			: reading === undefined
 				? 'no release reading'
-				: version === undefined
-					? `unreadable release ${latest}`
-					: computeSatisfaction(range, latest) === true
-						? `admits ${latest}`
-						: arm === undefined
-							? `no arm in the major of ${latest}`
-							: compareVersions(arm.floor, version) > 0
-								? `its floor is above ${latest}`
-								: undefined
+				: latest === undefined
+					? 'no eligible release'
+					: version === undefined
+						? `unreadable release ${latest}`
+						: computeSatisfaction(range, latest) === true
+							? `admits ${latest}`
+							: matched.length === 0
+								? `no arm in the major of ${latest}`
+								: matched.length > 1
+									? `several arms in the major of ${latest}`
+									: matched.some((arm) => compareVersions(arm.floor, version) > 0)
+										? `its floor is above ${latest}`
+										: undefined
 	if (reason !== undefined || latest === undefined)
 		return { range, message: `peer ${name} ${range} kept, ${String(reason)}`, raised: false }
 	const next = String(moveRange(range, latest))
@@ -1731,7 +1740,8 @@ export function raisePeer(name: string, range: string, latest: string | undefine
  * A peer a release reading already names, such as one also declared under `devDependencies`, takes
  * that reading. A peer whose range {@link parseRange} cannot read needs no reading. A fleet package
  * is looked up with `*`, and a foreign tool with a caret over its declared major, or with the
- * declared range when its arms span several majors, as the audit bounds a dependency.
+ * declared range when its arms span several majors, as the audit bounds a dependency. A range bound
+ * by itself admits every release its lookup serves, so such a peer never rises.
  *
  * @param manifest - The manifest record.
  * @param releases - The audit's release readings.
@@ -1861,13 +1871,15 @@ export function computeRanges(
  * its release.
  *
  * @remarks
- * A `dependencies` or `devDependencies` range moves per {@link computeRanges}. A `peerDependencies`
- * range takes the last reading that names it and moves per {@link raisePeer}: it rises to the caret
- * of the served version only when the declared range excludes that version, and otherwise stays as
+ * A `dependencies` or `devDependencies` range moves per {@link computeRanges} over the audit's
+ * readings alone. A `peerDependencies` range takes the last audit reading that names it with a
+ * release, else its peer-only reading, and moves per {@link raisePeer}: it rises to the caret of the
+ * served version only when the declared range excludes that version, and otherwise stays as
  * declared. Every raised peer joins the moved list and every other peer is reported as kept.
  *
  * @param target - The target directory.
- * @param releases - The release readings: the audit's, plus one per peer-only dependency.
+ * @param releases - The audit's release readings.
+ * @param peers - The peer-only readings, which move `peerDependencies` ranges alone. Default: none.
  * @returns One message per range moved and one per peer range kept; the manifest is rewritten only
  * when a range moved.
  * @example
@@ -1876,7 +1888,11 @@ export function computeRanges(
  * // { moved: ['vite ^8.3.7 -> ^8.3.8'], kept: ['peer vite ^8.3.7 kept, admits 8.3.8'] }
  * ```
  */
-export function writeRanges(target: string, releases: readonly Release[]): Rewrite {
+export function writeRanges(
+	target: string,
+	releases: readonly Release[],
+	peers: readonly Release[] = [],
+): Rewrite {
 	const manifest = readManifest(target)
 	if (manifest === undefined) return { moved: [], kept: [] }
 	const fields = RANGE_FIELDS.flatMap((field): readonly FieldMove[] => {
@@ -1885,7 +1901,7 @@ export function writeRanges(target: string, releases: readonly Release[]): Rewri
 		const ranges = Object.fromEntries(Object.entries(block))
 		if (field !== 'peerDependencies')
 			return [{ field, moves: computeRanges(ranges, releases), kept: [] }]
-		const peers = Object.entries(ranges).flatMap(([name, range]) =>
+		const decisions = Object.entries(ranges).flatMap(([name, range]) =>
 			typeof range === 'string'
 				? [
 						[
@@ -1895,7 +1911,7 @@ export function writeRanges(target: string, releases: readonly Release[]): Rewri
 								range,
 								releases.findLast(
 									(release) => release.name === name && release.latest !== undefined,
-								)?.latest,
+								) ?? peers.findLast((release) => release.name === name),
 							),
 						] as const,
 					]
@@ -1907,11 +1923,11 @@ export function writeRanges(target: string, releases: readonly Release[]): Rewri
 				moves: {
 					ranges: {
 						...ranges,
-						...Object.fromEntries(peers.map(([name, peer]) => [name, peer.range])),
+						...Object.fromEntries(decisions.map(([name, peer]) => [name, peer.range])),
 					},
-					moved: peers.flatMap(([, peer]) => (peer.raised ? [peer.message] : [])),
+					moved: decisions.flatMap(([, peer]) => (peer.raised ? [peer.message] : [])),
 				},
-				kept: peers.flatMap(([, peer]) => (peer.raised ? [] : [peer.message])),
+				kept: decisions.flatMap(([, peer]) => (peer.raised ? [] : [peer.message])),
 			},
 		]
 	})
@@ -1931,15 +1947,16 @@ export function writeRanges(target: string, releases: readonly Release[]): Rewri
  *
  * @param result - The `npm view NAME@BOUND version deprecated dist-tags.latest --json` command.
  * @param bound - The lookup bound.
- * @returns Exit 0 with the served version when the lookup exited 0 and served an eligible release;
- * else a failing exit with the reason.
+ * @returns Exit 0 naming the served version, or naming that no release within the bound is
+ * eligible, when the lookup exited 0; else the lookup's failing exit and its reason.
  */
 export function judgeLookup(result: SpawnSyncReturns<string>, bound: string): Verdict {
 	if (result.status !== 0) return readVerdict(result)
 	const served = readServedVersion(result.stdout, bound)
-	return served === undefined
-		? { exit: 2, note: `the registry served no eligible release within ${bound}` }
-		: { exit: 0, note: `serves ${served}` }
+	return {
+		exit: 0,
+		note: served === undefined ? `no eligible release within ${bound}` : `serves ${served}`,
+	}
 }
 
 /**
@@ -1947,8 +1964,9 @@ export function judgeLookup(result: SpawnSyncReturns<string>, bound: string): Ve
  *
  * @remarks
  * A peer-only dependency produces no audit release reading, so the step looks each one up with
- * `npm view`, per {@link collectPeerLookups}, before the rewrite. Offline, it looks up none and the
- * rewrite keeps those peers as declared.
+ * `npm view`, per {@link collectPeerLookups}, before the rewrite, and stops before the rewrite and
+ * the install when a lookup exits non-zero. A lookup that exits 0 with no eligible release keeps
+ * its peer. Offline, it looks up none and the rewrite keeps those peers as declared.
  *
  * @param runner - The visit's state.
  * @param scaffoldFile - The scaffold executable.
@@ -1995,14 +2013,16 @@ export function runPin(
 				],
 				(result) => judgeLookup(result, lookup.bound),
 			)
-			const latest = view?.status === 0 ? readServedVersion(view.stdout, lookup.bound) : undefined
-			return latest === undefined ? undefined : { name: lookup.name, range: lookup.bound, latest }
+			if (view?.status !== 0) return undefined
+			const latest = readServedVersion(view.stdout, lookup.bound)
+			return { name: lookup.name, range: lookup.bound, latest }
 		})
 		if (readings.includes(undefined)) return
-		const { moved, kept } = writeRanges(runner.target, [
-			...releases,
-			...readings.filter((reading) => reading !== undefined),
-		])
+		const { moved, kept } = writeRanges(
+			runner.target,
+			releases,
+			readings.filter((reading) => reading !== undefined),
+		)
 		appendStep(
 			runner,
 			'pin',
