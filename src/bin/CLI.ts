@@ -53,6 +53,7 @@ import {
 	AXES,
 	BIN_ENTRY_PATH,
 	blueprintToConfigArtifacts,
+	blueprintToEntries,
 	blueprintToDevDependencies,
 	blueprintToManifestOverrides,
 	blueprintToFaces,
@@ -79,7 +80,9 @@ import {
 	isScaffoldError,
 	matchesBarrel,
 	matchesGuideRefusal,
+	insertManifestEntries,
 	manifestToDependencies,
+	manifestToEntries,
 	manifestToName,
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
@@ -119,6 +122,7 @@ import {
 	auditToSummary,
 	catalogToNames,
 	collectScriptChain,
+	entriesToLines,
 	dependenciesToFloors,
 	dependenciesToFleet,
 	entriesToReleases,
@@ -782,6 +786,8 @@ export class CLI implements CLIInterface {
 				scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
 			}
 			const additions = manifestToAdditions(this.#manifest(target), blueprint)
+			const entries = blueprintToEntries(blueprint)
+			const absent = manifestToEntries(this.#manifest(target), entries)
 			const repaired = host.materializer.repair(plan, audit, target)
 			// The declarations land in the offline half, beside the configuration that
 			// names them, so a catalog step that cannot complete never leaves a written
@@ -790,10 +796,15 @@ export class CLI implements CLIInterface {
 			// ranges, each lifted to the canon's major where the lift applies.
 			const policy =
 				blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}
+			// The planned manifest entries land here too, so a catalog step that cannot complete
+			// still leaves the export, packed path, and command the configuration builds.
 			const added =
 				additions.runtime.length === 0 &&
 				additions.development.length === 0 &&
-				Object.keys(policy).length === 0
+				Object.keys(policy).length === 0 &&
+				Object.keys(absent.bin).length === 0 &&
+				absent.files.length === 0 &&
+				Object.keys(absent.exports).length === 0
 					? undefined
 					: host.materializer.declare(
 							{
@@ -808,6 +819,7 @@ export class CLI implements CLIInterface {
 								scripts: [],
 								additions,
 								overrides: blueprintToManifestOverrides(blueprint),
+								entries,
 							},
 							target,
 						)
@@ -874,6 +886,12 @@ export class CLI implements CLIInterface {
 							`Declared ${JSON.stringify(name)}: ${JSON.stringify(range)} in ${section}. Run npm install to install it.`,
 						)
 					}
+				}
+				const remaining = new Set(
+					entriesToLines(manifestToEntries(this.#manifest(target), entries)),
+				)
+				for (const line of entriesToLines(absent)) {
+					if (!remaining.has(line)) this.#say(`Inserted ${line} in package.json.`)
 				}
 				if (remainder.note !== undefined) this.#warn(remainder.note)
 			}
@@ -1619,17 +1637,41 @@ export class CLI implements CLIInterface {
 		const disk = parseJSON(text)
 		const written = isRecord(disk) && isRecord(disk.scripts) ? disk.scripts : {}
 		const direct = names.map((project) => `test:${project}`)
-		const declared = direct.filter((script) => isString(written[script]))
-		const undeclared = direct.filter((script) => !isString(written[script]))
 		// Over a writable predecessor chain a write closes the gap itself, so the
 		// remedy names that write rather than asking for a hand edit it replaces.
+		const rewrites = writing
+			? []
+			: manifestToWritableScripts(text, blueprint)
+					.filter(({ name }) => name === 'test' || name === 'test:src')
+					.map(({ name }) => name)
 		const rewritable =
-			!writing && manifestToWritableScripts(text, blueprint).some(({ name }) => name === 'test')
+			rewrites.length > 0 && this.#projectQuestion(target, blueprint, true) === undefined
+		// A gate that already runs the aggregate the plan names the project in is missing one
+		// `--project` value there, so the remedy names that step rather than a second gate.
+		const visited = new Set([...chains.values()].flatMap((chain) => [...chain.visited]))
+		const aggregated = names.flatMap((project) => {
+			const owner = Object.entries(expected).find(
+				([name, script]) =>
+					name !== `test:${project}` &&
+					visited.has(name) &&
+					(scriptToInvocations(script)?.projects ?? []).includes(project),
+			)?.[0]
+			return owner === undefined ? [] : [{ project, owner }]
+		})
+		const unaggregated = direct.filter(
+			(script) => !aggregated.some(({ project }) => script === `test:${project}`),
+		)
+		const declared = unaggregated.filter((script) => isString(written[script]))
+		const undeclared = unaggregated.filter((script) => !isString(written[script]))
 		const remedies = rewritable
 			? [
-					'The test chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
+					`The ${rewrites.join(' and ')} ${rewrites.length === 1 ? 'chain runs' : 'chains run'} generated steps only, so repair and overwrite write the planned ${rewrites.length === 1 ? 'chain' : 'chains'} and every missing direct script.`,
 				]
 			: [
+					...aggregated.map(
+						({ project, owner }) =>
+							`The ${gateNames} chain runs ${owner}, which does not pass --project ${project}: add --project ${project} to ${owner}, or invoke npm run test:${project} by name from the ${gateNames} chain.`,
+					),
 					declared.length === 0
 						? ''
 						: `${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
@@ -1639,7 +1681,7 @@ export class CLI implements CLIInterface {
 				]
 		return {
 			field: 'projects',
-			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.filter((remedy) => remedy !== '').join(' ')}${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
+			message: `${writing ? 'The configs group is blocked because the' : 'The'} manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.filter((remedy) => remedy !== '').join(' ')}${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
 			blocking: false,
 			groups: ['configs'],
 		}
@@ -1668,6 +1710,60 @@ export class CLI implements CLIInterface {
 		return {
 			field: 'scripts',
 			message: `The manifest at ${target} does not reach the planned script build:app:barrel from build, so npm run build does not emit dist/app/server/index.js. Invoke npm run build:app:barrel from the build chain, after npm run build:app:server.`,
+			blocking: false,
+			groups: ['manifest'],
+		}
+	}
+
+	// Report each planned `bin`, `files`, and `exports` entry the manifest lacks. Overwrite
+	// inserts them in its offline half; repair leaves the manifest's entries alone.
+	#entryQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
+		const text = this.#manifest(target)
+		const planned = blueprintToEntries(blueprint)
+		const lines = entriesToLines(manifestToEntries(text, planned))
+		if (lines.length === 0) return undefined
+		const single = lines.length === 1
+		const refused = insertManifestEntries(text, planned) === undefined
+		return {
+			field: 'entries',
+			message: `The manifest at ${target} does not declare ${single ? 'a planned entry' : 'planned entries'}: ${lines.join(', ')}. ${refused ? `Its bin or exports value is not an object, or its files value is not an array of strings, so overwrite cannot insert ${single ? 'it' : 'them'}: add ${single ? 'it' : 'each one'} to package.json by hand.` : `Run overwrite to insert ${single ? 'it' : 'each one'}, or add ${single ? 'it' : 'each one'} to package.json by hand.`}`,
+			blocking: false,
+			groups: ['manifest'],
+		}
+	}
+
+	// Report a planned executable or reporter script that no chain from `check` or `build`
+	// reaches. The projection carries the writable predecessor aggregates, so a `check:src` or
+	// `build:src` a write replaces raises nothing and only a package-owned chain is reported.
+	#chainQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
+		const faces = [...(blueprint.bin ? ['bin'] : []), ...(blueprint.reporter ? ['reporter'] : [])]
+		if (faces.length === 0) return undefined
+		const text = this.#manifest(target)
+		const manifest =
+			replaceManifestScripts(text, manifestToWritableScripts(text, blueprint)) ?? text
+		const parsed = parseJSON(manifest)
+		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
+		const missing = ['check', 'build'].flatMap((gate) => {
+			const chain = collectScriptChain(gate, scripts, new Map())
+			return faces
+				.map((face) => `${gate}:src:${face}`)
+				.filter((name) => !chain.visited.has(name))
+				.map((name) => ({ gate, name, unreadable: [...chain.unreadable] }))
+		})
+		if (missing.length === 0) return undefined
+		const names = missing.map(({ name }) => name).join(', ')
+		const unreadable = [...new Set(missing.flatMap((entry) => entry.unreadable))].sort()
+		if (unreadable.length > 0) {
+			return {
+				field: 'scripts',
+				message: `The manifest at ${target} declares a check or build chain the audit could not read literally, so it cannot confirm that the chain reaches the planned ${missing.length === 1 ? 'script' : 'scripts'} ${names}. The unreadable scripts are ${unreadable.join(', ')}, because each command is not a literal sequence of npm run scripts. Replace each with literal npm run script names.`,
+				blocking: false,
+				groups: ['manifest'],
+			}
+		}
+		return {
+			field: 'scripts',
+			message: `The manifest at ${target} does not reach the planned ${missing.length === 1 ? 'script' : 'scripts'} ${missing.map(({ gate, name }) => `${name} from ${gate}`).join(', ')}, and the package owns the chain that would. Invoke ${missing.map(({ gate, name }) => `npm run ${name} from the ${gate}:src chain`).join(', and ')}.`,
 			blocking: false,
 			groups: ['manifest'],
 		}
@@ -1930,6 +2026,12 @@ export class CLI implements CLIInterface {
 		}
 		const barrel = this.#barrelQuestion(target, blueprint)
 		if (barrel !== undefined) questions.push(barrel)
+		if (!writing) {
+			const chain = this.#chainQuestion(target, blueprint)
+			if (chain !== undefined) questions.push(chain)
+			const entry = this.#entryQuestion(target, blueprint)
+			if (entry !== undefined) questions.push(entry)
+		}
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)
 		const dependency = this.#dependencyQuestion(target, blueprint, writing, declaring)

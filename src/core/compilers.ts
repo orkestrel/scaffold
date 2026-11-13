@@ -9,6 +9,7 @@ import type {
 	Environment,
 	ArtifactFinding,
 	ManifestEdit,
+	ManifestEntrySet,
 	ManifestScript,
 	ManifestToken,
 	Override,
@@ -22,6 +23,7 @@ import {
 	attempt,
 	canonicalStringify,
 	comparePrimitives,
+	isArray,
 	isRecord,
 	isString,
 	parseJSON,
@@ -59,6 +61,7 @@ import {
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
 	JOURNEY_CONFIG_PATH,
+	MANIFEST_KEY_ORDER,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_TOTAL_ARTIFACT_BYTES,
@@ -91,6 +94,7 @@ import {
 	matchesBarrel,
 	matchesEngines,
 	matchesPrintWidth,
+	manifestToEntries,
 	scanManifestTokens,
 	serializeTypeScriptString,
 	selectHostPaths,
@@ -968,7 +972,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
  * whose package-owned entry runs the guides project and handles explicit parity
  * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication
- * lifecycle scripts. Sheet and framework faces add their check and build scripts, application
+ * lifecycle scripts. Sheet faces, framework faces, and the executable and reporter entries add
+ * their check and build scripts, application
  * frameworks add dev scripts, and selected showcases and journeys add their mode scripts.
  * A base browser application's journey axis also adds `journey` and `capture`, and each
  * app-side browser face adds `journey:<name>` and `capture:<name>`. Their generated
@@ -1011,6 +1016,10 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 		const sheet = sheets.some(
 			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
 		)
+		// The plan carries an entry's scripts only when it plans the entry.
+		const entry = ['bin', 'reporter'].some(
+			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
+		)
 		// The faces are read for each script, so the extensions are read as many times as before.
 		const framework = blueprintToFaces(blueprint).some(
 			(extension) =>
@@ -1033,7 +1042,8 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 		const capture = name === 'journey' || name === 'capture'
 		const barrel = matchesBarrel(blueprint) && name === 'build:app:barrel'
 		const served = blueprint.app.includes('server') && name === 'serve:build'
-		if (!direct && !sheet && !framework && !showcase && !capture && !barrel && !served) return []
+		if (!direct && !sheet && !entry && !framework && !showcase && !capture && !barrel && !served)
+			return []
 		return [
 			{
 				name,
@@ -1077,6 +1087,43 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 					},
 				]),
 	]
+}
+
+/**
+ * Projects a blueprint into the `bin`, `files`, and `exports` entries its manifest carries.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The planned commands, packed paths, and subpaths, each in the order the manifest emits.
+ *
+ * @remarks
+ * A workspace without an executable plans no command, and one publishing nothing plans no
+ * subpath, because its manifest carries no `exports` map.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToEntries, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * blueprintToEntries(createBlueprint('router', { src: ['core'], bin: true })).files
+ * // ['dist/src', 'dist/bin', 'README.md']
+ * ```
+ */
+export function blueprintToEntries(blueprint: Blueprint): ManifestEntrySet {
+	const sheets = blueprintToSheets(blueprint)
+	const targets = [...sheets, ...(blueprint.themes ? ['styles/themes'] : [])]
+	const publishes = blueprint.src.length > 0 || targets.length > 0
+	return {
+		bin: blueprint.bin ? { [blueprint.name]: BIN_OUTPUT_PATH } : {},
+		files: [
+			blueprint.bin || publishes ? 'dist/src' : 'dist/app',
+			...(blueprint.bin ? ['dist/bin'] : []),
+			...(blueprint.reporter ? ['dist/reporter'] : []),
+			...targets.map((face) => `!dist/src/${face}/index.js`),
+			...sheets.map((face) => `src/${face}/**/*.scss`),
+			...(blueprint.themes && !blueprint.styles ? ['src/styles/themes/**/*.scss'] : []),
+			'README.md',
+		],
+		exports: publishes ? blueprintToExports(blueprint) : {},
+	}
 }
 
 /**
@@ -1130,6 +1177,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 		peers.filter((peer) => peer.optional === true).map((peer) => [peer.name, { optional: true }]),
 	)
 	const entry = srcToEntry(blueprint.src)
+	const entries = blueprintToEntries(blueprint)
 	const manifest: Record<string, unknown> = {
 		name,
 		version: blueprint.version,
@@ -1153,16 +1201,8 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 					},
 				}
 			: {}),
-		...(blueprint.bin ? { bin: { [blueprint.name]: BIN_OUTPUT_PATH } } : {}),
-		files: [
-			blueprint.bin || publishes ? 'dist/src' : 'dist/app',
-			...(blueprint.bin ? ['dist/bin'] : []),
-			...(blueprint.reporter ? ['dist/reporter'] : []),
-			...targets.map((face) => `!dist/src/${face}/index.js`),
-			...sheets.map((face) => `src/${face}/**/*.scss`),
-			...(blueprint.themes && !blueprint.styles ? ['src/styles/themes/**/*.scss'] : []),
-			'README.md',
-		],
+		...(blueprint.bin ? { bin: entries.bin } : {}),
+		files: entries.files,
 		type: 'module',
 		...(publishes
 			? {
@@ -1174,7 +1214,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 								]
 							: false,
 					...(blueprint.src.length > 0 ? entry : {}),
-					exports: blueprintToExports(blueprint),
+					exports: entries.exports,
 					publishConfig: { access: 'public' },
 				}
 			: {}),
@@ -3179,6 +3219,170 @@ export function insertManifestSection(
 			(text, [position, insertion]) => text.slice(0, position) + insertion + text.slice(position),
 			manifest,
 		)
+}
+
+/**
+ * Inserts the planned `bin`, `files`, and `exports` entries a package manifest lacks.
+ *
+ * @param manifest - The manifest text to compile.
+ * @param planned - The entries the plan emits, each in planned order.
+ * @returns The manifest declaring every planned entry, or `undefined` when the text is not a
+ * manifest object, or a section that must take an entry holds a value of another shape: `bin` or
+ * `exports` not an object, or `files` not an array of strings.
+ *
+ * @remarks
+ * The compiler inserts text instead of serializing the manifest, so every declared byte survives,
+ * and a declared entry keeps its value whatever the plan holds. An inserted entry lands before the
+ * first declared entry the plan orders after it, or after the last declared entry when none does,
+ * and copies the indentation of the section's first entry; a nested value takes the same step per
+ * level. An absent section is created as one top-level key holding the planned entries, before the
+ * first declared key `MANIFEST_KEY_ORDER` orders after it, or last in the manifest object. A
+ * manifest declaring every planned entry is returned unchanged.
+ *
+ * @example
+ * ```ts
+ * import { insertManifestEntries } from '@orkestrel/scaffold'
+ *
+ * insertManifestEntries('{\n\t"files": [\n\t\t"dist/src",\n\t\t"README.md"\n\t]\n}\n', {
+ *   bin: {},
+ *   files: ['dist/src', 'dist/reporter', 'README.md'],
+ *   exports: {},
+ * })
+ * // '{\n\t"files": [\n\t\t"dist/src",\n\t\t"dist/reporter",\n\t\t"README.md"\n\t]\n}\n'
+ * ```
+ */
+export function insertManifestEntries(
+	manifest: string,
+	planned: ManifestEntrySet,
+): string | undefined {
+	const parsed = parseJSON(manifest)
+	const tokens = scanManifestTokens(manifest)
+	if (!isRecord(parsed) || tokens === undefined) return undefined
+	const missing = manifestToEntries(manifest, planned)
+	const keys = tokens.flatMap((token, at) => {
+		const name: unknown =
+			token.depth === 1 && token.value !== undefined ? parseJSON(token.text) : undefined
+		return isString(name) && token.value !== undefined
+			? [{ name, index: token.index, value: token.value, at }]
+			: []
+	})
+	const open = tokens[0]
+	const root = tokens.find((token) => token.text === '}' && token.depth === 0)
+	const head = keys[0]
+	if (open?.text !== '{' || root === undefined || head === undefined) return undefined
+	// A top-level key's margin is one indentation step; a key sharing its line with the brace
+	// marks a one-line manifest, and every inserted entry is written compact on that line.
+	const lineBreak = manifest.lastIndexOf('\n', head.index)
+	const margin = lineBreak < 0 ? '' : manifest.slice(lineBreak + 1, head.index)
+	const step = /\S/u.test(margin) ? '' : margin
+	const sections = [
+		{
+			name: 'bin',
+			array: false,
+			members: Object.entries(missing.bin),
+			order: Object.keys(planned.bin),
+		},
+		{
+			name: 'files',
+			array: true,
+			members: missing.files.map((path): readonly [string, unknown] => [path, path]),
+			order: planned.files,
+		},
+		{
+			name: 'exports',
+			array: false,
+			members: Object.entries(missing.exports),
+			order: Object.keys(planned.exports),
+		},
+	]
+	const edits = sections.map((section): readonly ManifestEdit[] | undefined => {
+		if (section.members.length === 0) return []
+		const key = keys.find(({ name }) => name === section.name)
+		if (key === undefined) {
+			const value = section.array
+				? section.members.map(([path]) => path)
+				: Object.fromEntries(section.members)
+			const block = `${JSON.stringify(section.name)}: ${JSON.stringify(value, undefined, step).replaceAll('\n', `\n${margin}`)}`
+			const gap = step === '' ? '' : `\n${margin}`
+			const successors = MANIFEST_KEY_ORDER.slice(MANIFEST_KEY_ORDER.indexOf(section.name) + 1)
+			const anchor = keys.find(({ name }) => successors.includes(name))
+			const tail = open.index + 1 + manifest.slice(open.index + 1, root.index).trimEnd().length
+			return [
+				anchor === undefined
+					? { start: tail, end: tail, text: `,${gap}${block}` }
+					: { start: anchor.index, end: anchor.index, text: `${block},${gap}` },
+			]
+		}
+		const current = parsed[section.name]
+		const length = isArray(current) && current.every(isString) ? current.length : undefined
+		if (manifest.charAt(key.value) !== (section.array ? '[' : '{')) return undefined
+		if (section.array && length === undefined) return undefined
+		const following = tokens.slice(key.at + 1)
+		// An array of strings holds no brace, so its strings are the tokens that follow its key and
+		// it closes at the first `]` after the last of them. An object closes at the brace that
+		// returns to the top level.
+		const strings = following.slice(0, length ?? 0)
+		const last = strings.at(-1)
+		const close = section.array
+			? manifest.indexOf(']', last === undefined ? key.value + 1 : last.index + last.text.length)
+			: (following.find((token) => token.text === '}' && token.depth === 1)?.index ?? -1)
+		if (close < 0) return undefined
+		const declared = (section.array ? strings : following).flatMap((token) => {
+			const name: unknown = parseJSON(token.text)
+			const member = section.array || (token.depth === 2 && token.value !== undefined)
+			return member && token.index < close && isString(name) ? [{ name, index: token.index }] : []
+		})
+		const keyBreak = manifest.lastIndexOf('\n', key.index)
+		const level =
+			keyBreak < 0 ? '' : (/^\s*/u.exec(manifest.slice(keyBreak + 1, key.index))?.[0] ?? '')
+		const first = declared[0]
+		const firstBreak = first === undefined ? -1 : manifest.lastIndexOf('\n', first.index)
+		const lead =
+			first === undefined || firstBreak < 0 ? '' : manifest.slice(firstBreak + 1, first.index)
+		const indent =
+			first === undefined ? (step === '' ? '' : `${level}${step}`) : /\S/u.test(lead) ? '' : lead
+		const nested = indent.startsWith(level) ? indent.slice(level.length) : step
+		const lines = section.members.map(([name, value]) =>
+			section.array
+				? JSON.stringify(name)
+				: `${JSON.stringify(name)}: ${JSON.stringify(value, undefined, nested).replaceAll('\n', `\n${indent}`)}`,
+		)
+		const separator = indent === '' ? '' : `\n${indent}`
+		if (first === undefined) {
+			const start = key.value + 1
+			const suffix = indent === '' ? '' : `\n${level}`
+			return [
+				{
+					start,
+					end: close,
+					text: `${lines.map((line) => `${separator}${line}`).join(',')}${suffix}`,
+				},
+			]
+		}
+		const tail = key.value + 1 + manifest.slice(key.value + 1, close).trimEnd().length
+		return section.members.map(([name], position): ManifestEdit => {
+			const line = lines[position] ?? ''
+			const rank = section.order.indexOf(name)
+			const anchor = declared.find((entry) => section.order.indexOf(entry.name) > rank)
+			return anchor === undefined
+				? { start: tail, end: tail, text: `,${separator}${line}` }
+				: { start: anchor.index, end: anchor.index, text: `${line},${separator}` }
+		})
+	})
+	if (edits.some((edit) => edit === undefined)) return undefined
+	return [
+		...Map.groupBy(
+			edits.flatMap((edit) => edit ?? []),
+			({ start }) => start,
+		),
+	]
+		.map(([start, group]): ManifestEdit => ({
+			start,
+			end: Math.max(...group.map(({ end }) => end)),
+			text: group.map(({ text }) => text).join(''),
+		}))
+		.sort((left, right) => right.start - left.start)
+		.reduce((text, edit) => text.slice(0, edit.start) + edit.text + text.slice(edit.end), manifest)
 }
 
 /**

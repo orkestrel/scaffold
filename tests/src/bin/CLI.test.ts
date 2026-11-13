@@ -19,6 +19,7 @@ import {
 	ARTIFACT_TEMPLATES,
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
+	blueprintToEntries,
 	blueprintToManifest,
 	blueprintToScripts,
 	blueprintToWritableScripts,
@@ -99,6 +100,7 @@ import {
 	omitDependencies,
 	readCommitted,
 	REFUSED_MANIFEST_TEXT,
+	REPORTER_ENTRY_TEXT,
 	removeEnvironment,
 	SCRATCH_PREFIX,
 	SKILL_CANON_FILES,
@@ -7793,6 +7795,8 @@ describe('CLI overwrite', () => {
 				{
 					name: '@orkestrel/sample',
 					description: 'A sample workspace.',
+					files: blueprintToEntries(createBlueprint('sample', { src: ['core'] })).files,
+					exports: blueprintToEntries(createBlueprint('sample', { src: ['core'] })).exports,
 					scripts: blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
 					dependencies,
 				},
@@ -7858,6 +7862,8 @@ describe('CLI overwrite', () => {
 			expect(isRecord(declared) ? Object.keys(declared) : []).toStrictEqual([
 				'name',
 				'description',
+				'files',
+				'exports',
 				'scripts',
 				'dependencies',
 				'devDependencies',
@@ -9298,6 +9304,160 @@ describe('CLI wrappers an environment leaves behind', { timeout: 60_000 }, () =>
 			for (const path of APP_SERVER_WRAPPERS) {
 				expect(workspace.has(`fixture/${path}`)).toBe(true)
 			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
+	it('writes every manifest row a reporter entry plans and reports each one before the write', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+			])
+			workspace.write('fixture/src/reporter/main.ts', REPORTER_ENTRY_TEXT)
+			const planned = createBlueprint('fixture', { src: ['core', 'server'], reporter: true })
+			const scripts = blueprintToScripts(planned)
+			const sink = createSink()
+			expect(await new CLI(sink.options).execute(['audit', ...args])).toBe(EXIT_DRIFT)
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toContainEqual({
+				field: 'entries',
+				blocking: false,
+				message: `The manifest at ${target} does not declare planned entries: files[] "dist/reporter", exports["./reporter"] {"import":{"types":"./dist/reporter/main.d.ts","default":"./dist/reporter/main.js"}}. Run overwrite to insert each one, or add each one to package.json by hand.`,
+			})
+			expect(audit.questions.find(({ field }) => field === 'scripts')?.message).toContain(
+				'does not declare planned scripts: check:src:reporter, test:src:reporter, build:src:reporter.',
+			)
+			expect(audit.questions.find(({ field }) => field === 'projects')?.message).toContain(
+				'The test:src chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
+			)
+			const human = createSink()
+			expect(
+				await new CLI(human.options).execute(['overwrite', '--dirty', ...args.slice(0, -1)]),
+			).toBe(EXIT_DRIFT)
+			expect(human.output).toContain('Inserted files[] "dist/reporter" in package.json.')
+			const text = requireValue(workspace.read('fixture/package.json'))
+			expect(text).toContain('\t\t"dist/src",\n\t\t"dist/reporter",\n\t\t"README.md"\n')
+			expect(text).toContain(
+				'\t\t"./package.json": "./package.json",\n\t\t"./reporter": {\n\t\t\t"import": {\n\t\t\t\t"types": "./dist/reporter/main.d.ts",\n\t\t\t\t"default": "./dist/reporter/main.js"\n\t\t\t}\n\t\t}\n\t},\n',
+			)
+			expect(JSON.parse(text)).toMatchObject({
+				files: ['dist/src', 'dist/reporter', 'README.md'],
+				exports: blueprintToEntries(planned).exports,
+				scripts: {
+					'test:src': scripts['test:src'],
+					'check:src': scripts['check:src'],
+					'build:src': scripts['build:src'],
+					'test:src:reporter': scripts['test:src:reporter'],
+					'check:src:reporter': scripts['check:src:reporter'],
+					'build:src:reporter': scripts['build:src:reporter'],
+				},
+			})
+			const after = createSink()
+			await new CLI(after.options).execute(['audit', ...args])
+			const settled: AuditResult = JSON.parse(after.output[0] ?? '')
+			expect(
+				settled.questions.filter(({ field }) => ['entries', 'scripts', 'projects'].includes(field)),
+			).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('writes every manifest row an executable entry plans, creating the bin key', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+			])
+			workspace.write('fixture/src/bin/main.ts', 'export {}\n')
+			const planned = createBlueprint('fixture', { src: ['core', 'server'], bin: true })
+			const scripts = blueprintToScripts(planned)
+			const sink = createSink()
+			await new CLI(sink.options).execute(['audit', ...args])
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toContainEqual({
+				field: 'entries',
+				blocking: false,
+				message: `The manifest at ${target} does not declare planned entries: bin["fixture"] "dist/bin/main.js", files[] "dist/bin". Run overwrite to insert each one, or add each one to package.json by hand.`,
+			})
+			const overwrite = createSink()
+			expect(await new CLI(overwrite.options).execute(['overwrite', '--dirty', ...args])).toBe(
+				EXIT_DRIFT,
+			)
+			const result: OverwriteResult = JSON.parse(overwrite.output[0] ?? '')
+			expect(result.note).toContain('The catalog step did not complete')
+			const text = requireValue(workspace.read('fixture/package.json'))
+			expect(text).toContain(
+				'\t"bin": {\n\t\t"fixture": "dist/bin/main.js"\n\t},\n\t"files": [\n\t\t"dist/src",\n\t\t"dist/bin",\n\t\t"README.md"\n\t],\n',
+			)
+			expect(JSON.parse(text)).toMatchObject({
+				scripts: {
+					'test:src': scripts['test:src'],
+					'check:src': scripts['check:src'],
+					'build:src': scripts['build:src'],
+					'test:src:bin': scripts['test:src:bin'],
+					'check:src:bin': scripts['check:src:bin'],
+					'build:src:bin': scripts['build:src:bin'],
+				},
+			})
+			expect(
+				result.audit.questions.filter(({ field }) =>
+					['entries', 'scripts', 'projects'].includes(field),
+				),
+			).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('asks for each step a package-owned aggregate omits and names it in the refusal', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+			])
+			workspace.write('fixture/src/reporter/main.ts', REPORTER_ENTRY_TEXT)
+			const born = requireValue(workspace.read('fixture/package.json'))
+			// Each aggregate runs a step or a flag the plan does not generate, so the package owns it.
+			const owned = born
+				.replace('--project src:server"', '--project src:server --bail=1"')
+				.replace('npm run check:src:server"', 'npm run check:src:server && npm run format:check"')
+				.replace('npm run build:src:server"', 'npm run build:src:server && npm run format:check"')
+			expect(owned.split('format:check"').length).toBe(born.split('format:check"').length + 2)
+			expect(owned).toContain('--bail=1"')
+			workspace.write('fixture/package.json', owned)
+			const sink = createSink()
+			await new CLI(sink.options).execute(['audit', ...args])
+			const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toContainEqual({
+				field: 'scripts',
+				blocking: false,
+				message: `The manifest at ${target} does not reach the planned scripts check:src:reporter from check, build:src:reporter from build, and the package owns the chain that would. Invoke npm run check:src:reporter from the check:src chain, and npm run build:src:reporter from the build:src chain.`,
+			})
+			const step =
+				'The test or prepublishOnly chain runs test:src, which does not pass --project src:reporter: add --project src:reporter to test:src, or invoke npm run test:src:reporter by name from the test or prepublishOnly chain.'
+			expect(audit.questions).toContainEqual({
+				field: 'projects',
+				blocking: false,
+				message: `The manifest at ${target} does not reach a Vitest project the planned configuration registers: src:reporter. No chain from test or prepublishOnly invokes it. ${step}`,
+			})
+			const refused = createSink()
+			expect(await new CLI(refused.options).execute(['overwrite', '--dirty', ...args])).toBe(
+				EXIT_DRIFT,
+			)
+			const envelope: ErrorEnvelope = JSON.parse(refused.output[0] ?? '')
+			expect(envelope.error.code).toBe('TARGET')
+			expect(envelope.error.message).toBe(
+				`The configs group is blocked because the manifest at ${target} does not reach a Vitest project the planned configuration registers: src:reporter. No chain from test or prepublishOnly invokes it. ${step} Exclude configs from --groups to write another group.`,
+			)
+			expect(workspace.read('fixture/package.json')).toBe(owned)
 		} finally {
 			workspace.destroy()
 		}

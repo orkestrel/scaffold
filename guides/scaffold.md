@@ -103,7 +103,8 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `HydratedArtifact`      | interface | `{ origin, ownership, source?, hex, content? }`                                                                                                                                                                                                                      | Represents a vendored file whose exact bytes have been read, so its content can be compared.      |
 | `ManifestDependencySet` | interface | `{ runtime, development, peer }`                                                                                                                                                                                                                                     | Describes the runtime, development, and peer sections read from an existing package manifest.     |
 | `ManifestEdit`          | interface | `{ start, end, text }`                                                                                                                                                                                                                                               | Represents one in-place replacement of manifest text.                                             |
-| `ManifestRegionSet`     | interface | `{ pins, scripts, additions?, overrides? }`                                                                                                                                                                                                                          | Describes the manifest regions a writing operation may change.                                    |
+| `ManifestEntrySet`      | interface | `{ bin, files, exports }`                                                                                                                                                                                                                                            | Describes the `bin`, `files`, and `exports` entries a manifest carries.                           |
+| `ManifestRegionSet`     | interface | `{ pins, scripts, additions?, overrides?, entries? }`                                                                                                                                                                                                                | Describes the manifest regions a writing operation may change.                                    |
 | `ManifestScript`        | interface | `{ name, command, accepted }`                                                                                                                                                                                                                                        | Represents one manifest script a region-writing operation may replace.                            |
 | `ManifestToken`         | interface | `{ text, index, depth, value }`                                                                                                                                                                                                                                      | Represents one string or object brace found in manifest text.                                     |
 | `Override`              | interface | `{ path, content }`                                                                                                                                                                                                                                                  | Represents one artifact override.                                                                 |
@@ -177,6 +178,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `INTEGRATION_TEST_PATH`           | const | `"tests/integration.test.ts"`                                                                     | Names the cross-environment composition proof whose presence makes a workspace `integration`.                                                                                          |
 | `INVALID_PATH_CHARACTER_PATTERN`  | const | `RegExp`                                                                                          | Matches the visible characters a target-relative path and a Markdown path cell both forbid.                                                                                            |
 | `JOURNEY_CONFIG_PATH`             | const | `"configs/app/vite.journey.config.ts"`                                                            | Names the Vite wrapper whose presence makes a workspace `journey`.                                                                                                                     |
+| `MANIFEST_KEY_ORDER`              | const | `readonly string[]`                                                                               | Lists the top-level manifest keys in the order a compiled manifest emits them.                                                                                                         |
 | `MANIFEST_PATH`                   | const | `"package.json"`                                                                                  | Names the manifest path every compiler plan emits with birth ownership.                                                                                                                |
 | `MAX_ARTIFACT_BYTES`              | const | `5242880`                                                                                         | Caps the bytes accepted for one artifact.                                                                                                                                              |
 | `MAX_ARTIFACT_HEX_LENGTH`         | const | `number`                                                                                          | Caps the length of the hexadecimal string carrying one artifact's bytes.                                                                                                               |
@@ -298,6 +300,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `isRetainedPath`                   | function | `(path: string) => boolean`                                                                                                                        | Checks whether another surface owns a target's present bytes at a path.                             |
 | `iterateAnswers`                   | function | `<TValue, TAnswer>(source: Iterable<TValue>, answer: (value: TValue) => TAnswer \| undefined) => Generator<TAnswer \| undefined, void, undefined>` | Yields the answer to each value of a source and ends after the first refused answer.                |
 | `manifestToDependencies`           | function | `(manifest: string) => ManifestDependencySet`                                                                                                      | Projects a package manifest's text to the `@orkestrel/*` packages each dependency section declares. |
+| `manifestToEntries`                | function | `(manifest: string, planned: ManifestEntrySet) => ManifestEntrySet`                                                                                | Projects a package manifest's text to the planned `bin`, `files`, and `exports` entries it lacks.   |
 | `manifestToName`                   | function | `(manifest: string) => string \| undefined`                                                                                                        | Projects a package manifest's text to its own name.                                                 |
 | `matchesArtifactDriftReachability` | function | `(ownership: Ownership, finding: ArtifactFinding) => boolean`                                                                                      | Tests whether `inferArtifactDrift` could have produced a finding for an ownership.                  |
 | `matchesBarrel`                    | function | `(blueprint: Blueprint) => boolean`                                                                                                                | Tests whether a workspace plans the application server barrel build.                                |
@@ -335,6 +338,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `blueprintToDevDependencies`        | function | `(blueprint: Blueprint) => Readonly<Record<string, string>>`                                                                                     | Projects a blueprint into the development dependencies its manifest declares.                            |
 | `blueprintToToolchainHolds`         | function | `(blueprint: Blueprint) => Readonly<Record<string, ToolchainHold>>`                                                                              | Projects a blueprint into the toolchain holds its browser frameworks require.                            |
 | `blueprintToDocumentArtifacts`      | function | `(blueprint: Blueprint) => readonly ContentArtifact[]`                                                                                           | Compiles the generated workspace's root documentation.                                                   |
+| `blueprintToEntries`                | function | `(blueprint: Blueprint) => ManifestEntrySet`                                                                                                     | Projects a blueprint into the `bin`, `files`, and `exports` entries its manifest carries.                |
 | `blueprintToExports`                | function | `(blueprint: Blueprint) => Readonly<Record<string, unknown>>`                                                                                    | Projects published environments, sheets, and the reporter entry into the manifest export map.            |
 | `blueprintToFaces`                  | function | `(blueprint: Blueprint) => readonly BrowserExtension[]`                                                                                          | Projects a blueprint into browser extensions restricted to occupied browser axes.                        |
 | `blueprintToGuideArtifacts`         | function | `(blueprint: Blueprint) => readonly ContentArtifact[]`                                                                                           | Compiles the generated workspace's guide index.                                                          |
@@ -355,6 +359,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `blueprintToWritableScripts`        | function | `(blueprint: Blueprint) => readonly ManifestScript[]`                                                                                            | Projects a blueprint into the manifest scripts a region write may replace.                               |
 | `dependenciesToQuestions`           | function | `(dependencies: readonly Dependency[], field: string, name: RegExp, range: RegExp) => readonly Question[]`                                       | Measures one declared package list against the name and range syntax it accepts.                         |
 | `insertManifestDependencies`        | function | `(manifest: string, additions: DependencyPinSet) => string \| undefined`                                                                         | Inserts dependencies a package manifest does not declare into the section each one names.                |
+| `insertManifestEntries`             | function | `(manifest: string, planned: ManifestEntrySet) => string \| undefined`                                                                           | Inserts the planned `bin`, `files`, and `exports` entries a package manifest lacks.                      |
 | `insertManifestSection`             | function | `(manifest: string, section: 'dependencies' \| 'devDependencies', dependencies: readonly Dependency[], present: boolean) => string \| undefined` | Inserts dependencies into one section of package manifest text.                                          |
 | `overridesToQuestions`              | function | `(overrides: readonly Override[], artifacts: readonly Artifact[]) => readonly Question[]`                                                        | Measures a blueprint's overrides against the artifacts drafted for it.                                   |
 | `pathToCondition`                   | function | `(path: string, formats: readonly BuildFormat[]) => Readonly<Record<string, unknown>>`                                                           | Builds one `exports` condition block for a built environment.                                            |
@@ -716,6 +721,19 @@ no other path, from `import/no-default-export`, and refuses a relative import of
 proof reads `dist/reporter` as its own face and reports a server source copied into it. A consumer
 runs it as `--reporter=@orkestrel/<name>/reporter`.
 
+When an existing workspace adds `src/reporter/main.ts`, `overwrite` writes every reporter row its
+manifest lacks: `exports["./reporter"]`, `dist/reporter` in `files`, `check:src:reporter`,
+`build:src:reporter`, and `test:src:reporter`. It extends `test:src`, `check:src`, and `build:src`
+where each still holds a value an earlier plan generated. `repair` writes the scripts and none of
+the entries. Before the write, `audit` reports the missing entries in its `entries` question and the
+missing scripts in its `scripts` question. Where the package owns `check:src` or `build:src`, the
+`scripts` question asks you to invoke `npm run check:src:reporter` from the `check:src` chain and
+`npm run build:src:reporter` from the `build:src` chain. Where the package owns `test:src`, the
+`projects` question asks you to add `--project src:reporter` to it, and `overwrite` refuses the
+`configs` group with that same step named until a chain from `test` reaches the project. The same
+rows follow `src/bin/main.ts`: the `bin` command, `dist/bin` in `files`, `check:src:bin`,
+`build:src:bin`, `test:src:bin`, and the aggregates.
+
 The `new --app browser` command selects the journey axis, creates its birth-owned wrapper,
 defines `appJourney` in the root configuration, and excludes the browser integration suite from
 `app:browser`. Its manifest declares `test:journey`. A `private: true` workspace invokes it after
@@ -1009,6 +1027,8 @@ Scaffold writes one part of the manifest rather than advising on it: the writabl
 `repair` and `overwrite` write every direct `test:<project>` script the blueprint computes,
 `test:probe`, and `test:bench`. A publishing workspace also receives `test:distribution`, `prepack`,
 and `prepublishOnly`. Each sheet face adds its `check:src:<face>` and `build:src:<face>` scripts.
+The executable and reporter entries add `check:src:bin`, `build:src:bin`, `check:src:reporter`,
+and `build:src:reporter`.
 Each occupied framework face adds `check:<axis>:vue` and `build:<axis>:vue`; the application face also adds `dev:vue`.
 Selected showcase pages add `showcase`, `showcase:<framework>`, `build:showcase`, and `build:showcase:<framework>`; application journeys add `test:journey:<framework>`.
 A workspace that plans the application server barrel adds `build:app:barrel`, which has no
@@ -1020,12 +1040,13 @@ predecessor of the chain that builds themes after it. A publishing `test` chain 
 it matches byte for byte the planned chain with the generated `test:app`, `test:journey`, and framework
 journey invocations inserted after `test:src`, where that blueprint emitted them before.
 `repair` and `overwrite` remove those helper invocations from that exact predecessor.
-When the `test` or `build:app` chain is a generated predecessor, which runs fewer steps than
-the planned chain and runs only planned steps in the planned order, that chain joins the region
-and `repair` and `overwrite` write the planned chain in its place. That write lands only when
-every step the planned chain adds runs a script the manifest declares or the region writes. The
-`test:src` and `test:app` aggregates sit outside the region. Only a private workspace's planned
-chain invokes `test:app`. A chain whose planned form adds an
+When the `test`, `test:src`, `check:src`, `build:src`, or `build:app` chain is a generated
+predecessor, which runs fewer steps or names fewer `--project` values than the planned chain and
+runs only planned steps and projects in the planned order, that chain joins the region and `repair`
+and `overwrite` write the planned chain in its place. That write lands only when every step the
+planned chain adds runs a Vitest command or a script the manifest declares or the region writes. An
+absent aggregate is never written, and `test:app` sits outside the region. Only a private
+workspace's planned chain invokes `test:app`. A chain whose planned form adds an
 aggregate the manifest lacks stays with the package, and the `projects` question keeps its remedy.
 `audit` reports this `test` chain write only through the `projects` question, so a planned step that
 registers no Vitest project, such as `npm run test:guides`, lands on the next `repair` without an
@@ -1033,8 +1054,12 @@ earlier advisory. `audit` reports no `build:app` chain write, so `repair` rewrit
 `build:app` with no earlier advisory after `build:app:barrel` is declared, and before then only the
 `scripts` question's report of a missing `build:app:barrel` script precedes that write. A
 package-owned `build:app` chain that omits the barrel step stays with the package, and the `scripts`
-question reports that no chain from `build` reaches `build:app:barrel`. A `test` or `build:app` chain
-running any other step or order stays maintainer-owned, as do the
+question reports that no chain from `build` reaches `build:app:barrel`. A package-owned `check:src`
+or `build:src` chain that omits an entry's step stays with the package, and the `scripts` question
+reports each of `check:src:bin`, `build:src:bin`, `check:src:reporter`, and `build:src:reporter`
+that no chain from `check` or `build` reaches. A package-owned `test:src` that omits an entry's
+project raises the `projects` question, which names `test:src` and the missing `--project` value.
+A chain the region lists running any other step or order stays maintainer-owned, as do the
 `check`, `build`, `dev`, `serve`, `format`, `lint`, `clean`, and `copy` gate chains. A
 declared value is overwritten only when it is already the value being written or is a recognized
 generated predecessor. The overwrite happens in place,
@@ -1059,6 +1084,17 @@ and `--groups` narrows the plan rather than the regions. `repair` and `overwrite
 reconcile the declared ranges and write the script region on every run, whatever the selection
 names. A run scoped to `manifest` for a script write takes the reconciled `@orkestrel/*`
 ranges with it, and a run that excludes `manifest` still takes the ranges and the scripts.
+
+`overwrite` also inserts each planned `bin` command, `files` path, and `exports` subpath the
+manifest lacks, whatever `--groups` selects, and `repair` inserts none. The entries land in the
+offline half beside the dependency declarations, so a catalog step that cannot complete keeps them.
+An inserted entry lands before the first declared entry the plan orders after it and copies the
+section's indentation; an absent section is created before the first declared key the born
+manifest orders after it. A declared name keeps its value whatever the plan holds, and a string
+`bin` declares its one command. A `bin` or `exports` value that is not an object, or a `files`
+value that is not an array of strings, takes no entry. `audit` reports every missing entry in its
+non-blocking `entries` question, which names each entry with its JSON value, and the human report
+of `overwrite` prints one `Inserted <entry> in package.json.` line per entry it wrote.
 
 Before resolving overwrite's version ranges, the declaration step lifts each planned foreign tool
 whose `devDependencies` major is earlier than the canon's to the blueprint's planned range,

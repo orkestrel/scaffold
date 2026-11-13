@@ -40,6 +40,7 @@ import {
 	isRetainedPath,
 	iterateAnswers,
 	manifestToDependencies,
+	manifestToEntries,
 	manifestToName,
 	matchesArtifactDriftReachability,
 	matchesBarrel,
@@ -1126,6 +1127,45 @@ describe('manifestToDependencies', () => {
 			development: [],
 			peer: [],
 		})
+	})
+})
+
+describe('manifestToEntries', () => {
+	const planned = {
+		bin: { router: 'dist/bin/main.js' },
+		files: ['dist/src', 'dist/bin', 'dist/reporter', 'README.md'],
+		exports: { '.': './dist/src/core/index.js', './reporter': './dist/reporter/main.js' },
+	}
+
+	it('answers the planned entries a manifest lacks, each in planned order', () => {
+		expect(
+			manifestToEntries(
+				'{"files":["README.md","dist/src"],"exports":{".":"./index.js","./other":"./other.js"}}',
+				planned,
+			),
+		).toStrictEqual({
+			bin: { router: 'dist/bin/main.js' },
+			files: ['dist/bin', 'dist/reporter'],
+			exports: { './reporter': './dist/reporter/main.js' },
+		})
+	})
+
+	it('reads a declared name as present whatever value it holds, and a string bin as every command', () => {
+		expect(
+			manifestToEntries(
+				'{"bin":"cli.js","files":["dist/src","dist/bin","dist/reporter","README.md"],"exports":{".":null,"./reporter":false}}',
+				planned,
+			),
+		).toStrictEqual({ bin: {}, files: [], exports: {} })
+		expect(manifestToEntries('{"bin":{"other":"x.js"}}', planned).bin).toStrictEqual(planned.bin)
+	})
+
+	it('reads a section of another shape as declaring nothing, and a non-object as lacking nothing', () => {
+		expect(
+			manifestToEntries('{"bin":7,"files":"dist","exports":"./index.js"}', planned),
+		).toStrictEqual(planned)
+		expect(manifestToEntries('[]', planned)).toStrictEqual({ bin: {}, files: [], exports: {} })
+		expect(manifestToEntries('{', planned)).toStrictEqual({ bin: {}, files: [], exports: {} })
 	})
 })
 

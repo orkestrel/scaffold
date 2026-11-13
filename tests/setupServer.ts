@@ -82,6 +82,7 @@ import {
 	CATALOG_END_MARKER,
 	CATALOG_START_MARKER,
 	blueprintToDevDependencies,
+	blueprintToEntries,
 	contentToHex,
 	blueprintToScripts,
 	CANON_PATHS,
@@ -3008,7 +3009,7 @@ export const TARGET_DEV_DEPENDENCIES = blueprintToDevDependencies(
  * @param dependencies - The value to place at `dependencies`.
  * @param development - The value to place at `devDependencies`.
  * @param scripts - The value to place at `scripts`.
- * @returns A sample target manifest carrying the fixture's planned scripts.
+ * @returns A sample target manifest carrying the fixture's planned entries and scripts.
  */
 export function buildTargetManifest(
 	blueprint: Blueprint = createBlueprint('sample', { src: ['core'] }),
@@ -3019,10 +3020,14 @@ export function buildTargetManifest(
 	development: unknown = blueprintToDevDependencies(blueprint),
 	scripts: unknown = blueprintToScripts(blueprint),
 ): string {
+	const { bin, files, exports } = blueprintToEntries(blueprint)
 	return `${JSON.stringify(
 		{
 			name: '@orkestrel/sample',
 			description: 'A sample workspace.',
+			...(Object.keys(bin).length > 0 ? { bin } : {}),
+			files,
+			...(Object.keys(exports).length > 0 ? { exports } : {}),
 			scripts,
 			dependencies,
 			devDependencies: development,
@@ -5026,6 +5031,10 @@ export const FLEET_MIRROR_REPLIES: Readonly<Record<string, TestUpstreamReply>> =
 	},
 	[FLEET_UPSTREAM_PATHS.mirrors.test]: { status: 200, body: '# Test\n', type: 'text/plain' },
 })
+
+/** Holds the reporter entry body `.claude/rules/workspace.md` fixes: the server class, default-exported. */
+export const REPORTER_ENTRY_TEXT =
+	"import { ProgressReporter } from '@src/server'\n\nexport default ProgressReporter\n"
 
 /**
  * Builds a target manifest whose fleet packages and toolchain already match the planned ranges.

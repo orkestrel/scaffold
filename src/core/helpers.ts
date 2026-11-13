@@ -4,6 +4,7 @@ import type {
 	CatalogEntry,
 	Dependency,
 	ManifestDependencySet,
+	ManifestEntrySet,
 	ManifestToken,
 	ArtifactDrift,
 	Environment,
@@ -20,7 +21,14 @@ import type {
 	SurfaceFinding,
 	SurfaceSimilarity,
 } from './types.js'
-import { comparePrimitives, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
+import {
+	comparePrimitives,
+	isArray,
+	isRecord,
+	isString,
+	limitEntries,
+	parseJSON,
+} from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
 import {
 	ARTIFACT_GROUPS,
@@ -1378,6 +1386,52 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
 		runtime: limitEntries(runtime, MAX_COLLECTION_ITEMS),
 		development: limitEntries(development, MAX_COLLECTION_ITEMS),
 		peer: limitEntries(peer, MAX_COLLECTION_ITEMS),
+	}
+}
+
+/**
+ * Projects a package manifest's text to the planned `bin`, `files`, and `exports` entries it lacks.
+ *
+ * @param manifest - The `package.json` text.
+ * @param planned - The entries the plan emits.
+ * @returns The planned entries the manifest does not declare, each in planned order.
+ *
+ * @remarks
+ * A command, a packed path, and a subpath count as declared by name alone, so a declared entry
+ * holding another value stays the package's. A string `bin` declares the one command npm derives
+ * from the package name, so it lacks no planned command. A section holding another shape declares
+ * none of its planned entries. A manifest that is not an object lacks nothing, because no entry
+ * can be read from it or written into it.
+ *
+ * @example
+ * ```ts
+ * import { manifestToEntries } from '@orkestrel/scaffold'
+ *
+ * manifestToEntries('{"files": ["dist/src"]}', {
+ *   bin: {},
+ *   files: ['dist/src', 'dist/reporter'],
+ *   exports: {},
+ * }).files // ['dist/reporter']
+ * ```
+ */
+export function manifestToEntries(manifest: string, planned: ManifestEntrySet): ManifestEntrySet {
+	const parsed = parseJSON(manifest)
+	if (!isRecord(parsed)) return { bin: {}, files: [], exports: {} }
+	const { bin, files, exports } = parsed
+	const commands = isString(bin) ? undefined : isRecord(bin) ? bin : {}
+	const packed = isArray(files) ? files : []
+	const subpaths = isRecord(exports) ? exports : {}
+	return {
+		bin:
+			commands === undefined
+				? {}
+				: Object.fromEntries(
+						Object.entries(planned.bin).filter(([name]) => !Object.hasOwn(commands, name)),
+					),
+		files: planned.files.filter((path) => !packed.includes(path)),
+		exports: Object.fromEntries(
+			Object.entries(planned.exports).filter(([path]) => !Object.hasOwn(subpaths, path)),
+		),
 	}
 }
 

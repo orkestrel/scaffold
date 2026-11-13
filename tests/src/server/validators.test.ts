@@ -46,6 +46,24 @@ describe('guard totality', () => {
 			expect(isManifestRegionSet({ ...base, overrides })).toBe(false)
 		}
 	})
+	it('accepts manifest entries of string commands, string paths, and subpath records', () => {
+		const base = { pins: { runtime: [], development: [] }, scripts: [] }
+		const entries = {
+			bin: { router: 'dist/bin/main.js' },
+			files: ['dist/bin'],
+			exports: { './reporter': { import: './dist/reporter/main.js' } },
+		}
+		expect(isManifestRegionSet({ ...base, entries })).toBe(true)
+		for (const malformed of [
+			{ ...entries, bin: { router: 7 } },
+			{ ...entries, files: [7] },
+			{ ...entries, exports: [] },
+			{ bin: {}, files: [] },
+			{ ...entries, extra: {} },
+		]) {
+			expect(isManifestRegionSet({ ...base, entries: malformed })).toBe(false)
+		}
+	})
 	it('reports a real failure when the probe under it is not total', () => {
 		const revoked = selectHostileCase('revoked proxy')
 		const oversized = selectHostileCase('oversized array')

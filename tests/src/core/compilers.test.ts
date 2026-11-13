@@ -18,6 +18,7 @@ import {
 	blueprintToDocumentArtifacts,
 	blueprintToGuideArtifacts,
 	blueprintToHostArtifacts,
+	blueprintToEntries,
 	blueprintToManifest,
 	blueprintToManifestOverrides,
 	blueprintToMachinery,
@@ -45,10 +46,12 @@ import {
 	FRAMEWORK_MATRIX,
 	HOST_PATHS,
 	insertManifestDependencies,
+	insertManifestEntries,
 	insertManifestSection,
 	INTEGRATION_TEST_PATH,
 	isCanonPath,
 	manifestToDependencies,
+	MANIFEST_KEY_ORDER,
 	ORKESTREL_RANGE_PATTERN,
 	overridesToQuestions,
 	planToArtifactFindings,
@@ -1583,7 +1586,150 @@ describe('replaceManifestOverride', () => {
 	})
 })
 
+describe('blueprintToEntries', () => {
+	it('plans the executable command, the entry paths, and the reporter subpath', () => {
+		expect(
+			blueprintToEntries(
+				createBlueprint('router', { src: ['core', 'server'], bin: true, reporter: true }),
+			),
+		).toStrictEqual({
+			bin: { router: 'dist/bin/main.js' },
+			files: ['dist/src', 'dist/bin', 'dist/reporter', 'README.md'],
+			exports: {
+				'.': {
+					import: { types: './dist/src/core/index.d.ts', default: './dist/src/core/index.js' },
+					require: { types: './dist/src/core/index.d.cts', default: './dist/src/core/index.cjs' },
+				},
+				'./server': {
+					import: {
+						types: './dist/src/server/index.d.ts',
+						default: './dist/src/server/index.js',
+					},
+					require: {
+						types: './dist/src/server/index.d.cts',
+						default: './dist/src/server/index.cjs',
+					},
+				},
+				'./reporter': {
+					import: { types: './dist/reporter/main.d.ts', default: './dist/reporter/main.js' },
+				},
+				'./package.json': './package.json',
+			},
+		})
+	})
+
+	it('plans no subpath for a workspace that publishes nothing', () => {
+		expect(blueprintToEntries(createBlueprint('desk', { app: ['core'] }))).toStrictEqual({
+			bin: {},
+			files: ['dist/app', 'README.md'],
+			exports: {},
+		})
+	})
+
+	it('emits the entries a born manifest carries, in the key order the writer anchors to', () => {
+		const blueprint = createBlueprint('router', { src: ['core'], bin: true, styles: true })
+		const manifest: unknown = JSON.parse(blueprintToManifest(blueprint))
+		expect(manifest).toMatchObject(blueprintToEntries(blueprint))
+		const keys = Object.keys(isRecord(manifest) ? manifest : {})
+		expect(keys).toStrictEqual(MANIFEST_KEY_ORDER.filter((key) => keys.includes(key)))
+		expect(keys).toContain('bin')
+	})
+})
+
+describe('insertManifestEntries', () => {
+	it('inserts a planned subpath and packed path before the entries the plan orders after them', () => {
+		const planned = blueprintToEntries(
+			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+		)
+		const born = blueprintToManifest(createBlueprint('router', { src: ['core', 'server'] }))
+		const written = insertManifestEntries(born, planned)
+		expect(written).toContain('\t\t"dist/src",\n\t\t"dist/reporter",\n\t\t"README.md"\n')
+		expect(written).toContain(
+			'\t\t"./package.json": "./package.json",\n\t\t"./reporter": {\n\t\t\t"import": {\n\t\t\t\t"types": "./dist/reporter/main.d.ts",\n\t\t\t\t"default": "./dist/reporter/main.js"\n\t\t\t}\n\t\t}\n\t},\n',
+		)
+		expect(JSON.parse(written ?? '')).toStrictEqual({
+			...JSON.parse(born),
+			files: planned.files,
+			exports: planned.exports,
+		})
+		expect(insertManifestEntries(written ?? '', planned)).toBe(written)
+	})
+
+	it('keeps a declared value and an unplanned entry byte for byte', () => {
+		const planned = blueprintToEntries(
+			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+		)
+		const manifest =
+			'{\n  "files": [\n    "lib",\n    "dist/src"\n  ],\n  "exports": {\n    "./reporter": "./custom.js",\n    "./extra": "./extra.js"\n  }\n}\n'
+		// A planned entry lands before the first declared entry the plan orders after it, and an
+		// unplanned entry anchors nothing.
+		expect(insertManifestEntries(manifest, planned)).toBe(
+			'{\n  "files": [\n    "lib",\n    "dist/src",\n    "dist/reporter",\n    "README.md"\n  ],\n  "exports": {\n    ".": {\n      "import": {\n        "types": "./dist/src/core/index.d.ts",\n        "default": "./dist/src/core/index.js"\n      },\n      "require": {\n        "types": "./dist/src/core/index.d.cts",\n        "default": "./dist/src/core/index.cjs"\n      }\n    },\n    "./server": {\n      "import": {\n        "types": "./dist/src/server/index.d.ts",\n        "default": "./dist/src/server/index.js"\n      },\n      "require": {\n        "types": "./dist/src/server/index.d.cts",\n        "default": "./dist/src/server/index.cjs"\n      }\n    },\n    "./package.json": "./package.json",\n    "./reporter": "./custom.js",\n    "./extra": "./extra.js"\n  }\n}\n',
+		)
+	})
+
+	it('creates an absent section before the key the manifest order puts after it', () => {
+		const bin = { bin: { router: 'dist/bin/main.js' }, files: [], exports: {} }
+		expect(
+			insertManifestEntries('{\n\t"name": "router",\n\t"files": [],\n\t"type": "module"\n}\n', bin),
+		).toBe(
+			'{\n\t"name": "router",\n\t"bin": {\n\t\t"router": "dist/bin/main.js"\n\t},\n\t"files": [],\n\t"type": "module"\n}\n',
+		)
+		expect(insertManifestEntries('{"name":"router"}', bin)).toBe(
+			'{"name":"router","bin": {"router":"dist/bin/main.js"}}',
+		)
+		expect(
+			insertManifestEntries('{"name":"router","files":[]}', {
+				bin: {},
+				files: ['dist/src', 'README.md'],
+				exports: {},
+			}),
+		).toBe('{"name":"router","files":["dist/src","README.md"]}')
+	})
+
+	it('refuses a section holding another shape and a text that is not a manifest object', () => {
+		const planned = blueprintToEntries(
+			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
+		)
+		expect(insertManifestEntries('{"name":"router","exports":"./index.js"}', planned)).toBe(
+			undefined,
+		)
+		expect(insertManifestEntries('{"name":"router","files":[1]}', planned)).toBe(undefined)
+		expect(insertManifestEntries('[]', planned)).toBe(undefined)
+		expect(
+			insertManifestEntries('{"name":"router","bin":"cli.js"}', {
+				bin: { router: 'dist/bin/main.js' },
+				files: [],
+				exports: {},
+			}),
+		).toBe('{"name":"router","bin":"cli.js"}')
+	})
+})
+
 describe('blueprintToWritableScripts', () => {
+	it('owns the check and build scripts of the executable and reporter entries', () => {
+		const names = blueprintToWritableScripts(
+			createBlueprint('sample', { src: ['core', 'server'], bin: true, reporter: true }),
+		).map(({ name }) => name)
+		for (const name of [
+			'check:src:bin',
+			'build:src:bin',
+			'check:src:reporter',
+			'build:src:reporter',
+		]) {
+			expect(names).toContain(name)
+		}
+		for (const name of [
+			'check:src',
+			'build:src',
+			'test:src',
+			'check:src:core',
+			'build:src:server',
+		]) {
+			expect(names).not.toContain(name)
+		}
+	})
+
 	it('owns the application server barrel script, and lands serve:build for every server workspace', () => {
 		const planned = createBlueprint('sample', { app: ['core', 'server'], studies: true })
 		const region = blueprintToWritableScripts(planned)

@@ -477,6 +477,43 @@ export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 /** Names the manifest path every compiler plan emits with birth ownership. */
 export const MANIFEST_PATH = 'package.json'
 
+/**
+ * Lists the top-level manifest keys in the order a compiled manifest emits them.
+ *
+ * @remarks
+ * An entry write that creates an absent `bin`, `files`, or `exports` key places it before the
+ * first declared key this list orders after it, so a created key lands where a born manifest
+ * carries it.
+ */
+export const MANIFEST_KEY_ORDER: readonly string[] = Object.freeze([
+	'name',
+	'version',
+	'private',
+	'description',
+	'keywords',
+	'homepage',
+	'bugs',
+	'license',
+	'repository',
+	'bin',
+	'files',
+	'type',
+	'sideEffects',
+	'main',
+	'module',
+	'types',
+	'exports',
+	'publishConfig',
+	'scripts',
+	'dependencies',
+	'devDependencies',
+	'overrides',
+	'peerDependencies',
+	'peerDependenciesMeta',
+	'devEngines',
+	'engines',
+])
+
 /** Names the official-tooling drift proof whose presence makes a workspace `conformance`. */
 export const CONFORMANCE_TEST_PATH = 'tests/conformance.test.ts'
 

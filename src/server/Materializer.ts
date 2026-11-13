@@ -42,6 +42,7 @@ import {
 	contentToHex,
 	inferArtifactGroup,
 	insertManifestDependencies,
+	insertManifestEntries,
 	isAudit,
 	isPlan,
 	isRetainedPath,
@@ -460,7 +461,8 @@ export class Materializer implements MaterializerInterface {
 	 * the manifest does not declare is the caller's mistake and throws. A script
 	 * holding a value the region does not accept is the workspace author's own
 	 * chain, so the script region is skipped without a byte moving and the range
-	 * region is still written. The advisory channel reports what the maintainer
+	 * region is still written. An entry section holding another shape is the package's own
+	 * value, so the entry region is skipped the same way. The advisory channel reports what the maintainer
 	 * must paste.
 	 */
 	declare(regions: ManifestRegionSet, target: string): MaterializeResult {
@@ -1341,7 +1343,10 @@ export class Materializer implements MaterializerInterface {
 					missing === undefined ? undefined : { name: missing.name },
 				)
 			}
-			return replaceManifestScripts(manifest, regions.scripts) ?? manifest
+			const scripted = replaceManifestScripts(manifest, regions.scripts) ?? manifest
+			return regions.entries === undefined
+				? scripted
+				: (insertManifestEntries(scripted, regions.entries) ?? scripted)
 		}
 	}
 

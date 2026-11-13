@@ -23,6 +23,7 @@ import {
 	isFunction,
 	isInteger,
 	isObject,
+	isRecord,
 	isString,
 	recordOf,
 	recordShape,
@@ -298,7 +299,7 @@ export const isDependencies: Guard<readonly Dependency[]> = andOf(
  * The whole closed record a manifest-writing method accepts, so a caller
  * naming a region the writer does not carry is refused before any byte moves.
  * Each region is bounded by the same collection law its own list guard applies,
- * and `additions` is the one region a caller may omit.
+ * and `additions`, `overrides`, and `entries` are the regions a caller may omit.
  *
  * @example
  * ```ts
@@ -319,8 +320,13 @@ export const isManifestRegionSet: Guard<ManifestRegionSet> = recordOf(
 		scripts: andOf(isCollection, arrayOf(isManifestScript)),
 		additions: recordOf({ runtime: isDependencies, development: isDependencies }),
 		overrides: compileGuard(recordShape(recordShape(stringShape()))),
+		entries: recordOf({
+			bin: compileGuard(recordShape(stringShape())),
+			files: andOf(isCollection, arrayOf(isString)),
+			exports: isRecord,
+		}),
 	},
-	['additions', 'overrides'],
+	['additions', 'overrides', 'entries'],
 )
 
 /** Narrows a value to a bounded list of fetched guide mirrors. */

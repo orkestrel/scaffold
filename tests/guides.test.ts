@@ -577,6 +577,28 @@ await new GuideCommand({
 			expect(owned['tests/setupStyles.test.ts']).toBeUndefined()
 		})
 
+		it('writes the entry scripts an existing workspace lacks and the entries only overwrite inserts', () => {
+			const markdown = requireValue(files['guides/scaffold.md'])
+			expect(markdown).toContain(
+				'The executable and reporter entries add `check:src:bin`, `build:src:bin`, `check:src:reporter`,\nand `build:src:reporter`.',
+			)
+			const names = blueprintToWritableScripts(
+				createBlueprint('router', { src: ['core', 'server'], bin: true, reporter: true }),
+			).map(({ name }) => name)
+			expect(names).toEqual(
+				expect.arrayContaining([
+					'check:src:bin',
+					'build:src:bin',
+					'check:src:reporter',
+					'build:src:reporter',
+				]),
+			)
+			// The aggregates stay outside the blueprint region; only a generated predecessor joins it.
+			expect(names).not.toContain('check:src')
+			expect(names).not.toContain('build:src')
+			expect(names).not.toContain('test:src')
+		})
+
 		it('declares the scripts, projects, dependencies, and aliases each sheet face needs', async () => {
 			const markdown = requireValue(files['guides/scaffold.md'])
 			expect(markdown).toContain(

@@ -233,12 +233,29 @@ export interface ManifestEdit {
  * `overrides` names npm selector maps whose string leaves are replaced or inserted.
  * Malformed ancestors and duplicate selected keys refuse the write. This metadata
  * is independent of the artifact replacements carried by `Blueprint.overrides`.
+ * `entries` names the planned `bin`, `files`, and `exports` entries, and the writer inserts each
+ * one the manifest lacks. Absent, nothing is inserted.
  */
 export interface ManifestRegionSet {
 	readonly pins: DependencyPinSet
 	readonly scripts: readonly ManifestScript[]
 	readonly additions?: DependencyPinSet
 	readonly overrides?: Readonly<Record<string, Readonly<Record<string, string>>>>
+	readonly entries?: ManifestEntrySet
+}
+
+/**
+ * Describes the `bin`, `files`, and `exports` entries a manifest carries.
+ *
+ * @remarks
+ * `bin` maps each command name to the file it runs, `files` lists the packed paths, and
+ * `exports` maps each subpath to its target or condition block. Each list keeps the order the
+ * plan emits, and an entry write reads that order to place an inserted entry.
+ */
+export interface ManifestEntrySet {
+	readonly bin: Readonly<Record<string, string>>
+	readonly files: readonly string[]
+	readonly exports: Readonly<Record<string, unknown>>
 }
 
 /**

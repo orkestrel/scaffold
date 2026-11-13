@@ -3,6 +3,8 @@ import type { MaterializeResult } from '@src/server'
 import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+	blueprintToEntries,
+	blueprintToManifest,
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	Compiler,
@@ -11,6 +13,7 @@ import {
 	DISTRIBUTION_SETUP_PATH,
 	DISTRIBUTION_TEST_PATH,
 	insertManifestDependencies,
+	insertManifestEntries,
 	isArtifactFinding,
 	isScaffoldError,
 	RELEASE_PROOF_COMMAND,
@@ -1706,6 +1709,42 @@ describe('Materializer declare', () => {
 				const parsed: unknown = JSON.parse(text)
 				expect(parsed).toHaveProperty(['devDependencies', '@orkestrel/router'], '^0.0.8')
 				expect(parsed).not.toHaveProperty(['dependencies', '@orkestrel/router'])
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('Materializer declare entries', () => {
+	it('inserts each planned entry the manifest lacks and skips a section of another shape', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			const planned = blueprintToEntries(
+				createBlueprint('sample', { src: ['core', 'server'], reporter: true }),
+			)
+			const born = blueprintToManifest(createBlueprint('sample', { src: ['core', 'server'] }))
+			workspace.write('project/package.json', born)
+			const materializer = new Materializer({ host })
+			try {
+				const regions = { pins: { runtime: [], development: [] }, scripts: [], entries: planned }
+				expect(materializer.declare(regions, target).written).toEqual(['package.json'])
+				const written = requireValue(workspace.read('project/package.json'))
+				expect(written).toBe(insertManifestEntries(born, planned))
+				expect(JSON.parse(written)).toMatchObject({
+					files: planned.files,
+					exports: planned.exports,
+				})
+				expect(materializer.declare(regions, target).written).toEqual([])
+				const owned = born.replace(/"exports": \{[\s\S]*?\n\t\},/u, '"exports": "./index.js",')
+				expect(owned).toContain('"exports": "./index.js",')
+				workspace.write('project/package.json', owned)
+				expect(materializer.declare(regions, target).written).toEqual([])
+				expect(workspace.read('project/package.json')).toBe(owned)
 			} finally {
 				materializer.destroy()
 			}

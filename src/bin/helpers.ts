@@ -9,6 +9,7 @@ import type {
 	DependencyPinSet,
 	Environment,
 	Extension,
+	ManifestEntrySet,
 	ManifestScript,
 	Mirror,
 	Question,
@@ -572,8 +573,8 @@ export function sheetTestToQuestion(
  *
  * @param manifest - The target manifest text.
  * @param blueprint - The workspace shape that supplies the planned scripts.
- * @returns The blueprint's writable scripts, followed by the planned `test` and `build:app` chains
- * where each declared chain is a generated predecessor of its planned chain.
+ * @returns The blueprint's writable scripts, followed by each planned chain `CHAIN_SCRIPTS` names
+ * whose declared chain is a generated predecessor of it.
  *
  * @remarks
  * A publishing manifest's byte-exact former generated `test` chain also joins the writable
@@ -581,18 +582,20 @@ export function sheetTestToQuestion(
  * `test:src`. A chain that differs in spacing, order, or another step does not match that
  * predecessor.
  *
- * A declared `test` or `build:app` chain is a generated predecessor when it runs fewer `&&` steps
- * than the planned chain and every step it runs is a planned step, in the planned order. That is
- * the chain a birth or an earlier write left before a structural fact planned another step, such as
- * a root `tests/setupBrowser.test.ts` proof planning `npm run test:setup:browser`, or studies
- * beside the server application planning `npm run build:app:barrel`, so the write lands the
- * planned chain in its place. A chain running a step the plan does not generate, or running the
- * planned steps in another order, is one the package owns, and no entry names it.
+ * A declared `test`, `test:src`, `check:src`, `build:src`, or `build:app` chain is a generated
+ * predecessor when it runs fewer `&&` steps or fewer `--project` values than the planned chain,
+ * and every step it runs matches a planned step, in the planned order, as {@link matchesStep}
+ * reads it. That is the chain a birth or an earlier write left before a structural fact planned
+ * another step, such as a root `tests/setupBrowser.test.ts` proof planning
+ * `npm run test:setup:browser`, `src/reporter/main.ts` planning `npm run check:src:reporter`, or
+ * studies beside the server application planning `npm run build:app:barrel`, so the write lands
+ * the planned chain in its place. A chain running a step the plan does not generate, or running
+ * the planned steps in another order, is one the package owns, and no entry names it.
  *
- * The planned chain joins only when every step it adds runs a script the manifest declares or the
- * writable scripts supply. The `test:src` and `test:app` aggregates sit outside the writable
- * scripts, so a planned chain adding an aggregate the manifest lacks stays with the package rather
- * than landing a step that names a missing script.
+ * The planned chain joins only when every step it adds runs a Vitest command or a script the
+ * manifest declares or the writable scripts supply. An absent aggregate is never written, so a
+ * planned chain adding an aggregate the manifest lacks stays with the package rather than landing
+ * a step that names a missing script.
  */
 export function manifestToWritableScripts(
 	manifest: string,
@@ -625,19 +628,81 @@ export function manifestToWritableScripts(
 		}
 		const steps = declared.split('&&').map((step) => step.trim())
 		const expected = planned.split('&&').map((step) => step.trim())
-		if (steps.length >= expected.length) return []
-		// Each declared step must appear in the planned order, so every search resumes
+		if (steps.length > expected.length) return []
+		// Each declared step must match a planned step in the planned order, so every search resumes
 		// where the previous match stopped.
-		const resumed = expected.values()
-		if (!steps.every((step) => resumed.some((entry) => entry === step))) return []
-		const reachable = expected.every((step) => {
-			if (steps.includes(step)) return true
+		const resumed = expected.entries()
+		const matched = steps.map((step) => resumed.find(([, entry]) => matchesStep(step, entry))?.[0])
+		if (matched.some((index) => index === undefined)) return []
+		// A chain matching every planned step whole is the planned chain, respaced at most.
+		const partial =
+			steps.length < expected.length ||
+			steps.some((step, position) => step !== expected[matched[position] ?? -1])
+		if (!partial) return []
+		const reachable = expected.every((step, index) => {
+			if (matched.includes(index)) return true
+			if (step.startsWith('vitest ')) return true
 			const name = /^npm run (\S+)$/.exec(step)?.[1]
 			return name !== undefined && (supplied.has(name) || isString(scripts[name]))
 		})
 		return reachable ? landed : []
 	})
 	return [...writable, ...chains]
+}
+
+/**
+ * Renders each manifest entry as the key path and the JSON value a reader adds to `package.json`.
+ *
+ * @param entries - The entries to render.
+ * @returns One line per command, packed path, and subpath, in that section order.
+ *
+ * @example
+ * ```ts
+ * import { entriesToLines } from './helpers.js'
+ *
+ * entriesToLines({ bin: {}, files: ['dist/reporter'], exports: {} }) // ['files[] "dist/reporter"']
+ * ```
+ */
+export function entriesToLines(entries: ManifestEntrySet): readonly string[] {
+	return [
+		...Object.entries(entries.bin).map(
+			([name, path]) => `bin[${JSON.stringify(name)}] ${JSON.stringify(path)}`,
+		),
+		...entries.files.map((path) => `files[] ${JSON.stringify(path)}`),
+		...Object.entries(entries.exports).map(
+			([path, value]) => `exports[${JSON.stringify(path)}] ${JSON.stringify(value)}`,
+		),
+	]
+}
+
+/**
+ * Checks whether a declared chain step runs a planned step or a generated predecessor of it.
+ *
+ * @param step - One declared `&&` step, trimmed.
+ * @param entry - One planned `&&` step, trimmed.
+ * @returns True if the steps are equal, or both run one command whose declared `--project` values
+ * are a non-empty subsequence of the planned values, in the planned order; false otherwise.
+ *
+ * @remarks
+ * The second form is the `test:src` aggregate a birth or an earlier write left before a structural
+ * fact planned another project, such as `src/reporter/main.ts` planning `--project src:reporter`.
+ * A step naming no project runs every project, so it is no predecessor of a step naming some.
+ *
+ * @example
+ * ```ts
+ * import { matchesStep } from './helpers.js'
+ *
+ * matchesStep('vitest run --project src:core', 'vitest run --project src:core --project src:reporter') // true
+ * matchesStep('vitest run', 'vitest run --project src:core') // false
+ * ```
+ */
+export function matchesStep(step: string, entry: string): boolean {
+	if (step === entry) return true
+	const [head, ...projects] = step.split(/\s+--project\s+/u)
+	const [command, ...planned] = entry.split(/\s+--project\s+/u)
+	if (head !== command || projects.length === 0) return false
+	const resumed = planned.values()
+	return projects.every((project) => resumed.some((name) => name === project))
 }
 
 /**

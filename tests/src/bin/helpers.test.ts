@@ -46,6 +46,7 @@ import {
 	collectScriptChain,
 	dependenciesToFloors,
 	dependenciesToFleet,
+	entriesToLines,
 	entriesToReleases,
 	environmentToUpstream,
 	errorToEnvelope,
@@ -54,6 +55,7 @@ import {
 	manifestToAdditions,
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
+	matchesStep,
 	mergeResults,
 	optionToName,
 	pinsToLifts,
@@ -830,6 +832,48 @@ describe('release evidence', () => {
 	})
 })
 
+describe('matchesStep', () => {
+	const planned = 'vitest run --config vite.config.ts --project src:core --project src:server'
+
+	it('matches an equal step and one naming a subsequence of the planned projects', () => {
+		expect(matchesStep('npm run check:src:core', 'npm run check:src:core')).toBe(true)
+		expect(matchesStep('vitest run --config vite.config.ts --project src:core', planned)).toBe(true)
+		expect(matchesStep('vitest run --config vite.config.ts --project src:server', planned)).toBe(
+			true,
+		)
+	})
+
+	it('refuses another command, another order, an unplanned project, and a run naming none', () => {
+		expect(matchesStep('npm run check:src:core', 'npm run check:src:server')).toBe(false)
+		expect(
+			matchesStep(
+				'vitest run --config vite.config.ts --project src:server --project src:core',
+				planned,
+			),
+		).toBe(false)
+		expect(matchesStep('vitest run --config vite.config.ts --project src:bin', planned)).toBe(false)
+		expect(matchesStep('vitest run --config other.ts --project src:core', planned)).toBe(false)
+		expect(matchesStep('vitest run --config vite.config.ts', planned)).toBe(false)
+	})
+})
+
+describe('entriesToLines', () => {
+	it('renders each command, packed path, and subpath with its JSON value', () => {
+		expect(
+			entriesToLines({
+				bin: { router: 'dist/bin/main.js' },
+				files: ['dist/bin'],
+				exports: { './reporter': { import: './dist/reporter/main.js' } },
+			}),
+		).toStrictEqual([
+			'bin["router"] "dist/bin/main.js"',
+			'files[] "dist/bin"',
+			'exports["./reporter"] {"import":"./dist/reporter/main.js"}',
+		])
+		expect(entriesToLines({ bin: {}, files: [], exports: {} })).toStrictEqual([])
+	})
+})
+
 describe('manifestToAdditions', () => {
 	const blueprint = createBlueprint('sample', { src: ['core'] })
 	const planned = blueprintToDevDependencies(blueprint)
@@ -1067,6 +1111,42 @@ describe('manifestToWritableScripts', () => {
 			command: 'npm run build && npm run serve',
 			accepted: ['npm run build:app:server && npm run serve'],
 		})
+	})
+
+	it('writes a generated predecessor of each src aggregate a reporter entry extends', () => {
+		const before = blueprintToScripts(createBlueprint('sample', { src: ['core', 'server'] }))
+		const reporter = createBlueprint('sample', { src: ['core', 'server'], reporter: true })
+		const after = blueprintToScripts(reporter)
+		const region = blueprintToWritableScripts(reporter)
+		const aggregates = ['test:src', 'check:src', 'build:src']
+		expect(
+			manifestToWritableScripts(JSON.stringify({ scripts: before }), reporter).filter(({ name }) =>
+				aggregates.includes(name),
+			),
+		).toStrictEqual(
+			aggregates.map((name) => ({
+				name,
+				command: requireValue(after[name]),
+				accepted: [requireValue(before[name])],
+			})),
+		)
+		for (const owned of [
+			{ 'test:src': `${requireValue(before['test:src'])} --bail=1` },
+			{ 'check:src': `${requireValue(before['check:src'])} && npm run lint:check` },
+			{ 'build:src': 'npm run build:src:server && npm run build:src:core' },
+			// A run naming no project runs every project, so it is no predecessor.
+			{ 'test:src': 'vitest run --config vite.config.ts --no-cache --reporter=dot' },
+			// The planned value and a respaced copy of it leave nothing to write.
+			{ 'check:src': requireValue(after['check:src']) },
+			{ 'build:src': requireValue(after['build:src']).replaceAll(' && ', '&&') },
+		]) {
+			expect(
+				manifestToWritableScripts(
+					JSON.stringify({ scripts: { ...after, ...owned } }),
+					reporter,
+				).map((script) => script.name),
+			).toStrictEqual(region.map((script) => script.name))
+		}
 	})
 
 	it('answers the blueprint scripts for a manifest with no readable test chain', () => {
