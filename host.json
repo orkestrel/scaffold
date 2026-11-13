@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "437e34e13de5ea59ab83189c3bf0041fdb373d43c8bd9decaab26c58894b7646"
+			"digest": "9e2444065445ce03e3fc84514e9279344caf0a9a7c73075146bf50eab9787fed"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -994,7 +994,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "e254fceecdd111c66193ccaa2ec065ceaaba68a3386a1e4c29000fd02ec69ec9"
+			"digest": "94d089ae7bc9bc674ba2a4f18c7bbd29f5c2e18a971aed69651fd1c82e1782e7"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -1132,7 +1132,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "c7a50e132406ccac0871811b9f831ce3cb4fdc05c6fd3cdadcc1fd4890d5a731"
+			"digest": "832d1dcd60951f654c9264163fe81adb9fb2774dca41155640ac7e6d81a09aee"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1228,7 +1228,7 @@
 			"storage": "guides/study.md",
 			"destination": "guides/study.md",
 			"executable": false,
-			"digest": "49c3152985e8ca69bffaceed06a7270f4b3c3b2c3c5c102730f02d2581c2b8e3"
+			"digest": "c0a76c3efd998e10b133aa37b40adcc38552d6c0e1e6b6f07b1fd4721d702225"
 		},
 		{
 			"storage": "guides/table.md",
@@ -1252,7 +1252,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "e74cb544c43953a60cc73f5fa9511cc25521b6f97a1dbbaebd0c1392e1b6ef20"
+			"digest": "8b349eba1987065014599c028c447c5953c2313e3ed292b5719a6afecbed9626"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -1270,7 +1270,7 @@
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "d052fea933416ea959d259db6eba39fdecc37b07e127e2adb3f1f9c648fbcc8e"
+			"digest": "58c89ab22b7d345bfe17217a5a5395c860fd4d31f3c24a70880c1f0ced9983d6"
 		},
 		{
 			"storage": "guides/websocket.md",
@@ -1294,7 +1294,7 @@
 			"storage": "guides/workspace.md",
 			"destination": "guides/workspace.md",
 			"executable": false,
-			"digest": "6046d980582ace9fa4c95c6f3819471e0a0306bc24408eb5cfe70524853cbebe"
+			"digest": "5c2b62f99d0f19687c3745b7a1992e043d6f02f1715e1d17bc41f4b30b3e9938"
 		},
 		{
 			"storage": "scripts/browsers.sh",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "ff95c50361b79141588ccaddba3e867895b64d4c9bdd13c89c9bffe137478b6b"
+	"digest": "19eac4b14612b9b6aa2bbd9a27bd9787f8a4039258773325ae548737bc879d3e"
 }
