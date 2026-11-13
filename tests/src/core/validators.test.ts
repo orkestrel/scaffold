@@ -15,6 +15,7 @@ import {
 	isSurface,
 	isExtension,
 	isSheetName,
+	isSubpathMap,
 	isArtifactGroups,
 	isHexContent,
 	isMirror,
@@ -365,5 +366,28 @@ describe('isSnapshot', () => {
 		)
 		expect(Object.keys(oversized)).toHaveLength(MAX_COLLECTION_ITEMS + 1)
 		expect(isSnapshot(oversized)).toBe(false)
+	})
+})
+
+describe('isSubpathMap', () => {
+	it('accepts an object whose every key opens with a dot, the empty object included', () => {
+		expect(isSubpathMap({ '.': './index.js', './server': './server.js' })).toBe(true)
+		expect(isSubpathMap({})).toBe(true)
+	})
+
+	it('refuses conditions, a mix, a string, a fallback array, and null', () => {
+		expect(isSubpathMap({ import: './index.js' })).toBe(false)
+		expect(isSubpathMap({ '.': './index.js', import: './index.js' })).toBe(false)
+		expect(isSubpathMap('./index.js')).toBe(false)
+		expect(isSubpathMap(['./index.js'])).toBe(false)
+		expect(isSubpathMap(null)).toBe(false)
+	})
+
+	it('answers every hostile value with a boolean and never throws', () => {
+		for (const hostile of buildHostileCases()) {
+			expect(() => isSubpathMap(hostile.value)).not.toThrow()
+			expect(typeof isSubpathMap(hostile.value)).toBe('boolean')
+		}
+		expect(isSubpathMap(selectHostileCase('revoked proxy').value)).toBe(false)
 	})
 })

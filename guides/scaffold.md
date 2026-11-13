@@ -236,36 +236,37 @@ Exported from `@orkestrel/scaffold`, and reachable from
 
 #### Guards
 
-| Name                 | Kind     | Signature                                         | Summary                                                                           |
-| -------------------- | -------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `isArtifact`         | const    | `Guard<Artifact>`                                 | Narrows a value to an `Artifact`.                                                 |
-| `isArtifactFinding`  | const    | `Guard<ArtifactFinding>`                          | Narrows a value to an `ArtifactFinding`.                                          |
-| `isArtifactGroup`    | const    | `Guard<ArtifactGroup>`                            | Narrows a value to one `ArtifactGroup` a plan selects over.                       |
-| `isArtifactGroups`   | const    | `Guard<readonly ArtifactGroup[]>`                 | Narrows a value to a bounded group selection.                                     |
-| `isAudit`            | const    | `Guard<Audit>`                                    | Narrows a value to an `Audit`.                                                    |
-| `isBlueprint`        | const    | `Guard<Blueprint>`                                | Narrows a value to a `Blueprint`.                                                 |
-| `isBrowserExtension` | const    | `Guard<BrowserExtension>`                         | Narrows a value to a supported browser framework with distinct occupied axes.     |
-| `isCatalogEntry`     | const    | `Guard<CatalogEntry>`                             | Narrows a value to a `CatalogEntry`.                                              |
-| `isCollection`       | function | `(value: unknown) => value is readonly unknown[]` | Narrows a value to an array within the limit one public collection accepts.       |
-| `isCompilerHooks`    | const    | `Guard<EmitterHooks<CompilerEventMap>>`           | Narrows a value to the compiler's initial listener record.                        |
-| `isCompilerOptions`  | const    | `Guard<CompilerOptions>`                          | Narrows a value to `CompilerOptions`.                                             |
-| `isContent`          | const    | `Guard<string>`                                   | Narrows a value to text this package will accept as one artifact's content.       |
-| `isDependency`       | const    | `Guard<Dependency>`                               | Narrows a value to a `Dependency`.                                                |
-| `isDependencyName`   | const    | `Guard<string>`                                   | Narrows a value to the scoped package name a runtime dependency carries.          |
-| `isEnvironment`      | const    | `Guard<Environment>`                              | Narrows a value to one `Environment` a workspace may select.                      |
-| `isExtension`        | const    | `Guard<Extension>`                                | Narrows a value to an extension of a supported surface.                           |
-| `isHexContent`       | const    | `Guard<string>`                                   | Narrows a value to exact lowercase hexadecimal bytes within one artifact's limit. |
-| `isManifestScript`   | const    | `Guard<ManifestScript>`                           | Narrows a value to a `ManifestScript`.                                            |
-| `isMirror`           | const    | `Guard<Mirror>`                                   | Narrows a value to a `Mirror`.                                                    |
-| `isOverride`         | const    | `Guard<Override>`                                 | Narrows a value to an `Override`.                                                 |
-| `isPath`             | function | `(value: unknown) => value is string`             | Narrows a value to a logical target-relative path.                                |
-| `isPlan`             | const    | `Guard<Plan>`                                     | Narrows a value to a `Plan`.                                                      |
-| `isQuestion`         | const    | `Guard<Question>`                                 | Narrows a value to a `Question`.                                                  |
-| `isScaffoldError`    | function | `(value: unknown) => value is ScaffoldError`      | Narrows a caught value to a `ScaffoldError`.                                      |
-| `isSheetName`        | function | `(value: unknown) => value is string`             | Narrows a value to a non-reserved sheet face name.                                |
-| `isSnapshot`         | function | `(value: unknown) => value is Snapshot`           | Narrows a value to a `Snapshot`.                                                  |
-| `isStylesExtension`  | const    | `Guard<StylesExtension>`                          | Narrows a value to a named non-reserved stylesheet face.                          |
-| `isSurface`          | const    | `Guard<Surface>`                                  | Narrows a value to a surface an extension can extend.                             |
+| Name                 | Kind     | Signature                                                        | Summary                                                                           |
+| -------------------- | -------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `isArtifact`         | const    | `Guard<Artifact>`                                                | Narrows a value to an `Artifact`.                                                 |
+| `isArtifactFinding`  | const    | `Guard<ArtifactFinding>`                                         | Narrows a value to an `ArtifactFinding`.                                          |
+| `isArtifactGroup`    | const    | `Guard<ArtifactGroup>`                                           | Narrows a value to one `ArtifactGroup` a plan selects over.                       |
+| `isArtifactGroups`   | const    | `Guard<readonly ArtifactGroup[]>`                                | Narrows a value to a bounded group selection.                                     |
+| `isAudit`            | const    | `Guard<Audit>`                                                   | Narrows a value to an `Audit`.                                                    |
+| `isBlueprint`        | const    | `Guard<Blueprint>`                                               | Narrows a value to a `Blueprint`.                                                 |
+| `isBrowserExtension` | const    | `Guard<BrowserExtension>`                                        | Narrows a value to a supported browser framework with distinct occupied axes.     |
+| `isCatalogEntry`     | const    | `Guard<CatalogEntry>`                                            | Narrows a value to a `CatalogEntry`.                                              |
+| `isCollection`       | function | `(value: unknown) => value is readonly unknown[]`                | Narrows a value to an array within the limit one public collection accepts.       |
+| `isCompilerHooks`    | const    | `Guard<EmitterHooks<CompilerEventMap>>`                          | Narrows a value to the compiler's initial listener record.                        |
+| `isCompilerOptions`  | const    | `Guard<CompilerOptions>`                                         | Narrows a value to `CompilerOptions`.                                             |
+| `isContent`          | const    | `Guard<string>`                                                  | Narrows a value to text this package will accept as one artifact's content.       |
+| `isDependency`       | const    | `Guard<Dependency>`                                              | Narrows a value to a `Dependency`.                                                |
+| `isDependencyName`   | const    | `Guard<string>`                                                  | Narrows a value to the scoped package name a runtime dependency carries.          |
+| `isEnvironment`      | const    | `Guard<Environment>`                                             | Narrows a value to one `Environment` a workspace may select.                      |
+| `isExtension`        | const    | `Guard<Extension>`                                               | Narrows a value to an extension of a supported surface.                           |
+| `isHexContent`       | const    | `Guard<string>`                                                  | Narrows a value to exact lowercase hexadecimal bytes within one artifact's limit. |
+| `isManifestScript`   | const    | `Guard<ManifestScript>`                                          | Narrows a value to a `ManifestScript`.                                            |
+| `isMirror`           | const    | `Guard<Mirror>`                                                  | Narrows a value to a `Mirror`.                                                    |
+| `isOverride`         | const    | `Guard<Override>`                                                | Narrows a value to an `Override`.                                                 |
+| `isPath`             | function | `(value: unknown) => value is string`                            | Narrows a value to a logical target-relative path.                                |
+| `isPlan`             | const    | `Guard<Plan>`                                                    | Narrows a value to a `Plan`.                                                      |
+| `isQuestion`         | const    | `Guard<Question>`                                                | Narrows a value to a `Question`.                                                  |
+| `isScaffoldError`    | function | `(value: unknown) => value is ScaffoldError`                     | Narrows a caught value to a `ScaffoldError`.                                      |
+| `isSheetName`        | function | `(value: unknown) => value is string`                            | Narrows a value to a non-reserved sheet face name.                                |
+| `isSnapshot`         | function | `(value: unknown) => value is Snapshot`                          | Narrows a value to a `Snapshot`.                                                  |
+| `isStylesExtension`  | const    | `Guard<StylesExtension>`                                         | Narrows a value to a named non-reserved stylesheet face.                          |
+| `isSubpathMap`       | function | `(value: unknown) => value is Readonly<Record<string, unknown>>` | Narrows a manifest `exports` value to a map of subpaths.                          |
+| `isSurface`          | const    | `Guard<Surface>`                                                 | Narrows a value to a surface an extension can extend.                             |
 
 #### Parsers
 
@@ -309,7 +310,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `matchesPackedPath`                | function | `(declared: string, planned: string) => boolean`                                                                                                   | Checks whether a declared `files` entry packs a planned one.                                        |
 | `matchesPrintWidth`                | function | `(line: string) => boolean`                                                                                                                        | Tests whether one emitted line fits the vendored formatter width.                                   |
 | `matchesRange`                     | function | `(range: string, latest: string) => boolean`                                                                                                       | Tests whether a declared range already admits a published version.                                  |
-| `matchesSubpathMap`                | function | `(value: unknown) => value is Readonly<Record<string, unknown>>`                                                                                   | Checks whether a manifest `exports` value is a map of subpaths.                                     |
 | `nameToGuide`                      | function | `(name: string) => string`                                                                                                                         | Derives the guide mirror path a package name answers for.                                           |
 | `normalizePackagePath`             | function | `(path: string) => string`                                                                                                                         | Returns the canonical form of a path a manifest names inside its package.                           |
 | `parseOwnedJSONValue`              | function | `(value: unknown) => JSONValue \| undefined`                                                                                                       | Snapshots an untrusted value into exact JSON data the caller owns.                                  |
@@ -738,8 +738,9 @@ chain that invokes it. Where the package owns `test:src`, the
 `configs` group with that same step named until a chain from `test` reaches the project. The same
 rows follow `src/bin/main.ts`: the `bin` command, `dist/bin` in `files`, `check:src:bin`,
 `build:src:bin`, `test:src:bin`, and the aggregates. An executable reaches `dist/src` only through
-the `@src/*` specifiers its build rewrites, one per library environment, so a workspace with no
-library environment packs `dist/bin` and no `dist/src`. An added library environment follows the
+the `@src/*` specifiers its build rewrites, one per library environment, so `dist/src` is packed
+only where a library environment or a sheet builds into it, and an executable beside neither packs
+`dist/bin` and no `dist/src`. An added library environment follows the
 same rule: `overwrite` writes its subpath, `check:src:<environment>`, `build:src:<environment>`,
 and `test:src:<environment>`, and extends the generated aggregates.
 
@@ -1105,14 +1106,18 @@ section reads a planned entry as declared by its own rule:
 
 - A planned command is declared when `bin` names it, or when any declared command runs the planned
   file, so a package that publishes its executable under another name, such as `browse`, keeps
-  that name. A string `bin` declares the planned command when it names the planned file.
+  that name. A string `bin` declares the planned command when it names the planned file. Both
+  forms read a path as npm does: a backslash is a separator and a run of separators is one, so
+  `dist\bin\main.js` and `dist//bin/main.js` name `dist/bin/main.js`.
 - A planned `files` path is declared when a declared path equals it or names a directory above it,
-  compared by path segments, so `dist` packs `dist/app` and `dist-old` does not. A negated path is
-  declared only by an equal entry.
-- A planned subpath is declared when the `exports` map names it. A string `exports`, or an object
-  whose keys are conditions such as `import` and `require`, publishes the root export alone, so it
-  declares `.` and takes no other subpath: Node refuses an object that mixes conditions with
-  subpaths.
+  compared by path segments, so `dist` packs `dist/app` and `dist-old` does not. A declared path
+  ending in `/**` or `/*` names the directory before it, so `dist/**` packs `dist/app`. No other
+  glob is read: `dist/*.js` declares no planned path it does not equal. A negated path is declared
+  only by an equal entry.
+- A planned subpath is declared when the `exports` map names it. A string `exports`, a fallback
+  array, or an object whose keys are conditions such as `import` and `require` publishes the root
+  export alone, so it declares `.` and takes no other subpath: Node refuses an object that mixes
+  conditions with subpaths.
 
 A `bin` value that is not an object, an `exports` value that is not a map of subpaths, or a
 `files` value that is not an array of strings takes no entry. `audit` reports every missing entry

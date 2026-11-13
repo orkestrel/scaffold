@@ -9496,6 +9496,84 @@ describe('CLI entries an existing workspace adds', { timeout: 60_000 }, () => {
 		}
 	})
 
+	it('names both missing steps when the check chain skips a check:src that omits the entry', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,server',
+			])
+			workspace.write('fixture/src/reporter/main.ts', REPORTER_ENTRY_TEXT)
+			const born = requireValue(workspace.read('fixture/package.json'))
+			const skipped = born.replace(
+				'"tsc --noEmit --project tsconfig.json && npm run check:src"',
+				'"tsc --noEmit --project tsconfig.json"',
+			)
+			expect(skipped).not.toBe(born)
+			const owned = skipped.replace(
+				'npm run check:src:server"',
+				'npm run check:src:server && npm run format:check"',
+			)
+			expect(owned).not.toBe(skipped)
+			const cases = [
+				{
+					manifest: owned,
+					remedy:
+						'The check chain does not run npm run check:src, and check:src does not run npm run check:src:reporter: invoke npm run check:src:reporter from the check:src chain, and npm run check:src from the check chain.',
+				},
+				// A generated check:src gains the step from the write, so only the gate step is missing.
+				{
+					manifest: skipped,
+					remedy:
+						'The check chain does not run npm run check:src: invoke npm run check:src from the check chain.',
+				},
+			]
+			for (const { manifest, remedy } of cases) {
+				workspace.write('fixture/package.json', manifest)
+				const sink = createSink()
+				await new CLI(sink.options).execute(['audit', ...args])
+				const audit: AuditResult = JSON.parse(sink.output[0] ?? '')
+				expect(audit.questions).toContainEqual({
+					field: 'scripts',
+					blocking: false,
+					message: `The manifest at ${target} does not reach the planned script check:src:reporter from check. ${remedy}`,
+				})
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps a customized library environment build script and reports it as differing', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const { target, args } = await createBornTarget(workspace, new CLI(createSink().options), [
+				'--src',
+				'core,browser,server',
+			])
+			const born = requireValue(workspace.read('fixture/package.json'))
+			const customized =
+				'vite build --config configs/src/vite.browser.config.ts && npm run copy dist/src/browser/index.d.ts dist/src/browser/index.d.mts'
+			const manifest = born.replace(
+				'"build:src:browser": "vite build --config configs/src/vite.browser.config.ts"',
+				`"build:src:browser": ${JSON.stringify(customized)}`,
+			)
+			expect(manifest).not.toBe(born)
+			workspace.write('fixture/package.json', manifest)
+			const overwrite = createSink()
+			await new CLI(overwrite.options).execute(['overwrite', '--dirty', ...args])
+			const result: OverwriteResult = JSON.parse(overwrite.output[0] ?? '')
+			expect(JSON.parse(requireValue(workspace.read('fixture/package.json')))).toMatchObject({
+				scripts: { 'build:src:browser': customized },
+			})
+			expect(result.audit.questions.find(({ field }) => field === 'scripts')?.message).toBe(
+				`The manifest at ${target} declares a planned script with a differing value: build:src:browser. Keep the declared value unchanged or replace it with the planned value: "build:src:browser" declares ${JSON.stringify(customized)}; planned "vite build --config configs/src/vite.browser.config.ts".`,
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('asks for each step a package-owned aggregate omits and names it in the refusal', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

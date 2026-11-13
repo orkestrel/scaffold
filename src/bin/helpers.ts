@@ -58,7 +58,7 @@ import {
 	isSheetName,
 	iterateAnswers,
 	manifestToDependencies,
-	matchesSubpathMap,
+	isSubpathMap,
 	MAX_PATH_LENGTH,
 	MAX_RANGE_LENGTH,
 	parseExtension,
@@ -685,7 +685,8 @@ export function renderManifestEntries(entries: ManifestEntrySet): readonly strin
  * the entries; empty when every section can take its missing entries.
  *
  * @remarks
- * A string `exports` and an object of conditions each publish the root export alone, and Node
+ * A string `exports`, a fallback array, and an object of conditions each publish the root export
+ * alone, and Node
  * refuses an object that mixes conditions with subpaths, so the clause asks for a subpath map that
  * keeps the declared value under `.`.
  *
@@ -717,13 +718,11 @@ export function describeEntryRefusal(
 		(isArray(files) && files.every(isString))
 			? []
 			: ['its files value is not an array of strings: declare files as an array of paths']),
-		...(Object.keys(missing.exports).length === 0 ||
-		exports === undefined ||
-		matchesSubpathMap(exports)
+		...(Object.keys(missing.exports).length === 0 || exports === undefined || isSubpathMap(exports)
 			? []
 			: [
-					isString(exports) || isRecord(exports)
-						? `its exports value is ${isString(exports) ? 'a string' : `an object of conditions (${Object.keys(exports).join(', ')})`}, which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."`
+					isString(exports) || isArray(exports) || isRecord(exports)
+						? `its exports value is ${isString(exports) ? 'a string' : isArray(exports) ? 'a fallback array' : `an object of conditions (${Object.keys(exports).join(', ')})`}, which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."`
 						: 'its exports value is not an object: declare exports as a map of subpaths',
 				]),
 	]

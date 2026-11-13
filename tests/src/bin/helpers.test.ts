@@ -880,6 +880,9 @@ describe('describeEntryRefusal', () => {
 			'its bin value is not an object: declare bin as an object of commands',
 			'its exports value is a string, which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."',
 		])
+		expect(describeEntryRefusal('{"exports":["./index.js"]}', missing)).toStrictEqual([
+			'its exports value is a fallback array, which Node reads as the root export alone and refuses beside a subpath: declare exports as a map of subpaths that keeps this value under "."',
+		])
 		expect(describeEntryRefusal('{"exports":7}', missing)).toStrictEqual([
 			'its exports value is not an object: declare exports as a map of subpaths',
 		])

@@ -1746,8 +1746,10 @@ export class CLI implements CLIInterface {
 			replaceManifestScripts(text, manifestToWritableScripts(text, blueprint)) ?? text
 		const parsed = parseJSON(manifest)
 		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
-		const missing = ['check', 'build'].flatMap((gate) => {
-			const chain = collectScriptChain(gate, scripts, new Map())
+		const chains = new Map(
+			['check', 'build'].map((gate) => [gate, collectScriptChain(gate, scripts, new Map())]),
+		)
+		const missing = [...chains].flatMap(([gate, chain]) => {
 			return faces
 				.map((face) => `${gate}:src:${face}`)
 				.filter((name) => !chain.visited.has(name))
@@ -1764,18 +1766,31 @@ export class CLI implements CLIInterface {
 				groups: ['manifest'],
 			}
 		}
-		// An absent aggregate is never written, so its remedy names the script to add.
+		// An absent aggregate is never written, so its remedy names the script to add. A declared
+		// aggregate the gate does not run is a second missing step, named beside the first.
 		const planned = blueprintToScripts(blueprint)
-		const remedies = ['check', 'build'].flatMap((gate) => {
+		const remedies = [...chains].flatMap(([gate, reached]) => {
 			const chain = `${gate}:src`
 			const steps = missing
 				.filter((entry) => entry.gate === gate)
 				.map(({ name }) => `npm run ${name}`)
 			if (steps.length === 0) return []
+			if (!isString(scripts[chain])) {
+				return [
+					`The manifest declares no ${chain} script: add ${JSON.stringify(chain)}: ${JSON.stringify(planned[chain] ?? steps.join(' && '))} and invoke npm run ${chain} from the ${gate} chain.`,
+				]
+			}
+			const inner = collectScriptChain(chain, scripts, new Map()).visited
+			const lacking = steps.filter((step) => !inner.has(step.slice('npm run '.length)))
+			if (reached.visited.has(chain)) {
+				return [
+					`The ${chain} chain runs steps the plan does not generate, so invoke ${lacking.join(' and ')} from it.`,
+				]
+			}
 			return [
-				isString(scripts[chain])
-					? `The ${chain} chain runs steps the plan does not generate, so invoke ${steps.join(' and ')} from it.`
-					: `The manifest declares no ${chain} script: add ${JSON.stringify(chain)}: ${JSON.stringify(planned[chain] ?? steps.join(' && '))} and invoke npm run ${chain} from the ${gate} chain.`,
+				lacking.length === 0
+					? `The ${gate} chain does not run npm run ${chain}: invoke npm run ${chain} from the ${gate} chain.`
+					: `The ${gate} chain does not run npm run ${chain}, and ${chain} does not run ${lacking.join(' or ')}: invoke ${lacking.join(' and ')} from the ${chain} chain, and npm run ${chain} from the ${gate} chain.`,
 			]
 		})
 		return {

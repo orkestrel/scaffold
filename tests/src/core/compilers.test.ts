@@ -1708,7 +1708,11 @@ describe('insertManifestEntries', () => {
 		const planned = blueprintToEntries(
 			createBlueprint('router', { src: ['core', 'server'], reporter: true }),
 		)
-		for (const exports of ['{"import":"./index.js","require":"./index.cjs"}', '"./index.js"']) {
+		for (const exports of [
+			'{"import":"./index.js","require":"./index.cjs"}',
+			'"./index.js"',
+			'["./index.js"]',
+		]) {
 			expect(
 				insertManifestEntries(`{"name":"router","files":[],"exports":${exports}}`, planned),
 			).toBe(undefined)

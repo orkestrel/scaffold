@@ -52,6 +52,7 @@ import {
 } from './constants.js'
 import { isScaffoldError } from './errors.js'
 import { ARTIFACT_TEMPLATES } from './templates.js'
+import { isSubpathMap } from './validators.js'
 
 /**
  * Collects bare names claimed by distinct owners in sorted order.
@@ -1402,8 +1403,8 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
  * the planned command when it names the planned file. A planned packed path counts as declared
  * when a declared path equals it or names a directory above it, as {@link matchesPackedPath} reads
  * the pair. A subpath counts as declared by name alone, so a declared entry holding another value
- * stays the package's. A string `exports` or an object whose keys are conditions rather than
- * subpaths declares the root subpath `.` alone. A section holding any other shape declares none of
+ * stays the package's. A string `exports`, a fallback array, or an object whose keys are conditions
+ * rather than subpaths declares the root subpath `.` alone, as Node reads each. A section holding any other shape declares none of
  * its planned entries. A manifest that is not an object lacks nothing, because no entry can be read
  * from it or written into it.
  *
@@ -1431,9 +1432,9 @@ export function manifestToEntries(manifest: string, planned: ManifestEntrySet): 
 		isString(path) ? [normalizePackagePath(path)] : [],
 	)
 	const packed = isArray(files) ? files.filter(isString) : []
-	const subpaths = matchesSubpathMap(exports)
+	const subpaths = isSubpathMap(exports)
 		? exports
-		: isString(exports) || isRecord(exports)
+		: isString(exports) || isArray(exports) || isRecord(exports)
 			? { '.': exports }
 			: {}
 	return {
@@ -1457,18 +1458,27 @@ export function manifestToEntries(manifest: string, planned: ManifestEntrySet): 
  * Returns the canonical form of a path a manifest names inside its package.
  *
  * @param path - A `bin` target or a `files` entry.
- * @returns The path without a leading `./` and without trailing `/` characters.
+ * @returns The path with `/` for every backslash, one `/` for every run of separators, and no
+ * leading `./` or trailing `/`.
+ *
+ * @remarks
+ * npm reads a backslash in a `bin` or `files` path as a separator and collapses repeated
+ * separators, so `dist\bin\main.js` and `dist//bin/main.js` name `dist/bin/main.js`.
  *
  * @example
  * ```ts
  * import { normalizePackagePath } from '@orkestrel/scaffold'
  *
  * normalizePackagePath('./dist/bin/main.js') // 'dist/bin/main.js'
- * normalizePackagePath('dist/') // 'dist'
+ * normalizePackagePath('dist//bin/main.js') // 'dist/bin/main.js'
  * ```
  */
 export function normalizePackagePath(path: string): string {
-	return path.replace(/^(\.\/)+/u, '').replace(/\/+$/u, '')
+	return path
+		.replaceAll('\\', '/')
+		.replace(/\/{2,}/gu, '/')
+		.replace(/^(\.\/)+/u, '')
+		.replace(/\/+$/u, '')
 }
 
 /**
@@ -1480,8 +1490,10 @@ export function normalizePackagePath(path: string): string {
  * segments open the planned entry's; false otherwise.
  *
  * @remarks
- * A negated entry such as `!dist/src/styles/index.js` excludes a path rather than packing one, so
- * only an equal entry declares it.
+ * A declared entry ending in `/**` or `/*` packs the directory it names, so `dist/**` packs
+ * `dist/app`. No other glob is read: an entry such as `dist/*.js` packs no planned path it does not
+ * equal. A negated entry such as `!dist/src/styles/index.js` excludes a path rather than packing
+ * one, so only an equal entry declares it.
  *
  * @example
  * ```ts
@@ -1492,7 +1504,7 @@ export function normalizePackagePath(path: string): string {
  * ```
  */
 export function matchesPackedPath(declared: string, planned: string): boolean {
-	const left = normalizePackagePath(declared)
+	const left = normalizePackagePath(declared).replace(/\/\*\*?$/u, '')
 	const right = normalizePackagePath(planned)
 	if (left === right) return true
 	if (left.startsWith('!') || right.startsWith('!') || left === '') return false
@@ -1501,29 +1513,6 @@ export function matchesPackedPath(declared: string, planned: string): boolean {
 	return (
 		segments.length < target.length && segments.every((segment, index) => segment === target[index])
 	)
-}
-
-/**
- * Checks whether a manifest `exports` value is a map of subpaths.
- *
- * @param value - The declared `exports` value.
- * @returns True if the value is an object whose every key opens with `.`; false otherwise.
- *
- * @remarks
- * Node reads an object whose keys are conditions, such as `import` and `require`, as the root
- * export alone, and refuses an object that mixes conditions with subpaths, so a subpath can be
- * added only to a subpath map.
- *
- * @example
- * ```ts
- * import { matchesSubpathMap } from '@orkestrel/scaffold'
- *
- * matchesSubpathMap({ '.': './index.js' }) // true
- * matchesSubpathMap({ import: './index.js' }) // false
- * ```
- */
-export function matchesSubpathMap(value: unknown): value is Readonly<Record<string, unknown>> {
-	return isRecord(value) && Object.keys(value).every((key) => key.startsWith('.'))
 }
 
 /**

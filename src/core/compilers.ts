@@ -95,14 +95,13 @@ import {
 	matchesEngines,
 	matchesPrintWidth,
 	manifestToEntries,
-	matchesSubpathMap,
 	scanManifestTokens,
 	serializeTypeScriptString,
 	selectHostPaths,
 	srcToRoot,
 } from './helpers.js'
 import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
-import { isSheetName } from './validators.js'
+import { isSheetName, isSubpathMap } from './validators.js'
 
 /**
  * Projects a blueprint into browser extensions restricted to occupied browser axes.
@@ -3322,7 +3321,7 @@ export function insertManifestEntries(
 		const length = isArray(current) && current.every(isString) ? current.length : undefined
 		if (manifest.charAt(key.value) !== (section.array ? '[' : '{')) return undefined
 		if (section.array && length === undefined) return undefined
-		if (section.name === 'exports' && !matchesSubpathMap(current)) return undefined
+		if (section.name === 'exports' && !isSubpathMap(current)) return undefined
 		const following = tokens.slice(key.at + 1)
 		// An array of strings holds no brace, so its strings are the tokens that follow its key and
 		// it closes at the first `]` after the last of them. An object closes at the brace that

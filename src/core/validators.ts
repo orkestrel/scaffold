@@ -155,6 +155,30 @@ export function isCollection(value: unknown): value is readonly unknown[] {
 }
 
 /**
+ * Narrows a manifest `exports` value to a map of subpaths.
+ *
+ * @param value - The declared `exports` value.
+ * @returns True if the value is an object whose every key opens with `.`; false otherwise.
+ *
+ * @remarks
+ * Node reads a string, an array, or an object whose keys are conditions, such as `import` and
+ * `require`, as the root export alone, and refuses an object that mixes conditions with subpaths,
+ * so a subpath can be added only to a subpath map. A value whose keys cannot be read answers
+ * `false`.
+ *
+ * @example
+ * ```ts
+ * import { isSubpathMap } from '@orkestrel/scaffold'
+ *
+ * isSubpathMap({ '.': './index.js' }) // true
+ * isSubpathMap({ import: './index.js' }) // false
+ * ```
+ */
+export function isSubpathMap(value: unknown): value is Readonly<Record<string, unknown>> {
+	return holds(() => isRecord(value) && Object.keys(value).every((key) => key.startsWith('.')))
+}
+
+/**
  * Narrows a value to one {@link Environment} a workspace may select.
  *
  * @example

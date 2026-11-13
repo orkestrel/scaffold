@@ -42,7 +42,6 @@ import {
 	manifestToDependencies,
 	manifestToEntries,
 	matchesPackedPath,
-	matchesSubpathMap,
 	normalizePackagePath,
 	manifestToName,
 	matchesArtifactDriftReachability,
@@ -1164,6 +1163,13 @@ describe('manifestToEntries', () => {
 		expect(manifestToEntries('{"bin":{"router":"cli.js"}}', planned).bin).toStrictEqual({})
 		expect(manifestToEntries('{"bin":"./dist/bin/main.js"}', planned).bin).toStrictEqual({})
 		expect(manifestToEntries('{"bin":"cli.js"}', planned).bin).toStrictEqual(planned.bin)
+		// npm reads a backslash as a separator and collapses repeated separators.
+		expect(
+			manifestToEntries(JSON.stringify({ bin: { browse: 'dist\\bin\\main.js' } }), planned).bin,
+		).toStrictEqual({})
+		expect(manifestToEntries('{"bin":{"browse":"dist//bin/main.js"}}', planned).bin).toStrictEqual(
+			{},
+		)
 		expect(manifestToEntries('{"bin":{"other":"x.js"}}', planned).bin).toStrictEqual(planned.bin)
 	})
 
@@ -1174,10 +1180,20 @@ describe('manifestToEntries', () => {
 		expect(manifestToEntries('{"files":["dist-old","README.md"]}', app).files).toStrictEqual([
 			'dist/app',
 		])
+		for (const glob of ['dist/**', 'dist/*']) {
+			expect(manifestToEntries(`{"files":["${glob}","README.md"]}`, app).files).toStrictEqual([])
+		}
+		expect(manifestToEntries('{"files":["dist/*.js","README.md"]}', app).files).toStrictEqual([
+			'dist/app',
+		])
 	})
 
 	it('reads a string or condition exports value as declaring the root subpath alone', () => {
-		for (const exports of ['"./index.js"', '{"import":"./index.js","require":"./index.cjs"}']) {
+		for (const exports of [
+			'"./index.js"',
+			'["./index.js"]',
+			'{"import":"./index.js","require":"./index.cjs"}',
+		]) {
 			expect(manifestToEntries(`{"exports":${exports}}`, planned).exports).toStrictEqual({
 				'./reporter': './dist/reporter/main.js',
 			})
@@ -1199,6 +1215,9 @@ describe('normalizePackagePath', () => {
 		expect(normalizePackagePath('././dist//')).toBe('dist')
 		expect(normalizePackagePath('dist/app')).toBe('dist/app')
 		expect(normalizePackagePath('')).toBe('')
+		expect(normalizePackagePath('dist\\bin\\main.js')).toBe('dist/bin/main.js')
+		expect(normalizePackagePath('dist//bin///main.js')).toBe('dist/bin/main.js')
+		expect(normalizePackagePath('.\\dist\\')).toBe('dist')
 	})
 })
 
@@ -1208,6 +1227,9 @@ describe('matchesPackedPath', () => {
 		expect(matchesPackedPath('dist', 'dist/app')).toBe(true)
 		expect(matchesPackedPath('./dist/', 'dist/src')).toBe(true)
 		expect(matchesPackedPath('!dist/src/styles/index.js', '!dist/src/styles/index.js')).toBe(true)
+		expect(matchesPackedPath('dist/**', 'dist/app')).toBe(true)
+		expect(matchesPackedPath('dist/*', 'dist/app')).toBe(true)
+		expect(matchesPackedPath('dist\\', 'dist/app')).toBe(true)
 	})
 
 	it('refuses a sibling prefix, a deeper entry, an empty entry, and a negation it does not equal', () => {
@@ -1216,21 +1238,8 @@ describe('matchesPackedPath', () => {
 		expect(matchesPackedPath('', 'dist/app')).toBe(false)
 		expect(matchesPackedPath('dist', '!dist/src/styles/index.js')).toBe(false)
 		expect(matchesPackedPath('!dist', 'dist/src')).toBe(false)
-	})
-})
-
-describe('matchesSubpathMap', () => {
-	it('accepts an object whose every key opens with a dot, the empty object included', () => {
-		expect(matchesSubpathMap({ '.': './index.js', './server': './server.js' })).toBe(true)
-		expect(matchesSubpathMap({})).toBe(true)
-	})
-
-	it('refuses conditions, a mix, a string, an array, and null', () => {
-		expect(matchesSubpathMap({ import: './index.js' })).toBe(false)
-		expect(matchesSubpathMap({ '.': './index.js', import: './index.js' })).toBe(false)
-		expect(matchesSubpathMap('./index.js')).toBe(false)
-		expect(matchesSubpathMap([])).toBe(false)
-		expect(matchesSubpathMap(null)).toBe(false)
+		expect(matchesPackedPath('dist/*.js', 'dist/app')).toBe(false)
+		expect(matchesPackedPath('!dist/**', 'dist/app')).toBe(false)
 	})
 })
 
