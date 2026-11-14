@@ -11,7 +11,6 @@ import {
 	cpSync,
 	existsSync,
 	globSync,
-	lstatSync,
 	mkdirSync,
 	openSync,
 	readdirSync,
@@ -5492,8 +5491,12 @@ describe('configuration helpers', () => {
 			const expected = realpathSync.native(packageRoot)
 			const absent = resolve(packageRoot, 'src/absent.ts')
 			const beneathFile = resolve(source, 'child')
-			expect(lstatSync(absent, { throwIfNoEntry: false })).toBeUndefined()
-			expect(lstatSync(beneathFile, { throwIfNoEntry: false })).toBeUndefined()
+			expect(existsSync(absent)).toBe(false)
+			expect(existsSync(beneathFile)).toBe(false)
+			expect(configHelpers.isDirectoryPath(packageRoot)).toBe(true)
+			expect(configHelpers.isDirectoryPath(source)).toBe(false)
+			expect(configHelpers.isDirectoryPath(absent)).toBe(false)
+			expect(configHelpers.isDirectoryPath(beneathFile)).toBe(false)
 			expect(configHelpers.packageRootOf('@sample/package', absent)).toBe(expected)
 			expect(configHelpers.packageRootForResolved(beneathFile)).toBe(expected)
 		} finally {

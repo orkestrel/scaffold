@@ -91,7 +91,7 @@ Within the size, in order:
 3. **Implement.** Conform to the types. Place each declaration in its kind file. Update the barrel.
 4. **Test.** Cover happy paths, edge cases, failures, and boundaries with deterministic tests against real implementations. For a defect, record the failing command and count before the fix and the same command green after.
 5. **Consolidate.** Remove duplication, nested functions, and superfluous wrappers without widening the API.
-6. **Document.** After the implementation is final, update the matching guide, comments, and TSDoc in one minimal pass. Before then, write, revise, and review no prose.
+6. **Document.** After the implementation is final, update the matching guide, comments, and TSDoc in one minimal pass: what `tests/guides.test.ts` asserts, plus each sentence the change made false. Before then, write, revise, and review no prose: a brief carries no wording row, a review reports no wording finding, and no fix round opens for wording. A line that states something false is the one exception, and it changes in the round that made it false.
 
 Test ladder, narrowest first; stop at the boundary the change size names:
 

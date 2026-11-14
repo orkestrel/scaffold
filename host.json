@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "2f0362ce23fd870c5279ceb6ad818b8d4895f191b0ef9a5919013e4dd89a8ac6"
+			"digest": "4eba53632a4307a099e267a34742d9f469c64e663991fc859c56dbdd73bdaa6e"
 		},
 		{
 			"storage": "LICENSE",
@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "60026f0e737170d18d68ddaa390d687e504a7fee645bfe8904d55c3a21b2354d"
+			"digest": "b124bab4ce8b541b43084deeed4a562a63b700cc8e03c4e0a9b573af7cfc714e"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -646,7 +646,7 @@
 			"storage": "claude/agents/reviewer.md",
 			"destination": ".claude/agents/reviewer.md",
 			"executable": false,
-			"digest": "2ce69216ccdc5986cbc4815433a468e301b6e1d7436bc2a416b24bb9848ef9d8"
+			"digest": "015709ddfb46997c8125df2e4759e19256a1f0e9ac40f658d29ee85d81fc8f38"
 		},
 		{
 			"storage": "claude/agents/scout.md",
@@ -910,7 +910,7 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "c3637f71db5f0770ca3184a20de752db6da842838c988318f7a29aff2d828a93"
+			"digest": "115090268cf9bef75a1fee37d10faa3944c765463e7cafe60f4ff29c953ada41"
 		},
 		{
 			"storage": "configs/policy.ts",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "1506871e01f7746112e5b2c71a7392a1d4616da538ec247ed65d75e51847552d"
+			"digest": "93d4de4101f42c1de49fe586962087c59ce608a357c1989841fac1fbc4252638"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "d01af3a4edafcc3d4e8de21cba9ff79ba33e300c6b6a89db91a887e2b659191c"
+	"digest": "9151e913d0cfc623afd974ed20948de42e8a6d1dc2100d6d3b017ee334a05bfa"
 }

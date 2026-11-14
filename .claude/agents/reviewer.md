@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: 'Opus 5.5 review lane by default, on another engine when the dispatch names one, over implemented work, read-only on source: design fit, API and vocabulary, architecture shape, guide voice by default; correctness, constraints, and test sufficiency when the dispatch assigns the objective lane. Tests numbered claims and returns the falsify verdict. Never edits source.'
+description: 'Opus 5.5 review lane by default, on another engine when the dispatch names one, over implemented work, read-only on source: design fit, API and vocabulary, and architecture shape by default; correctness, constraints, and test sufficiency when the dispatch assigns the objective lane. Tests numbered claims and returns the falsify verdict. Never edits source.'
 tools: Read, Grep, Glob
 model: opus
 effort: high
