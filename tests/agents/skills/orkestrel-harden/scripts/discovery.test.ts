@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import { join } from 'node:path'
+import { chromium } from 'playwright'
 import {
 	DISCOVERY_COMMAND_SHAPES,
 	DISCOVERY_MARKER_CASES,
@@ -32,6 +33,15 @@ import {
 	readMissingOptions,
 	replaceProjects,
 } from '../../../../../.agents/skills/orkestrel-harden/scripts/discovery.ts'
+
+// A full listing of a browser project runs its file in Chromium, and `chromium.launch` refuses with "Executable doesn't exist" where the build the installed Playwright pins is absent.
+const launchable = await chromium.launch({ headless: true }).then(
+	(browser) => browser.close().then(() => true),
+	(error: unknown) => {
+		if (error instanceof Error && error.message.includes("Executable doesn't exist")) return false
+		throw error
+	},
+)
 
 describe('discovery.ts', () => {
 	it('collects runtime case titles before comparing gate identities', () => {
@@ -272,33 +282,39 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('does not add an empty browser base name when another mode collects its instance', () => {
-		const scratch = createScratch({ prefix: 'discovery-empty-browser-' })
-		try {
-			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
-			scratch.write(
-				'package.json',
-				JSON.stringify({
-					type: 'module',
-					scripts: {
-						test: 'npm run test:web',
-						'test:web': 'vitest run --mode empty --project web --passWithNoTests',
-					},
-				}),
-			)
-			scratch.write(
-				'vite.config.ts',
-				"import { playwright } from '@vitest/browser-playwright'\nexport default ({ mode }) => ({ test: { name: 'web', include: mode === 'empty' ? [] : ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } })\n",
-			)
-			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
-			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
-			expect(run).toMatchObject({ status: 3 })
-			expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
-			expect(run.json?.empty).toEqual([])
-		} finally {
-			scratch.destroy()
-		}
-	})
+	it.runIf(launchable)(
+		'does not add an empty browser base name when another mode collects its instance',
+		() => {
+			const scratch = createScratch({ prefix: 'discovery-empty-browser-' })
+			try {
+				scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+				scratch.write(
+					'package.json',
+					JSON.stringify({
+						type: 'module',
+						scripts: {
+							test: 'npm run test:web',
+							'test:web': 'vitest run --mode empty --project web --passWithNoTests',
+						},
+					}),
+				)
+				scratch.write(
+					'vite.config.ts',
+					"import { playwright } from '@vitest/browser-playwright'\nexport default ({ mode }) => ({ test: { name: 'web', include: mode === 'empty' ? [] : ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } })\n",
+				)
+				scratch.write(
+					'tests/web.test.ts',
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run).toMatchObject({ status: 3 })
+				expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
+				expect(run.json?.empty).toEqual([])
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
 	it('keeps duplicate names distinct when a line filter selects one test in one file', () => {
 		const scratch = createScratch({ prefix: 'discovery-lines-' })
 		try {
@@ -514,27 +530,30 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('F1 leaves a real browser project ungated when its base name is negated', () => {
-		const scratch = createScratch({ prefix: 'discovery-f1-' })
-		try {
-			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
-			scratch.write(
-				'package.json',
-				JSON.stringify({ type: 'module', scripts: { test: 'vitest run --project !web' } }),
-			)
-			scratch.write(
-				'vite.config.ts',
-				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { projects: [{ test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }] } }\n",
-			)
-			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
-			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
-			expect(run.status).toBe(3)
-			expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
-			expect(run.json?.ungated).toEqual(['web (chromium)'])
-		} finally {
-			scratch.destroy()
-		}
-	})
+	it.runIf(launchable)(
+		'F1 leaves a real browser project ungated when its base name is negated',
+		() => {
+			const scratch = createScratch({ prefix: 'discovery-f1-' })
+			try {
+				scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+				scratch.write(
+					'package.json',
+					JSON.stringify({ type: 'module', scripts: { test: 'vitest run --project !web' } }),
+				)
+				scratch.write(
+					'vite.config.ts',
+					"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { projects: [{ test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }] } }\n",
+				)
+				scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run.status).toBe(3)
+				expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
+				expect(run.json?.ungated).toEqual(['web (chromium)'])
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
 
 	it('F2 leaves the file outside a positional filter ungated', () => {
 		const scratch = createScratch({ prefix: 'discovery-f2-' })
@@ -583,7 +602,7 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('F4 merges real browser identities across modes without folding', () => {
+	it.runIf(launchable)('F4 merges real browser identities across modes without folding', () => {
 		const scratch = createScratch({ prefix: 'discovery-f4-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -1023,38 +1042,41 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('counts repeated browser identities once across listings and retains duplicate names', () => {
-		const scratch = createScratch({ prefix: 'orkestrel-discovery-dedupe-' })
-		try {
-			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
-			scratch.write(
-				'package.json',
-				'{"type":"module","scripts":{"test":"vitest run --project core && vitest run --config second.config.ts --project core"}}',
-			)
-			for (const config of ['vite.config.ts', 'second.config.ts'])
+	it.runIf(launchable)(
+		'counts repeated browser identities once across listings and retains duplicate names',
+		() => {
+			const scratch = createScratch({ prefix: 'orkestrel-discovery-dedupe-' })
+			try {
+				scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
 				scratch.write(
-					config,
-					"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { name: 'core', include: ['tests/shared.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }\n",
+					'package.json',
+					'{"type":"module","scripts":{"test":"vitest run --project core && vitest run --config second.config.ts --project core"}}',
 				)
-			scratch.write(
-				'tests/shared.test.ts',
-				"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
-			)
-			const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
-			expect(run.status).toBe(0)
-			expect(run.json?.projects).toEqual([
-				{
-					name: 'core (chromium)',
-					gate: 'test',
-					files: 1,
-					tests: 2,
-					units: [{ config: 'vite.config.ts' }, { config: 'second.config.ts' }],
-				},
-			])
-		} finally {
-			scratch.destroy()
-		}
-	})
+				for (const config of ['vite.config.ts', 'second.config.ts'])
+					scratch.write(
+						config,
+						"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { name: 'core', include: ['tests/shared.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }\n",
+					)
+				scratch.write(
+					'tests/shared.test.ts',
+					"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
+				)
+				const run = runSkillScript(DISCOVERY_SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run.status).toBe(0)
+				expect(run.json?.projects).toEqual([
+					{
+						name: 'core (chromium)',
+						gate: 'test',
+						files: 1,
+						tests: 2,
+						units: [{ config: 'vite.config.ts' }, { config: 'second.config.ts' }],
+					},
+				])
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
 
 	it('recognizes a Vitest entry path as the command token', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-entry-' })
@@ -1502,7 +1524,7 @@ export default ({ mode }) => {
 		}
 	})
 
-	it('retains a real browser instance name under its base project gate', () => {
+	it.runIf(launchable)('retains a real browser instance name under its base project gate', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-instance-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
