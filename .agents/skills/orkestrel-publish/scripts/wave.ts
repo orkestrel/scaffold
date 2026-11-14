@@ -988,7 +988,8 @@ export function refuseLocalSpecs(runner: Runner, step: string): boolean {
  *
  * @param runner - The visit's state.
  * @returns The first refusal, or undefined when the lock is tracked and clean, the manifest holds no
- * local spec or workspace, `tmp/` is ignored, and the target is its work tree's root.
+ * local spec or workspace, `tmp/units/wave` crosses no link inside the target, `tmp/` is ignored,
+ * and the target is its work tree's root.
  */
 export function readRegenerationRefusal(runner: Runner): string | undefined {
 	if (
@@ -1015,6 +1016,12 @@ export function readRegenerationRefusal(runner: Runner): string | undefined {
 	if (specs.length > 0)
 		return `local dependency specs: ${specs.map(([path, spec]) => `${path}: ${spec}`).join(', ')}`
 	if (manifest !== undefined && 'workspaces' in manifest) return 'the manifest declares workspaces'
+	// Git refuses a pathspec beyond a link with exit 128, which reads as an unignored `tmp/`.
+	try {
+		validateWavePath(runner.target, join(runner.target, 'tmp', 'units', 'wave'))
+	} catch (error) {
+		return error instanceof Error ? error.message : String(error)
+	}
 	if (
 		runStep(
 			runner,
@@ -2451,7 +2458,8 @@ export function runVisit(values: Arguments['values']): Visit | undefined {
  *
  * @param target - The target directory.
  * @returns A new stamped directory under the target's `tmp/units/wave/` when the target is inside a
- * work tree that ignores `tmp/`, else undefined.
+ * work tree that ignores `tmp/`, or when that path crosses a link, which the caller's link check
+ * refuses; else undefined.
  */
 export function readJournalDirectory(target: string): string | undefined {
 	const inside = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], {
@@ -2460,14 +2468,25 @@ export function readJournalDirectory(target: string): string | undefined {
 		windowsHide: true,
 	})
 	if (inside.status !== 0 || inside.stdout.trim() !== 'true') return undefined
+	const directory = join(
+		target,
+		'tmp',
+		'units',
+		'wave',
+		new Date().toISOString().replace(/[:.]/gu, '-'),
+	)
+	// Git refuses a pathspec beyond a link with exit 128, which reads as an unignored `tmp/`.
+	try {
+		validateWavePath(target, join(target, 'tmp', 'units', 'wave'))
+	} catch {
+		return directory
+	}
 	const ignored = spawnSync('git', ['check-ignore', '-q', 'tmp/units/wave/probe'], {
 		cwd: target,
 		encoding: 'utf8',
 		windowsHide: true,
 	})
-	return ignored.status === 0
-		? join(target, 'tmp', 'units', 'wave', new Date().toISOString().replace(/[:.]/gu, '-'))
-		: undefined
+	return ignored.status === 0 ? directory : undefined
 }
 
 /**

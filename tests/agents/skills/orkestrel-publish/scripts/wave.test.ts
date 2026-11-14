@@ -51,6 +51,7 @@ import {
 	readRanges,
 	readReceipt,
 	readReleasedRanges,
+	readRegenerationRefusal,
 	readReleases,
 	readServedVersion,
 	readString,
@@ -453,6 +454,66 @@ describe('wave.ts', () => {
 				expect(`${run.stdout}${run.stderr}`).toContain('unsafe wave path')
 				expect(readFileSync(join(session.target, 'package-lock.json'))).toEqual(lock)
 				expect(readInventory(session.target, ['node_modules'])).toEqual(inventory)
+			} finally {
+				if (lstatSync(link, { throwIfNoEntry: false })?.isSymbolicLink()) unlinkSync(link)
+				await session.destroy()
+			}
+		},
+		60_000,
+	)
+
+	it.skipIf(!supportsDirectoryLinks())(
+		'O1 refuses to regenerate the lock of a target whose units directory is a junction',
+		() => {
+			const scratch = createScratch({ prefix: 'orkestrel-wave-regeneration-link-' })
+			const target = scratch.ensure('target')
+			const link = join(target, 'tmp', 'units')
+			try {
+				scratch.write('target/.gitignore', 'tmp/\nnode_modules/\n')
+				scratch.write('target/package.json', '{"name":"@fixture/wave","version":"1.0.0"}\n')
+				scratch.write('target/package-lock.json', '{"name":"@fixture/wave","lockfileVersion":3}\n')
+				scratch.ensure('target/tmp')
+				createRepository(target)
+				trackFiles(target)
+				commitFiles(target)
+				const runner = {
+					target,
+					dry: false,
+					offline: false,
+					regenerate: true,
+					directory: undefined,
+					steps: [],
+				}
+				// The control: the same target without the junction reaches no wave-path refusal.
+				expect(readRegenerationRefusal(runner) ?? '').not.toContain('unsafe wave path')
+				symlinkSync(scratch.ensure('outside-target'), link, 'junction')
+				expect(readRegenerationRefusal(runner)).toContain('unsafe wave path')
+			} finally {
+				if (lstatSync(link, { throwIfNoEntry: false })?.isSymbolicLink()) unlinkSync(link)
+				scratch.destroy()
+			}
+		},
+	)
+
+	it.skipIf(!supportsDirectoryLinks())(
+		'O1 refuses the journal of a visit whose units directory is a junction',
+		async () => {
+			const session = await createWaveSession('orkestrel-wave-journal-junction-')
+			const link = join(session.target, 'tmp', 'units')
+			try {
+				const outside = session.scratch.ensure('outside-target')
+				const sentinel = session.scratch.write('outside-target/keep.txt', 'keep\n')
+				symlinkSync(outside, link, 'junction')
+				const manifest = readFileSync(join(session.target, 'package.json'))
+				const run = await spawnSkillScript(WAVE_SCRIPT, ['--visit', '--to', 'pin', '--json'], {
+					cwd: session.target,
+					env: session.environment,
+				})
+				expect(session.scratch.names('outside-target')).toEqual(['keep.txt'])
+				expect(readFileSync(sentinel, 'utf8')).toBe('keep\n')
+				expect(run.status).toBe(1)
+				expect(`${run.stdout}${run.stderr}`).toContain('unsafe wave path')
+				expect(readFileSync(join(session.target, 'package.json'))).toEqual(manifest)
 			} finally {
 				if (lstatSync(link, { throwIfNoEntry: false })?.isSymbolicLink()) unlinkSync(link)
 				await session.destroy()
