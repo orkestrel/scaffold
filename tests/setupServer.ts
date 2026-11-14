@@ -32,6 +32,7 @@ import {
 	chmodSync,
 	existsSync,
 	globSync,
+	lstatSync,
 	mkdirSync,
 	readFileSync,
 	realpathSync,
@@ -5805,13 +5806,22 @@ export class TestLaneRun {
 	 * @param args - The script's arguments.
 	 * @param cwd - The child's working directory. Default: the checkout root.
 	 * @param entry - The file Node runs, or `-e` for inline code. Default: the `lane` script.
+	 * @param group - If `true`, starts the child as the leader of its own process group everywhere but
+	 * Windows, as the `startLauncher` function starts the launcher a run record names; if `false`, the
+	 * child joins this process's group. Default: `false`.
+	 *
+	 * @remarks
+	 * The group is platform-defined, as the `readTree` function's remarks state: a host other than
+	 * Windows reads a run's tree as the launcher's process group, so a child that stands in for a
+	 * launcher there must lead one.
 	 */
-	constructor(args: readonly string[], cwd?: string, entry?: string) {
+	constructor(args: readonly string[], cwd?: string, entry?: string, group = false) {
 		const child = spawn(process.execPath, [entry ?? join(WORKSPACE_ROOT, LANE_SCRIPT), ...args], {
 			cwd: cwd ?? WORKSPACE_ROOT,
 			env: buildEnvironment(undefined),
 			stdio: ['ignore', 'pipe', 'pipe'],
 			windowsHide: true,
+			detached: group && process.platform !== 'win32',
 		})
 		for (const stream of [child.stdout, child.stderr]) {
 			stream.on('data', (chunk: Buffer) => this.#chunks.push(chunk.toString('utf8')))
@@ -5887,10 +5897,12 @@ export class TestLaneBench {
 	 * @param args - The arguments.
 	 * @param cwd - The child's working directory. Default: the checkout root.
 	 * @param entry - The file Node runs, or `-e` for inline code. Default: the `lane` script.
+	 * @param group - If `true`, starts the child as a launcher's stand-in, per {@link TestLaneRun};
+	 * if `false`, the child joins this process's group. Default: `false`.
 	 * @returns The started child.
 	 */
-	spawn(args: readonly string[], cwd?: string, entry?: string): TestLaneRun {
-		const run = new TestLaneRun(args, cwd, entry)
+	spawn(args: readonly string[], cwd?: string, entry?: string, group = false): TestLaneRun {
+		const run = new TestLaneRun(args, cwd, entry, group)
 		this.#runs.add(run)
 		return run
 	}
@@ -5976,12 +5988,25 @@ export class TestLaneBench {
 	}
 
 	/**
-	 * Reads every file under the queue root, for a before-and-after comparison.
+	 * Reads every regular file under the queue root, for a before-and-after comparison.
 	 *
-	 * @returns Each name with its text, in sorted order.
+	 * @remarks
+	 * A host without named pipes keeps each endpoint as a socket file under the root, and opening a
+	 * socket file for reading fails with `ENXIO`, so an entry that is not a regular file is listed by
+	 * name with no text.
+	 *
+	 * @returns Each name with its text, or undefined for an entry that is not a regular file, in
+	 * sorted order.
 	 */
 	listing(): ReadonlyArray<readonly [string, string | undefined]> {
-		return this.scratch.names('root').map((name) => [name, this.scratch.read(join('root', name))])
+		return this.scratch
+			.names('root')
+			.map((name) => [
+				name,
+				lstatSync(join(this.root, name)).isFile()
+					? this.scratch.read(join('root', name))
+					: undefined,
+			])
 	}
 
 	/**
@@ -6058,6 +6083,65 @@ export async function startLaneBench(): Promise<TestLaneBench> {
 	const bench = new TestLaneBench()
 	await bench.start()
 	return bench
+}
+
+/**
+ * Starts a process whose parent has already exited, so the host has handed it to the process that
+ * adopts orphans.
+ *
+ * @returns The orphan's id; the orphan runs until something kills it.
+ * @throws When the parent fails or prints no process id.
+ *
+ * @remarks
+ * The orphan starts detached, because Node puts a Windows child that is not detached in a job that
+ * ends it with its parent.
+ */
+export function spawnOrphan(): number {
+	const result = spawnSync(
+		process.execPath,
+		[
+			'-e',
+			"const c=require('node:child_process').spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore',windowsHide:true,detached:true});c.unref();console.log(c.pid)",
+		],
+		{ encoding: 'utf8', windowsHide: true },
+	)
+	const pid = Number(result.stdout.trim())
+	if (result.status !== 0 || !Number.isInteger(pid) || pid <= 0) {
+		throw new Error(`The orphan's parent exited ${String(result.status)}: ${result.stderr}`)
+	}
+	return pid
+}
+
+/**
+ * Checks whether the process that adopts an orphan on this host reaps it as it ends.
+ *
+ * @returns True if the adopter catches, ignores, or blocks `SIGCHLD`, or the host publishes no
+ * process table at `/proc`; false otherwise.
+ *
+ * @remarks
+ * A killed process stays in the Linux process table as a zombie until its parent reaps it, and
+ * `process.kill(-group, 0)` still reaches a zombie, so the `lane` script reads a group as present
+ * until the zombie goes. An adopter that neither catches, ignores, nor blocks `SIGCHLD` (`/proc/<pid>/status`)
+ * learns of no ended child and reaps only when it next polls, as the `process_api` init of the
+ * Linux container read on 2026-11-14 does about 1.8 s after the kill. A host without `/proc` keeps
+ * no zombie: Windows reads an exited process as `ESRCH`. The reading starts one orphan, reads its
+ * adopter from `/proc/<orphan>/stat`, and kills the orphan on every path.
+ */
+export function supportsReaping(): boolean {
+	const orphan = spawnOrphan()
+	try {
+		const stat = join('/proc', String(orphan), 'stat')
+		if (!existsSync(stat)) return true
+		const fields = readFileSync(stat, 'utf8')
+		const adopter = fields.slice(fields.lastIndexOf(')') + 2).split(' ')[1] ?? ''
+		const status = readFileSync(join('/proc', adopter, 'status'), 'utf8')
+		return ['SigCgt', 'SigIgn', 'SigBlk'].some((field) => {
+			const mask = new RegExp(`^${field}:\\s*([0-9a-f]+)$`, 'mu').exec(status)?.[1]
+			return mask !== undefined && ((BigInt(`0x${mask}`) >> 16n) & 1n) === 1n
+		})
+	} finally {
+		captureError(() => process.kill(orphan, 'SIGKILL'))
+	}
 }
 
 /**

@@ -1,10 +1,10 @@
 import { spawn, spawnSync } from 'node:child_process'
-import { chmodSync, existsSync, readFileSync, realpathSync } from 'node:fs'
+import { chmodSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir, userInfo } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
-import { createRecorder, waitForCondition, waitForDelay } from '@orkestrel/test'
+import { captureError, createRecorder, waitForCondition, waitForDelay } from '@orkestrel/test'
 import {
 	LAUNCH_SCRIPT,
 	LANE_SCRIPT,
@@ -14,6 +14,7 @@ import {
 	renderLaneResolver,
 	runSkillScript,
 	startLaneBench,
+	supportsReaping,
 	WORKSPACE_ROOT,
 	runFlagRefusals,
 } from '../../../../setupServer.js'
@@ -96,6 +97,14 @@ const FIRST_TOKEN = '11111111-1111-4111-8111-111111111111'
 const SECOND_TOKEN = '22222222-2222-4222-8222-222222222222'
 const THIRD_TOKEN = '33333333-3333-4333-8333-333333333333'
 const PUBLISHER_STAGE = '11111111-2222-4333-8444-555555555555.stage'
+// The endpoint form is platform-defined, as the renderEndpoint function's remarks state: Windows has
+// named pipes, and any other host keeps the publisher's endpoint as a socket file under the root.
+const PUBLISHER_FILES =
+	process.platform === 'win32'
+		? [PUBLISHER_STAGE]
+		: ['11111111-2222-4333-8444-555555555555.sock', PUBLISHER_STAGE]
+const UNREAPED =
+	'the process that adopts an orphan here neither catches, ignores, nor blocks SIGCHLD, so a killed descendant stays a zombie past the kill budget and process.kill(-group, 0) reads its group as present'
 const DEFAULT_ROOT = join(userInfo().homedir, '.orkestrel', 'lane')
 const DEFAULT_PRESENT = existsSync(DEFAULT_ROOT)
 const GIB = 1024 ** 3
@@ -208,11 +217,16 @@ describe('lane.ts', () => {
 			expect(run.stderr).toContain('refused the run')
 		})
 
-		it('exits 75 and strands no ticket when the run record cannot be written', async () => {
+		it('exits 75 and strands no ticket when the run record cannot be written', async (context) => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const record = bench.scratch.write(join('root', renderName(1, RUN_SUFFIX)), '')
 			chmodSync(record, 0o444)
+			if (captureError(() => writeFileSync(record, '')) === undefined) {
+				context.skip(
+					'the host let this process write a file whose mode is 0o444: POSIX exempts uid 0 from the access check those bits describe',
+				)
+			}
 			expect(() => writeRun(bench.root, 1, { started: 1, launcher: 1, command: 1 })).toThrow(
 				/EPERM|EACCES/u,
 			)
@@ -572,7 +586,7 @@ describe('lane.ts', () => {
 				bench.scratch.write('publisher.mjs', renderLanePublisher(bench.root, 'stage')),
 			)
 			await publisher.reach('parked')
-			expect(bench.scratch.names('root')).toStrictEqual([PUBLISHER_STAGE])
+			expect(bench.scratch.names('root')).toStrictEqual(PUBLISHER_FILES)
 			const arrival = bench.lane('waiting')
 			await arrival.reach('lane: waiting behind an arrival')
 			expect(bench.meter.marks).toStrictEqual([])
@@ -595,7 +609,7 @@ describe('lane.ts', () => {
 			await publisher.reach('parked')
 			await publisher.kill()
 			expect(readSequences(readNames(bench.root))).toStrictEqual([])
-			expect(bench.scratch.names('root')).toStrictEqual([PUBLISHER_STAGE])
+			expect(bench.scratch.names('root')).toStrictEqual(PUBLISHER_FILES)
 			const arrival = bench.lane('next')
 			await bench.meter.reach('enter', 'next')
 			bench.meter.release('next')
@@ -668,7 +682,12 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const started = Date.now()
-			const living = bench.spawn(['setInterval(() => undefined, 1000)'], bench.scratch.path, '-e')
+			const living = bench.spawn(
+				['setInterval(() => undefined, 1000)'],
+				bench.scratch.path,
+				'-e',
+				true,
+			)
 			bench.scratch.write(
 				join('root', renderName(1, TICKET_SUFFIX)),
 				JSON.stringify(buildTicket(FIRST_TOKEN, 'dead')),
@@ -757,7 +776,8 @@ describe('lane.ts', () => {
 			])
 		})
 
-		it('kills a real parent and grandchild and confirms with a later reading', async () => {
+		it('kills a real parent and grandchild and confirms with a later reading', async (context) => {
+			if (!supportsReaping()) context.skip(UNREAPED)
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const started = Date.now()
@@ -765,6 +785,7 @@ describe('lane.ts', () => {
 				bench.command('parent', 'grandchild').slice(2),
 				bench.scratch.path,
 				'-e',
+				true,
 			)
 			await Promise.all([
 				bench.meter.reach('enter', 'parent'),
@@ -785,7 +806,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const started = Date.now()
-			const parent = bench.spawn(bench.command('parent').slice(2), bench.scratch.path, '-e')
+			const parent = bench.spawn(bench.command('parent').slice(2), bench.scratch.path, '-e', true)
 			await bench.meter.reach('enter', 'parent')
 			const run = { started, launcher: parent.pid, command: undefined }
 			const sweep = sweepTree(() => readTree(run, Date.now()), killMembers, 0)
@@ -798,7 +819,7 @@ describe('lane.ts', () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const started = Date.now()
-			const parent = bench.spawn(bench.command('parent').slice(2), bench.scratch.path, '-e')
+			const parent = bench.spawn(bench.command('parent').slice(2), bench.scratch.path, '-e', true)
 			await bench.meter.reach('enter', 'parent')
 			const run = { started, launcher: parent.pid, command: undefined }
 			const sweep = sweepTree(
@@ -824,7 +845,8 @@ describe('lane.ts', () => {
 	})
 
 	describe('no surviving process tree at handover', () => {
-		it('ends a descendant the command left, before the next holder runs', async () => {
+		it('ends a descendant the command left, before the next holder runs', async (context) => {
+			if (!supportsReaping()) context.skip(UNREAPED)
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const first = bench.lane('first', { grandchild: 'descendant' })
@@ -869,7 +891,8 @@ describe('lane.ts', () => {
 			await bench.meter.reach('leave', 'orphan')
 		})
 
-		it('refuses the next arrival while a forced-out holder leaves a live descendant', async () => {
+		it('refuses the next arrival while a forced-out holder leaves a live descendant', async (context) => {
+			if (!supportsReaping()) context.skip(UNREAPED)
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const holder = bench.lane('holder', { grandchild: 'survivor' })

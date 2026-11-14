@@ -14,7 +14,7 @@ import { basename, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
-import { createTeardown, requireValue } from '@orkestrel/test'
+import { createTeardown, requireValue, waitForCondition } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import {
 	CONFIG_TEMPLATES,
@@ -198,12 +198,14 @@ import {
 	serveFloorEntries,
 	SKILL_CANON_FILES,
 	spawnNpm,
+	spawnOrphan,
 	spawnSkillScript,
 	STAGED_PATHS,
 	stageResolver,
 	stageRootConfig,
 	STORAGE_PATH_CASES,
 	supportsMappedLoopback,
+	supportsReaping,
 	SWAP_RANGE,
 	SWAP_SCRIPT,
 	SWEEP_HOURS_AGO,
@@ -2062,6 +2064,49 @@ describe('the endpoint reader', () => {
 		].filter((endpoint) => parseOllamaOrigin(endpoint) !== undefined)
 		expect(accepted).toStrictEqual([])
 	})
+})
+
+describe('the orphan reaping reading', () => {
+	it('starts an orphan that runs until it is killed', () => {
+		const orphan = spawnOrphan()
+		try {
+			expect(process.kill(orphan, 0)).toBe(true)
+		} finally {
+			process.kill(orphan, 'SIGKILL')
+		}
+	})
+
+	// The kernel keeps an ended process in the table it publishes at `/proc` as a zombie until its
+	// parent reaps it. A host that mounts no `/proc` publishes no table to compare against.
+	it.skipIf(!existsSync('/proc/self/stat'))(
+		'agrees with what the process table shows of a killed orphan',
+		async () => {
+			const reaping = supportsReaping()
+			const orphan = spawnOrphan()
+			const stat = join('/proc', String(orphan), 'stat')
+			process.kill(orphan, 'SIGKILL')
+			// The second mechanism: the table itself, read for the orphan's state rather than through
+			// the adopter's signal masks the reading inspects.
+			await waitForCondition(
+				'the killed orphan leaves the running states',
+				() => !existsSync(stat) || /\) [ZX] /u.test(readFileSync(stat, 'utf8')),
+				{ budget: 5_000, interval: 10 },
+			)
+			const lingered = existsSync(stat)
+			const reaped =
+				reaping &&
+				(await waitForCondition('the adopter reaps the killed orphan', () => !existsSync(stat), {
+					budget: 1_000,
+					interval: 10,
+				}).then(
+					() => true,
+					() => false,
+				))
+			// A reaping adopter takes the zombie inside the lane's kill window of 5 kills 200 ms apart;
+			// one that only polls leaves the zombie in the table for the first reading after the kill.
+			expect(reaping ? reaped : lingered).toBe(true)
+		},
+	)
 })
 
 describe('the host probes', () => {

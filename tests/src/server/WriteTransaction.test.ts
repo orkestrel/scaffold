@@ -335,7 +335,7 @@ for (;;) {
 		} catch {}
 	}
 }`,
-				{ eval: true, workerData: { state: state.buffer, segment, directory } },
+				{ eval: true, workerData: { state: state.buffer, segment, holding: directory } },
 			)
 			try {
 				Atomics.wait(state, 0, 0, 10_000)
