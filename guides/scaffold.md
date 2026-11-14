@@ -314,6 +314,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `normalizePackagePath`             | function | `(path: string) => string`                                                                                                                         | Returns the canonical form of a path a manifest names inside its package.                           |
 | `parseOwnedJSONValue`              | function | `(value: unknown) => JSONValue \| undefined`                                                                                                       | Snapshots an untrusted value into exact JSON data the caller owns.                                  |
 | `planToSummary`                    | function | `(plan: Plan) => PlanSummary`                                                                                                                      | Projects a plan into its tally by artifact origin.                                                  |
+| `projectsToBenches`                | function | `(projects: readonly string[]) => readonly string[]`                                                                                               | Lists the bench globs of the browser-hosted projects among a workspace's project labels.            |
 | `renderSkillPointer`               | function | `(canonical: string, name: string) => string \| undefined`                                                                                         | Renders the `SKILL.md` pointer a target carries in place of a canonical skill.                      |
 | `scanManifestTokens`               | function | `(text: string) => readonly ManifestToken[] \| undefined`                                                                                          | Scans manifest text for its strings and object braces, in order.                                    |
 | `selectArtifactGroups`             | function | `(groups?: readonly ArtifactGroup[]) => readonly ArtifactGroup[]`                                                                                  | Selects the groups a compile covers, in plan order.                                                 |
@@ -1028,8 +1029,10 @@ drift.
 The probe workbench separates ordinary probes from benchmarks by filename. `test:probe` collects
 `tmp/probes/**/*.test.ts`. `test:bench` runs with the explicit `--mode benchmark` option. Its Node
 `probe` project collects `tmp/probes/**/*.bench.ts` and `tests/**/*.bench.ts` other than the browser
-benches, `tests/src/browser/**/*.bench.ts` and `tests/app/browser/**/*.bench.ts`. In a workspace with
-a browser environment, its `bench:browser` project runs those browser benches in Playwright Chromium.
+benches: the `*.bench.ts` files beneath the test directory of each planned face that runs in
+Playwright Chromium, which `projectsToBenches` lists. Those faces are `src:browser`, `app:browser`,
+`src:vue`, `app:vue`, each sheet face, and the themes target. In a workspace with one, its
+`bench:browser` project runs those browser benches in Playwright Chromium.
 Neither script belongs to a gate. In a benchmark file,
 register a regular `it` or `test` callback that receives the context's `bench` fixture. Await
 `bench(name, options, fn).run()` or `bench.compare(...)`; options precede the benchmark function.

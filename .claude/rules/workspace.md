@@ -256,12 +256,14 @@ throwaway instrument against real sources, aliases and setup. Declare no proof t
 project composed in the root configuration rather than declared as a path string. The `probe` MCP
 server arms through it — its arming specifications live under the `tmp/probes/` directory and infer
 this project — so a workspace that removes the project, or declares it as a path string, fails the
-server's arming, and an unarmed server refuses every `prove` call. `test:bench` runs the Node bench
-project over `*.bench.ts` files under `tests/` and `tmp/probes/` other than the browser benches,
-`tests/src/browser/**/*.bench.ts` and `tests/app/browser/**/*.bench.ts`. In a workspace with a
-browser environment, it also runs the `bench:browser` project over those browser benches in
-Playwright Chromium; give a workspace without one no `bench:browser` project. Neither bench project
-collects an ordinary test file. Every test script names its project and the `test:bench` script
+server's arming, and an unarmed server refuses every `prove` call. A browser-hosted face is every
+planned face that runs in Playwright Chromium: `src:browser`, `app:browser`, `src:vue`, `app:vue`,
+each sheet face, and the themes target. Its browser benches are the `*.bench.ts` files beneath its
+test directory. `test:bench` runs the Node bench project over `*.bench.ts` files under `tests/` and
+`tmp/probes/` other than the browser benches. In a workspace with a browser-hosted face, it also
+runs the `bench:browser` project over those browser benches in Playwright Chromium; derive both
+glob lists from the planned faces, and give a workspace without one no `bench:browser` project.
+Neither bench project collects an ordinary test file. Every test script names its project and the `test:bench` script
 joins no chain, so no gate runs a probe or bench project; the `probe` project's directory is
 ignored by git; and `.claude/rules/tests.md` governs what may live there.
 

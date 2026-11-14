@@ -55,6 +55,7 @@ import {
 	ORKESTREL_RANGE_PATTERN,
 	overridesToQuestions,
 	planToArtifactFindings,
+	projectsToBenches,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestOverride,
 	replaceManifestRanges,
@@ -515,6 +516,7 @@ describe('blueprintToProjects', () => {
 			'distribution',
 			'probe',
 			'probe (bench)',
+			'bench:browser',
 		])
 		expect(blueprintToProjects(createBlueprint('desk', { setup: ['browser'] }))).toStrictEqual([
 			'policy',
@@ -2521,46 +2523,67 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
 	})
 
-	it('runs the browser benches in a Chromium bench project only beside a browser environment', () => {
+	it('runs every browser-hosted face bench in a Chromium bench project and no other', () => {
 		const node =
 			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark'
 		const browser =
 			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --project bench:browser --mode benchmark'
-		const benches =
-			"const browserBenches = ['tests/src/browser/**/*.bench.ts', 'tests/app/browser/**/*.bench.ts']"
 		const exclusion = 'exclude: [...defaultExclude, ...browserBenches],'
+		const vue = { surface: 'browser', name: 'vue', axes: ['src', 'app'] } as const
 		const cases = [
-			[buildBlueprint({ src: ['core', 'browser'] }), true],
-			[buildBlueprint({ src: [], app: ['browser'] }), true],
+			[buildBlueprint({ src: ['core', 'browser'] }), ['src/browser']],
+			[buildBlueprint({ src: [], app: ['browser'] }), ['app/browser']],
 			[
 				buildBlueprint({
 					src: ['core', 'browser'],
 					extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
 				}),
-				true,
+				['src/browser', 'src/vue'],
 			],
-			[buildBlueprint(), false],
-			[buildBlueprint({ src: ['core', 'server'], app: ['core', 'server'] }), false],
-			[buildBlueprint({ setup: ['browser'] }), false],
-			[buildBlueprint({ src: [], themes: true }), false],
+			[
+				buildBlueprint({ src: ['core', 'browser'], app: ['core', 'browser'], extensions: [vue] }),
+				['src/browser', 'src/vue', 'app/browser', 'app/vue'],
+			],
+			[
+				buildBlueprint({
+					src: ['core'],
+					styles: true,
+					extensions: [{ surface: 'styles', name: 'print' }],
+				}),
+				['src/styles', 'src/print'],
+			],
+			[buildBlueprint({ src: [], themes: true }), ['src/styles/themes']],
+			[buildBlueprint(), []],
+			[buildBlueprint({ src: ['core', 'server'], app: ['core', 'server'] }), []],
+			[buildBlueprint({ setup: ['browser'] }), []],
 		] as const
-		for (const [blueprint, benched] of cases) {
-			const label = JSON.stringify({ src: blueprint.src, app: blueprint.app, benched })
+		for (const [blueprint, faces] of cases) {
+			const globs = faces.map((face) => `tests/${face}/**/*.bench.ts`)
+			const benched = globs.length > 0
+			const label = JSON.stringify({ src: blueprint.src, app: blueprint.app, faces })
 			const root = blueprintToRootVite(blueprint)
 			const writable = blueprintToWritableScripts(blueprint).find(
 				({ name }) => name === 'test:bench',
 			)
 			const start = root.indexOf('export function benchBrowser(')
 			const body = start < 0 ? '' : root.slice(start, root.indexOf('\n}\n', start))
-			const vue = blueprint.extensions.length > 0
-			// Every workspace keeps the browser benches out of the Node workbench; a browser workspace
-			// also upgrades the Node-only command a target already holds.
+			const framework = blueprint.extensions.some(({ surface }) => surface === 'browser')
+			const declared = /const browserBenches = \[([^\]]*)\]/u.exec(root)?.[1] ?? ''
+			// A workspace excludes exactly its browser-hosted face benches from the Node workbench, and
+			// a browser workspace upgrades the Node-only command a target already holds.
 			expect({
 				label,
-				vitest: root.includes("import { defaultExclude, defineConfig } from 'vitest/config'"),
-				benches: root.includes(benches),
-				include: root.includes("include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'],"),
+				vitest: root.includes(
+					`import { ${benched ? 'defaultExclude, ' : ''}defineConfig } from 'vitest/config'`,
+				),
+				benches: [...declared.matchAll(/'([^']+)'/gu)].map(([, glob]) => glob),
+				include: root.includes(
+					benched
+						? "include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'],"
+						: "benchmark: { include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'] },",
+				),
 				exclusion: root.includes(exclusion),
+				helper: projectsToBenches(blueprintToProjects(blueprint)),
 				planned: blueprintToProjects(blueprint).includes('bench:browser'),
 				factory: start >= 0,
 				registered: /projects: \[[^\]]*\bbenchBrowser\b/u.test(root),
@@ -2582,9 +2605,10 @@ describe('blueprintToScripts config projects', () => {
 			}).toStrictEqual({
 				label,
 				vitest: true,
-				benches: true,
+				benches: globs,
 				include: true,
-				exclusion: true,
+				exclusion: benched,
+				helper: globs,
 				planned: benched,
 				factory: benched,
 				registered: benched,
@@ -2596,8 +2620,8 @@ describe('blueprintToScripts config projects', () => {
 				],
 				body: benched ? 7 : 0,
 				global: false,
-				plugin: vue,
-				optimization: vue,
+				plugin: framework,
+				optimization: framework,
 			})
 		}
 
@@ -4312,7 +4336,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// for every selection and names `PluginOption` and `mergeConfig`, so both reach
 		// a workspace that selects no showcase.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { PluginOption, UserConfig } from 'vite'\nimport { mergeConfig } from 'vite'\nimport { defaultExclude, defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
+			"import type { PluginOption, UserConfig } from 'vite'\nimport { mergeConfig } from 'vite'\nimport { defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
 		)
 	})
 

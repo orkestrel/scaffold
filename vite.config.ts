@@ -1,6 +1,6 @@
 import type { PluginOption, UserConfig } from 'vite'
 import { mergeConfig } from 'vite'
-import { defaultExclude, defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config'
 import manifest from './package.json' with { type: 'json' }
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import {
@@ -383,14 +383,11 @@ export function distribution(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 
-// A browser bench reads host APIs that Node lacks, so only a `bench:browser` project runs it.
-const browserBenches = ['tests/src/browser/**/*.bench.ts', 'tests/app/browser/**/*.bench.ts']
-
 // A workbench, not a proof. No gate selects this project. Run in test mode by the
 // `test:probe` script, it collects `tmp/probes/**/*.test.ts`. Run in benchmark mode by the
 // `test:bench` script, it collects `*.bench.ts` files under `tmp/probes` and `tests`, other
-// than the browser benches. Each benchmark is a regular test that uses its context's `bench`
-// fixture and awaits `bench(name, options, fn).run()` or `bench.compare(...)`.
+// than a browser-hosted face's benches. Each benchmark is a regular test that uses its
+// context's `bench` fixture and awaits `bench(name, options, fn).run()` or `bench.compare(...)`.
 export function probe(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
@@ -403,11 +400,7 @@ export function probe(override?: UserConfig): UserConfig {
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },
 			pool: 'threads',
-			benchmark: {
-				include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'],
-				// A set `exclude` replaces Vitest's default, so the default is kept.
-				exclude: [...defaultExclude, ...browserBenches],
-			},
+			benchmark: { include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'] },
 		},
 	}
 	return mergeOverride(project, override)

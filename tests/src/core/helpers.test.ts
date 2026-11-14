@@ -46,6 +46,7 @@ import {
 	manifestToName,
 	matchesArtifactDriftReachability,
 	matchesBarrel,
+	projectsToBenches,
 	matchesEngines,
 	matchesOrchestrationPath,
 	matchesPrintWidth,
@@ -623,6 +624,55 @@ describe('matchesBarrel', () => {
 			expect(matchesBarrel(buildBlueprint(barrelCase.fields))).toBe(barrelCase.planned)
 		})
 	}
+})
+
+describe('projectsToBenches', () => {
+	it('lists one bench glob per browser-hosted face, in label order', () => {
+		expect(
+			projectsToBenches([
+				'src:styles',
+				'src:print',
+				'src:core',
+				'src:browser',
+				'src:server',
+				'src:vue',
+				'src:bin',
+				'app:core',
+				'app:browser',
+				'app:vue',
+				'app:server',
+				'policy',
+				'setup:browser',
+				'probe',
+				'probe (bench)',
+				'bench:browser',
+				'journey:desktop',
+			]),
+		).toStrictEqual([
+			'tests/src/styles/**/*.bench.ts',
+			'tests/src/print/**/*.bench.ts',
+			'tests/src/browser/**/*.bench.ts',
+			'tests/src/vue/**/*.bench.ts',
+			'tests/app/browser/**/*.bench.ts',
+			'tests/app/vue/**/*.bench.ts',
+		])
+	})
+
+	it('maps the themes target to its directory beneath the styles face', () => {
+		expect(projectsToBenches(['src:themes'])).toStrictEqual([
+			'tests/src/styles/themes/**/*.bench.ts',
+		])
+	})
+
+	it('lists nothing for Node faces, labels off both axes, and labels of another shape', () => {
+		expect(
+			projectsToBenches(['src:core', 'src:server', 'src:bin', 'app:core', 'app:server']),
+		).toStrictEqual([])
+		expect(projectsToBenches(['src', 'app:', 'src:vue:extra', 'tests:browser', ''])).toStrictEqual(
+			[],
+		)
+		expect(projectsToBenches([])).toStrictEqual([])
+	})
 })
 
 describe('matchesPrintWidth', () => {

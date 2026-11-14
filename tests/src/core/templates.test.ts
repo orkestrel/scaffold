@@ -15,6 +15,7 @@ import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToManifest,
+	blueprintToScripts,
 	blueprintToTestArtifacts,
 	blueprintToSourceArtifacts,
 	CONFIG_TEMPLATES,
@@ -350,20 +351,20 @@ describe('configuration templates', () => {
 
 describe('live browser factory names', () => {
 	const held = new TestHolder<ScratchInterface>()
+	const blueprint = createBlueprint('sample', {
+		src: ['core', 'browser'],
+		app: ['browser'],
+		styles: true,
+		journey: true,
+		extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+		setup: ['browser'],
+		integration: true,
+	})
 
 	beforeAll(async () => {
 		const workspace = held.hold(
 			createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-factories-' }),
 		)
-		const blueprint = createBlueprint('sample', {
-			src: ['core', 'browser'],
-			app: ['browser'],
-			styles: true,
-			journey: true,
-			extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
-			setup: ['browser'],
-			integration: true,
-		})
 		stageRootConfig(blueprint, workspace, 'selected')
 		const dependencies = blueprintToDevDependencies(blueprint)
 		workspace.write(
@@ -456,6 +457,85 @@ describe('live browser factory names', () => {
 		},
 		180_000,
 	)
+
+	// Each bench reads a host API that Node lacks, so a bench the Node workbench collects fails. The
+	// sheet bench builds its sheet through the CSSOM rather than compiling SCSS, because this
+	// fixture installs no `sass`.
+	it('runs every browser-hosted face bench in Chromium through test:bench', async () => {
+		const scratch = held.value
+		// The root configuration registers the sheet face through its wrapper path.
+		for (const artifact of blueprintToConfigArtifacts(blueprint).filter(
+			({ path }) => path === 'configs/src/vite.styles.config.ts',
+		)) {
+			scratch.write(`selected/${artifact.path}`, requireValue(artifact.content))
+		}
+		const benches = [
+			[
+				'src/browser/storage',
+				"expect(typeof indexedDB, 'indexedDB').toBe('object')",
+				'indexedDB.cmp(1, 2)',
+			],
+			[
+				'app/browser/element',
+				"expect(typeof document, 'document').toBe('object')",
+				"document.createElement('div')",
+			],
+			[
+				'src/vue/mount',
+				"expect(typeof document, 'document').toBe('object')",
+				"createApp({ render: () => h('p', 'ready') }).mount(document.createElement('div'))",
+			],
+			[
+				'app/vue/mount',
+				"expect(typeof document, 'document').toBe('object')",
+				"createApp({ render: () => h('p', 'ready') }).mount(document.createElement('div'))",
+			],
+			[
+				'src/styles/sheet',
+				"expect(typeof CSSStyleSheet, 'CSSStyleSheet').toBe('function')",
+				"new CSSStyleSheet().replaceSync('@layer theme, reset;')",
+			],
+		] as const
+		for (const [path, guard, measured] of benches) {
+			scratch.write(
+				`selected/tests/${path}.bench.ts`,
+				[
+					...(path.includes('/vue/') ? ["import { createApp, h } from 'vue'"] : []),
+					"import { expect, it } from 'vitest'",
+					`it('measures ${path}', async ({ bench }) => {`,
+					`\t${guard}`,
+					`\tawait bench('${path}', { time: 50 }, () => ${measured}).run()`,
+					'})',
+					'',
+				].join('\n'),
+			)
+		}
+		const script = requireValue(blueprintToScripts(blueprint)['test:bench'])
+		const [binary, ...parameters] = (script.match(/"[^"]*"|\S+/gu) ?? []).map((token) =>
+			token.replace(/^"(.*)"$/u, '$1'),
+		)
+		expect(binary).toBe('vitest')
+		const run = await execute(
+			{
+				file: process.execPath,
+				arguments: [
+					resolve('node_modules/vitest/vitest.mjs'),
+					...parameters,
+					'--run',
+					'--reporter=verbose',
+				],
+			},
+			{ workspace: join(scratch.path, 'selected'), strict: false, timeout: 120_000 },
+		)
+		expect({ code: run.code, stderr: run.code === 0 ? '' : run.stderr }).toStrictEqual({
+			code: 0,
+			stderr: '',
+		})
+		for (const [path] of benches) {
+			expect(run.stdout).toContain(`|bench:browser (chromium) (bench)| tests/${path}.bench.ts`)
+		}
+		expect(run.stdout).not.toContain('|probe (bench)|')
+	}, 240_000)
 })
 
 // A generated workspace vendors `format:check` and `lint:check` and runs both on

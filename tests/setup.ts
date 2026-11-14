@@ -369,12 +369,12 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 }> = Object.freeze([
 	{
 		fields: { src: ['core'] },
-		vite: '1a414abece29a2cbeb927f560e8bc177573438e8b6700f771ac19012ec2ba3de',
+		vite: 'b571e6e76112dcdd94bc0bc0baed094ff3f761f6f396db3be5744e47a63280c3',
 		scripts: 'e6e0d719d0f349e3cbc49587e6843a28fe7a8e9e229ea12c542437b0e784d5c7',
 	},
 	{
 		fields: { src: [], app: ['server'] },
-		vite: 'e98b59dd52962475b8d04bb5498fedcea158c065ecc9566d7a7f7e2ac148391a',
+		vite: 'cd20692902d2389a9e5ecfd43e10dcfbc8d2258f3417ede50d54a78ad81eda01',
 		scripts: '7751581f6d6f8190ebe6b80a9973eca22fed3e0bcb7d2572543d22df61e8666c',
 	},
 	{
@@ -393,7 +393,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: '39e471b8dabb0863f74c043acf0d332fddafacb56236bb10c845d27d65a1ae80',
+		vite: 'b76d38f04e0934b37f4b28de35fa05e49a7199755009a3bfc24c3f72866575b2',
 		scripts: 'b48b6e284428983cf91a26c5495985e5cb2ab850ae9cb56087b22be2893aae2b',
 	},
 ])

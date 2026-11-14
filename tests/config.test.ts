@@ -731,10 +731,21 @@ describe('root configuration', () => {
 		const manifest = readConfigRecord(
 			JSON.parse(readFileSync(resolve(POLICY_ROOT, 'package.json'), 'utf8')),
 		)
-		const browserBenches = ['tests/src/browser/**/*.bench.ts', 'tests/app/browser/**/*.bench.ts']
-		const browser = ['src/browser', 'app/browser'].some((path) =>
-			existsSync(resolve(POLICY_ROOT, path)),
-		)
+		// Every face that runs in Chromium: each sheet, the themes target without a base sheet, each
+		// browser environment, and each framework face.
+		const sheets = collectSheets(POLICY_ROOT)
+		const browserBenches = [
+			...sheets.map((face) => `src/${face}`),
+			...(!sheets.includes('styles') &&
+			existsSync(resolve(POLICY_ROOT, 'src/styles/themes/index.scss'))
+				? ['src/styles/themes']
+				: []),
+			...['src/browser', 'app/browser'].filter((path) => existsSync(resolve(POLICY_ROOT, path))),
+			...collectFrameworks(POLICY_ROOT),
+		]
+			.map((path) => `tests/${path}/**/*.bench.ts`)
+			.sort()
+		const browser = browserBenches.length > 0
 		const projects = configuration.test?.projects
 		if (!Array.isArray(projects)) throw new Error('The root configuration carries no projects')
 		expect(
@@ -748,8 +759,11 @@ describe('root configuration', () => {
 			readConfigRecord(readConfigRecord(Reflect.apply(probe, undefined, [])).test).benchmark,
 		)
 		expect(workbench.include).toStrictEqual(['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'])
-		// The exclusion keeps Vitest's default exclude, which a set `exclude` otherwise replaces.
-		expect(workbench.exclude).toStrictEqual([...defaultExclude, ...browserBenches])
+		// The exclusion keeps Vitest's default exclude, which a set `exclude` otherwise replaces, and
+		// a workspace with no browser-hosted face sets none.
+		expect(
+			Array.isArray(workbench.exclude) ? [...workbench.exclude].sort() : workbench.exclude,
+		).toStrictEqual(browser ? [...defaultExclude, ...browserBenches].sort() : undefined)
 
 		// The script names each bench project it runs; a reporter flag beside them stays the package's.
 		const script = readConfigScript(readConfigRecord(manifest.scripts), 'test:bench')
@@ -767,7 +781,8 @@ describe('root configuration', () => {
 		expect(test.include).toStrictEqual([])
 		expect(test.setupFiles).toStrictEqual(['./tests/setup.ts', './tests/setupBrowser.ts'])
 		expect(test.globalSetup).toBeUndefined()
-		expect(readConfigRecord(test.benchmark).include).toStrictEqual(browserBenches)
+		const included = readConfigRecord(test.benchmark).include
+		expect(Array.isArray(included) ? [...included].sort() : included).toStrictEqual(browserBenches)
 		expect(readConfigRecord(test.browser).enabled).toBe(true)
 		expect(readConfigRecord(test.browser).instances).toStrictEqual([
 			{ browser: 'chromium', headless: true, name: 'bench:browser (chromium)' },

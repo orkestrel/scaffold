@@ -91,6 +91,7 @@ import {
 	computeTotal,
 	inferArtifactGroup,
 	matchesBarrel,
+	projectsToBenches,
 	matchesEngines,
 	matchesPrintWidth,
 	manifestToEntries,
@@ -833,7 +834,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
 		'test:bench': [
 			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)"',
-			...(blueprint.src.includes('browser') || blueprint.app.includes('browser')
+			...(blueprintToProjects(blueprint).includes('bench:browser')
 				? ['--project bench:browser']
 				: []),
 			'--mode benchmark',
@@ -980,8 +981,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * guides entry accepts the generated command that invoked the guides project
  * through Vitest alone. The benchmark entry accepts the command that ran the
  * `probe` project through `vitest bench`, before the dedicated bench project
- * existed, and the command the other browser-environment state plans, so the entry
- * follows a browser environment that arrives or leaves. The pack hook accepts the
+ * existed, and the command planned for the other state of the browser bench project, so
+ * the entry follows a browser-hosted face that arrives or leaves. The pack hook accepts the
  * build chain emitted before it delegated to `build`. The publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. No accepted publication chain carries a study
  * step. `serve:build` accepts the server-only chain it ran before it delegated to `build`.
@@ -1395,7 +1396,7 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
  *
  * @param blueprint - The workspace specification.
  * @returns Project labels in registration order, including wrapper-registered sheet faces,
- * the probe benchmark variant, and, beside a browser environment, the browser bench project.
+ * the probe benchmark variant, and, beside a browser-hosted face, the browser bench project.
  *
  * @example
  * ```ts
@@ -1417,10 +1418,13 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 		...(axis === 'src' && blueprint.bin.length > 0 ? ['src:bin'] : []),
 		...(axis === 'app' && blueprint.app.includes('server') ? ['app:server'] : []),
 	])
-	return [
+	const labels = [
 		...sheets.map((name) => `src:${name}`),
 		...(blueprint.themes && !blueprint.styles ? ['src:themes'] : []),
 		...environments,
+	]
+	return [
+		...labels,
 		'policy',
 		'config',
 		...(blueprint.setup.includes('node') || blueprint.global ? ['setup'] : []),
@@ -1435,9 +1439,7 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 		...(blueprint.integration ? ['integration'] : []),
 		'probe',
 		'probe (bench)',
-		...(environments.includes('src:browser') || environments.includes('app:browser')
-			? ['bench:browser']
-			: []),
+		...(projectsToBenches(labels).length > 0 ? ['bench:browser'] : []),
 	]
 }
 
@@ -1534,6 +1536,8 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			: []),
 	]
 	const external = 'external: resolveSourceExternal,'
+	const benches = projectsToBenches([...planned])
+	const inlineBenches = `const browserBenches = [${benches.map((glob) => `'${glob}'`).join(', ')}]`
 	// Each factory and the row that registers it are chosen by the same condition, in the order
 	// the generated configuration declares them.
 	const factories = [
@@ -1670,7 +1674,20 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 					),
 				]
 			: []),
-		CONFIG_TEMPLATES.factories.probe,
+		fillTemplate(CONFIG_TEMPLATES.factories.probe, {
+			benches:
+				benches.length === 0
+					? ''
+					: `// A browser-hosted face's bench reads host APIs that Node lacks, so only \`bench:browser\` runs it.\n${
+							matchesPrintWidth(inlineBenches)
+								? inlineBenches
+								: `const browserBenches = [\n${benches.map((glob) => `\t'${glob}',`).join('\n')}\n]`
+						}\n\n`,
+			benchmark:
+				benches.length === 0
+					? "\t\t\tbenchmark: { include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'] },\n"
+					: "\t\t\tbenchmark: {\n\t\t\t\tinclude: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'],\n\t\t\t\t// A set `exclude` replaces Vitest's default, so the default is kept.\n\t\t\t\texclude: [...defaultExclude, ...browserBenches],\n\t\t\t},\n",
+		}),
 		...(planned.has('bench:browser')
 			? [
 					fillTemplate(CONFIG_TEMPLATES.factories.bench, {
@@ -1740,6 +1757,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
 		journey: journeyed ? "import type { JourneyVariant } from '@orkestrel/test'\n" : '',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
+		vitest: benches.length === 0 ? '' : 'defaultExclude, ',
 		helpers:
 			helpers.length === 0
 				? ''

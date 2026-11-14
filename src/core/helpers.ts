@@ -762,6 +762,45 @@ export function matchesBarrel(blueprint: Blueprint): boolean {
 }
 
 /**
+ * Lists the bench globs of the browser-hosted projects among a workspace's project labels.
+ *
+ * @param projects - The project labels, in registration order.
+ * @returns One glob per browser-hosted label, matching every `*.bench.ts` file beneath that
+ * label's directory under `tests/<axis>/`, in label order.
+ *
+ * @remarks
+ * A label on the `src` or `app` axis names a project that runs in Playwright Chromium unless it
+ * names `core`, `server`, or `bin`, which run in Node. The `src:themes` target collects
+ * `tests/src/styles/themes`. Every other label sits on neither axis and adds no glob.
+ *
+ * @example
+ * ```ts
+ * import { projectsToBenches } from '@orkestrel/scaffold'
+ *
+ * const benches = projectsToBenches(['src:core', 'src:browser', 'app:vue', 'policy'])
+ *
+ * benches.length // 2
+ * benches[1]?.startsWith('tests/app/vue/') // true
+ * ```
+ */
+export function projectsToBenches(projects: readonly string[]): readonly string[] {
+	return projects.flatMap((label) => {
+		const [axis, face, ...rest] = label.split(':')
+		if (
+			(axis !== 'src' && axis !== 'app') ||
+			face === undefined ||
+			face.length === 0 ||
+			rest.length > 0 ||
+			face === 'core' ||
+			face === 'server' ||
+			face === 'bin'
+		)
+			return []
+		return [`tests/${axis}/${face === 'themes' ? 'styles/themes' : face}/**/*.bench.ts`]
+	})
+}
+
+/**
  * Selects the single published environment a package root points at.
  *
  * @param src - The declared published environments.
