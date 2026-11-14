@@ -100,7 +100,7 @@
 	},
 	"dependencies": {
 		"@orkestrel/console": "^0.0.20",
-		"@orkestrel/contract": "^0.0.23",
+		"@orkestrel/contract": "^0.0.24",
 		"@orkestrel/emitter": "^0.0.16",
 		"@orkestrel/markdown": "^0.0.21",
 		"@orkestrel/process": "^0.0.19",
@@ -112,7 +112,7 @@
 		"@orkestrel/guide": "^0.0.31",
 		"@orkestrel/html": "^0.0.16",
 		"@orkestrel/probe": "^0.0.30",
-		"@orkestrel/test": "^0.0.38",
+		"@orkestrel/test": "^0.0.39",
 		"@types/node": "^24.19.2",
 		"@vitest/browser-playwright": "^5.1.0",
 		"oxfmt": "^0.78.0",

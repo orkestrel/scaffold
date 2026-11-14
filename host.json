@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "1905b2241052653cbd73305d2c2ad0e117a736617d620e2394ec98695fefaf11"
+			"digest": "b137dd915b9eec40432ea6b402c1bedf648b589d60ab134138dac4df543be8fc"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1036,7 +1036,7 @@
 			"storage": "guides/contract.md",
 			"destination": "guides/contract.md",
 			"executable": false,
-			"digest": "3092cdb3ef53f9dfcc59f2a06e665e609ddca3fda2b6a45686863461e383f277"
+			"digest": "99a5bba7aea85328bde9be5e29b709d20349a23ed0cb471d97b3a37b6f851d5c"
 		},
 		{
 			"storage": "guides/csv.md",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/database.md",
 			"destination": "guides/database.md",
 			"executable": false,
-			"digest": "ddce2541938217907304b97200bd34d1f748bd56fb5a4896dcadc682117e5559"
+			"digest": "f397ceadad006d11338f1c914889d2b304575d6b001d68eda5e6008f9c3fda5f"
 		},
 		{
 			"storage": "guides/emitter.md",
@@ -1078,7 +1078,7 @@
 			"storage": "guides/indexeddb.md",
 			"destination": "guides/indexeddb.md",
 			"executable": false,
-			"digest": "9d1d73624585b8a2474f5db5974f35621f3f80f67d6110a20ac3f751dff48c2b"
+			"digest": "51d809fd2f555e3f671b2edb25e8c18b43464ebbf4b327e78b16787d3b3b6b94"
 		},
 		{
 			"storage": "guides/interpret.md",
@@ -1186,7 +1186,7 @@
 			"storage": "guides/relation.md",
 			"destination": "guides/relation.md",
 			"executable": false,
-			"digest": "47380b35b42129f9a0f132744c1e0ad06bf51bfe58aa95e93e7733a8eedeb37a"
+			"digest": "ddd837ae70670dbe48cf52c98e1f4b28bd7ce388eaa9a32c07b4f6d588aeeefc"
 		},
 		{
 			"storage": "guides/router.md",
@@ -1216,7 +1216,7 @@
 			"storage": "guides/sqlite.md",
 			"destination": "guides/sqlite.md",
 			"executable": false,
-			"digest": "1a286429c9629f96ff849b88c55d96c2272a520bddf92aa2cc1e93377a0a1079"
+			"digest": "7226a742a4a202d4696792477e139a4f924e0dce769f2ccb07a20e1033853b0a"
 		},
 		{
 			"storage": "guides/sse.md",
@@ -1252,7 +1252,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "8b349eba1987065014599c028c447c5953c2313e3ed292b5719a6afecbed9626"
+			"digest": "4d98bccf675ca5d0a35c91a6a4b0368c7931e271a276227f094a8a9051654c84"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "9e417b21f3361abe6f9fe25f1103f9f84b597538110af364baa8925d1d245d5f"
+	"digest": "8d3b9a8b968107d6ed13d5535fd0f137128a3517019b10b8543c22d789a7c773"
 }
