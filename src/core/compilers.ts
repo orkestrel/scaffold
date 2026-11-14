@@ -831,8 +831,13 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.tree ? { 'test:tree': `${vitest} --project tree` } : {}),
 		'test:probe':
 			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
-		'test:bench':
-			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark',
+		'test:bench': [
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)"',
+			...(blueprint.src.includes('browser') || blueprint.app.includes('browser')
+				? ['--project bench:browser']
+				: []),
+			'--mode benchmark',
+		].join(' '),
 		...(publishes ? { 'test:distribution': `${vitest} --project distribution` } : {}),
 		...(integrates ? { 'test:integration': `${vitest} --project integration` } : {}),
 		...(blueprint.service ? { 'test:service': `${vitest} --project service` } : {}),
@@ -973,10 +978,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * `accepted` carries each generated predecessor the region can replace. The
  * guides entry accepts the generated command that invoked the guides project
- * through Vitest alone. The benchmark entry accepts the one command that ran the
+ * through Vitest alone. The benchmark entry accepts the command that ran the
  * `probe` project through `vitest bench`, before the dedicated bench project
- * existed. The pack hook accepts the build chain emitted before it
- * delegated to `build`. The publication hook accepts the same gate chain without
+ * existed, and the command the other browser-environment state plans, so the entry
+ * follows a browser environment that arrives or leaves. The pack hook accepts the
+ * build chain emitted before it delegated to `build`. The publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. No accepted publication chain carries a study
  * step. `serve:build` accepts the server-only chain it ran before it delegated to `build`.
  * The value being written is always writable, so it is not repeated there. Any other value is a
@@ -1039,7 +1045,11 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 					name === 'test:guides'
 						? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
 						: name === 'test:bench'
-							? ['vitest bench --config vite.config.ts --no-cache --project probe']
+							? [
+									'vitest bench --config vite.config.ts --no-cache --project probe',
+									'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark',
+									'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --project bench:browser --mode benchmark',
+								].filter((predecessor) => predecessor !== command)
 							: name === 'build:src:styles' && blueprint.themes
 								? ['vite build --config configs/src/vite.styles.config.ts']
 								: sheets.some((face) => name === `test:src:${face}`)
@@ -1384,8 +1394,8 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
  * Projects a blueprint into the project labels its root Vitest configuration registers.
  *
  * @param blueprint - The workspace specification.
- * @returns Project labels in registration order, including wrapper-registered sheet faces and
- * the probe benchmark variant.
+ * @returns Project labels in registration order, including wrapper-registered sheet faces,
+ * the probe benchmark variant, and, beside a browser environment, the browser bench project.
  *
  * @example
  * ```ts
@@ -1398,18 +1408,19 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 	const sheets = blueprintToSheets(blueprint)
 	const styled = sheets.length > 0 || blueprint.themes
 	const faces = blueprintToFaces(blueprint)
+	const environments = AXES.flatMap((axis) => [
+		...ENVIRONMENTS.filter(
+			(environment) =>
+				(axis !== 'app' || environment !== 'server') && blueprint[axis].includes(environment),
+		).map((environment) => `${axis}:${environment}`),
+		...faces.filter((face) => face.axes.includes(axis)).map((face) => `${axis}:${face.name}`),
+		...(axis === 'src' && blueprint.bin.length > 0 ? ['src:bin'] : []),
+		...(axis === 'app' && blueprint.app.includes('server') ? ['app:server'] : []),
+	])
 	return [
 		...sheets.map((name) => `src:${name}`),
 		...(blueprint.themes && !blueprint.styles ? ['src:themes'] : []),
-		...AXES.flatMap((axis) => [
-			...ENVIRONMENTS.filter(
-				(environment) =>
-					(axis !== 'app' || environment !== 'server') && blueprint[axis].includes(environment),
-			).map((environment) => `${axis}:${environment}`),
-			...faces.filter((face) => face.axes.includes(axis)).map((face) => `${axis}:${face.name}`),
-			...(axis === 'src' && blueprint.bin.length > 0 ? ['src:bin'] : []),
-			...(axis === 'app' && blueprint.app.includes('server') ? ['app:server'] : []),
-		]),
+		...environments,
 		'policy',
 		'config',
 		...(blueprint.setup.includes('node') || blueprint.global ? ['setup'] : []),
@@ -1424,6 +1435,9 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 		...(blueprint.integration ? ['integration'] : []),
 		'probe',
 		'probe (bench)',
+		...(environments.includes('src:browser') || environments.includes('app:browser')
+			? ['bench:browser']
+			: []),
 	]
 }
 
@@ -1657,6 +1671,16 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 				]
 			: []),
 		CONFIG_TEMPLATES.factories.probe,
+		...(planned.has('bench:browser')
+			? [
+					fillTemplate(CONFIG_TEMPLATES.factories.bench, {
+						optimization: machinery.frameworks.includes('vue')
+							? "optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }"
+							: 'optimizeDeps',
+						plugins: machinery.frameworks.includes('vue') ? '\t\tplugins: [vue()],\n' : '',
+					}),
+				]
+			: []),
 	]
 	// The `app:browser` row is the factory itself, never a call of it. Vitest hands the command
 	// line's `--mode` only to a project it calls, and `mergeOverride` sets that mode on the
@@ -1691,6 +1715,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		...(planned.has('distribution') ? ['distribution'] : []),
 		...(planned.has('integration') ? ['integration'] : []),
 		'probe',
+		...(planned.has('bench:browser') ? ['benchBrowser'] : []),
 	]
 
 	const joinedProjects = `\t\tprojects: [${projects.join(', ')}],`

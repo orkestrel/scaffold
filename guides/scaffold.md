@@ -1026,8 +1026,11 @@ A selection that excludes `configs` proceeds. An advisory alone does not make an
 drift.
 
 The probe workbench separates ordinary probes from benchmarks by filename. `test:probe` collects
-`tmp/probes/**/*.test.ts`. `test:bench` collects `tmp/probes/**/*.bench.ts` and `tests/**/*.bench.ts`
-with the explicit `--mode benchmark` option. Neither script belongs to a gate. In a benchmark file,
+`tmp/probes/**/*.test.ts`. `test:bench` runs with the explicit `--mode benchmark` option. Its Node
+`probe` project collects `tmp/probes/**/*.bench.ts` and `tests/**/*.bench.ts` other than the browser
+benches, `tests/src/browser/**/*.bench.ts` and `tests/app/browser/**/*.bench.ts`. In a workspace with
+a browser environment, its `bench:browser` project runs those browser benches in Playwright Chromium.
+Neither script belongs to a gate. In a benchmark file,
 register a regular `it` or `test` callback that receives the context's `bench` fixture. Await
 `bench(name, options, fn).run()` or `bench.compare(...)`; options precede the benchmark function.
 The filename keeps the benchmark out of ordinary test runs, so no mode guard is required. The

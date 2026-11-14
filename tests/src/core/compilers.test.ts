@@ -465,6 +465,7 @@ describe('blueprintToProjects', () => {
 			'integration',
 			'probe',
 			'probe (bench)',
+			'bench:browser',
 		])
 		const root = blueprintToRootVite(blueprint)
 		expect(root).toContain("'./configs/src/vite.styles.config.ts'")
@@ -555,6 +556,7 @@ describe('blueprintToProjects', () => {
 			'distribution',
 			'probe',
 			'probe (bench)',
+			'bench:browser',
 		])
 		expect(blueprintToProjects({ ...blueprint, showcase: false, journey: false })).toStrictEqual(
 			blueprintToProjects(blueprint),
@@ -1894,6 +1896,7 @@ describe('blueprintToWritableScripts', () => {
 		}
 		expect(region[5]?.accepted).toEqual([
 			'vitest bench --config vite.config.ts --no-cache --project probe',
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --project bench:browser --mode benchmark',
 		])
 		// The generated predecessor copied the build chain instead of delegating to
 		// it, so the region accepts that value while moving targets to the delegate.
@@ -2518,6 +2521,99 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
 	})
 
+	it('runs the browser benches in a Chromium bench project only beside a browser environment', () => {
+		const node =
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --mode benchmark'
+		const browser =
+			'vitest bench --config vite.config.ts --no-cache --project "probe (bench)" --project bench:browser --mode benchmark'
+		const benches =
+			"const browserBenches = ['tests/src/browser/**/*.bench.ts', 'tests/app/browser/**/*.bench.ts']"
+		const exclusion = 'exclude: [...defaultExclude, ...browserBenches],'
+		const cases = [
+			[buildBlueprint({ src: ['core', 'browser'] }), true],
+			[buildBlueprint({ src: [], app: ['browser'] }), true],
+			[
+				buildBlueprint({
+					src: ['core', 'browser'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+				}),
+				true,
+			],
+			[buildBlueprint(), false],
+			[buildBlueprint({ src: ['core', 'server'], app: ['core', 'server'] }), false],
+			[buildBlueprint({ setup: ['browser'] }), false],
+			[buildBlueprint({ src: [], themes: true }), false],
+		] as const
+		for (const [blueprint, benched] of cases) {
+			const label = JSON.stringify({ src: blueprint.src, app: blueprint.app, benched })
+			const root = blueprintToRootVite(blueprint)
+			const writable = blueprintToWritableScripts(blueprint).find(
+				({ name }) => name === 'test:bench',
+			)
+			const start = root.indexOf('export function benchBrowser(')
+			const body = start < 0 ? '' : root.slice(start, root.indexOf('\n}\n', start))
+			const vue = blueprint.extensions.length > 0
+			// Every workspace keeps the browser benches out of the Node workbench; a browser workspace
+			// also upgrades the Node-only command a target already holds.
+			expect({
+				label,
+				vitest: root.includes("import { defaultExclude, defineConfig } from 'vitest/config'"),
+				benches: root.includes(benches),
+				include: root.includes("include: ['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'],"),
+				exclusion: root.includes(exclusion),
+				planned: blueprintToProjects(blueprint).includes('bench:browser'),
+				factory: start >= 0,
+				registered: /projects: \[[^\]]*\bbenchBrowser\b/u.test(root),
+				script: blueprintToScripts(blueprint)['test:bench'],
+				command: writable?.command,
+				accepted: writable?.accepted,
+				body: [
+					"name: { label: 'bench:browser', color: 'black' },",
+					'include: [],',
+					"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+					'enabled: true,',
+					'provider: playwright(browserOptions),',
+					"instances: [{ browser: 'chromium', headless: true }],",
+					'benchmark: { include: browserBenches },',
+				].filter((line) => body.includes(line)).length,
+				global: body.includes('globalSetup'),
+				plugin: body.includes('plugins: [vue()],'),
+				optimization: body.includes("optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }"),
+			}).toStrictEqual({
+				label,
+				vitest: true,
+				benches: true,
+				include: true,
+				exclusion: true,
+				planned: benched,
+				factory: benched,
+				registered: benched,
+				script: benched ? browser : node,
+				command: benched ? browser : node,
+				accepted: [
+					'vitest bench --config vite.config.ts --no-cache --project probe',
+					benched ? node : browser,
+				],
+				body: benched ? 7 : 0,
+				global: false,
+				plugin: vue,
+				optimization: vue,
+			})
+		}
+
+		// The script follows a browser environment that arrives or leaves.
+		for (const [from, to, blueprint] of [
+			[node, browser, buildBlueprint({ src: ['core', 'browser'] })],
+			[browser, node, buildBlueprint({ src: ['core'] })],
+		] as const) {
+			const manifest = JSON.stringify({ scripts: { 'test:bench': from } }, null, '\t')
+			const region = blueprintToWritableScripts(blueprint)
+			expect(JSON.parse(replaceManifestScripts(manifest, region) ?? '')).toMatchObject({
+				scripts: { 'test:bench': to },
+			})
+		}
+	})
+
 	it.skipIf(Number(vitestManifest.version.split('.')[0]) < 5)(
 		'executes a context benchmark and excludes ordinary probes [requires the Vitest 5 benchmark fixture]',
 		() => {
@@ -3005,7 +3101,7 @@ describe('blueprintToScripts config projects', () => {
 		)
 
 		expect(blueprintToRootVite(blueprint)).toContain(
-			'projects: [appCore, appBrowser, appServer, policy, config, integration, probe]',
+			'projects: [appCore, appBrowser, appServer, policy, config, integration, probe, benchBrowser]',
 		)
 		expect(integration?.content).toContain("import * as appCore from '@app/core'")
 		expect(integration?.content).toContain("import * as appBrowser from '@app/browser'")
@@ -4216,7 +4312,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// for every selection and names `PluginOption` and `mergeConfig`, so both reach
 		// a workspace that selects no showcase.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { PluginOption, UserConfig } from 'vite'\nimport { mergeConfig } from 'vite'\nimport { defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
+			"import type { PluginOption, UserConfig } from 'vite'\nimport { mergeConfig } from 'vite'\nimport { defaultExclude, defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
 		)
 	})
 
@@ -4758,6 +4854,7 @@ describe('browser commands', () => {
 				expect(browsers.map(({ label }) => label)).toStrictEqual([
 					'src:browser',
 					'app:browser',
+					'bench:browser',
 					'journey:desktop',
 					'journey:compact',
 				])

@@ -135,8 +135,8 @@ Use these orthogonal contract mechanisms:
 - Choose a hand guard or a shape-derived guard by how often the check runs and the representation it reads: a hand guard with a directional parity test on a per-element path, a derived guard at a once-per-entity door, and a diagnostic computed only after a refusal.
 - Admit an owned record from its raw form before any projection or fallback, so that corrupt-present stays apart from absent.
 - When a person, a model, or a client authored a value, admit it whole against the contract this package owns for it: refuse the value when it omits a member the contract requires or carries a member the contract does not declare, and never remove a member to admit the rest. Apply § Foreign contracts, not this bullet, to a value another package publishes.
-- When that contract is a compiled `@orkestrel/contract` contract, admit through the `admitValue` function and return its faults in the refusal; call the contract's `parse` method only to project an owned value outward.
-- State shape soundness, lossless semantic admission, and authoring validity as separate claims, and prove each at its own door.
+- When that contract is a compiled `@orkestrel/contract` contract, admit through the `admitValue` function, which is strict from `@orkestrel/contract` 0.0.24 on, and return its faults in the refusal; admit through the `repairValue` function only at a door the repair exception in `.claude/rules/documentation.md` § Agent-facing surfaces covers; call the contract's `parse` method only to project an owned value outward.
+- State shape soundness, lossless repair, and authoring validity as separate claims, and prove each at its own door.
 - Treat persistence canonicalization as part of the declared identity round trip: when a store reorders or rewrites a value, compare identity by the value the declaration states.
 - Make a refusal bound cover the ownership and capture work paid before validation: read the limit during capture, with one counter per door call.
 - Report unread or unavailable evidence as unread, never as a false predicate or an empty success.

@@ -256,10 +256,13 @@ throwaway instrument against real sources, aliases and setup. Declare no proof t
 project composed in the root configuration rather than declared as a path string. The `probe` MCP
 server arms through it — its arming specifications live under the `tmp/probes/` directory and infer
 this project — so a workspace that removes the project, or declares it as a path string, fails the
-server's arming, and an unarmed server refuses every `prove` call. `test:bench` runs the bench
-project over `*.bench.ts` files under `tests/` and `tmp/probes/` and collects no ordinary test file.
-Every test script names its project and the `test:bench` script joins no chain, so no gate runs
-either project; the project's directory is
+server's arming, and an unarmed server refuses every `prove` call. `test:bench` runs the Node bench
+project over `*.bench.ts` files under `tests/` and `tmp/probes/` other than the browser benches,
+`tests/src/browser/**/*.bench.ts` and `tests/app/browser/**/*.bench.ts`. In a workspace with a
+browser environment, it also runs the `bench:browser` project over those browser benches in
+Playwright Chromium; give a workspace without one no `bench:browser` project. Neither bench project
+collects an ordinary test file. Every test script names its project and the `test:bench` script
+joins no chain, so no gate runs a probe or bench project; the `probe` project's directory is
 ignored by git; and `.claude/rules/tests.md` governs what may live there.
 
 - Define a cross-cutting project only for a proof the package actually has.

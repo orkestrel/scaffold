@@ -125,6 +125,7 @@ import {
 	POLICY_VUE_DOMAIN_CASES,
 } from './setupPolicy.js'
 import { describe, expect, it } from 'vitest'
+import { defaultExclude } from 'vitest/config'
 
 describe('selected faces', () => {
 	it('collects each selected sheet proof from the effective project root and rejects a wrong root', async () => {
@@ -623,6 +624,7 @@ describe('selected faces', () => {
 			'srcVue',
 			'appVue',
 			'setupBrowser',
+			'benchBrowser',
 			'sheetProject',
 			'integration',
 		]) {
@@ -722,6 +724,54 @@ describe('root configuration', () => {
 			expect(target).toBe(resolve(POLICY_ROOT, expected))
 			expect(Object.getOwnPropertyDescriptor(aliases, key)?.value).toBe(target)
 		}
+	})
+
+	it('runs the browser benches in a Chromium bench project and keeps them out of the Node workbench', () => {
+		const factories = readConfigRecord(rootConfiguration)
+		const manifest = readConfigRecord(
+			JSON.parse(readFileSync(resolve(POLICY_ROOT, 'package.json'), 'utf8')),
+		)
+		const browserBenches = ['tests/src/browser/**/*.bench.ts', 'tests/app/browser/**/*.bench.ts']
+		const browser = ['src/browser', 'app/browser'].some((path) =>
+			existsSync(resolve(POLICY_ROOT, path)),
+		)
+		const projects = configuration.test?.projects
+		if (!Array.isArray(projects)) throw new Error('The root configuration carries no projects')
+		expect(
+			projects.some((entry) => typeof entry === 'function' && entry.name === 'benchBrowser'),
+		).toBe(browser)
+		expect(typeof factories.benchBrowser === 'function').toBe(browser)
+
+		const probe = factories.probe
+		if (typeof probe !== 'function') throw new Error('The root configuration exports no probe')
+		const workbench = readConfigRecord(
+			readConfigRecord(readConfigRecord(Reflect.apply(probe, undefined, [])).test).benchmark,
+		)
+		expect(workbench.include).toStrictEqual(['tmp/probes/**/*.bench.ts', 'tests/**/*.bench.ts'])
+		// The exclusion keeps Vitest's default exclude, which a set `exclude` otherwise replaces.
+		expect(workbench.exclude).toStrictEqual([...defaultExclude, ...browserBenches])
+
+		// The script names each bench project it runs; a reporter flag beside them stays the package's.
+		const script = readConfigScript(readConfigRecord(manifest.scripts), 'test:bench')
+		expect(script.startsWith('vitest bench ')).toBe(true)
+		expect(
+			[...script.matchAll(/--project(?:=|\s+)("[^"]*"|\S+)/gu)].map(([, name]) =>
+				(name ?? '').replace(/^"(.*)"$/u, '$1'),
+			),
+		).toStrictEqual(['probe (bench)', ...(browser ? ['bench:browser'] : [])])
+
+		const factory = factories.benchBrowser
+		if (typeof factory !== 'function') return
+		const test = readConfigRecord(readConfigRecord(Reflect.apply(factory, undefined, [])).test)
+		expect(test.name).toStrictEqual({ label: 'bench:browser', color: 'black' })
+		expect(test.include).toStrictEqual([])
+		expect(test.setupFiles).toStrictEqual(['./tests/setup.ts', './tests/setupBrowser.ts'])
+		expect(test.globalSetup).toBeUndefined()
+		expect(readConfigRecord(test.benchmark).include).toStrictEqual(browserBenches)
+		expect(readConfigRecord(test.browser).enabled).toBe(true)
+		expect(readConfigRecord(test.browser).instances).toStrictEqual([
+			{ browser: 'chromium', headless: true, name: 'bench:browser (chromium)' },
+		])
 	})
 
 	it('registers every workspace project with its fixed include and setup files', () => {

@@ -4583,7 +4583,7 @@ describe('CLI audit', () => {
 			workspace.write('target/package.json', manifest)
 			const question: Question = {
 				field: 'scripts',
-				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark", "prepack": "npm run build",`,
+				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --project bench:browser --mode benchmark", "prepack": "npm run build",`,
 				blocking: false,
 			}
 
@@ -4625,7 +4625,7 @@ describe('CLI audit', () => {
 			const family = [
 				',',
 				'\t\t"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",',
-				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark"',
+				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --project bench:browser --mode benchmark"',
 			].join('\n')
 			const lifecycle = ',\n\t\t"prepack": "npm run build"'
 			// Removing only the appended regions recovers every original byte. This
@@ -4950,7 +4950,7 @@ describe('CLI audit', () => {
 				'"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe"',
 			)
 			expect(written).toContain(
-				'"test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark"',
+				'"test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --project bench:browser --mode benchmark"',
 			)
 			expect(written).toContain('"prepack": "npm run build"')
 			expect(written).toContain(`"test:guides": ${JSON.stringify(declaredGuides)}`)
@@ -4994,7 +4994,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'scripts',
-					message: `The manifest at ${fleet.target} does not declare a planned script: test:bench. Add this exact script line to package.json: "test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --mode benchmark",`,
+					message: `The manifest at ${fleet.target} does not declare a planned script: test:bench. Add this exact script line to package.json: "test:bench": "vitest bench --config vite.config.ts --no-cache --project \\"probe (bench)\\" --project bench:browser --mode benchmark",`,
 					blocking: false,
 				},
 			])

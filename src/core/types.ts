@@ -873,6 +873,7 @@ export interface ConfigTemplateSet {
 		readonly studies: string
 		readonly distribution: string
 		readonly probe: string
+		readonly bench: string
 		readonly integration: { readonly sheet: string; readonly module: string }
 	}
 	readonly tsconfigs: {

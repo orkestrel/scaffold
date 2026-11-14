@@ -539,6 +539,98 @@ describe('emitted workspaces under their own gates', () => {
 		}
 	}, 180_000)
 
+	it('runs a browser bench in Chromium and a Node bench in the Node workbench through test:bench', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-bench-browser-' })
+		try {
+			stageRootConfig(
+				createBlueprint('sample', { src: ['core', 'browser'] }),
+				workspace,
+				'selected',
+			)
+			workspace.link('selected/node_modules', resolve('node_modules'))
+			workspace.write('selected/tests/setup.ts', 'export {}\n')
+			workspace.write('selected/tests/setupBrowser.ts', 'export {}\n')
+			workspace.write(
+				'selected/tests/src/browser/storage.bench.ts',
+				[
+					"import { expect, it } from 'vitest'",
+					"it('compares IndexedDB keys', async ({ bench }) => {",
+					"\texpect(typeof indexedDB, 'indexedDB').toBe('object')",
+					"\tawait bench('cmp', {}, () => indexedDB.cmp(1, 2)).run()",
+					'})',
+					'',
+				].join('\n'),
+			)
+			workspace.write(
+				'selected/tests/src/core/parse.bench.ts',
+				[
+					"import { expect, it } from 'vitest'",
+					"it('parses JSON', async ({ bench }) => {",
+					"\texpect(typeof process.versions.node).toBe('string')",
+					"\tawait bench('parse', {}, () => JSON.parse('{\"value\":1}')).run()",
+					'})',
+					'',
+				].join('\n'),
+			)
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('selected/package.json')))
+			const scripts = isRecord(manifest) && isRecord(manifest.scripts) ? manifest.scripts : {}
+			const script = scripts['test:bench']
+			if (!isString(script)) throw new Error('The generated manifest declares no test:bench')
+			const [binary, ...parameters] = (script.match(/"[^"]*"|\S+/gu) ?? []).map((token) =>
+				token.replace(/^"(.*)"$/u, '$1'),
+			)
+			expect(binary).toBe('vitest')
+			const vitest = resolve('node_modules/vitest/vitest.mjs')
+			const options = {
+				workspace: join(workspace.path, 'selected'),
+				strict: false,
+				timeout: 120_000,
+			}
+			const run = await execute(
+				{
+					file: process.execPath,
+					arguments: [vitest, ...parameters, '--run', '--reporter=verbose'],
+				},
+				options,
+			)
+			expect({ code: run.code, stderr: run.code === 0 ? '' : run.stderr }).toStrictEqual({
+				code: 0,
+				stderr: '',
+			})
+			expect(run.stdout).toContain(
+				'|bench:browser (chromium) (bench)| tests/src/browser/storage.bench.ts',
+			)
+			expect(run.stdout).toContain('|probe (bench)| tests/src/core/parse.bench.ts')
+			expect(run.stdout).not.toContain('|probe (bench)| tests/src/browser/')
+			expect(run.stdout).not.toContain('|bench:browser (chromium) (bench)| tests/src/core/')
+			// The control runs the same browser bench in a Node bench project, where IndexedDB is absent.
+			const control = await execute(
+				{
+					file: process.execPath,
+					arguments: [
+						vitest,
+						'bench',
+						'--run',
+						'--config',
+						'vite.config.ts',
+						'--project',
+						'src:core (bench)',
+						'--mode',
+						'benchmark',
+						'tests/src/browser/storage.bench.ts',
+					],
+				},
+				options,
+			)
+			expect(control.code).toBeGreaterThan(0)
+			expect(control.stdout + control.stderr).toContain(
+				"indexedDB: expected 'undefined' to be 'object'",
+			)
+		} finally {
+			workspace.destroy()
+		}
+	}, 240_000)
+
 	it('A9.3 runs the vendored registration and gate proofs with and without tree', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-tree-config-' })
 		try {
@@ -1873,7 +1965,7 @@ export default appServer(override)
 			// returns that record's mode. An evaluated row receives no record and runs in
 			// `test` under a release run. It passes this `check` while failing the emitted
 			// workspace's own `test` script, whose vendored `config` proof calls every row.
-			expect(application).toContain('projects: [appBrowser, policy, config, probe]')
+			expect(application).toContain('projects: [appBrowser, policy, config, probe, benchBrowser]')
 			// The vendored `config` proof finds a called row by its function name and an
 			// evaluated one by its label, so the name and the label both have to agree
 			// with what that proof expects.
