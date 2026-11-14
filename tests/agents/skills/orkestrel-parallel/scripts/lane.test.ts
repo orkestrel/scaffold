@@ -5,16 +5,17 @@ import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
 import { captureError, createRecorder, waitForCondition, waitForDelay } from '@orkestrel/test'
+import { createScratch } from '@orkestrel/test/server'
 import {
 	LAUNCH_SCRIPT,
 	LANE_SCRIPT,
+	renderLaneZombie,
 	readProcessPriority,
 	renderLaneFlags,
 	renderLanePublisher,
 	renderLaneResolver,
 	runSkillScript,
 	startLaneBench,
-	supportsReaping,
 	WORKSPACE_ROOT,
 	runFlagRefusals,
 } from '../../../../setupServer.js'
@@ -48,6 +49,8 @@ import {
 	parseGauges,
 	parseRows,
 	parseSample,
+	parseStat,
+	matchesEnded,
 	pruneHistory,
 	RECENT_RUNS,
 	RUN_SUFFIX,
@@ -57,6 +60,11 @@ import {
 	READY_MS,
 	readExecTool,
 	readCommandId,
+	readGroup,
+	readListing,
+	readMember,
+	readTask,
+	readThreads,
 	readLimits,
 	readMeasure,
 	readNames,
@@ -66,6 +74,7 @@ import {
 	readSeed,
 	readSequences,
 	readSnapshot,
+	readTasks,
 	readQueue,
 	readStatus,
 	readTree,
@@ -103,8 +112,6 @@ const PUBLISHER_FILES =
 	process.platform === 'win32'
 		? [PUBLISHER_STAGE]
 		: ['11111111-2222-4333-8444-555555555555.sock', PUBLISHER_STAGE]
-const UNREAPED =
-	'the process that adopts an orphan here neither catches, ignores, nor blocks SIGCHLD, so a killed descendant stays a zombie past the kill budget and process.kill(-group, 0) reads its group as present'
 const DEFAULT_ROOT = join(userInfo().homedir, '.orkestrel', 'lane')
 const DEFAULT_PRESENT = existsSync(DEFAULT_ROOT)
 const GIB = 1024 ** 3
@@ -776,8 +783,7 @@ describe('lane.ts', () => {
 			])
 		})
 
-		it('kills a real parent and grandchild and confirms with a later reading', async (context) => {
-			if (!supportsReaping()) context.skip(UNREAPED)
+		it('kills a real parent and grandchild and confirms with a later reading', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const started = Date.now()
@@ -842,11 +848,166 @@ describe('lane.ts', () => {
 			).toStrictEqual({ gone: false, members: [] })
 			expect(readTree({ started: 0, launcher: undefined, command: undefined }, 0)).toBeUndefined()
 		})
+
+		it('parses a process-table line whose command name holds spaces and parentheses', () => {
+			expect(parseStat('12 (a) (b c) Z 1 34 34 0 -1')).toStrictEqual({ state: 'Z', group: 34 })
+			expect(parseStat('12 (node) S 1 12 12 0 -1\n')).toStrictEqual({ state: 'S', group: 12 })
+			expect(parseStat('no command name')).toBeUndefined()
+			expect(parseStat('12 (node)')).toBeUndefined()
+			expect(parseStat('12 (node) R 1 group')).toBeUndefined()
+		})
+
+		// Node gives no call that ends the main thread while another thread runs, and this suite builds
+		// no native fixture, so the exited-leader case is proved on readings here and the thread
+		// listing on a live member below.
+		it('reads two readings as ended only when both list the same threads, every one exited', () => {
+			const leader = { id: '10/10', state: 'Z' }
+			expect(matchesEnded([leader], [leader])).toBe(true)
+			expect(matchesEnded([{ id: '10/10', state: 'X' }], [leader])).toBe(true)
+			expect(
+				matchesEnded([leader, { id: '11/11', state: 'S' }], [leader, { id: '11/11', state: 'S' }]),
+			).toBe(false)
+			expect(
+				matchesEnded([leader, { id: '10/12', state: 'R' }], [leader, { id: '10/12', state: 'R' }]),
+			).toBe(false)
+			expect(matchesEnded([], [])).toBe(false)
+			expect(matchesEnded([leader], [leader, { id: '13/13', state: 'Z' }])).toBe(false)
+			expect(matchesEnded([leader, { id: '13/13', state: 'Z' }], [leader])).toBe(false)
+		})
+
+		// The group reading runs where the host publishes its process table at `/proc`, and the probe
+		// signal reaches a process group there.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'reads a group as present unless two successive readings agree that every thread exited',
+			async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				const holder = bench.spawn(
+					['setInterval(() => undefined, 1000)'],
+					bench.scratch.path,
+					'-e',
+					true,
+				)
+				const leader = { id: '10/10', state: 'Z' }
+				const shifting = [[leader], [leader, { id: '11/11', state: 'Z' }]].values()
+				expect(readGroup(holder.pid, () => shifting.next().value)).toStrictEqual([holder.pid])
+				const steady = [[leader], [leader]].values()
+				expect(readGroup(holder.pid, () => steady.next().value)).toStrictEqual([])
+				expect(readGroup(holder.pid, () => [])).toStrictEqual([holder.pid])
+				expect(readGroup(holder.pid, () => undefined)).toStrictEqual([holder.pid])
+			},
+		)
+
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'reads each thread of this process from its own entry',
+			() => {
+				const pid = String(process.pid)
+				const threads = readThreads(pid) ?? []
+				// The main thread runs while it reads its own entry, and the runtime's other threads
+				// sleep while it does.
+				expect(threads).toContainEqual({ id: `${pid}/${pid}`, state: 'R' })
+				expect(threads.some((task) => task.state !== 'R')).toBe(true)
+			},
+		)
+
+		// A path beneath `/proc/self/stat` is refused with `ENOTDIR`, a refusal other than `ENOENT`
+		// that stands in for `EACCES` under `hidepid=1`, which a process running as uid 0 never meets.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'reads what it cannot read as unread, and a process that is gone as none',
+			() => {
+				expect(readListing(join('/proc', 'self', 'stat'))).toBeUndefined()
+				expect(readThreads(join('self', 'stat'))).toBeUndefined()
+				expect(readTask('self', 'gone')).toBeUndefined()
+				expect(readMember(join('self', 'stat'), 0)).toBeUndefined()
+				expect(readMember('2147483647', 0)).toStrictEqual([])
+				expect(readThreads('2147483647')).toBeUndefined()
+			},
+		)
+
+		// A table root under a scratch directory holds what `/proc` cannot be made to hold on demand:
+		// a thread, an entry, or a line the reading cannot read, each of which must unread the group.
+		it('reads a table holding an unreadable thread, entry, or line as unread', () => {
+			const scratch = createScratch({ prefix: 'orkestrel-lane-table-' })
+			onTestFinished(() => scratch.destroy())
+			const table = join(scratch.path, 'table')
+			scratch.write('table/self/stat', '1 (self) R 0 1 1\n')
+			scratch.write('table/100/stat', '100 (holder) Z 1 100 100\n')
+			scratch.write('table/100/task/100/stat', '100 (holder) Z 1 100 100\n')
+			scratch.write('table/300/stat', '300 (other) S 1 300 300\n')
+			expect(readTasks(100, table)).toStrictEqual([{ id: '100/100', state: 'Z' }])
+			scratch.ensure('table/100/task/101/stat')
+			expect(readThreads('100', table)).toBeUndefined()
+			expect(readTasks(100, table)).toBeUndefined()
+			scratch.remove('table/100/task/101/stat')
+			scratch.write('table/100/task/101/stat', 'no fields\n')
+			expect(readThreads('100', table)).toBeUndefined()
+			scratch.remove('table/100/task/101')
+			expect(readTasks(100, table)).toStrictEqual([{ id: '100/100', state: 'Z' }])
+			scratch.ensure('table/200/stat')
+			expect(readMember('200', 100, table)).toBeUndefined()
+			expect(readTasks(100, table)).toBeUndefined()
+			scratch.remove('table/200')
+			scratch.write('table/400/stat', 'no fields\n')
+			expect(readMember('400', 100, table)).toBeUndefined()
+			expect(readTasks(100, table)).toBeUndefined()
+		})
+
+		// The reading consults the process table a Linux host publishes at `/proc`; a host without it
+		// reads a group of zombies as present.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'reads a group whose only member is a zombie as ended, though the probe signal reaches it',
+			async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				const holder = bench.spawn([renderLaneZombie(true)], bench.scratch.path, '-e', true)
+				await holder.reach('zombie ')
+				const zombie = Number(/zombie (\d+)/u.exec(holder.output)?.[1])
+				await waitForCondition(
+					'the holder keeps its exited child as a zombie',
+					() => readTasks(zombie)?.some((task) => task.state === 'Z') === true,
+					{ budget: 45_000, interval: 10 },
+				)
+				expect(readTasks(zombie)).toStrictEqual([
+					{ id: `${String(zombie)}/${String(zombie)}`, state: 'Z' },
+				])
+				// The control: the probe signal still reaches the zombie's group, so a reading built on
+				// that signal alone reads the group as present.
+				expect(process.kill(-zombie, 0)).toBe(true)
+				expect(readGroup(zombie)).toStrictEqual([])
+				expect(readTree({ started: 0, launcher: zombie, command: undefined }, 0)).toStrictEqual([])
+			},
+		)
+
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'reads a group holding a zombie beside a live member as present, through every live thread',
+			async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				const holder = bench.spawn([renderLaneZombie(false)], bench.scratch.path, '-e', true)
+				await holder.reach('zombie ')
+				const zombie = Number(/zombie (\d+)/u.exec(holder.output)?.[1])
+				await waitForCondition(
+					'the holder keeps its exited child as a zombie in its own group',
+					() => readTasks(holder.pid)?.some((task) => task.state === 'Z') === true,
+					{ budget: 45_000, interval: 10 },
+				)
+				const tasks = readTasks(holder.pid) ?? []
+				expect(tasks).toContainEqual({ id: `${String(zombie)}/${String(zombie)}`, state: 'Z' })
+				const threads = tasks.filter((task) => task.id.startsWith(`${String(holder.pid)}/`))
+				// The holder's runtime starts threads beside its main thread, so a reading of the
+				// process alone would list one task where the table lists several.
+				expect(threads.map((task) => task.id)).toContain(
+					`${String(holder.pid)}/${String(holder.pid)}`,
+				)
+				expect(threads.length).toBeGreaterThan(1)
+				expect(threads.every((task) => task.state !== 'Z')).toBe(true)
+				expect(readGroup(holder.pid)).toStrictEqual([holder.pid])
+			},
+		)
 	})
 
 	describe('no surviving process tree at handover', () => {
-		it('ends a descendant the command left, before the next holder runs', async (context) => {
-			if (!supportsReaping()) context.skip(UNREAPED)
+		it('ends a descendant the command left, before the next holder runs', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const first = bench.lane('first', { grandchild: 'descendant' })
@@ -891,8 +1052,7 @@ describe('lane.ts', () => {
 			await bench.meter.reach('leave', 'orphan')
 		})
 
-		it('refuses the next arrival while a forced-out holder leaves a live descendant', async (context) => {
-			if (!supportsReaping()) context.skip(UNREAPED)
+		it('refuses the next arrival while a forced-out holder leaves a live descendant', async () => {
 			const bench = await startLaneBench()
 			onTestFinished(() => bench.destroy())
 			const holder = bench.lane('holder', { grandchild: 'survivor' })
@@ -925,6 +1085,14 @@ describe('lane.ts', () => {
 			expect(await elsewhere.exit()).toBe(0)
 			bench.meter.releaseAll()
 			await bench.meter.closure('survivor')
+			// The launcher outlives the killed lane until its command ends, so the next arrival waits
+			// until the forced-out run's tree reads as gone.
+			const forced = readRun(bench.root, 1)
+			await waitForCondition(
+				'the forced-out run tree reads as gone',
+				() => typeof forced !== 'object' || readTree(forced, Date.now())?.length === 0,
+				{ budget: 45_000, interval: 10 },
+			)
 			const next = bench.lane('next')
 			await bench.meter.reach('enter', 'next')
 			bench.meter.release('next')

@@ -117,16 +117,25 @@
 //   that memory, so a long queue of measured tickets costs that much per ticket.
 // - A prune beside a write. A holder that writes a record to an existing key that is past a bound can
 //   lose that record to another holder's prune, which removes the key with the record in it.
-// - An unreaped member. On a host whose init does not reap, a killed member can keep reading as
-//   present. The lane exits 70 and stays held.
+// - An unreaped member. A group reads as ended when two readings of the process table at `/proc`,
+//   one after the other, show the same threads of its members and every one exited (`Z` or `X`),
+//   whether or not the host's init has reaped them; a member whose main thread exited while another
+//   thread runs reads as present. An empty reading reads as present, and so does any reading that
+//   cannot list the table, a member's threads, or an entry's `stat` for a reason other than the
+//   entry being gone. Three cases are outside the reading: a process that joins the group from
+//   outside it through `setpgid` during the second listing; a chain of members that each fork,
+//   exit, and are reaped between the listing and the read, in both readings; and a member the host
+//   hides from `/proc` entirely (`hidepid=2`). On a host without that table, a killed member its
+//   parent has not reaped keeps reading as present, and the lane exits 70 and stays held.
 // - Listing completeness. No probe proves that a listing returns every stable entry. The design takes
 //   it from the documented directory-read contract.
 // - Queue scope. The queue is one per user account per host. A wiped root, a second account, or a
 //   `--root` outside a proof gives a second queue that does not see the first.
 // - A denied root. A sandbox that refuses the root or the endpoint exits 75; no sandboxed bench exec
 //   has run this script.
-// - Linux. Every non-Windows branch is unread on this host and needs a Linux run: the socket file, the
-//   process group, and the signal handling.
+// - Linux. The socket file, the process group, and the zombie reading were read on a Linux container
+//   on 2026-11-14 (Node 22.23.5, an init that does not reap as a child ends); the signal handling is
+//   unread on Linux.
 // Migration stop: a second queue does not see the first, so while a host's sessions run another
 // serializer, no caller moves. After a scaffold release carries this script and no command runs on the
 // host, move every caller in one step and delete the serializer this replaces.
@@ -246,6 +255,15 @@ export const TICKET_PATTERN = /^(\d+)\.ticket$/u
 
 /** Matches one snapshot row: process id, parent id, and creation time in milliseconds. */
 export const ROW_PATTERN = /^(\d+) (\d+) (\d+)$/u
+
+/** Names the directory where a Linux host publishes its process table. */
+export const PROCESS_TABLE = '/proc'
+
+/**
+ * Lists the process-table states of a member that has exited and that its parent has not reaped:
+ * `Z` for a zombie, and `X` for a process the kernel is releasing.
+ */
+export const ENDED_STATES: readonly string[] = ['Z', 'X']
 
 /** Lists the signals that interrupt a lane on a host that delivers them. */
 export const STOP_SIGNALS: readonly NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SIGHUP']
@@ -606,6 +624,18 @@ export type Turn =
 			readonly pending: readonly number[]
 	  }
 	| { readonly state: 'refused'; readonly reason: string }
+
+/** Describes one process-table entry the group reading needs: its state and its process group. */
+export interface Stat {
+	readonly state: string
+	readonly group: number
+}
+
+/** Describes one thread of a group member: its `<pid>/<tid>` key and its process-table state. */
+export interface Task {
+	readonly id: string
+	readonly state: string
+}
 
 /** Describes what a sweep confirmed: whether the tree reads as gone, and the members it left. */
 export interface Sweep {
@@ -1972,18 +2002,181 @@ export function selectMembers<T extends Row>(
 }
 
 /**
- * Reads whether a process group still has a member.
+ * Parses one process-table `stat` line into its state and its process group.
+ *
+ * @remarks
+ * The command name sits in parentheses and can hold spaces and parentheses itself, so the fields
+ * are read after the last `)`: the state, the parent id, then the group id.
+ *
+ * @param text - The content of `/proc/<pid>/stat`.
+ * @returns The state and the group, or undefined when the text does not have that form.
+ */
+export function parseStat(text: string): Stat | undefined {
+	const close = text.lastIndexOf(')')
+	if (close === -1) return undefined
+	const [state, , group] = text.slice(close + 2).split(' ')
+	return state === undefined || state === '' || group === undefined || !/^\d+$/u.test(group)
+		? undefined
+		: { state, group: Number(group) }
+}
+
+/**
+ * Lists the entries of one process-table directory.
+ *
+ * @param path - The directory.
+ * @returns The entry names, or undefined when the listing fails.
+ */
+export function readListing(path: string): readonly string[] | undefined {
+	try {
+		return readdirSync(path)
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Reads one thread's state from its own process-table entry.
+ *
+ * @param pid - The process id, as its process-table entry names it.
+ * @param tid - The thread id, as the process's `task` listing names it.
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ * @returns The task keyed `<pid>/<tid>`, or undefined when its `stat` cannot be read or parsed.
+ */
+export function readTask(pid: string, tid: string, table = PROCESS_TABLE): Task | undefined {
+	try {
+		const stat = parseStat(readFileSync(join(table, pid, 'task', tid, 'stat'), 'utf8'))
+		return stat === undefined ? undefined : { id: `${pid}/${tid}`, state: stat.state }
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Reads the state of every thread of one process from the process table.
+ *
+ * @param pid - The process id, as its process-table entry names it.
+ * @returns One task per thread, keyed `<pid>/<tid>`, or undefined when the `task` listing fails,
+ * lists no thread, or holds a thread whose `stat` cannot be read: what the reading cannot read
+ * counts as present.
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ */
+export function readThreads(pid: string, table = PROCESS_TABLE): readonly Task[] | undefined {
+	const tids = readListing(join(table, pid, 'task'))
+	if (tids === undefined || tids.length === 0) return undefined
+	const tasks = tids.map((tid) => readTask(pid, tid, table))
+	return tasks.includes(undefined)
+		? undefined
+		: tasks.flatMap((task) => (task === undefined ? [] : [task]))
+}
+
+/**
+ * Reads the threads of one process-table entry when it belongs to a process group.
+ *
+ * @param name - The process id, as the process-table listing names it.
+ * @param group - The group id.
+ * @returns The entry's threads when it belongs to the group, none when it belongs to another group
+ * or its `stat` is gone (`ENOENT`, a process that ended), or undefined when its `stat` cannot be
+ * read for any other reason or cannot be parsed, or its threads cannot be read.
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ */
+export function readMember(
+	name: string,
+	group: number,
+	table = PROCESS_TABLE,
+): readonly Task[] | undefined {
+	try {
+		const stat = parseStat(readFileSync(join(table, name, 'stat'), 'utf8'))
+		if (stat === undefined) return undefined
+		return stat.group === group ? readThreads(name, table) : []
+	} catch (error) {
+		return readCode(error) === 'ENOENT' ? [] : undefined
+	}
+}
+
+/**
+ * Reads every thread of every member of a process group from the process table.
  *
  * @param group - The group id.
- * @returns The group id while the host reports the group; empty when it reports none.
+ * @returns One task per thread of each member, or undefined when the host publishes no process
+ * table, the table cannot be listed, or any entry cannot be read; a process whose `stat` is gone
+ * is skipped.
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
  */
-export function readGroup(group: number): readonly number[] {
+export function readTasks(group: number, table = PROCESS_TABLE): readonly Task[] | undefined {
+	if (!existsSync(join(table, 'self', 'stat'))) return undefined
+	const names = readListing(table)
+	if (names === undefined) return undefined
+	const members = names
+		.filter((name) => /^\d+$/u.test(name))
+		.map((name) => readMember(name, group, table))
+	return members.includes(undefined)
+		? undefined
+		: members.flatMap((member) => (member === undefined ? [] : member))
+}
+
+/**
+ * Checks whether two readings of one group show the same threads, every one of them exited.
+ *
+ * @remarks
+ * A thread read as exited cannot start another process or thread after that read, so every process
+ * that joined the group and every thread created before the first reading finished exists when the
+ * second listing starts. A second reading of the same tasks therefore leaves none of them out, and a
+ * member that forked between its listing and its read shows up as a task the first reading lacks.
+ * An empty reading reads as not ended, because the probe signal reached a member the table did not
+ * show, as a table from another PID namespace does.
+ *
+ * @param first - The first reading.
+ * @param second - The reading taken after the first finished.
+ * @returns True if both readings hold at least one task, list the same task ids, and show every
+ * task as {@link ENDED_STATES}; false otherwise.
+ */
+export function matchesEnded(first: readonly Task[], second: readonly Task[]): boolean {
+	return (
+		first.length > 0 &&
+		first
+			.map((task) => task.id)
+			.toSorted()
+			.join(' ') ===
+			second
+				.map((task) => task.id)
+				.toSorted()
+				.join(' ') &&
+		[...first, ...second].every((task) => ENDED_STATES.includes(task.state))
+	)
+}
+
+/**
+ * Reads whether a process group still has a member that has not exited.
+ *
+ * @remarks
+ * A signal reaches a zombie, so a group whose members have all exited still answers the probe
+ * signal until their parent reaps them, which an init that does not reap as a child ends leaves
+ * for later. Where the host publishes a process table, a group reads as ended when two readings
+ * taken one after the other show the same threads of its members, every one {@link ENDED_STATES},
+ * per {@link matchesEnded}. A zombie whose threads have all exited holds no CPU, memory, or file
+ * handle; a process whose main thread exited while another thread runs shows `Z` for itself and
+ * reads as present through that thread. A host without that table, and a reading that cannot read
+ * part of it, read such a group as present.
+ *
+ * @param group - The group id.
+ * @param read - Takes one reading of the group's threads; undefined means the reading could not
+ * read the table. Default: {@link readTasks}.
+ * @returns The group id while the host reports a member that has not exited or the reading
+ * cannot read the table; empty when it reports none.
+ */
+export function readGroup(
+	group: number,
+	read: (group: number) => readonly Task[] | undefined = readTasks,
+): readonly number[] {
 	try {
 		process.kill(-group, 0)
-		return [group]
 	} catch (error) {
 		return readCode(error) === 'ESRCH' ? [] : [group]
 	}
+	const first = read(group)
+	if (first === undefined) return [group]
+	const second = read(group)
+	return second !== undefined && matchesEnded(first, second) ? [] : [group]
 }
 
 /**

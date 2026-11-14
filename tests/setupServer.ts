@@ -5799,6 +5799,7 @@ export class TestLaneRun {
 	readonly #chunks: string[] = []
 	readonly #child: ChildProcess
 	readonly #exit: Promise<number | null>
+	readonly #ended: Promise<void>
 
 	/**
 	 * Starts the `lane` script as a child and collects its output.
@@ -5828,6 +5829,10 @@ export class TestLaneRun {
 		}
 		this.#child = child
 		this.#exit = once(child, 'close').then(([code]) => (typeof code === 'number' ? code : null))
+		this.#ended = once(child, 'exit').then(
+			() => undefined,
+			() => undefined,
+		)
 	}
 
 	/** Holds the child's process id. */
@@ -5861,10 +5866,18 @@ export class TestLaneRun {
 		})
 	}
 
-	/** Ends the child at once, without its descendants, and waits for its end. */
+	/**
+	 * Ends the child at once, without its descendants, and waits for the child's own end.
+	 *
+	 * @remarks
+	 * The wait ends on the child's `exit`, not on the `close` of its pipes, because a descendant that
+	 * survives it, such as the launcher a killed lane leaves outside Windows, keeps an inherited pipe
+	 * open until that descendant ends. Await {@link TestLaneRun.exit} after this call to read the
+	 * complete output.
+	 */
 	async kill(): Promise<void> {
 		this.#child.kill('SIGKILL')
-		await this.#exit
+		await this.#ended
 	}
 }
 
@@ -6086,62 +6099,19 @@ export async function startLaneBench(): Promise<TestLaneBench> {
 }
 
 /**
- * Starts a process whose parent has already exited, so the host has handed it to the process that
- * adopts orphans.
- *
- * @returns The orphan's id; the orphan runs until something kills it.
- * @throws When the parent fails or prints no process id.
+ * Renders the CommonJS code of a holder that keeps one exited child as a zombie.
  *
  * @remarks
- * The orphan starts detached, because Node puts a Windows child that is not detached in a job that
- * ends it with its parent.
- */
-export function spawnOrphan(): number {
-	const result = spawnSync(
-		process.execPath,
-		[
-			'-e',
-			"const c=require('node:child_process').spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore',windowsHide:true,detached:true});c.unref();console.log(c.pid)",
-		],
-		{ encoding: 'utf8', windowsHide: true },
-	)
-	const pid = Number(result.stdout.trim())
-	if (result.status !== 0 || !Number.isInteger(pid) || pid <= 0) {
-		throw new Error(`The orphan's parent exited ${String(result.status)}: ${result.stderr}`)
-	}
-	return pid
-}
-
-/**
- * Checks whether the process that adopts an orphan on this host reaps it as it ends.
+ * The holder starts a child that exits at once, prints `zombie <pid>`, and then blocks its own
+ * event loop for 60 s. Node reaps a child from its event loop, so the exited child stays a zombie
+ * until the holder ends, on any host that keeps zombies.
  *
- * @returns True if the adopter catches, ignores, or blocks `SIGCHLD`, or the host publishes no
- * process table at `/proc`; false otherwise.
- *
- * @remarks
- * A killed process stays in the Linux process table as a zombie until its parent reaps it, and
- * `process.kill(-group, 0)` still reaches a zombie, so the `lane` script reads a group as present
- * until the zombie goes. An adopter that neither catches, ignores, nor blocks `SIGCHLD` (`/proc/<pid>/status`)
- * learns of no ended child and reaps only when it next polls, as the `process_api` init of the
- * Linux container read on 2026-11-14 does about 1.8 s after the kill. A host without `/proc` keeps
- * no zombie: Windows reads an exited process as `ESRCH`. The reading starts one orphan, reads its
- * adopter from `/proc/<orphan>/stat`, and kills the orphan on every path.
+ * @param detached - If `true`, the child leads a group of its own, so the zombie is that group's
+ * only member; if `false`, the child joins the holder's group beside the live holder.
+ * @returns The code for `node -e`.
  */
-export function supportsReaping(): boolean {
-	const orphan = spawnOrphan()
-	try {
-		const stat = join('/proc', String(orphan), 'stat')
-		if (!existsSync(stat)) return true
-		const fields = readFileSync(stat, 'utf8')
-		const adopter = fields.slice(fields.lastIndexOf(')') + 2).split(' ')[1] ?? ''
-		const status = readFileSync(join('/proc', adopter, 'status'), 'utf8')
-		return ['SigCgt', 'SigIgn', 'SigBlk'].some((field) => {
-			const mask = new RegExp(`^${field}:\\s*([0-9a-f]+)$`, 'mu').exec(status)?.[1]
-			return mask !== undefined && ((BigInt(`0x${mask}`) >> 16n) & 1n) === 1n
-		})
-	} finally {
-		captureError(() => process.kill(orphan, 'SIGKILL'))
-	}
+export function renderLaneZombie(detached: boolean): string {
+	return `const c=require('node:child_process').spawn(process.execPath,['-e',''],{stdio:'ignore',windowsHide:true,detached:${String(detached)}});console.log('zombie '+c.pid);Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,60000)`
 }
 
 /**
