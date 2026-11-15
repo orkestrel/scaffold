@@ -11,7 +11,7 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 ## Repositories
 
 - Every package in the catalog table of `.claude/agents/orkestrel.md`, between its `orkestrel:catalog` markers, at `https://github.com/orkestrel/<package>`. The table's layer column is the release order; `node .agents/skills/orkestrel-publish/scripts/wave.ts --plan` prints it.
-- `@orkestrel/scaffold`, this repository, for the catalog refresh and the items in § Scaffold's own items.
+- `@orkestrel/scaffold`, this repository, for the catalog refresh and `ROADMAP.md` items 178, 183, and 184.
 - Taverna, in its own session, per § Taverna.
 
 ## Governing skills
@@ -47,11 +47,12 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 - 2026-11-15, layer 5 published and confirmed: agent 0.0.45, browser 0.0.34, and probe 0.0.31. Agent carries its `repairValue` re-admissions and states the repair in every built-in and `recall` description (agent `dc5dd1a8`). Browser's five distribution cases that read a `/proc` table or park on a FIFO need a Linux host; its release commit (browser `b683d0a`) records them as unread.
 - 2026-11-15, layer 6 published and confirmed: ollama 0.0.39 and toolbox 0.0.34; toolbox carries its `repairValue` door and the strict database tool. Ollama's service proof passed 89 of 89 against a second daemon on 11435, per `ROADMAP.md` item 114.
 - 2026-11-15, layer 7 published and confirmed: study 0.0.21.
-- 2026-11-15, scaffold 0.0.137 published and confirmed (`7f9465f`), with the catalog refresh (`8dcfdc1`). Its release chain on Windows closes § Scaffold's own items' Windows reading. The release commit was pushed before the registry served the version; the registry served it within the confirm's wait.
+- 2026-11-15, scaffold 0.0.137 published and confirmed (`7f9465f`), with the catalog refresh (`8dcfdc1`). Its release chain on Windows closes the Windows reading. The release commit was pushed before the registry served the version; the registry served it within the confirm's wait.
 - 2026-11-15, the closing round re-pinned scaffold `^0.0.137` and the trailing development ranges in all 51 catalog packages and pushed each visit; no package owes a bump for this wave. `release.md` records each package's release, closing commit, and ruling.
 - 2026-11-15T13:58Z, a session outside this campaign published process 0.0.21 (process `bd6da48`). The user ruled to close this wave without its cascade and take those releases with process's further publishes; `release.md` § Process 0.0.21 names the packages that owe one, and § Standing host-bound readings names process 0.0.21's failing case.
 - 2026-11-15, the registry sweep after the closing round reads every catalog checkout on the served version of each `@orkestrel` dependency except scaffold's process `^0.0.20`, and the trailing served manifests are the process cascade's (`release.md` § Registry sweep). `ROADMAP.md` item 178 carries its trigger. The wave is closed.
-- Next: take `ROADMAP.md` item 178 and the lane advisories per § Scaffold's own items; take the process cascade after process's further publishes.
+- 2026-11-15, scaffold's own items closed into `ROADMAP.md`: item 178 carries the timing case's readings beside a heavy ticket and under its suite's load, which hold its bound, and reopens on the next failure; items 183 and 184 carry the two lane advisories, each with its reopen trigger.
+- Next: taverna adopts the wave in its own session; take the process cascade after process's further publishes.
 
 ## Units each package owes
 
@@ -67,11 +68,6 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 | `@orkestrel/queue`, `@orkestrel/terminal`, `@orkestrel/workspace`, `@orkestrel/worker` | Database `^0.0.26`. | § Database 0.0.26 and relation 0.0.24 |
 | Every catalog package | Contract `^0.0.24` and scaffold `^0.0.137`, the mirrored guides refreshed, and no site that reads `.repairs` or `.value.value` from `admitValue`. | § Contract 0.0.24, the "Every dependent" row |
 
-## Scaffold's own items
-
-- **ROADMAP 178.** Steady the lane timing case under host load.
-- **Lane advisories.** Two readings of `readGroup` in `.agents/skills/orkestrel-parallel/scripts/lane.ts` stay unresolved. First, a `/proc` that belongs to another PID namespace than the one the probe signal addresses can read a live group as ended, and the header limit does not name that case; it reopens on a host that mounts such a `/proc`. Second, a `stat` read that races a reap might return `ESRCH` and read the group as present, which fails closed; it reopens on a measured `ESRCH`.
-
 ## Taverna
 
 - Taverna takes contract 0.0.24, database 0.0.27, relation 0.0.25, and scaffold 0.0.137, with every other release in `release.md`. The database write door refuses a mistyped value and names every fault (database's `.orkestrel/database/dependents.md` § Database, from the coverage wave and the strict write door).
@@ -82,6 +78,5 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 
 ## Sequence
 
-1. Close § Scaffold's own items, each in the scaffold release that follows its reading.
-2. Taverna adopts the wave in its own session, reads its own ranges against the registry, and returns its inputs to the database campaign.
-3. After process's further publishes, release its runtime dependents in layer order and scaffold after them, per `release.md` § Process 0.0.21, then run the closing round and the registry sweep again.
+1. Taverna adopts the wave in its own session, reads its own ranges against the registry, and returns its inputs to the database campaign.
+2. After process's further publishes, release its runtime dependents in layer order and scaffold after them, per `release.md` § Process 0.0.21, then run the closing round and the registry sweep again.
