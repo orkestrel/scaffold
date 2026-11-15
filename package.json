@@ -103,7 +103,7 @@
 		"@orkestrel/contract": "^0.0.24",
 		"@orkestrel/emitter": "^0.0.17",
 		"@orkestrel/markdown": "^0.0.22",
-		"@orkestrel/process": "^0.0.20",
+		"@orkestrel/process": "^0.0.21",
 		"@orkestrel/template": "^0.0.15"
 	},
 	"devDependencies": {
@@ -112,7 +112,7 @@
 		"@orkestrel/guide": "^0.0.32",
 		"@orkestrel/html": "^0.0.17",
 		"@orkestrel/probe": "^0.0.31",
-		"@orkestrel/test": "^0.0.40",
+		"@orkestrel/test": "^0.0.41",
 		"@types/node": "^24.19.2",
 		"@vitest/browser-playwright": "^5.1.0",
 		"oxfmt": "^0.78.0",
