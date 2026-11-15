@@ -2,7 +2,7 @@
 
 ## Goal
 
-Move every package in the catalog, and the taverna application, onto `@orkestrel/contract` 0.0.24, `@orkestrel/scaffold` 0.0.137, `@orkestrel/database` 0.0.26, and `@orkestrel/relation` 0.0.24, and move each door the user ruled repairing onto `repairValue`.
+Move every package in the catalog, and the taverna application, onto `@orkestrel/contract` 0.0.24, `@orkestrel/scaffold` 0.0.137, `@orkestrel/database` 0.0.27, and the relation release that re-pins it, and move each door the user ruled repairing onto `repairValue`.
 
 ## Exit criterion
 
@@ -33,14 +33,16 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 
 - 2026-11-14 to 2026-11-15, the database family campaign published contract 0.0.24 (contract `419be61`), sqlite 0.0.19 (sqlite `b1443ac`), indexeddb 0.0.19 (indexeddb `57eeac4`), database 0.0.25 (database `d717ff2`) and 0.0.26 (database `6ab4e29`), relation 0.0.23 (relation `c2489c1`) and 0.0.24 (relation `9228254`), and scaffold 0.0.136 (`d647970`). Database's `.orkestrel/release.md` records each visit and ruling, and database's `.orkestrel/database/plan.md` records that campaign, its stops, and its triggers.
 - Contract, sqlite, and indexeddb carry their scaffold 0.0.136 adoption on their working branches (contract `ef7f2bf`, sqlite `72f0793`, indexeddb `df5d14e`), with no bump owed; each ships with that package's next release.
-- The catalog refresh at `7db15bd` writes database 0.0.26, relation 0.0.24, and scaffold 0.0.136 into the table and moves the vendored database guide mirror, so scaffold owes 0.0.137. Scaffold's runtime ranges on console, emitter, markdown, process, and template pin packages that release in layers 1 and 2, so 0.0.137 publishes in layer 3 with those re-pins and the guide mirror; layers 1 and 2 take scaffold `^0.0.136` and re-pin it at § Close the wave in the publish skill's wave reference.
-- On 2026-11-15 a Windows chain of the tree at `9fa2de7` passed clean, format:check, lint:check, check, build, and the src:core, src:server, src:bin, policy, and config suites; test:setup failed one registry case that compared two live pings, repaired in `c061665`. The skills, guides, templates, and distribution steps run in the layer 3 chain.
+- The catalog refresh at `7db15bd` writes database 0.0.26, relation 0.0.24, and scaffold 0.0.136 into the table and moves the vendored database guide mirror, so scaffold owes 0.0.137.
+- On 2026-11-15 a Windows chain of the tree at `9fa2de7` passed clean, format:check, lint:check, check, build, and the src:core, src:server, src:bin, policy, and config suites; test:setup failed one registry case that compared two live pings, repaired in `c061665`. The skills, guides, templates, and distribution steps run in scaffold's release chain.
 - The user closed `ROADMAP.md` items 179 and 181 on 2026-11-15 without a further Linux reading, and centered the wave on contract, scaffold, and the dependents of database and its family; item 178 and the lane advisories wait until that wave closes.
 - Contract 0.0.24 makes `admitValue` strict and adds `repairValue`. Every catalog package that pins contract `^0.0.23` owes a re-pin and a release.
-- Layer 1 release commits, unpushed until the registry serves each: abort 0.0.18 (abort `635ed80`), budget 0.0.19 (budget `1e7e76f`), codec 0.0.11 (codec `f4ed5a3`), emitter 0.0.17 (emitter `25565a5`), html 0.0.17 (html `57e8499`), jsonrpc 0.0.4 (jsonrpc `d2d622c`), and ndjson 0.0.18 (ndjson `aa1cb31`); test 0.0.40 and timeout 0.0.18 run their chains. Each owes its release to the contract range alone; the dist is unchanged. Contract 0.0.24 previews a revoked Proxy as `instance`, which moved budget's expectations (budget `6357e2c`).
-- The repairing doors are committed, unpushed, ahead of their visits: tool (tool `b746501`, `8f3b7f4`), reason (reason `6392f36`), workflow (workflow `1f914a8`), agent (agent `42fea1a4`), and toolbox (toolbox `fbcfe10`). The tool and reason review converged. Agent and toolbox typecheck only after tool, queue, and workspace publish on contract 0.0.24 and their visits re-pin them.
+- 2026-11-15, layer 1 published and confirmed: abort 0.0.18, budget 0.0.19, codec 0.0.11, emitter 0.0.17, html 0.0.17, jsonrpc 0.0.4, ndjson 0.0.18, test 0.0.40, and timeout 0.0.18; each release commit is pushed. Each owed its release to the contract range alone. Contract 0.0.24 previews a revoked Proxy as `instance`, which moved budget's expectations (budget `6357e2c`).
+- 2026-11-15, layer 2 published and confirmed: console 0.0.21, csv 0.0.15, database 0.0.27, form 0.0.19, markdown 0.0.22, msg 0.0.18, pool 0.0.22, process 0.0.20, reason 0.0.19, router 0.0.22, sse 0.0.15, table 0.0.18, template 0.0.15, tool 0.0.24, and websocket 0.0.20. Database 0.0.27 re-pins emitter alone, so the wave's database target is 0.0.27 and relation re-pins it in layer 3. Reason and tool carry their `repairValue` doors.
+- The doors of workflow (workflow `1f914a8`), agent (agent `42fea1a4`, `dc5dd1a8`), and toolbox (toolbox `fbcfe10`) are committed, unpushed, ahead of their visits, and reviewed. Agent and toolbox typecheck only after tool, queue, and workspace publish on contract 0.0.24 and their visits re-pin them.
+- Scaffold releases once, after layer 7: its catalog vendors each package's guide, and workflow, agent, and toolbox move theirs in layers 4 to 6. Every catalog package then re-pins its scaffold range per § Close the wave in the publish skill's wave reference.
 - The database campaign holds taverna's three inputs and its question on the default order (database `bd0cac8`).
-- Next: publish layer 1 in one window on the user's code, then visit layer 2.
+- Next: visit layer 3 other than scaffold, and publish it in one window on the user's code.
 
 ## Units each package owes
 
@@ -73,6 +75,6 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 ## Sequence
 
 1. Visit each catalog package layer by layer with `wave.ts --visit`, land the package's unit from § Units each package owes, and rule its bump. Open one release window per layer.
-2. Publish scaffold 0.0.137 in layer 3 with the catalog refresh at `7db15bd`, and close § Scaffold's own items, each in the scaffold release that follows its reading.
+2. Publish scaffold 0.0.137 after layer 7 with every guide mirror refreshed, and close § Scaffold's own items, each in the scaffold release that follows its reading.
 3. Taverna adopts the wave in its own session and returns its inputs to the database campaign.
 4. Take the registry sweep of the exit criterion, and record the wave in this folder's `release.md`.
