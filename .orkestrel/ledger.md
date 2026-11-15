@@ -11,3 +11,6 @@
 | 2026-11-15 | A process group whose every thread has exited reads as ended | Orchestrator | `2b44100` |
 | 2026-11-15 | `ROADMAP.md` items 179 and 181 close without a further Linux reading | user | `plan.md` § State |
 | 2026-11-15 | The wave centers on contract, scaffold, and the dependents of database and its family; item 178 and the lane advisories wait | user | `plan.md` § State |
+| 2026-11-15 | Scaffold releases once, after layer 7, carrying every guide mirror | Orchestrator | `plan.md` § State |
+| 2026-11-15 | The `repairValue` doors of tool, reason, workflow, agent, and toolbox | opus (Opus 5.5) | tool `b746501`, reason `6392f36`, workflow `1f914a8`, agent `42fea1a4`, toolbox `fbcfe10` |
+| 2026-11-15 | Review of the tool and reason doors, and of the workflow, agent, and toolbox doors | reviewer (Sonnet 5.5) | tool `8f3b7f4`, agent `dc5dd1a8` |

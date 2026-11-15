@@ -44,7 +44,11 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 - The database campaign holds taverna's three inputs and its question on the default order (database `bd0cac8`).
 - 2026-11-15, layer 3 published and confirmed: capture 0.0.8, guide 0.0.32, interpret 0.0.24, lsp 0.0.16, qualifier 0.0.23, queue 0.0.24, rater 0.0.23, relation 0.0.25, sea 0.0.24, server 0.0.28, terminal 0.0.27, and workspace 0.0.20; relation, queue, terminal, and workspace take database 0.0.27.
 - 2026-11-15, layer 4 published and confirmed: brief 0.0.19, mcp 0.0.44, middleware 0.0.33, program 0.0.22, worker 0.0.24, and workflow 0.0.30. Workflow carries its `repairValue` doors. Brief's shapes embed contract 0.0.24's fault union, which moved its emitted types and guide signatures (brief `674e06b`); middleware's refusal names U+007F through contract 0.0.24's escaping preview (middleware `85b2ab6`). Mcp's distribution proof pins earlier fleet releases by design; its release commit records them as standing for mcp's owner.
-- Next: visit layer 5 (agent, browser, probe), publish it on the user's code, then layers 6 and 7, then scaffold.
+- 2026-11-15, layer 5 published and confirmed: agent 0.0.45, browser 0.0.34, and probe 0.0.31. Agent carries its `repairValue` re-admissions and states the repair in every built-in and `recall` description (agent `dc5dd1a8`). Browser's five distribution cases that read a `/proc` table or park on a FIFO need a Linux host; its release commit (browser `b683d0a`) records them as unread.
+- 2026-11-15, layer 6 published and confirmed: ollama 0.0.39 and toolbox 0.0.34; toolbox carries its `repairValue` door and the strict database tool. Ollama's service proof passed 89 of 89 against a second daemon on 11435, per `ROADMAP.md` item 114.
+- 2026-11-15, layer 7 published and confirmed: study 0.0.21.
+- 2026-11-15, scaffold 0.0.137 published and confirmed (`7f9465f`), with the catalog refresh (`8dcfdc1`). Its release chain on Windows closes § Scaffold's own items' Windows reading. The release commit was pushed before the registry served the version; the registry served it within the confirm's wait.
+- Next: run § Close the wave in the publish skill's wave reference over every catalog package, then the registry sweep of the exit criterion.
 
 ## Units each package owes
 
@@ -63,7 +67,6 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 ## Scaffold's own items
 
 - **ROADMAP 178.** Steady the lane timing case under host load.
-- **Windows.** Run the next scaffold release chain on Windows. In 0.0.136, `TestLaneRun.kill` in `tests/setupServer.ts` resolves on the child's `exit`, and the forced-out holder case in `tests/agents/skills/orkestrel-parallel/scripts/lane.test.ts` waits for the forced-out run's tree to read gone; neither wait has run on Windows.
 - **Lane advisories.** Two readings of `readGroup` in `.agents/skills/orkestrel-parallel/scripts/lane.ts` stay unresolved. First, a `/proc` that belongs to another PID namespace than the one the probe signal addresses can read a live group as ended, and the header limit does not name that case; it reopens on a host that mounts such a `/proc`. Second, a `stat` read that races a reap might return `ESRCH` and read the group as present, which fails closed; it reopens on a measured `ESRCH`.
 
 ## Taverna
