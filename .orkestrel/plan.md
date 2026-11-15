@@ -37,8 +37,10 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 - On 2026-11-15 a Windows chain of the tree at `9fa2de7` passed clean, format:check, lint:check, check, build, and the src:core, src:server, src:bin, policy, and config suites; test:setup failed one registry case that compared two live pings, repaired in `c061665`. The skills, guides, templates, and distribution steps run in the layer 3 chain.
 - The user closed `ROADMAP.md` items 179 and 181 on 2026-11-15 without a further Linux reading, and centered the wave on contract, scaffold, and the dependents of database and its family; item 178 and the lane advisories wait until that wave closes.
 - Contract 0.0.24 makes `admitValue` strict and adds `repairValue`. Every catalog package that pins contract `^0.0.23` owes a re-pin and a release.
-- Writers move `@orkestrel/tool` and `@orkestrel/reason` onto `repairValue` ahead of their layer 2 visits.
-- Next: visit layer 1 (abort, budget, codec, emitter, html, jsonrpc, ndjson, test, timeout) and publish it in one window on the user's code.
+- Layer 1 release commits, unpushed until the registry serves each: abort 0.0.18 (abort `635ed80`), budget 0.0.19 (budget `1e7e76f`), codec 0.0.11 (codec `f4ed5a3`), emitter 0.0.17 (emitter `25565a5`), html 0.0.17 (html `57e8499`), jsonrpc 0.0.4 (jsonrpc `d2d622c`), and ndjson 0.0.18 (ndjson `aa1cb31`); test 0.0.40 and timeout 0.0.18 run their chains. Each owes its release to the contract range alone; the dist is unchanged. Contract 0.0.24 previews a revoked Proxy as `instance`, which moved budget's expectations (budget `6357e2c`).
+- The repairing doors are committed, unpushed, ahead of their visits: tool (tool `b746501`, `8f3b7f4`), reason (reason `6392f36`), workflow (workflow `1f914a8`), agent (agent `42fea1a4`), and toolbox (toolbox `fbcfe10`). The tool and reason review converged. Agent and toolbox typecheck only after tool, queue, and workspace publish on contract 0.0.24 and their visits re-pin them.
+- The database campaign holds taverna's three inputs and its question on the default order (database `bd0cac8`).
+- Next: publish layer 1 in one window on the user's code, then visit layer 2.
 
 ## Units each package owes
 
