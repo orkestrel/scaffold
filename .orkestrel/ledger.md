@@ -14,3 +14,4 @@
 | 2026-11-15 | Scaffold releases once, after layer 7, carrying every guide mirror | Orchestrator | `plan.md` § State |
 | 2026-11-15 | The `repairValue` doors of tool, reason, workflow, agent, and toolbox | opus (Opus 5.5) | tool `b746501`, reason `6392f36`, workflow `1f914a8`, agent `42fea1a4`, toolbox `fbcfe10` |
 | 2026-11-15 | Review of the tool and reason doors, and of the workflow, agent, and toolbox doors | reviewer (Sonnet 5.5) | tool `8f3b7f4`, agent `dc5dd1a8` |
+| 2026-11-15 | Close the wave without the process 0.0.21 cascade; its releases follow process's further publishes | user | `release.md` § Process 0.0.21 |

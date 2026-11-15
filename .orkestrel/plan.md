@@ -48,9 +48,10 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 - 2026-11-15, layer 6 published and confirmed: ollama 0.0.39 and toolbox 0.0.34; toolbox carries its `repairValue` door and the strict database tool. Ollama's service proof passed 89 of 89 against a second daemon on 11435, per `ROADMAP.md` item 114.
 - 2026-11-15, layer 7 published and confirmed: study 0.0.21.
 - 2026-11-15, scaffold 0.0.137 published and confirmed (`7f9465f`), with the catalog refresh (`8dcfdc1`). Its release chain on Windows closes § Scaffold's own items' Windows reading. The release commit was pushed before the registry served the version; the registry served it within the confirm's wait.
-- 2026-11-15, the closing round re-pinned scaffold `^0.0.137` and the trailing development ranges in every package from contract to workflow, each ruled dist same, ranges same, with every self-pin hit in a vendored guide mirror or mcp's standing distribution pins; those 40 packages' visit commits are pushed.
-- 2026-11-15T13:58Z, a session outside this campaign published process 0.0.21 (process `bd6da48`) outside the wave. Its runtime dependents owe a release in layer order: capture, lsp, and sea in layer 3; mcp in layer 4; browser and probe in layer 5; ollama in layer 6; study in layer 7; then scaffold 0.0.138, whose runtime range and vendored process guide trail. Probe and scaffold are development ranges of every catalog package, so a second closing round follows scaffold 0.0.138. The process visit is rebased onto `bd6da48`.
-- Next: release the process cascade layer by layer, run the second closing round, then the registry sweep of the exit criterion.
+- 2026-11-15, the closing round re-pinned scaffold `^0.0.137` and the trailing development ranges in all 51 catalog packages and pushed each visit; no package owes a bump for this wave. `release.md` records each package's release, closing commit, and ruling.
+- 2026-11-15T13:58Z, a session outside this campaign published process 0.0.21 (process `bd6da48`). The user ruled to close this wave without its cascade and take those releases with process's further publishes; `release.md` § Process 0.0.21 names the packages that owe one, and § Standing host-bound readings names process 0.0.21's failing case.
+- 2026-11-15, the registry sweep after the closing round reads every catalog checkout on the served version of each `@orkestrel` dependency except scaffold's process `^0.0.20`, and the trailing served manifests are the process cascade's (`release.md` § Registry sweep). `ROADMAP.md` item 178 carries its trigger. The wave is closed.
+- Next: take `ROADMAP.md` item 178 and the lane advisories per § Scaffold's own items; take the process cascade after process's further publishes.
 
 ## Units each package owes
 
@@ -73,7 +74,7 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 
 ## Taverna
 
-- Taverna takes contract 0.0.24, database 0.0.26, and relation 0.0.24. The database write door refuses a mistyped value and names every fault (database's `.orkestrel/database/dependents.md` § Database, from the coverage wave and the strict write door).
+- Taverna takes contract 0.0.24, database 0.0.27, relation 0.0.25, and scaffold 0.0.137, with every other release in `release.md`. The database write door refuses a mistyped value and names every fault (database's `.orkestrel/database/dependents.md` § Database, from the coverage wave and the strict write door).
 - Taverna's session owes the database campaign the three inputs database's `.orkestrel/database/plan.md` § Open decisions lists:
   - its client pin: the commit, the data slice, and the Node version;
   - its IndexedDB reads, which reopen the residual stops under that plan's § Refused, with triggers;
@@ -81,7 +82,6 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 
 ## Sequence
 
-1. Visit each catalog package layer by layer with `wave.ts --visit`, land the package's unit from § Units each package owes, and rule its bump. Open one release window per layer.
-2. Publish scaffold 0.0.137 after layer 7 with every guide mirror refreshed, and close § Scaffold's own items, each in the scaffold release that follows its reading.
-3. Taverna adopts the wave in its own session and returns its inputs to the database campaign.
-4. Take the registry sweep of the exit criterion, and record the wave in this folder's `release.md`.
+1. Close § Scaffold's own items, each in the scaffold release that follows its reading.
+2. Taverna adopts the wave in its own session, reads its own ranges against the registry, and returns its inputs to the database campaign.
+3. After process's further publishes, release its runtime dependents in layer order and scaffold after them, per `release.md` § Process 0.0.21, then run the closing round and the registry sweep again.
