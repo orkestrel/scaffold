@@ -33,10 +33,12 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 
 - 2026-11-14 to 2026-11-15, the database family campaign published contract 0.0.24 (contract `419be61`), sqlite 0.0.19 (sqlite `b1443ac`), indexeddb 0.0.19 (indexeddb `57eeac4`), database 0.0.25 (database `d717ff2`) and 0.0.26 (database `6ab4e29`), relation 0.0.23 (relation `c2489c1`) and 0.0.24 (relation `9228254`), and scaffold 0.0.136 (`d647970`). Database's `.orkestrel/release.md` records each visit and ruling, and database's `.orkestrel/database/plan.md` records that campaign, its stops, and its triggers.
 - Contract, sqlite, and indexeddb carry their scaffold 0.0.136 adoption on their working branches (contract `ef7f2bf`, sqlite `72f0793`, indexeddb `df5d14e`), with no bump owed; each ships with that package's next release.
-- The catalog refresh at `7db15bd` writes database 0.0.26, relation 0.0.24, and scaffold 0.0.136 into the table and moves the vendored database guide mirror, so scaffold owes 0.0.137, which publishes before the first fleet visit so each visit takes it once.
+- The catalog refresh at `7db15bd` writes database 0.0.26, relation 0.0.24, and scaffold 0.0.136 into the table and moves the vendored database guide mirror, so scaffold owes 0.0.137. Scaffold's runtime ranges on console, emitter, markdown, process, and template pin packages that release in layers 1 and 2, so 0.0.137 publishes in layer 3 with those re-pins and the guide mirror; layers 1 and 2 take scaffold `^0.0.136` and re-pin it at § Close the wave in the publish skill's wave reference.
+- On 2026-11-15 a Windows chain of the tree at `9fa2de7` passed clean, format:check, lint:check, check, build, and the src:core, src:server, src:bin, policy, and config suites; test:setup failed one registry case that compared two live pings, repaired in `c061665`. The skills, guides, templates, and distribution steps run in the layer 3 chain.
 - The user closed `ROADMAP.md` items 179 and 181 on 2026-11-15 without a further Linux reading, and centered the wave on contract, scaffold, and the dependents of database and its family; item 178 and the lane advisories wait until that wave closes.
 - Contract 0.0.24 makes `admitValue` strict and adds `repairValue`. Every catalog package that pins contract `^0.0.23` owes a re-pin and a release.
-- Next: prepare scaffold 0.0.137, run its release chain on Windows, and publish it on the user's code; then visit the first layer that pins contract `^0.0.23`.
+- Writers move `@orkestrel/tool` and `@orkestrel/reason` onto `repairValue` ahead of their layer 2 visits.
+- Next: visit layer 1 (abort, budget, codec, emitter, html, jsonrpc, ndjson, test, timeout) and publish it in one window on the user's code.
 
 ## Units each package owes
 
@@ -68,8 +70,7 @@ Database's `.orkestrel/database/dependents.md` holds each change in full; this t
 
 ## Sequence
 
-1. Publish scaffold 0.0.137, which carries the catalog refresh at `7db15bd`.
-2. Visit each catalog package layer by layer with `wave.ts --visit`, land the package's unit from § Units each package owes, and rule its bump. Open one release window per layer.
-3. Close § Scaffold's own items, each in the scaffold release that follows its reading.
-4. Taverna adopts the wave in its own session and returns its inputs to the database campaign.
-5. Take the registry sweep of the exit criterion, and record the wave in this folder's `release.md`.
+1. Visit each catalog package layer by layer with `wave.ts --visit`, land the package's unit from § Units each package owes, and rule its bump. Open one release window per layer.
+2. Publish scaffold 0.0.137 in layer 3 with the catalog refresh at `7db15bd`, and close § Scaffold's own items, each in the scaffold release that follows its reading.
+3. Taverna adopts the wave in its own session and returns its inputs to the database campaign.
+4. Take the registry sweep of the exit criterion, and record the wave in this folder's `release.md`.
