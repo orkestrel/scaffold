@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "0e360ff6e8b548bc09467460d15608c735dedfcd399477c69831758e617d1148"
+			"digest": "888f199f9b5ba273e554f1db961c45e3325c45284bb432065d07ea52dd3663b2"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -994,19 +994,19 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "94d089ae7bc9bc674ba2a4f18c7bbd29f5c2e18a971aed69651fd1c82e1782e7"
+			"digest": "9985c8acc0c7debf976280b98735e7e071e49d9d8a248828e80223b20613e5f2"
 		},
 		{
 			"storage": "guides/brief.md",
 			"destination": "guides/brief.md",
 			"executable": false,
-			"digest": "2a9001549bf8a65eb565187b20d3c5343d33981597d52ddd3527f965c860d14e"
+			"digest": "86170e867caf9d33f06e6f8a734329ae38ef9ef1585606dc493f269be0658959"
 		},
 		{
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "d8756604cff1e55661c7d7f9a57ac4748553f0d2d7acc8e61aefd39c2e00a91c"
+			"digest": "cb79077f8e0df55e3eed41eb6636bcc732cb25b0e0e8be79f63a05c72445864c"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -1180,7 +1180,7 @@
 			"storage": "guides/reason.md",
 			"destination": "guides/reason.md",
 			"executable": false,
-			"digest": "318f467e7855da233b37b96ee50b667fb0e16ee42af5095d4325b3f959ef221d"
+			"digest": "768ee916f2931219be0e8d69610d4037530b7edbbf33f5a77aa3e4b4bcb816cb"
 		},
 		{
 			"storage": "guides/relation.md",
@@ -1264,13 +1264,13 @@
 			"storage": "guides/tool.md",
 			"destination": "guides/tool.md",
 			"executable": false,
-			"digest": "e348e37471ed8a1d995f2e83e1f701ebb6c8bb202b9b6950c656685209638788"
+			"digest": "1a6baa0dbd4bf96d676a54820e168b04d605acf10f7cd494c66e645085f4f648"
 		},
 		{
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "58c89ab22b7d345bfe17217a5a5395c860fd4d31f3c24a70880c1f0ced9983d6"
+			"digest": "220541231fd071268ab3d58c1a83ccbbd06f35fa3574007bce2239724f258e9d"
 		},
 		{
 			"storage": "guides/websocket.md",
@@ -1288,7 +1288,7 @@
 			"storage": "guides/workflow.md",
 			"destination": "guides/workflow.md",
 			"executable": false,
-			"digest": "9e477d5b716d8de8357e7ea498bbea681ecd71db44a65a096343ad21bf7b0d55"
+			"digest": "325bb83cf2a30b3189703d26695f73ab5f3aebd074e1f8002af6a2d58b2af60f"
 		},
 		{
 			"storage": "guides/workspace.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "98436f83f276207b55ed36d959658354102f6f04ff5e03821b34bebb490864e0"
+	"digest": "81c6ca1d8161422d27bf430a38f65129cea8d35333a3f62bcfe167f6f8f66f4a"
 }
