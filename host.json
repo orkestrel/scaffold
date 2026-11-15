@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "b137dd915b9eec40432ea6b402c1bedf648b589d60ab134138dac4df543be8fc"
+			"digest": "0e360ff6e8b548bc09467460d15608c735dedfcd399477c69831758e617d1148"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1048,7 +1048,7 @@
 			"storage": "guides/database.md",
 			"destination": "guides/database.md",
 			"executable": false,
-			"digest": "f397ceadad006d11338f1c914889d2b304575d6b001d68eda5e6008f9c3fda5f"
+			"digest": "f6e19ac07185cab14342702d4e128d60e1bab85d593311af1045a1ab7b8b498a"
 		},
 		{
 			"storage": "guides/emitter.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "5c635a542c6e2d7180703cf9f5b4c63128ebd713d4f443173a0234ff7acd2b41"
+	"digest": "98436f83f276207b55ed36d959658354102f6f04ff5e03821b34bebb490864e0"
 }
