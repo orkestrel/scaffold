@@ -516,7 +516,6 @@ export function srcBin(override?: UserConfig): UserConfig {
 // and retain the exclusion of the journey suite.
 export function appJourney(
 	variant: JourneyVariant,
-	variants: readonly JourneyVariant[],
 	mode?: string,
 	override?: UserConfig,
 ): UserConfig {
@@ -529,7 +528,6 @@ export function appJourney(
 			name: { label: \`journey:\${variant.name}\`, color: 'green' },
 			include: [\`tests/app/\${application}/integration.test.ts\`],
 			exclude: [],
-			provide: { variant: variant.name, variants, capture },
 			browser: {
 				...browser.test?.browser,
 				enabled: true,
@@ -1333,6 +1331,7 @@ import { appShowcase } from '../../vite.config.ts'
 export default defineConfig(({ mode }) => appShowcase(mode))
 `,
 			journey: `import type { JourneyVariant } from '@orkestrel/test'
+import { buildCaptureWrapper } from '@orkestrel/capture/server'
 import { defineConfig } from 'vitest/config'
 import { appJourney } from '../../vite.config.ts'
 
@@ -1342,11 +1341,24 @@ const VARIANTS: readonly JourneyVariant[] = Object.freeze([
 	{ name: 'compact', width: 390, height: 844 },
 ])
 
-export default defineConfig(({ mode }) => ({
-	test: {
-		projects: VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode)),
-	},
-}))
+// Declare every owner path a journey case carries; the seeded arrival journey owns pages:arrival.
+export default defineConfig(({ mode }) =>
+	buildCaptureWrapper({
+		url: import.meta.url,
+		variants: VARIANTS,
+		owners: ['pages:arrival'],
+		first: 'desktop',
+		final: 'closes the run',
+		directory: 'tmp/captures/states',
+		inputs: ['app/**', 'src/**', 'configs/**', 'tests/**', 'vite.config.ts', 'package-lock.json'],
+		sources: {
+			shared: ['configs/**', 'tests/setup*.ts', 'vite.config.ts', 'package-lock.json'],
+			tests: ['tests/app/**'],
+		},
+		portfolios: [{ portfolio: 'states', directory: 'tmp/captures/states', scoped: true }],
+		project: (variant, override) => appJourney(variant, mode, override),
+	}),
+)
 `,
 		}),
 	}),
@@ -1756,7 +1768,16 @@ createApp(App).mount(document.body.appendChild(document.createElement('main')))
 `,
 	}),
 	tests: Object.freeze({
-		journey: `import {
+		journey: `import type { CaptureRules } from '@orkestrel/capture'
+import {
+	buildCaptureDestinations,
+	buildCaptureRun,
+	buildCaptureTags,
+	buildCaptureTest,
+	collectCaptureCases,
+	renderCaptureArtifact,
+} from '@orkestrel/capture'
+import {
 	ACCESSIBLE_ROLES,
 	createPortfolio,
 	expandCaptures,
@@ -1764,26 +1785,42 @@ createApp(App).mount(document.body.appendChild(document.createElement('main')))
 	readRefusal,
 	readStyle,
 } from '@orkestrel/test/browser'
-{{imports}}import { page } from 'vitest/browser'
+{{imports}}import { page, server } from 'vitest/browser'
 import { describe, expect, inject, it } from 'vitest'
 
 const VARIANT = inject('variant')
 const VARIANTS = inject('variants')
 const CAPTURE = inject('capture')
+const REQUEST = inject('request')
+const RECORD = inject('record')
+const STATES = ['{{application}}-arrival']
+const RULES: CaptureRules = {
+	owners: ['pages:arrival'],
+	part: (state) => {
+		if (!STATES.includes(state)) throw new Error(\`Undeclared capture state: \${state}\`)
+		return 'pages:arrival'
+	},
+	sources: () => ({ own: ['app/{{application}}/**'], ...inject('sources') }),
+}
+const ARRIVAL = buildCaptureTest(
+	{ owner: 'pages:arrival', states: STATES, variant: VARIANT },
+	RULES,
+)
+const FINAL = { tags: [...buildCaptureTags(RULES.owners)] }
+const PORTFOLIO = createPortfolio({
+	states: STATES,
+	variants: VARIANTS,
+	variant: VARIANT,
+	directory: '../../../tmp/captures/states',
+	scope: () => 'pages',
+	enabled: CAPTURE,
+	...(REQUEST?.state === undefined ? {} : { state: REQUEST.state }),
+})
 
 describe('{{application}} arrival journey', () => {
-	it('proves the declared arrival families', async () => {
+	it('proves the declared arrival families', ARRIVAL, async () => {
 		const families = ['Journey', 'Refusal', 'Matrix', ...(CAPTURE ? ['Capture'] : [])]
 		const proven: string[] = []
-		const states = ['{{application}}-arrival']
-		const placed: string[] = []
-		const portfolio = createPortfolio({
-			states,
-			variants: VARIANTS,
-			variant: VARIANT,
-			directory: '../../../tmp/captures/states',
-			enabled: CAPTURE,
-		})
 {{mount}}		try {
 {{arrival}}			const heading = page
 				.getByRole('heading', {
@@ -1794,8 +1831,7 @@ describe('{{application}} arrival journey', () => {
 				.element()
 			expect(isRendered(heading)).toBe(true)
 			proven.push('Journey')
-			await portfolio.place('{{application}}-arrival')
-			placed.push('{{application}}-arrival')
+			await PORTFOLIO.place('{{application}}-arrival')
 
 			for (const role of ACCESSIBLE_ROLES) expect(page.getByRole(role).elements()).toEqual([])
 			expect(readRefusal('Continue')).toBe(
@@ -1813,19 +1849,22 @@ describe('{{application}} arrival journey', () => {
 			expect(measured).toEqual(VARIANTS.map(({ name }) => name))
 			proven.push('Matrix')
 
-			const files = expandCaptures(states, VARIANTS)
-			expect(portfolio.files).toEqual(files)
-			expect(new Set(files).size).toBe(states.length * VARIANTS.length)
-			expect(placed).toEqual(states)
+			const files = expandCaptures(STATES, VARIANTS, () => 'pages')
+			expect(PORTFOLIO.files).toEqual(files)
+			expect(new Set(files).size).toBe(STATES.length * VARIANTS.length)
+			expect(PORTFOLIO.observed).toEqual(STATES)
 			const expected = CAPTURE
 				? expandCaptures(
-						states,
+						STATES,
 						VARIANTS.filter(({ name }) => name === VARIANT),
+						() => 'pages',
 					)
 				: []
-			expect(portfolio.paths.map((path) => path.replaceAll('\\\\', '/').split('/').at(-1))).toEqual(
-				expected,
-			)
+			expect(
+				(await server.commands.readCaptureFrames()).filter((file) =>
+					file.endsWith(\`--\${VARIANT}.png\`),
+				),
+			).toEqual(expected)
 			if (CAPTURE) proven.push('Capture')
 			expect(proven).toEqual(families)
 		} finally {
@@ -1834,14 +1873,53 @@ describe('{{application}} arrival journey', () => {
 		}
 	})
 })
+
+it('closes the run', FINAL, async (context) => {
+	const cases = collectCaptureCases(context.task.file)
+	const run = buildCaptureRun({
+		cases,
+		registry: buildCaptureDestinations(cases, RULES, {
+			project: \`journey:\${VARIANT}\`,
+			portfolios: inject('portfolios').map((root) => ({
+				...root,
+				variant: VARIANT,
+				states: STATES,
+			})),
+		}),
+		observed: PORTFOLIO.observed,
+		emitted: [...PORTFOLIO.placements.entries()].flatMap(([index, state]) => {
+			const path = PORTFOLIO.paths[index]
+			return path === undefined ? [] : [[state, path] as const]
+		}),
+		variant: VARIANT,
+		time: new Date().toISOString(),
+		...(REQUEST === undefined ? {} : { request: REQUEST }),
+	})
+	const stem = RECORD.slice('tmp/captures/states/'.length).replace(/\\.json$/u, '')
+	const artifact = \`tmp/journey/\${stem}.txt\`
+	const text = [...renderCaptureArtifact(RECORD, run), ''].join('\\n')
+	const digest = Array.from(
+		new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))),
+		(byte) => byte.toString(16).padStart(2, '0'),
+	).join('')
+	await server.commands.writeFile(artifact, text)
+	await server.commands.writeFile(
+		RECORD,
+		JSON.stringify({ ...run, artifact: { file: artifact, digest } }),
+	)
+	expect(run.passed).not.toEqual([])
+})
 `,
-		browser: `import type { JourneyVariant } from '@orkestrel/test'
+		browser: `import type { CaptureMeta, CaptureProvided } from '@orkestrel/capture'
 
 declare module 'vitest' {
-	export interface ProvidedContext {
-		readonly variant: string
-		readonly variants: readonly JourneyVariant[]
-		readonly capture: boolean
+	export interface ProvidedContext extends CaptureProvided {}
+	export interface TaskMeta extends CaptureMeta {}
+}
+
+declare module 'vitest/browser' {
+	export interface BrowserCommands {
+		readonly readCaptureFrames: () => Promise<readonly string[]>
 	}
 }
 `,

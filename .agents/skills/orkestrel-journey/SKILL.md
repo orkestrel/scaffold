@@ -72,13 +72,17 @@ choose the capture destination, the matrix row, and the statechart run together.
 
 - Read `inject('variant')` for this run's variant name, `inject('variants')` for the declared list,
   and `inject('capture')` for whether this run writes frames.
-- Declare the provided types once, by augmenting Vitest's own `ProvidedContext` in the workspace's
-  browser test setup module, so `inject` is typed rather than narrowed at each call.
+- Keep the provided types the workspace's browser test setup module declares once: `scaffold new`
+  seeds it to extend Vitest's own `ProvidedContext` with `CaptureProvided` and `TaskMeta` with
+  `CaptureMeta` from `@orkestrel/capture`, so `inject` is typed rather than narrowed at each call.
 - Declare the variant list in `configs/app/vite.journey.config.ts`, the birth-owned wrapper a
   browser application is born with. Its presence is the journey axis. Rename and extend the seeded
   viewports for this application.
-- Activate the axis in a workspace born before it: write `configs/app/vite.journey.config.ts`, run
-  `scaffold audit`, and add any missing planned dependencies it names before `scaffold repair`.
+- Activate the axis in a workspace born before it: write `configs/app/vite.journey.config.ts` as
+  one `buildCaptureWrapper` call whose `project` option returns `appJourney(variant, mode,
+  override)`, run `scaffold audit`, and add any missing planned dependencies it names before
+  `scaffold repair`. Rewrite a wrapper that still calls `appJourney(variant, VARIANTS, mode)` the
+  same way.
   Check that the repair defines `appJourney` in the root configuration, emits `test:journey`,
   `journey`, and `capture`, and excludes the journey suite from the ordinary `app:browser` project.
   Place each script by `.claude/rules/workspace.md` § Test project matrix. When the repair preserves
@@ -86,9 +90,11 @@ choose the capture destination, the matrix row, and the statechart run together.
 - Name each variant per [captures.md](references/captures.md) → Variants.
 - Keep the provided variants as serializable `JourneyVariant` data: `name`, `width`, and `height`.
   Compose no callback merely to pass that data to a capture.
-- Use `npm run test:journey` for the whole suite. Use the scoped commands
-  under Choosing what to run for iteration and stamped frames; keep the root configuration's
-  `CAPTURE === '1'` read and its `capture` provide unchanged.
+- Close the journey gate with `npx capture registry`, which runs the whole suite, ownerless cases
+  included, and then `npm run capture -- all`. Accept in place of that frames run a portfolio
+  whose `npx capture stale all` reads every frame current and exits 0. Run no
+  `npm run test:journey` for the gate. Use the scoped commands under Choosing what to run for
+  iteration and stamped frames.
 - Keep the journeys in `tests/app/browser/integration.test.ts`, and the journeys of the `vue`
   extension's application in `tests/app/vue/integration.test.ts`, which `npm run test:journey:vue`
   runs. Each variant project of a mode collects that file alone, and the application's ordinary
@@ -116,10 +122,12 @@ For an absent-configuration question, inspect
   `npm run journey -- <selector>` (`capture journey`) for owner-selected behavior with capture
   off, and `npm run capture -- <selector>` (`capture frames`) for capture-bearing journeys with
   `CAPTURE=1`. Keep the commands separate; never append capture work to a behavior run.
-- Before using scoped commands, wire the adopter-owned journey wrapper's discovery, selection
-  request, tags, portfolios, registry, and final-case records to the package protocol. Read the
-  `@orkestrel/capture` guide's Runner and Runner selection and process protocol sections; scaffold
-  seeds the commands and dependency, while the application supplies these declarations.
+- Build the journey wrapper with the `buildCaptureWrapper` factory from
+  `@orkestrel/capture/server`, as the `@orkestrel/capture` guide's Runner selection and process
+  protocol section shows under Wrapper; never wire discovery, the selection request, or the tags
+  by hand. Write each run record in the wrapper's final case through capture's core record
+  helpers, as the arrival journey `scaffold new` seeds does. Declare in the wrapper every owner
+  path the journey cases carry.
 - Select `all` or a colon-delimited owner path from the wrapper's tags: `<scope>`,
   `<scope>:<owner>`, or further declared descendants. Use the wrapper's names, never infer them
   from filenames. Keep behavior on the positive `owner:` filter and frames on its intersection
@@ -171,24 +179,12 @@ judging their freshness or completeness.
   invokes the hook without awaiting a returned promise.
 - Keep `applyTheme` as the workspace's own browser setup helper. Make it drive the theme control
   through the published journey verbs and await the announced theme state and settled paint.
-- Put the provided-context declaration in the browser test setup module, and consume the injected
+- Keep the provided-context declaration in the browser test setup module, and consume the injected
   data in `tests/app/browser/integration.test.ts` through the following portfolio configuration.
   Mount the shipped application entry with its real provisions before the acceptance journey runs.
 - From `tests/app/browser/integration.test.ts`, pass `../../../tmp/captures/states` as the capture
   directory to write into the workspace's `tmp/captures/states` directory. The browser provider
   resolves a custom screenshot path relative to the test file's directory.
-
-```ts
-import type { JourneyVariant } from '@orkestrel/test'
-
-declare module 'vitest' {
-	interface ProvidedContext {
-		readonly variant: string
-		readonly variants: readonly JourneyVariant[]
-		readonly capture: boolean
-	}
-}
-```
 
 ```ts
 import { createPortfolio } from '@orkestrel/test/browser'
@@ -354,7 +350,7 @@ Completion requires all of:
 - the declared families each proven, the declaration asserted, and the transport family driven through real implementations;
 - the matrix family read once per declared variant, each style reading carrying its published control from [styles.md](references/styles.md) → The published controls, and the authored-class census and the `extractStyles` reading each reporting the population it walked;
 - the statechart table driven to a terminal status with no failed row, and the harness tally read from the object and from its markup;
-- the registry-times-variants filename proof and the state-placement proof green in an ordinary run, one capture run per variant writing every registered file, and the written artifact produced for every variant, named by that variant;
+- the registry-times-variants filename proof and the state-placement proof green in an ordinary run, the journey gate under § Read the variant once green, every registered file written by its frames run or read current by `capture stale all`, and the written artifact produced for every variant, named by that variant;
 - the browser test setup module proven by `tests/setupBrowser.test.ts` in the `setup:browser` project `scaffold repair` registers;
 - each assertion class mutated, with the red reading and the green reading recorded;
 - the repository gates green, per `.agents/orchestration.md` § Acceptance.

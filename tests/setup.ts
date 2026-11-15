@@ -393,7 +393,7 @@ export const TREE_EMISSION_CASES: ReadonlyArray<{
 			journey: true,
 			skills: true,
 		},
-		vite: 'b76d38f04e0934b37f4b28de35fa05e49a7199755009a3bfc24c3f72866575b2',
+		vite: '6651e97eaab4407000e3a058f603558a4900bf6ad02b0ab448ec5044a6f90471',
 		scripts: 'b48b6e284428983cf91a26c5495985e5cb2ab850ae9cb56087b22be2893aae2b',
 	},
 ])
@@ -2430,9 +2430,10 @@ export const STYLE_IMPORT =
  *
  * These are the specifiers an emitted browser configuration names that this
  * repository does not install, because scaffold generates a Vue application
- * without being one. Declaring their Vite-facing shapes lets the typecheck reach
- * the emitted configuration itself; the controls below prove a clean run cannot
- * be a typecheck that resolved nothing.
+ * without being one, and plans `@orkestrel/capture` without installing it. Declaring their
+ * Vite-facing shapes lets the typecheck reach the emitted configuration itself; the controls
+ * below prove a clean run cannot be a typecheck that resolved nothing. The capture module
+ * transcribes the `buildCaptureWrapper` declarations `@orkestrel/capture` 0.0.9 publishes.
  */
 export const BROWSER_PLUGIN_DECLARATIONS = `declare module '@vitejs/plugin-vue' {
 	import type { PluginOption } from 'vite'
@@ -2443,6 +2444,69 @@ export const BROWSER_PLUGIN_DECLARATIONS = `declare module '@vitejs/plugin-vue' 
 declare module 'vite-plugin-singlefile' {
 	import type { PluginOption } from 'vite'
 	export function viteSingleFile(options?: unknown): PluginOption
+}
+
+declare module '@orkestrel/capture/server' {
+	import type { VitestPluginContext } from 'vitest/node'
+	interface CaptureViewport {
+		readonly name: string
+		readonly width: number
+		readonly height: number
+	}
+	interface CapturePortfolioRoot {
+		readonly portfolio: string
+		readonly directory: string
+		readonly scoped: boolean
+	}
+	interface CaptureWrapperOverride {
+		readonly test: {
+			readonly tags: Array<{ readonly name: string }>
+			readonly provide: {
+				readonly variant: string
+				readonly variants: readonly CaptureViewport[]
+				readonly directory: string
+				readonly record: string
+				readonly inputs: readonly string[]
+				readonly sources: { readonly shared: readonly string[]; readonly tests: readonly string[] }
+				readonly final: string
+				readonly first: string
+				readonly uniform?: readonly string[]
+				readonly portfolios: readonly CapturePortfolioRoot[]
+				readonly capture: boolean
+			}
+			readonly browser: {
+				readonly commands: { readonly readCaptureFrames: () => readonly string[] }
+			}
+		}
+	}
+	export function buildCaptureWrapper<TProject>(options: {
+		readonly url: string
+		readonly variants: readonly CaptureViewport[]
+		readonly owners: readonly string[]
+		readonly first: string
+		readonly final: string
+		readonly directory: string
+		readonly inputs: readonly string[]
+		readonly sources: { readonly shared: readonly string[]; readonly tests: readonly string[] }
+		readonly portfolios: readonly CapturePortfolioRoot[]
+		readonly uniform?: readonly string[]
+		readonly project: (variant: CaptureViewport, override: CaptureWrapperOverride) => TProject
+	}): Promise<
+		| {
+				readonly plugins: Array<{
+					readonly name: string
+					configureVitest(context: VitestPluginContext): void
+				}>
+				readonly test: { readonly projects: TProject[] }
+		  }
+		| {
+				readonly test: {
+					readonly include: string[]
+					readonly passWithNoTests: boolean
+					readonly watch: boolean
+				}
+		  }
+	>
 }
 `
 

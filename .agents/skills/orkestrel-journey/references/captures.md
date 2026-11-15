@@ -28,12 +28,13 @@ file is written to, and the flag as `enabled`.
 
 - Place a state with `place(state)` for the whole page, and `place(state, element)` where the
   picture is one element.
-- Take `enabled` from `inject('capture')`, which the generated root configuration provides from the
-  `CAPTURE` environment variable set to `1` in the shell that runs the axis. An ordinary run leaves
-  it false, so `place` returns `undefined`, resizes nothing, writes nothing, records no placement,
-  and still refuses an unregistered state and a second placement of one state.
-- Read `files` for the registry expanded across every variant, `placements` for what this run placed,
-  and `paths` for what it wrote. Each hands back a snapshot.
+- Take `enabled` from `inject('capture')`, which the wrapper's `buildCaptureWrapper` factory
+  provides from the `CAPTURE` environment variable set to `1` in the shell that runs the axis. An
+  ordinary run leaves it false, so `place` returns `undefined`, resizes nothing, writes nothing,
+  records no placement, and still refuses an unregistered state and a second placement of one state.
+- Read `files` for the registry expanded across every variant, `observed` for every state this run
+  placed, written or not, `placements` for the states it wrote, and `paths` for what it wrote. Each
+  hands back a snapshot.
 - Reach for `readFrame` where the written image itself is the subject — its decoded size, or its
   pixels. `captureFrame` already reads each file back and compares its bytes against the frame it
   shot.
@@ -59,8 +60,9 @@ Declare the state names once in the journey file, and build the portfolio from t
   that ran declare.
 - Place a capture state from inside the journey that reaches it, immediately after the assertion
   that proves the screen is in the condition that state names.
-- Record each placed name in the suite's own set in the same step that calls `place`. That set, not
-  `placements`, is what the always-on placement proof reads.
+- Read the portfolio's `observed` list in the always-on placement proof: it lists every state
+  `place` and `view` accepted, written or not, in placement order, where `placements` lists only
+  the states a capture run wrote.
 - Give each owner-bearing case registry-derived `owner:` tags. Declare a placing case's states in
   `meta.states`, derive its capture scope and part tags from those states, and place only states
   of that owner. Give behavior-only cases no capture tag.
@@ -74,8 +76,8 @@ Declare the state names once in the journey file, and build the portfolio from t
 - Run `npm run journey -- <selector>` for behavior and `npm run capture -- <selector>` for frames.
   Take both commands from `node_modules/@orkestrel/capture`; follow
   [SKILL.md](../SKILL.md#choosing-what-to-run) for selector grammar, flags, refusals, and the
-  case, changed-set, section or page, group, and `all` ladder. Retain `test:journey` as the
-  whole-suite gate.
+  case, changed-set, section or page, group, and `all` ladder. Run the whole-suite gate
+  [SKILL.md](../SKILL.md#read-the-variant-once) names.
 - Inspect the changed set with `--changed <ref> --plan` before executing it. Keep a shared-input
   refusal explicit, and follow its next command without silently capturing the complement.
 - Use the authenticated selection request to refuse a case whose declared states cross the
@@ -104,8 +106,7 @@ these.
   `createPortfolio` refuses a `variant` no declared variant carries, and `files` expands the
   registry across the whole list rather than across the one being rendered.
 - Produce the complete stamped portfolio with `npm run capture -- all`, which runs the declared
-  variant projects through the capture runner. Keep `npm run test:journey` as the complete
-  behavioral gate; a bare capture-flag run supplies no manifest stamp.
+  variant projects through the capture runner; a bare capture-flag run supplies no manifest stamp.
 
 ## The proofs the suite owes
 
@@ -115,7 +116,7 @@ Write each of the following proofs into the suite. The package asserts none of t
 | -------------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
 | Filename expansion   | Always         | `expandCaptures(states, variants)` has one entry per state and variant, all unique                      |
 | Declaration coverage | Always         | The case declarations cover the registry, are disjoint, and match the owner and capture tag definitions |
-| Placement membership | Always         | The suite's placed set equals the states declared by the cases that ran, as sets                        |
+| Placement membership | Always         | The portfolio's `observed` list equals the states declared by the cases that ran, as sets               |
 | Disk membership      | Under the flag | The written filenames equal the selected expansion for this run's variant, with no orphan on disk       |
 
 - Keep the filename proof always-on, so a registry edit that introduces a duplicate or a collision
@@ -126,8 +127,8 @@ Write each of the following proofs into the suite. The package asserts none of t
 - Assert placement as set equality against the union of the states the cases that ran declare.
   When every case ran, require that union to equal the registry. Derive completeness from the
   recorded cases that ran and passed, never from the selector or a task's mode alone.
-- Read the placement proof from the suite's own set rather than from `placements`, which stays empty
-  in an ordinary run. `place` refuses an unregistered name and a second placement of one state in
+- Read the placement proof from `observed` rather than from `placements`, which stays empty in an
+  ordinary run. `place` refuses an unregistered name and a second placement of one state in
   every run, but a registered state that no journey placed reaches no refusal; the always-on
   placement proof catches it.
 - Under the flag, assert the written filenames equal the ran cases' declared states expanded for

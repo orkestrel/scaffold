@@ -226,10 +226,12 @@ one environment, so each is its own project:
   module as their `globalSetup` option, and give no other project a global setup.
 - When a browser application selects the journey axis, register `journey:<variant>` projects
   through the birth-owned `configs/app/vite.journey.config.ts` wrapper. Keep the adopter's variant
-  list there and compose each project through the root `appJourney(variant, variants, mode?, override?)`
-  factory, which resolves the Vite mode to `browser` or an app-side browser extension and collects
-  `tests/app/<application>/integration.test.ts` for that application. The factory merges its
-  `override` last, through `mergeOverride`, so an override replaces nothing it does not name. Exclude each collected suite
+  list there, build the wrapper with one `buildCaptureWrapper` call from
+  `@orkestrel/capture/server`, and compose each project in its `project` option through the root
+  `appJourney(variant, mode?, override?)` factory, which resolves the Vite mode to `browser` or an
+  app-side browser extension and collects `tests/app/<application>/integration.test.ts` for that
+  application. The factory merges capture's `override` last, through `mergeOverride`, so an
+  override replaces nothing it does not name. Exclude each collected suite
   from its application project. Generate `test:journey` when the workspace has the base entry `app/browser/main.ts`, and one `test:journey:<framework>` per
   app-side browser extension, and place them by the gate-placement paragraph that follows.
 

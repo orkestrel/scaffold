@@ -1138,6 +1138,10 @@ await new GuideCommand({
 				'application and `test:journey:<framework>`, the same command with `--mode <framework>`, for each',
 			)
 			expect(markdown).toContain('name, then proves the Journey, Refusal, and Matrix families')
+			expect(markdown).toContain('`appJourney(variant, mode?, override?)` factory')
+			expect(markdown).toContain(
+				'`closes the run` case writes the run record and its journey artifact',
+			)
 			const blueprint = createBlueprint('desk', {
 				src: ['core'],
 				app: ['browser'],
@@ -1156,13 +1160,26 @@ await new GuideCommand({
 			expect(vite).toContain('\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {')
 			expect(vite).toContain('const application = resolveApplication(mode, applications)')
 			expect(vite).toContain('exclude: [],')
-			expect(vite).toContain('provide: { variant: variant.name, variants, capture },')
-			expect(vite).toContain("const capture = process.env.CAPTURE === '1'")
+			expect(vite).toContain(
+				'\tvariant: JourneyVariant,\n\tmode?: string,\n\toverride?: UserConfig,',
+			)
+			expect(vite).not.toContain('provide:')
+			expect(vite).not.toContain('process.env.CAPTURE')
 			const location = 'configs/app/vite.journey.config.ts'
 			const configured = blueprintToConfigArtifacts(blueprint)
 			const wrapper = configured.find((artifact) => artifact.path === location)
 			expect(wrapper?.ownership).toBe('birth')
-			expect(wrapper?.content).toContain('(variant) => () => appJourney(variant, VARIANTS, mode)')
+			for (const declaration of [
+				"import { buildCaptureWrapper } from '@orkestrel/capture/server'",
+				"owners: ['pages:arrival'],",
+				"first: 'desktop',",
+				"final: 'closes the run',",
+				"directory: 'tmp/captures/states',",
+				"portfolios: [{ portfolio: 'states', directory: 'tmp/captures/states', scoped: true }],",
+				'project: (variant, override) => appJourney(variant, mode, override),',
+			]) {
+				expect(wrapper?.content).toContain(declaration)
+			}
 			expect(wrapper?.content).toContain("{ name: 'desktop', width: 1280, height: 800 },")
 			expect(wrapper?.content).toContain("{ name: 'compact', width: 390, height: 844 },")
 			const tested = blueprintToTestArtifacts(blueprint)
@@ -1196,9 +1213,25 @@ await new GuideCommand({
 				expect(() => expect(journey.replace(refusal, '')).toContain(refusal)).toThrow()
 				expect(() => expect(journey.replace(roles, '')).toContain(roles)).toThrow()
 				expect(() => expect(journey.replace(recorded, '')).toContain(recorded)).toThrow()
+				expect(journey).toContain("owners: ['pages:arrival'],")
+				expect(journey).toContain("it('closes the run', FINAL, async (context) => {")
+				for (const helper of [
+					'collectCaptureCases',
+					'buildCaptureDestinations',
+					'buildCaptureRun',
+					'renderCaptureArtifact',
+				]) {
+					expect(journey).toContain(`${helper}(`)
+				}
 			}
 			const setup = tested.find(({ path }) => path === 'tests/setupBrowser.ts')
-			expect(setup?.content).toContain('export interface ProvidedContext')
+			expect(setup?.content).toContain(
+				'export interface ProvidedContext extends CaptureProvided {}',
+			)
+			expect(setup?.content).toContain('export interface TaskMeta extends CaptureMeta {}')
+			expect(setup?.content).toContain(
+				'readonly readCaptureFrames: () => Promise<readonly string[]>',
+			)
 		})
 
 		it('seeds a sibling proof beside each setup seed that declares an export', () => {

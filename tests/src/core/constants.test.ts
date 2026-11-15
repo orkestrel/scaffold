@@ -55,6 +55,7 @@ describe('capture upstream', () => {
 			'@orkestrel/contract',
 			'@orkestrel/emitter',
 			'@orkestrel/process',
+			'@orkestrel/test',
 			'@orkestrel/timeout',
 		])
 		expect(Object.isFrozen(CAPTURE_UPSTREAM)).toBe(true)
@@ -90,8 +91,8 @@ describe('seed guide paths', () => {
 })
 
 describe('shared dependency tables', () => {
-	it('keeps the capture seed frozen at its initial release floor', () => {
-		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.5' })
+	it('keeps the capture seed frozen at the release whose wrapper factory the journey calls', () => {
+		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.9' })
 		expect(Object.isFrozen(CAPTURE_DEV_DEPENDENCIES)).toBe(true)
 	})
 

@@ -100,7 +100,10 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
     twice;
   - a write that a platform API requires, such as `process.exitCode`, a DOM property, or a Vue `ref`
     value, and one write per key into a fresh local object that builds a fixture a literal cannot
-    express, such as a cycle or a sparse array.
+    express, such as a cycle or a sparse array;
+  - a preallocated typed array written once per index, in index order, as the input a byte API
+    requires, such as zlib, a PNG encoder, or `Buffer`, which is a platform-API write; write no
+    index twice.
 - **Per-call state.** Keep state that the awaits or callbacks of one call change, other than a log,
   in `#` fields of an entity created for that call. Treat a list that more than one concurrently
   pending async path of one call appends to, such as the workers of a pool, as state of that call:

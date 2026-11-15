@@ -898,9 +898,13 @@ describe('the emitted-template fixtures', () => {
 		expect(STYLE_IMPORT.test("import { a } from './a.css'")).toBe(false)
 	})
 
-	it('declares both plugin modules the emitted browser configuration names', () => {
+	it('declares every uninstalled module the emitted browser configuration names', () => {
 		expect(BROWSER_PLUGIN_DECLARATIONS).toContain("declare module '@vitejs/plugin-vue'")
 		expect(BROWSER_PLUGIN_DECLARATIONS).toContain("declare module 'vite-plugin-singlefile'")
+		expect(BROWSER_PLUGIN_DECLARATIONS).toContain("declare module '@orkestrel/capture/server'")
+		expect(BROWSER_PLUGIN_DECLARATIONS).toContain(
+			'export function buildCaptureWrapper<TProject>(options: {',
+		)
 	})
 
 	it('enumerates each environment selection once, the empty one and the full one included', () => {

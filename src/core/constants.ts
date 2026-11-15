@@ -806,11 +806,11 @@ export const BROWSE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.
  * ```ts
  * import { CAPTURE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'
  *
- * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.5'
+ * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.9'
  * ```
  */
 export const CAPTURE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/capture': '^0.0.5',
+	'@orkestrel/capture': '^0.0.9',
 })
 
 /**
@@ -862,6 +862,7 @@ export const CAPTURE_UPSTREAM: readonly string[] = Object.freeze([
 	'@orkestrel/contract',
 	'@orkestrel/emitter',
 	'@orkestrel/process',
+	'@orkestrel/test',
 	'@orkestrel/timeout',
 ])
 

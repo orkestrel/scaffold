@@ -644,7 +644,9 @@ describe('application modes', () => {
 		})
 		expect(config.find(({ path }) => path.endsWith('vite.journey.config.ts'))).toMatchObject({
 			ownership: 'birth',
-			content: expect.stringContaining('appJourney(variant, VARIANTS, mode)'),
+			content: expect.stringContaining(
+				'project: (variant, override) => appJourney(variant, mode, override)',
+			),
 		})
 		const proofs = blueprintToTestArtifacts(blueprint)
 		for (const application of ['browser', 'vue']) {
@@ -656,9 +658,23 @@ describe('application modes', () => {
 				expect(proof?.content).toContain(`proven.push('${family}')`)
 			}
 			expect(proof?.content).toContain('createPortfolio({')
-			expect(proof?.content).toContain('expandCaptures(states, VARIANTS)')
+			expect(proof?.content).toContain("expandCaptures(STATES, VARIANTS, () => 'pages')")
 			expect(proof?.content).toContain('for (const variant of VARIANTS)')
+			expect(proof?.content).toContain(`const STATES = ['${application}-arrival']`)
+			expect(proof?.content).toContain(`own: ['app/${application}/**']`)
+			expect(proof?.content).toContain("it('closes the run', FINAL, async (context) => {")
+			for (const helper of [
+				'collectCaptureCases(context.task.file)',
+				'buildCaptureDestinations(cases, RULES, {',
+				'buildCaptureRun({',
+				'renderCaptureArtifact(RECORD, run)',
+			]) {
+				expect(proof?.content).toContain(helper)
+			}
 		}
+		expect(proofs.find(({ path }) => path === 'tests/setupBrowser.ts')?.content).toContain(
+			'export interface ProvidedContext extends CaptureProvided {}',
+		)
 		expect(
 			proofs.find(({ path }) => path === 'tests/app/vue/integration.test.ts')?.content,
 		).toContain('const app = createApp(App)')
@@ -2277,12 +2293,12 @@ describe('blueprintToDevDependencies capture runner', () => {
 	it('adds the capture seed to private and published browser application journeys', () => {
 		expect(
 			blueprintToDevDependencies(buildBlueprint({ src: [], app: ['browser'], journey: true })),
-		).toHaveProperty('@orkestrel/capture', '^0.0.5')
+		).toHaveProperty('@orkestrel/capture', '^0.0.9')
 		expect(
 			blueprintToDevDependencies(
 				buildBlueprint({ src: ['core'], app: ['browser'], journey: true }),
 			),
-		).toHaveProperty('@orkestrel/capture', '^0.0.5')
+		).toHaveProperty('@orkestrel/capture', '^0.0.9')
 	})
 
 	it('requires both the journey axis and a browser application', () => {
@@ -2314,7 +2330,7 @@ describe('blueprintToDevDependencies capture runner', () => {
 			blueprintToDevDependencies(
 				buildBlueprint({ name: 'inbox', src: ['core'], app: ['browser'], journey: true }),
 			),
-		).toHaveProperty('@orkestrel/capture', '^0.0.5')
+		).toHaveProperty('@orkestrel/capture', '^0.0.9')
 	})
 
 	it('keeps an unscoped application distinct from a fleet runtime dependency', () => {
@@ -2322,7 +2338,7 @@ describe('blueprintToDevDependencies capture runner', () => {
 			blueprintToDevDependencies(
 				buildBlueprint({ name: 'contract', src: [], app: ['browser'], journey: true }),
 			),
-		).toHaveProperty('@orkestrel/capture', '^0.0.5')
+		).toHaveProperty('@orkestrel/capture', '^0.0.9')
 	})
 
 	it('does not duplicate a capture runtime declaration', () => {
@@ -3182,9 +3198,15 @@ describe('blueprintToScripts config projects', () => {
 		)
 		expect(wrapper?.ownership).toBe('birth')
 		expect(wrapper?.content).toContain(
-			'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode))',
+			"import { buildCaptureWrapper } from '@orkestrel/capture/server'",
+		)
+		expect(wrapper?.content).toContain(
+			'project: (variant, override) => appJourney(variant, mode, override)',
 		)
 		expect(blueprintToRootVite(enabled)).toContain('export function appJourney(')
+		expect(blueprintToRootVite(enabled)).toContain('\tvariant: JourneyVariant,\n\tmode?: string,')
+		expect(blueprintToRootVite(enabled)).not.toContain('provide:')
+		expect(blueprintToRootVite(enabled)).not.toContain('process.env.CAPTURE')
 		expect(blueprintToRootVite(enabled)).toContain(
 			'\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {',
 		)
@@ -3206,6 +3228,20 @@ describe('blueprintToScripts config projects', () => {
 			wrapper?.path,
 		)
 		expect(blueprintToRootVite(disabled)).not.toContain('appJourney')
+		// The capture augmentation follows the planned journey suite, so a journey flag with no
+		// application to drive seeds no import of the capture package it does not declare.
+		const setups = [
+			enabled,
+			buildBlueprint({ src: [], app: ['browser'], journey: true, base: false }),
+		].map(
+			(blueprint) =>
+				blueprintToTestArtifacts(blueprint).find(({ path }) => path === 'tests/setupBrowser.ts')
+					?.content,
+		)
+		expect(setups.map((content) => content?.includes('@orkestrel/capture'))).toStrictEqual([
+			true,
+			false,
+		])
 		expect(blueprintToRootVite(disabled)).not.toContain('tests/app/browser/integration.test.ts')
 		expect(blueprintToRootVite(disabled)).toContain("include: ['tests/app/browser/**/*.test.ts']")
 		expect(blueprintToScripts(disabled)).not.toHaveProperty('test:journey')
@@ -3414,10 +3450,9 @@ describe('blueprintToScripts config projects', () => {
 			expect([
 				root.includes('appJourney'),
 				root.includes('JourneyVariant'),
-				root.includes('const capture ='),
 				config.includes('configs/app/vite.journey.config.ts'),
 				Object.hasOwn(scripts, 'test:journey'),
-			]).toStrictEqual([planned, planned, planned, planned, planned])
+			]).toStrictEqual([planned, planned, planned, planned])
 		}
 		expect(blueprintToQuestions(off)).toContainEqual({
 			field: 'journey',
@@ -4813,11 +4848,12 @@ describe('browser commands', () => {
 			})
 			stageRootConfig(blueprint, scratch, 'proof')
 			scratch.link('proof/node_modules', resolve('node_modules'))
-			// One bundle carries the module and both configurations, so the record each project
-			// holds and the module's own export are one object graph.
+			// One bundle carries the module, the root configuration, and each journey project, so the
+			// record each project holds and the module's own export are one object graph. The journey
+			// projects take the browser command the capture wrapper factory passes in its override.
 			scratch.write(
 				'proof/configs/proof.config.ts',
-				"import { commands } from './commands.js'\nimport configuration from '../vite.config.js'\nimport journey from './app/vite.journey.config.js'\n\nexport default { commands, configuration, journey }\n",
+				"import { commands } from './commands.js'\nimport configuration, { appJourney } from '../vite.config.js'\n\nconst readCaptureFrames = () => []\nconst journeys = [\n\t{ name: 'desktop', width: 1280, height: 800 },\n\t{ name: 'compact', width: 390, height: 844 },\n].map((variant) =>\n\tappJourney(variant, 'browser', { test: { browser: { commands: { readCaptureFrames } } } }),\n)\n\nexport default { commands, configuration, journeys, readCaptureFrames }\n",
 			)
 			for (const [content, keys] of [
 				[COMMANDS_PROBE_TEXT, ['probe']],
@@ -4837,28 +4873,15 @@ describe('browser commands', () => {
 				if (!isRecord(test) || !Array.isArray(test.projects))
 					throw new Error('The root configuration carries no projects')
 				const rows: readonly unknown[] = test.projects
-				const journey = bundle.journey
-				if (typeof journey !== 'function') throw new Error('The journey wrapper exports no factory')
-				const composed: unknown = Reflect.apply(journey, undefined, [
-					{ command: 'serve', mode: 'browser' },
-				])
-				if (
-					!isRecord(composed) ||
-					!isRecord(composed.test) ||
-					!Array.isArray(composed.test.projects)
-				)
-					throw new Error('The journey wrapper composes no projects')
-				const variants: readonly unknown[] = composed.test.projects
+				const journeys = bundle.journeys
+				if (!Array.isArray(journeys)) throw new Error('The proof composes no journey projects')
 				const projects: readonly unknown[] = [
 					...rows.map((row): unknown =>
 						typeof row === 'function'
 							? Reflect.apply(row, undefined, [{ command: 'serve', mode: 'test' }])
 							: row,
 					),
-					...variants.map((variant): unknown => {
-						if (typeof variant !== 'function') throw new Error('The journey project is no factory')
-						return Reflect.apply(variant, undefined, [])
-					}),
+					...journeys,
 				]
 				const browsers = projects.flatMap((project) =>
 					isRecord(project) &&
@@ -4892,13 +4915,17 @@ describe('browser commands', () => {
 					})
 				}
 				for (const { label, commands } of browsers) {
+					const journeyed = typeof label === 'string' && label.startsWith('journey:')
 					expect({
 						label,
 						keys: isRecord(commands) ? Object.keys(commands) : commands,
-					}).toStrictEqual({ label, keys })
+					}).toStrictEqual({ label, keys: journeyed ? [...keys, 'readCaptureFrames'] : keys })
 					for (const key of keys) {
 						expect(isRecord(commands) ? commands[key] : commands).toBe(registered[key])
 					}
+					expect(isRecord(commands) ? commands.readCaptureFrames : commands).toBe(
+						journeyed ? bundle.readCaptureFrames : undefined,
+					)
 				}
 			}
 		} finally {

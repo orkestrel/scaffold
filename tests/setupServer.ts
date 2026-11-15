@@ -1217,13 +1217,13 @@ export const GENERATED_INSTANCE_CASES = Object.freeze([
 	Object.freeze({ label: 'app:vue', expression: 'appVue()', prefix: '' }),
 	Object.freeze({
 		label: 'journey:desktop',
-		expression: "appJourney({ name: 'desktop', width: 1280, height: 800 }, [])",
+		expression: "appJourney({ name: 'desktop', width: 1280, height: 800 })",
 		prefix: '',
 	}),
 	Object.freeze({
 		label: 'journeyed',
 		expression:
-			"appJourney({ name: 'desktop', width: 1280, height: 800 }, [], undefined, { test: { name: { label: 'journeyed' } } })",
+			"appJourney({ name: 'desktop', width: 1280, height: 800 }, undefined, { test: { name: { label: 'journeyed' } } })",
 		prefix: '',
 	}),
 	Object.freeze({

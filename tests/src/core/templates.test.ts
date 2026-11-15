@@ -2194,12 +2194,10 @@ export default appServer(override)
 			expect(wrapper).toContain("import type { JourneyVariant } from '@orkestrel/test'")
 			expect(wrapper).toContain("{ name: 'desktop', width: 1280, height: 800 }")
 			expect(wrapper).toContain("{ name: 'compact', width: 390, height: 844 }")
-			expect(wrapper).toContain(
-				'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode))',
-			)
+			expect(wrapper).toContain("import { buildCaptureWrapper } from '@orkestrel/capture/server'")
 			expect(root).toContain('`journey:${variant.name}`')
-			expect(root).toContain('provide: { variant: variant.name, variants, capture }')
-			expect(root).toContain("const capture = process.env.CAPTURE === '1'")
+			expect(root).not.toContain('provide:')
+			expect(root).not.toContain('process.env.CAPTURE')
 			expect(root).toContain("exclude: ['tests/app/browser/integration.test.ts']")
 			expect(root).toContain('viewport: { width: variant.width, height: variant.height }')
 			expect(root).toContain('exclude: []')
@@ -2209,22 +2207,26 @@ export default appServer(override)
 			expect(workspace.has('ordinary/configs/app/vite.journey.config.ts')).toBe(false)
 			// The factory takes an override typed `UserConfig` after the mode and merges it
 			// last, so the project's own include, exclusion, viewport, and instances
-			// replace nothing the override does not name. Without an override the final
-			// call receives `undefined`, which `mergeOverride` answers with the project
-			// alone, as it did before the parameter existed.
-			expect(journey).toContain('\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {')
+			// replace nothing the override does not name. The wrapper passes capture's
+			// override there, so the typecheck reads that override against `UserConfig`.
+			expect(journey).toContain(
+				'\tvariant: JourneyVariant,\n\tmode?: string,\n\toverride?: UserConfig,\n): UserConfig {',
+			)
 			expect(journey).toContain('return mergeOverride(project, override)')
 			expect(journey).not.toContain('return mergeOverride(project)\n')
-			const call = 'appJourney(variant, VARIANTS, mode)'
+			const call = 'appJourney(variant, mode, override)'
 			expect(wrapper).toContain(call)
 			workspace.write(
 				'journey/configs/app/vite.journey.config.ts',
-				wrapper.replace(call, 'appJourney(variant, VARIANTS, mode, { test: { retry: 1 } })'),
+				wrapper.replace(
+					call,
+					'appJourney(variant, mode, { test: { ...override.test, retry: 1 } })',
+				),
 			)
 			expect(checkTypes(workspace.ensure('journey'))).toBe('')
 			workspace.write(
 				'journey/configs/app/vite.journey.config.ts',
-				wrapper.replace(call, 'appJourney(variant, VARIANTS, mode, { unreachable: false })'),
+				wrapper.replace(call, 'appJourney(variant, mode, { unreachable: false })'),
 			)
 			expect(checkTypes(workspace.ensure('journey'))).toContain(
 				"'unreachable' does not exist in type 'UserConfig'",
@@ -2235,6 +2237,14 @@ export default appServer(override)
 			)
 			expect(checkTypes(workspace.ensure('journey'))).toContain(
 				"Type 'string' is not assignable to type 'number'",
+			)
+			// The factory's own option types reach the wrapper, so an owner list given as one path refuses.
+			workspace.write(
+				'journey/configs/app/vite.journey.config.ts',
+				wrapper.replace("owners: ['pages:arrival']", "owners: 'pages:arrival'"),
+			)
+			expect(checkTypes(workspace.ensure('journey'))).toContain(
+				"Type 'string' is not assignable to type 'readonly string[]'",
 			)
 		} finally {
 			workspace.destroy()

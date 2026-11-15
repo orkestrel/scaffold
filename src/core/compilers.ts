@@ -1774,7 +1774,6 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 					"// Vitest writes a page.screenshot() capture beside its test file unless a directory is named.\nconst screenshots = resolveWorkspacePath('tmp/captures/screenshots')\n\n" +
 					blueprintToOptimizedDependencies(blueprint)
 				: '') +
-			(journeyed ? "const capture = process.env.CAPTURE === '1'\n\n" : '') +
 			((blueprint.journey || blueprint.showcase) && (base || applicationFaces.length > 0)
 				? `const applications = {\n${base ? '\tbrowser: appBrowser,\n' : ''}${applicationFaces
 						.map(
@@ -2354,6 +2353,50 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			}),
 		}
 	})
+	const base = blueprint.base && blueprint.app.includes('browser')
+	const journeys: readonly ContentArtifact[] =
+		blueprint.journey &&
+		(base ||
+			blueprintToFaces(blueprint).some(
+				(extension) => extension.surface === 'browser' && extension.axes.includes('app'),
+			))
+			? [
+					...(base ? ['browser'] : []),
+					...blueprintToFaces(blueprint).flatMap((extension) =>
+						extension.surface === 'browser' && extension.axes.includes('app')
+							? [extension.name]
+							: [],
+					),
+				].map((application): ContentArtifact => ({
+					path: `tests/app/${application}/integration.test.ts`,
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					environment: 'browser',
+					content: fillTemplate(ARTIFACT_TEMPLATES.tests.journey, {
+						application,
+						heading: serializeTypeScriptString(blueprint.name),
+						imports:
+							application === 'vue'
+								? "import { createApp } from 'vue'\nimport App from '../../../app/vue/App.vue'\n"
+								: '',
+						mount:
+							application === 'vue'
+								? "\t\tconst container = document.body.appendChild(document.createElement('main'))\n\t\tconst app = createApp(App)\n"
+								: '',
+						arrival:
+							application === 'vue'
+								? '\t\t\tapp.mount(container)\n'
+								: "\t\t\tawait import('../../../app/browser/main.js')\n",
+						cleanup:
+							application === 'vue'
+								? '\t\t\tapp.unmount()\n\t\t\tcontainer.remove()\n'
+								: "\t\t\tfor (const main of page.getByRole('main').elements()) main.remove()\n",
+					}),
+				}))
+			: []
+	// The capture augmentation imports the package a planned journey suite declares, so a journey
+	// flag with no application to drive keeps the plain seed.
 	const browsers: readonly ContentArtifact[] = blueprintToMachinery(blueprint).browser
 		? [
 				{
@@ -2362,9 +2405,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 					ownership: 'birth',
 					origin: 'template',
 					environment: 'browser',
-					content: blueprint.journey
-						? ARTIFACT_TEMPLATES.tests.browser
-						: ARTIFACT_TEMPLATES.tests.setup,
+					content:
+						journeys.length > 0 ? ARTIFACT_TEMPLATES.tests.browser : ARTIFACT_TEMPLATES.tests.setup,
 				},
 			]
 		: []
@@ -2418,48 +2460,6 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				},
 			]
 		: []
-	const base = blueprint.base && blueprint.app.includes('browser')
-	const journeys: readonly ContentArtifact[] =
-		blueprint.journey &&
-		(base ||
-			blueprintToFaces(blueprint).some(
-				(extension) => extension.surface === 'browser' && extension.axes.includes('app'),
-			))
-			? [
-					...(base ? ['browser'] : []),
-					...blueprintToFaces(blueprint).flatMap((extension) =>
-						extension.surface === 'browser' && extension.axes.includes('app')
-							? [extension.name]
-							: [],
-					),
-				].map((application): ContentArtifact => ({
-					path: `tests/app/${application}/integration.test.ts`,
-					group: 'tests',
-					ownership: 'birth',
-					origin: 'template',
-					environment: 'browser',
-					content: fillTemplate(ARTIFACT_TEMPLATES.tests.journey, {
-						application,
-						heading: serializeTypeScriptString(blueprint.name),
-						imports:
-							application === 'vue'
-								? "import { createApp } from 'vue'\nimport App from '../../../app/vue/App.vue'\n"
-								: '',
-						mount:
-							application === 'vue'
-								? "\t\tconst container = document.body.appendChild(document.createElement('main'))\n\t\tconst app = createApp(App)\n"
-								: '',
-						arrival:
-							application === 'vue'
-								? '\t\t\tapp.mount(container)\n'
-								: "\t\t\tawait import('../../../app/browser/main.js')\n",
-						cleanup:
-							application === 'vue'
-								? '\t\t\tapp.unmount()\n\t\t\tcontainer.remove()\n'
-								: "\t\t\tfor (const main of page.getByRole('main').elements()) main.remove()\n",
-					}),
-				}))
-			: []
 	// A hole in `src` or `app` reads as an `undefined` environment, as a `for…of` over it would.
 	const sources: readonly ContentArtifact[] = Iterator.from(blueprint.src)
 		.map((environment): ContentArtifact => ({
