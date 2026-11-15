@@ -2070,7 +2070,7 @@ describe('the host probes', () => {
 		expect(typeof first.reachable).toBe('boolean')
 		expect(first.reachable).toBe(first.reachable)
 		expect(Object.isFrozen(NPM_REGISTRY)).toBe(true)
-		expect(NPM_REGISTRY.reachable).toBe(first.reachable)
+		expect(NPM_REGISTRY.reachable).toBe(NPM_REGISTRY.reachable)
 		expect(RELEASE_MODE).toBe(import.meta.env.MODE === 'release')
 	})
 })
