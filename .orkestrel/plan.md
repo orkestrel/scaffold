@@ -48,7 +48,9 @@ A registry sweep after the last window lists no `@orkestrel` range, in any catal
 - 2026-11-15, layer 6 published and confirmed: ollama 0.0.39 and toolbox 0.0.34; toolbox carries its `repairValue` door and the strict database tool. Ollama's service proof passed 89 of 89 against a second daemon on 11435, per `ROADMAP.md` item 114.
 - 2026-11-15, layer 7 published and confirmed: study 0.0.21.
 - 2026-11-15, scaffold 0.0.137 published and confirmed (`7f9465f`), with the catalog refresh (`8dcfdc1`). Its release chain on Windows closes § Scaffold's own items' Windows reading. The release commit was pushed before the registry served the version; the registry served it within the confirm's wait.
-- Next: run § Close the wave in the publish skill's wave reference over every catalog package, then the registry sweep of the exit criterion.
+- 2026-11-15, the closing round re-pinned scaffold `^0.0.137` and the trailing development ranges in every package from contract to workflow, each ruled dist same, ranges same, with every self-pin hit in a vendored guide mirror or mcp's standing distribution pins; those 40 packages' visit commits are pushed.
+- 2026-11-15T13:58Z, a session outside this campaign published process 0.0.21 (process `bd6da48`) outside the wave. Its runtime dependents owe a release in layer order: capture, lsp, and sea in layer 3; mcp in layer 4; browser and probe in layer 5; ollama in layer 6; study in layer 7; then scaffold 0.0.138, whose runtime range and vendored process guide trail. Probe and scaffold are development ranges of every catalog package, so a second closing round follows scaffold 0.0.138. The process visit is rebased onto `bd6da48`.
+- Next: release the process cascade layer by layer, run the second closing round, then the registry sweep of the exit criterion.
 
 ## Units each package owes
 
