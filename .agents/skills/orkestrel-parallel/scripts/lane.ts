@@ -16,7 +16,7 @@
 // earlier light tickets' summed peaks with its own fit `slots` and each budget; the earliest light
 // ticket always fits. A light holder runs at below-normal priority, and its holder ends it and exits
 // 69 when a sample taken before the launcher exits passes the memory or process threshold; a sample
-// after the exit reads no member created after it and ends nothing.
+// after the exit ends nothing, and on Windows reads no member created after it.
 // Directories: a run of the falsify skill's `mutate` script, `--restore` included, publishes
 // `edits` in its ticket, because it edits source in its working directory. Every ticket also waits
 // on the nearest earlier ticket that carries `edits` and shares its working directory, and a ticket
@@ -28,13 +28,18 @@
 // names an earlier ticket, so no cycle of waits forms, and each process derives from the earlier
 // tickets alone which light tickets the rule blocks.
 // Light reading: `<root>/limits.json` holds `slots`, the `budget` and the per-run `threshold`; while
-// it is absent or malformed, or on a host other than Windows, every ticket is heavy, no sampler runs,
-// and no record is written. Otherwise each run starts one PowerShell sampler at arrival, which readies
-// while the ticket waits, with no timer until its first sample, and exits when its stdin closes. The
-// holder starts its command after the sampler readies, or unmeasured once `READY_MS` passes, samples
-// the tree back to back through the command's first second and once a second after, and reads the
-// handover through one more sample; when that sample lists a member or no sampler answers, the
-// handover reads, kills, and reads again through fresh snapshots, each a second PowerShell. The
+// it is absent or malformed, or on a host other than Windows and Linux, every ticket is heavy, no
+// sampler runs, and no record is written. Otherwise each Windows run starts one PowerShell sampler at
+// arrival, which readies while the ticket waits, with no timer until its first sample, and exits when
+// its stdin closes; a Linux run reads the process table at `/proc` inside the lane process, each
+// sample a `stat` read per entry for its parent, group, and CPU time and a `status` read per member
+// for its `VmRSS`, and its tree is the launcher's process group with every process a parent link
+// reaches from it. The holder starts its command after the sampler readies, or unmeasured after
+// `READY_MS` passes, samples the tree through the command's first second, back to back on Windows and
+// every `BURST_MS` on Linux, and once a second after, and reads the handover through one more sample.
+// On Windows, when that sample lists a member or no sampler answers, the handover reads, kills, and
+// reads again through fresh snapshots, each a second PowerShell; on Linux the handover reads the
+// launcher's group, as an unmeasured run's does. The
 // holder writes one record per run under `<root>/history/<key>/`, keyed by the working directory and
 // the command, keeping the latest runs. A record that opens a key prunes the history after the
 // release, keeping only the keys written inside `HISTORY_AGE_MS` (7 days), and of those at most the
@@ -81,7 +86,9 @@
 //   detach of `.agents/platforms/windows.md`, and a Windows descendant whose parent exited before the
 //   reading and is no recorded seed are all outside every reading. A background child of a `bash`
 //   command can be that case, so pass a command directly rather than through `bash -c`. "No surviving
-//   process tree" means the group, or the parent-link closure, and no more.
+//   process tree" means the group, or the parent-link closure, and no more. A Linux census counts a
+//   process that left the group while its parent is a member, such as a browser a test runner starts,
+//   but neither the group kill nor the handover reading reaches it.
 // - An owner ended alone mid-run. No event reports a foreign tree's end. Arrivals exit 75 until that
 //   tree is gone, and the next arrival then reclaims.
 // - An owner ended between the run record and the launcher id. The tree cannot be identified. Arrivals
@@ -93,14 +100,22 @@
 // - Sampling. A process that lives between two samples goes uncounted, the CPU time of a member that
 //   exits between samples is lost, and disk input and output are not measured. A command that ends
 //   before one process query answers, about 140 ms on the Windows host measured 2026-11-12, can
-//   record zero, so it counts nothing until a later run is read.
+//   record zero, so it counts nothing until a later run is read; a Linux census of 142 processes read
+//   in 1 to 3 ms on the Linux container measured 2026-11-16.
+// - Linux readings. The census counts CPU time in ticks of `CLOCK_TICK_MS`, the `USER_HZ` of x86 and
+//   arm64, so a kernel with another `USER_HZ` misreads cores. It sums `VmRSS`, which counts a shared
+//   page once per member that maps it, so a Linux tree reads above the private bytes Windows sums, and
+//   a `limits.json` carries figures measured on its own host.
 // - Transition. A process of an earlier release reads no `edits` field: it does not wait on a mutation
 //   of its directory, a `mutate` run it carries publishes no `edits`, so the directory rule cannot see
 //   that run, and as a light ticket it counts a directory-blocked light ticket of this release as one
 //   that has not held, so it queues behind it. Every checkout on an earlier `@orkestrel/scaffold`
 //   keeps starting such processes on the shared root until that checkout adopts this release, so the
 //   bound is the last adoption, not one process's exit. A mutation of this release does wait on an
-//   earlier ticket of its directory, whichever release wrote it.
+//   earlier ticket of its directory, whichever release wrote it. A Linux process of 0.0.138 or earlier
+//   reads no limits, so its ticket is heavy and its run writes no record; it waits on the earlier
+//   heavy tickets and passes the light ones, as a heavy ticket of this release does, so both releases
+//   share one queue on one root.
 // - Heavy throughput. A heavy ticket that the directory rule blocks still keeps every later heavy
 //   ticket out, from every directory, because passing it would let two heavy tickets hold at once.
 // - Light budget. A light ticket that the directory rule blocks is not one later light tickets wait to
@@ -112,9 +127,10 @@
 // - The ready wait. A holder waits for its sampler before it writes its run record and signals that
 //   it holds, so later light tickets count it as one that has not held for up to `READY_MS` when its
 //   sampler never reports ready.
-// - The idle sampler. Each queued measured ticket keeps its PowerShell sampler from arrival, about
-//   75 MB of private memory once ready on the Windows host measured 2026-11-13, and no budget counts
-//   that memory, so a long queue of measured tickets costs that much per ticket.
+// - The idle sampler. Each queued measured Windows ticket keeps its PowerShell sampler from arrival,
+//   about 75 MB of private memory after it readies on the Windows host measured 2026-11-13, and no budget
+//   counts that memory, so a long queue of measured tickets costs that much per ticket. A Linux
+//   census starts no process.
 // - A prune beside a write. A holder that writes a record to an existing key that is past a bound can
 //   lose that record to another holder's prune, which removes the key with the record in it.
 // - An unreaped member. A group reads as ended when two readings of the process table at `/proc`,
@@ -134,8 +150,8 @@
 // - A denied root. A sandbox that refuses the root or the endpoint exits 75; no sandboxed bench exec
 //   has run this script.
 // - Linux. The socket file, the process group, and the zombie reading were read on a Linux container
-//   on 2026-11-14 (Node 22.23.5, an init that does not reap as a child ends); the signal handling is
-//   unread on Linux.
+//   on 2026-11-14 (Node 22.23.5, an init that does not reap as a child ends), and the census and the
+//   light lanes on 2026-11-16 (4 CPUs); the signal handling is unread on Linux.
 // Migration stop: a second queue does not see the first, so while a host's sessions run another
 // serializer, no caller moves. After a scaffold release carries this script and no command runs on the
 // host, move every caller in one step and delete the serializer this replaces.
@@ -168,6 +184,7 @@ import {
 	sep,
 } from 'node:path'
 import { createInterface } from 'node:readline'
+import { setImmediate as yieldTurn, setTimeout as wait } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
@@ -348,6 +365,30 @@ export const HANDOVER_MS = 5000
 
 /** Holds the pause in milliseconds between two samples of a holder's tree. */
 export const SAMPLE_MS = 1000
+
+/**
+ * Holds the pause in milliseconds between two samples of a Linux holder's first second.
+ *
+ * @remarks
+ * A Linux sample reads the process table inside the lane process in a few milliseconds, so a burst
+ * paced back to back, as the Windows sampler's is, would hold a core for that second.
+ */
+export const BURST_MS = 50
+
+/**
+ * Holds the milliseconds of one clock tick in the Linux process table.
+ *
+ * @remarks
+ * The table counts CPU time and a start time in `USER_HZ` ticks, which the kernel fixes at 100 per
+ * second on x86 and arm64; Node exposes no `sysconf` to read it.
+ */
+export const CLOCK_TICK_MS = 10
+
+/** Matches the boot-time line of the Linux `/proc/stat`, in whole seconds since the epoch. */
+export const BOOT_PATTERN = /^btime (\d+)$/u
+
+/** Matches the resident-memory line of a Linux `/proc/<pid>/status`, in kibibytes. */
+export const RESIDENT_PATTERN = /^VmRSS:\s+(\d+) kB$/u
 
 /** Holds the exit code of a light run its holder ended at a threshold. */
 export const BREACH_CODE = 69
@@ -543,6 +584,16 @@ export type Seed = 'light' | 'heavy'
 export interface Gauge extends Row {
 	readonly cpu: number
 	readonly memory: number
+}
+
+/**
+ * Describes one Linux process-table entry a census reads: a gauge whose creation date is the boot
+ * second plus its start ticks, whose memory is its resident bytes, with its process group and its
+ * state.
+ */
+export interface Member extends Gauge {
+	readonly group: number
+	readonly state: string
 }
 
 /** Describes what a history prune did: the keys it removed and the names it skipped. */
@@ -2180,6 +2231,152 @@ export function readGroup(
 }
 
 /**
+ * Parses one Linux process-table `stat` line into a census member with no memory read yet.
+ *
+ * @remarks
+ * The fields are read after the last `)`, as {@link parseStat} reads them: the state, the parent,
+ * and the group open them, `utime` and `stime` are the twelfth and thirteenth, and the start time is
+ * the twentieth.
+ *
+ * @param text - The content of `/proc/<pid>/stat`.
+ * @param boot - The boot time in epoch milliseconds, which the start ticks count from.
+ * @returns The member with its memory at 0, or undefined when the text does not have that form.
+ */
+export function parseMember(text: string, boot: number): Member | undefined {
+	const open = text.indexOf(' (')
+	const close = text.lastIndexOf(')')
+	if (open === -1 || close < open) return undefined
+	const pid = text.slice(0, open)
+	const fields = text.slice(close + 2).split(' ')
+	const [state, parent, group] = fields
+	const [user, system, start] = [fields[11], fields[12], fields[19]]
+	const numbers = [pid, parent, group, user, system, start]
+	if (state === undefined || state === '') return undefined
+	if (!numbers.every((value) => value !== undefined && /^\d+$/u.test(value))) return undefined
+	return {
+		pid: Number(pid),
+		parent: Number(parent),
+		group: Number(group),
+		state,
+		created: boot + Number(start) * CLOCK_TICK_MS,
+		cpu: (Number(user) + Number(system)) * CLOCK_TICK_MS,
+		memory: 0,
+	}
+}
+
+/**
+ * Parses the resident memory of one Linux `/proc/<pid>/status` text.
+ *
+ * @param text - The content of `/proc/<pid>/status`.
+ * @returns The `VmRSS` value in bytes, or undefined when the text holds no such line, as a kernel
+ * thread's does.
+ */
+export function parseResident(text: string): number | undefined {
+	const match = text
+		.split(/\r\n|\n/u)
+		.map((line) => RESIDENT_PATTERN.exec(line.trim()))
+		.find((item) => item !== null)
+	return match?.[1] === undefined ? undefined : Number(match[1]) * 1024
+}
+
+/**
+ * Reads the Linux boot time from the process table.
+ *
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ * @returns The `btime` line of `stat` in epoch milliseconds, or undefined when the file cannot be
+ * read or holds no such line.
+ */
+export function readBoot(table = PROCESS_TABLE): number | undefined {
+	try {
+		const match = readFileSync(join(table, 'stat'), 'utf8')
+			.split(/\r\n|\n/u)
+			.map((line) => BOOT_PATTERN.exec(line.trim()))
+			.find((item) => item !== null)
+		return match?.[1] === undefined ? undefined : Number(match[1]) * 1000
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Reads every live process of the Linux process table.
+ *
+ * @remarks
+ * An entry whose `stat` is gone, unreadable, or malformed, and an entry that has exited
+ * ({@link ENDED_STATES}), is skipped: an exited member holds no CPU or memory.
+ *
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ * @returns One member per live process with its memory at 0, or undefined when the boot time or the
+ * listing cannot be read.
+ */
+export function readMembers(table = PROCESS_TABLE): readonly Member[] | undefined {
+	const boot = readBoot(table)
+	const names = readListing(table)
+	if (boot === undefined || names === undefined) return undefined
+	return names
+		.filter((name) => /^\d+$/u.test(name))
+		.flatMap((name) => {
+			try {
+				const member = parseMember(readFileSync(join(table, name, 'stat'), 'utf8'), boot)
+				return member === undefined || ENDED_STATES.includes(member.state) ? [] : [member]
+			} catch {
+				return []
+			}
+		})
+}
+
+/**
+ * Reads the resident memory of one Linux process.
+ *
+ * @param pid - The process id.
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ * @returns The `VmRSS` value in bytes; 0 when the entry is gone, unreadable, or holds no such line.
+ */
+export function readResident(pid: number, table = PROCESS_TABLE): number {
+	try {
+		return parseResident(readFileSync(join(table, String(pid), 'status'), 'utf8')) ?? 0
+	} catch {
+		return 0
+	}
+}
+
+/**
+ * Selects the members of one run's process tree from a Linux census.
+ *
+ * @remarks
+ * A member of the launcher's process group counts, and so does every process a parent link reaches
+ * from a counted one, such as a browser a test runner starts in a group of its own. A group id
+ * cannot be reused while the group has a member, so a member never names an unrelated process.
+ *
+ * @param members - The census.
+ * @param group - The launcher's id, which is its group's id.
+ * @returns The members.
+ */
+export function selectGroup(members: readonly Member[], group: number): readonly Member[] {
+	const reached = new Map(
+		members.filter((member) => member.group === group).map((member) => [member.pid, member]),
+	)
+	for (const member of reached.values()) {
+		for (const row of members) {
+			if (row.parent === member.pid && !reached.has(row.pid)) reached.set(row.pid, row)
+		}
+	}
+	return [...reached.values()]
+}
+
+/**
+ * Checks whether a tally passes a light run's threshold.
+ *
+ * @param tally - What the samples read so far.
+ * @param threshold - The light run's threshold.
+ * @returns True when the peak memory or the peak process count is past its threshold; false
+ * otherwise.
+ */
+export function exceedsThreshold(tally: Tally, threshold: Usage): boolean {
+	return tally.memory > threshold.memory || tally.processes > threshold.processes
+}
+
+/**
  * Reads the members of one run's process tree.
  *
  * @remarks
@@ -2889,7 +3086,7 @@ export class Sampler {
 			threshold === undefined ||
 			this.#ceiling !== undefined ||
 			this.#breached ||
-			(this.#tally.memory <= threshold.memory && this.#tally.processes <= threshold.processes)
+			!exceedsThreshold(this.#tally, threshold)
 		) {
 			return
 		}
@@ -2901,17 +3098,172 @@ export class Sampler {
 }
 
 /**
+ * Samples one holder's process tree from the Linux process table, inside the lane process.
+ *
+ * @remarks
+ * A sample reads each entry's `stat` for its parent, group, state, start, and CPU time, selects the
+ * tree per {@link selectGroup}, and reads each member's `VmRSS` from its `status`. The census starts
+ * no process and readies at once when the table reads. A {@link Census.sample} call reads after one
+ * turn of the event loop; after the first, a timer also samples every {@link SAMPLE_MS} until
+ * {@link Census.stop}. A threshold, given for a light run, calls the breach handler once with the
+ * launcher's id, on the first sample before {@link Census.seal} whose memory or process count passes
+ * it; the handler ends the launcher's group, as {@link killMembers} does on this host.
+ */
+export class Census {
+	readonly #table: string
+	readonly #threshold: Usage | undefined
+	readonly #breach: (launcher: number) => void
+	#group: number | undefined
+	#sealed = false
+	#tally: Tally = { cpu: new Map(), memory: 0, processes: 0 }
+	#breached = false
+	#timer: NodeJS.Timeout | undefined
+	#stopped = false
+
+	/**
+	 * Creates the census.
+	 *
+	 * @param threshold - The light run's threshold, or undefined for a heavy run.
+	 * @param breach - Called once with the launcher's id when a sample passes the threshold.
+	 * @param table - The process table's root, for a proof. Default: {@link PROCESS_TABLE}.
+	 */
+	constructor(
+		threshold: Usage | undefined,
+		breach: (launcher: number) => void,
+		table = PROCESS_TABLE,
+	) {
+		this.#threshold = threshold
+		this.#breach = breach
+		this.#table = table
+	}
+
+	/** Holds what the samples read so far. */
+	get tally(): Tally {
+		return this.#tally
+	}
+
+	/** Holds whether a sample passed the threshold. */
+	get breached(): boolean {
+		return this.#breached
+	}
+
+	/**
+	 * Checks that the process table reads.
+	 *
+	 * @param _budget - Unused: the census starts no process to wait for.
+	 * @returns A promise of true when the table reads and the census has not stopped; false otherwise.
+	 */
+	async ready(_budget: number): Promise<boolean> {
+		return !this.#stopped && readMembers(this.#table) !== undefined
+	}
+
+	/**
+	 * Names the launcher whose group later samples read.
+	 *
+	 * @param seeds - The launcher id and, when known, the command id; the launcher's id is its group's.
+	 * @param _floor - Unused: a group needs no creation bound.
+	 */
+	seed(seeds: readonly number[], _floor: number): void {
+		const [launcher] = seeds
+		this.#group = launcher
+	}
+
+	/**
+	 * Marks the launcher's exit: a later sample triggers no breach.
+	 *
+	 * @param _ceiling - Unused: a group id is not reused while the group has a member.
+	 */
+	seal(_ceiling: number): void {
+		this.#sealed = true
+	}
+
+	/**
+	 * Reads one sample after one turn of the event loop, and starts the timer on the first call.
+	 *
+	 * @param _budget - Unused: the read answers inside this process.
+	 * @returns A promise of the members the sample selected, empty before a seed; undefined after a
+	 * stop or when the table cannot be read.
+	 */
+	async sample(_budget?: number): Promise<readonly Gauge[] | undefined> {
+		await yieldTurn()
+		if (this.#stopped) return undefined
+		this.#timer ??= setInterval(() => this.#read(), SAMPLE_MS).unref()
+		return this.#read()
+	}
+
+	/**
+	 * Samples every {@link BURST_MS} until a time or an abort.
+	 *
+	 * @param until - The epoch millisecond after which no further sample starts.
+	 * @param signal - Ends the burst after the sample in flight.
+	 * @returns A promise that resolves when the burst ends.
+	 */
+	async burst(until: number, signal: AbortSignal): Promise<void> {
+		const rows = await this.sample()
+		if (rows === undefined || signal.aborted || Date.now() >= until) return
+		await wait(BURST_MS)
+		await this.burst(until, signal)
+	}
+
+	/**
+	 * Stops the timer; a later sample reads nothing.
+	 *
+	 * @returns A promise that resolves at once.
+	 */
+	async stop(): Promise<void> {
+		this.#stopped = true
+		clearInterval(this.#timer)
+	}
+
+	/**
+	 * Stops the timer at once, as {@link Census.stop} does, for the holder's unmeasured path.
+	 *
+	 * @returns A promise that resolves at once.
+	 */
+	async destroy(): Promise<void> {
+		this.#stopped = true
+		clearInterval(this.#timer)
+	}
+
+	#read(): readonly Gauge[] | undefined {
+		const members = readMembers(this.#table)
+		const group = this.#group
+		if (members === undefined) return undefined
+		if (group === undefined) return []
+		const selected = selectGroup(members, group).map((member) => ({
+			...member,
+			memory: readResident(member.pid, this.#table),
+		}))
+		this.#tally = tallySample(this.#tally, selected)
+		const threshold = this.#threshold
+		if (
+			threshold === undefined ||
+			this.#sealed ||
+			this.#breached ||
+			!exceedsThreshold(this.#tally, threshold)
+		) {
+			return selected
+		}
+		this.#breached = true
+		this.#breach(group)
+		return selected
+	}
+}
+
+/**
  * Runs the command as the holder, reads the tree at handover, and releases.
  *
  * @remarks
- * A measured holder starts its command after its sampler readies, samples the tree back to back
- * through the command's first {@link SAMPLE_MS} and once every {@link SAMPLE_MS} after, reads the
- * handover through one more sample, and writes the run's record before it releases, so the command's
- * next arrival reads it. When that sample lists a member, the handover reads, kills, and reads again
- * through fresh snapshots, each a second PowerShell. A sampler that does not ready within
- * {@link READY_MS} is destroyed, and the command runs unmeasured and records nothing. A record that
- * opened a key prunes the history after the release. A light holder lowers its own priority before
- * the spawn, and ends its tree when a sample passes the threshold.
+ * A measured holder starts its command after its sampler readies, samples the tree through the
+ * command's first {@link SAMPLE_MS}, back to back on Windows and every {@link BURST_MS} on Linux, and
+ * once every {@link SAMPLE_MS} after, reads the handover through one more sample, and writes the
+ * run's record before it releases, so the command's next arrival reads it. On Windows, when that
+ * sample lists a member, the handover reads, kills, and reads again through fresh snapshots, each a
+ * second PowerShell; on Linux the handover reads the launcher's group, as an unmeasured run's does.
+ * A sampler that does not ready within {@link READY_MS} is destroyed, and the command runs
+ * unmeasured and records nothing. A record that opened a key prunes the history after the release. A
+ * light holder lowers its own priority before the spawn, and ends its tree when a sample passes the
+ * threshold.
  *
  * @param options - The run.
  * @param launcher - The launcher's path.
@@ -2919,7 +3271,8 @@ export class Sampler {
  * @param measure - What a measured holder needs, or undefined when no limits apply.
  * @param token - This process's endpoint, which holds after the run record exists and leaves before
  * the run record is removed.
- * @param sampler - The measured holder's sampler, started at arrival; the caller stops it.
+ * @param sampler - The measured holder's sampler, a Windows {@link Sampler} started at arrival or a
+ * Linux {@link Census}; the caller stops it.
  * @returns The launcher's code; 1 when a signal ended it; 69 when a light run passed its threshold;
  * 70 when the tree still reads as present or the ticket could not be removed; 75 when the launcher
  * could not start, the priority could not be lowered, or the run record could not be written.
@@ -2930,7 +3283,7 @@ export async function runHolder(
 	sequence: number,
 	measure?: Measure,
 	token?: Token,
-	sampler?: Sampler,
+	sampler?: Sampler | Census,
 ): Promise<number> {
 	const { root } = options
 	if (measure?.light !== undefined && !lowerPriority(process.pid)) {
@@ -2998,8 +3351,11 @@ export async function runHolder(
 			`lane: the sampler did not answer the handover within ${String(HANDOVER_MS)} ms; ${quote(options.label)} records nothing`,
 		)
 	}
+	// A Linux census row carries no creation date the Windows tree selection can bound.
 	const quick =
-		rows !== undefined && typeof run === 'object' ? selectTree(rows, run, ended) : undefined
+		process.platform === 'win32' && rows !== undefined && typeof run === 'object'
+			? selectTree(rows, run, ended)
+			: undefined
 	const sweep =
 		typeof run !== 'object'
 			? { gone: false, members: [] }
@@ -3051,10 +3407,11 @@ export async function runHolder(
  * Reads what a run measures at arrival: the limits, the command's key, and its light footprint.
  *
  * @remarks
- * A host other than Windows has no sampler, so it measures nothing and every ticket there is heavy.
- * A `--solo` run is heavy whatever its command reads. A `mutate` run is keyed without its edits
- * file and seeded by its wrapped command; {@link decideDirectory} keeps it apart from the tickets of
- * its working directory.
+ * The sampler is platform-defined: Windows has a PowerShell {@link Sampler} and Linux a
+ * {@link Census} of its process table, and any other host has none, so it measures nothing and every
+ * ticket there is heavy. A `--solo` run is heavy whatever its command reads. A `mutate` run is keyed
+ * without its edits file and seeded by its wrapped command; {@link decideDirectory} keeps it apart
+ * from the tickets of its working directory.
  *
  * @param options - The run.
  * @param token - This process's token.
@@ -3062,7 +3419,7 @@ export async function runHolder(
  * host has no sampler.
  */
 export function readMeasure(options: LaneOptions, token: string): Measure | undefined {
-	if (process.platform !== 'win32') return undefined
+	if (process.platform !== 'win32' && process.platform !== 'linux') return undefined
 	const limits = readLimits(options.root)
 	if (limits === 'unread') {
 		console.error(
@@ -3097,12 +3454,13 @@ export async function enterLane(
 	try {
 		mkdirSync(root, { recursive: true })
 		const measure = readMeasure(options, tokenId)
+		const threshold = measure?.light === undefined ? undefined : measure.limits.threshold
 		const sampler =
 			measure === undefined
 				? undefined
-				: new Sampler(measure.light === undefined ? undefined : measure.limits.threshold, (pid) =>
-						killMembers([pid]),
-					)
+				: process.platform === 'win32'
+					? new Sampler(threshold, (pid) => killMembers([pid]))
+					: new Census(threshold, (pid) => killMembers([pid]))
 		try {
 			await token.listen(renderEndpoint(root, tokenId))
 			const edits =

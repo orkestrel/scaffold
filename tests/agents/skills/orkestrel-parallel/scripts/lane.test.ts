@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
-import { tmpdir, userInfo } from 'node:os'
+import { constants, getPriority, tmpdir, userInfo } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
@@ -23,10 +23,14 @@ import {
 	OPTIONS,
 	parseArguments,
 	BREACH_CODE,
+	BURST_MS,
 	buildOutcome,
 	buildTicket,
+	Census,
 	classifyLight,
+	CLOCK_TICK_MS,
 	decideTurn,
+	exceedsThreshold,
 	extractMutation,
 	fitsBudget,
 	HISTORY_AGE_MS,
@@ -47,6 +51,8 @@ import {
 	parkOn,
 	parseCap,
 	parseGauges,
+	parseMember,
+	parseResident,
 	parseRows,
 	parseSample,
 	parseStat,
@@ -58,11 +64,14 @@ import {
 	quote,
 	READY_LINE,
 	READY_MS,
+	readBoot,
 	readExecTool,
 	readCommandId,
 	readGroup,
 	readListing,
 	readMember,
+	readMembers,
+	readResident,
 	readTask,
 	readThreads,
 	readLimits,
@@ -88,6 +97,7 @@ import {
 	resolveRoot,
 	runHolder,
 	Sampler,
+	selectGroup,
 	selectTree,
 	sharesDirectory,
 	selectMembers,
@@ -1905,8 +1915,389 @@ describe('lane.ts', () => {
 		})
 	})
 
-	// The sampler reads `Win32_Process` through PowerShell, which only Windows serves; on any other host
-	// `readMeasure` returns undefined and every ticket is heavy.
+	describe('the Linux census', () => {
+		// A table root under a scratch directory holds entries `/proc` cannot be made to hold on demand:
+		// a member in a group of its own, a zombie, a malformed entry, and a table with no boot line.
+		const TABLE = {
+			'table/stat': 'cpu  1 2 3\nbtime 1700000000\nprocesses 5\n',
+			'table/100/stat': '100 (lead) S 1 100 100 0 -1 0 0 0 0 0 30 20 0 0 20 0 1 0 500 0 0\n',
+			'table/100/status': 'Name:\tlead\nVmRSS:\t    1000 kB\n',
+			'table/101/stat': '101 (child (x) y) S 100 100 100 0 -1 0 0 0 0 0 5 5 0 0 20 0 1 0 600 0 0\n',
+			'table/101/status': 'Name:\tchild\r\nVmRSS:\t2000 kB\r\n',
+			'table/102/stat': '102 (browser) S 101 102 102 0 -1 0 0 0 0 0 1 1 0 0 20 0 1 0 700 0 0\n',
+			'table/102/status': 'VmRSS:\t500 kB\n',
+			'table/103/stat': '103 (gone) Z 100 100 100 0 -1 0 0 0 0 0 0 0 0 0 20 0 1 0 800 0 0\n',
+			'table/300/stat': '300 (other) S 1 300 300 0 -1 0 0 0 0 0 9 9 0 0 20 0 1 0 900 0 0\n',
+			'table/300/status': 'VmRSS:\t9 kB\n',
+			'table/400/stat': 'no fields\n',
+			'table/self/stat': '1 (self) R 0 1 1\n',
+		}
+		const BOOT = 1_700_000_000_000
+
+		it('parses a stat line into a member through a command name holding spaces and parentheses, and refuses a malformed one', () => {
+			expect(parseMember(TABLE['table/101/stat'], BOOT)).toStrictEqual({
+				pid: 101,
+				parent: 100,
+				group: 100,
+				state: 'S',
+				created: BOOT + 600 * CLOCK_TICK_MS,
+				cpu: 10 * CLOCK_TICK_MS,
+				memory: 0,
+			})
+			expect(parseMember('no fields\n', BOOT)).toBeUndefined()
+			expect(parseMember('100 (lead) S 1 100 100\n', BOOT)).toBeUndefined()
+			expect(
+				parseMember(TABLE['table/100/stat'].replace(' 30 20 ', ' x 20 '), BOOT),
+			).toBeUndefined()
+			expect(parseMember(TABLE['table/100/stat'].replace(') S ', ')  '), BOOT)).toBeUndefined()
+		})
+
+		it('parses VmRSS in bytes on either line ending and reads a status without it as absent', () => {
+			expect(parseResident(TABLE['table/100/status'])).toBe(1000 * 1024)
+			expect(parseResident(TABLE['table/101/status'])).toBe(2000 * 1024)
+			expect(parseResident('Name:\tkthreadd\nState:\tS (sleeping)\n')).toBeUndefined()
+			expect(parseResident('')).toBeUndefined()
+		})
+
+		it('reads a fixture table: the boot second, every live entry, each resident size, and a tree by group and parent link', () => {
+			const scratch = createScratch({ prefix: 'orkestrel-lane-census-' })
+			onTestFinished(() => scratch.destroy())
+			for (const [path, text] of Object.entries(TABLE)) scratch.write(path, text)
+			const table = join(scratch.path, 'table')
+			expect(readBoot(table)).toBe(BOOT)
+			const members = readMembers(table) ?? []
+			expect(members.map((member) => member.pid).toSorted()).toStrictEqual([100, 101, 102, 300])
+			expect(readResident(100, table)).toBe(1000 * 1024)
+			expect(readResident(103, table)).toBe(0)
+			expect(readResident(999, table)).toBe(0)
+			expect(
+				selectGroup(members, 100)
+					.map((member) => member.pid)
+					.toSorted(),
+			).toStrictEqual([100, 101, 102])
+			// The controls: another group reaches only its own, and an absent group reaches nothing.
+			expect(selectGroup(members, 300).map((member) => member.pid)).toStrictEqual([300])
+			expect(selectGroup(members, 999)).toStrictEqual([])
+			scratch.remove('table/stat')
+			scratch.write('table/stat', 'cpu  1 2 3\n')
+			expect(readBoot(table)).toBeUndefined()
+			expect(readMembers(table)).toBeUndefined()
+			expect(readBoot(join(scratch.path, 'absent'))).toBeUndefined()
+		})
+
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'reads this process from the real table, against process.cpuUsage, process.memoryUsage, and process.uptime',
+			() => {
+				const before = process.cpuUsage()
+				const resident = process.memoryUsage().rss
+				const own = readMembers()?.find((member) => member.pid === process.pid)
+				const memory = readResident(process.pid)
+				const after = process.cpuUsage()
+				const origin = Date.now() - process.uptime() * 1000
+				expect(own?.parent).toBe(process.ppid)
+				expect(own?.state).not.toBe('Z')
+				expect(own?.cpu).toBeGreaterThanOrEqual(
+					(before.user + before.system) / 1000 - 2 * CLOCK_TICK_MS,
+				)
+				expect(own?.cpu).toBeLessThanOrEqual((after.user + after.system) / 1000 + CLOCK_TICK_MS)
+				expect(own?.created).toBeLessThanOrEqual(origin + CLOCK_TICK_MS)
+				expect(own?.created).toBeGreaterThan(origin - 60_000)
+				expect(memory).toBeGreaterThan(resident / 2)
+				expect(memory).toBeLessThan(resident * 2)
+			},
+		)
+
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'selects a real group with its descendant, and nothing after the group has ended',
+			async () => {
+				const child = spawn(
+					process.execPath,
+					[
+						'-e',
+						"require('node:child_process').spawn(process.execPath,['-e','setTimeout(()=>{},60000)'],{stdio:'ignore'});setTimeout(()=>{},60000)",
+					],
+					{ detached: true, stdio: 'ignore' },
+				)
+				const group = child.pid ?? 0
+				onTestFinished(() => {
+					try {
+						process.kill(-group, 'SIGKILL')
+					} catch {}
+				})
+				await waitForCondition(
+					'the group holds its leader and the leader child',
+					() => selectGroup(readMembers() ?? [], group).length === 2,
+					{ budget: 45_000, interval: 10 },
+				)
+				const tree = selectGroup(readMembers() ?? [], group)
+				expect(tree.map((member) => member.pid)).toContain(group)
+				expect(tree.every((member) => member.group === group)).toBe(true)
+				process.kill(-group, 'SIGKILL')
+				await waitForCondition(
+					'the group reads empty',
+					() => selectGroup(readMembers() ?? [], group).length === 0,
+					{ budget: 45_000, interval: 10 },
+				)
+			},
+		)
+
+		it('checks a tally against the memory and the process threshold, the boundary inside', () => {
+			const threshold = { cores: 0, memory: 100, processes: 2 }
+			const tally = { cpu: new Map<string, number>(), memory: 100, processes: 2 }
+			expect(exceedsThreshold(tally, threshold)).toBe(false)
+			expect(exceedsThreshold({ ...tally, memory: 101 }, threshold)).toBe(true)
+			expect(exceedsThreshold({ ...tally, processes: 3 }, threshold)).toBe(true)
+		})
+
+		it('samples a fixture table: the tree with its memory, one breach before the seal, none after, and nothing after a stop', async () => {
+			const scratch = createScratch({ prefix: 'orkestrel-lane-census-' })
+			onTestFinished(() => scratch.destroy())
+			for (const [path, text] of Object.entries(TABLE)) scratch.write(path, text)
+			const table = join(scratch.path, 'table')
+			const threshold = { cores: 0, memory: 10_000_000, processes: 2 }
+			const breach = createRecorder<[number]>()
+			const census = new Census(threshold, breach.handler, table)
+			onTestFinished(() => census.stop())
+			expect(await census.ready(0)).toBe(true)
+			expect(await census.sample()).toStrictEqual([])
+			census.seed([100], 0)
+			census.seed([100, 101], 0)
+			const rows = (await census.sample()) ?? []
+			expect(rows.map((row) => row.pid).toSorted()).toStrictEqual([100, 101, 102])
+			expect(census.tally.memory).toBe(3500 * 1024)
+			expect(census.tally.processes).toBe(3)
+			expect(buildOutcome(census.tally, 1000, 0).cpu).toBe(62 * CLOCK_TICK_MS)
+			expect(breach.calls).toStrictEqual([[100]])
+			expect(census.breached).toBe(true)
+			await census.sample()
+			expect(breach.count).toBe(1)
+			// The control: the same table read after the seal counts the tree and ends nothing.
+			const quiet = createRecorder<[number]>()
+			const sealed = new Census(threshold, quiet.handler, table)
+			onTestFinished(() => sealed.stop())
+			sealed.seed([100], 0)
+			sealed.seal(Date.now())
+			await sealed.sample()
+			expect(sealed.tally.processes).toBe(3)
+			expect(quiet.count).toBe(0)
+			expect(sealed.breached).toBe(false)
+			await census.stop()
+			expect(await census.sample()).toBeUndefined()
+			expect(await census.ready(0)).toBe(false)
+			const memory = createRecorder<[number]>()
+			const large = new Census(
+				{ ...threshold, memory: 3000 * 1024, processes: 100 },
+				memory.handler,
+				table,
+			)
+			onTestFinished(() => large.stop())
+			large.seed([100], 0)
+			await large.sample()
+			expect(memory.calls).toStrictEqual([[100]])
+			const blind = new Census(undefined, () => undefined, join(scratch.path, 'absent'))
+			expect(await blind.ready(0)).toBe(false)
+			await blind.destroy()
+			expect(await blind.sample()).toBeUndefined()
+		})
+
+		it('paces a burst by its interval to its end, and ends an aborted burst after one sample', async () => {
+			const scratch = createScratch({ prefix: 'orkestrel-lane-census-' })
+			onTestFinished(() => scratch.destroy())
+			for (const [path, text] of Object.entries(TABLE)) scratch.write(path, text)
+			const census = new Census(undefined, () => undefined, join(scratch.path, 'table'))
+			onTestFinished(() => census.stop())
+			census.seed([100], 0)
+			const paced = performance.now()
+			await census.burst(Date.now() + 3 * BURST_MS, new AbortController().signal)
+			const span = performance.now() - paced
+			expect(span).toBeGreaterThanOrEqual(2 * BURST_MS)
+			const aborted = new AbortController()
+			aborted.abort()
+			const single = performance.now()
+			await census.burst(Date.now() + 3 * BURST_MS, aborted.signal)
+			expect(performance.now() - single).toBeLessThan(span)
+			expect(census.tally.processes).toBe(3)
+		})
+	})
+
+	// The census reads the process table at `/proc`, which a Linux host serves, and `readMeasure`
+	// measures on Windows and Linux alone; the Windows rows follow in their own block.
+	describe.runIf(process.platform === 'linux' && existsSync('/proc/self/stat'))(
+		'light lanes on Linux, driven as processes',
+		() => {
+			it('runs every ticket heavy without limits.json and writes no record', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+				bench.record(bench.command('two'), [CLEAN, CLEAN, CLEAN])
+				const one = bench.lane('one')
+				await bench.meter.reach('enter', 'one')
+				const two = bench.lane('two')
+				await two.reach('lane: waiting behind "one"')
+				expect(bench.meter.present).toStrictEqual(['one'])
+				bench.meter.release('one')
+				await bench.meter.reach('enter', 'two')
+				bench.meter.release('two')
+				expect(await Promise.all([one.exit(), two.exit()])).toStrictEqual([0, 0])
+				expect(bench.scratch.names(bench.history(bench.command('one')))).toHaveLength(3)
+				expect(bench.scratch.names('root')).toStrictEqual([HISTORY_DIRECTORY])
+			})
+
+			it('overlaps two light runs, holds a --solo run alone after both, records each run, and ends a run past its threshold with exit 69', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+				const narrow = { ...CLEAN, processes: 2 }
+				for (const label of ['one', 'two', 'late']) {
+					bench.record(bench.command(label), [narrow, narrow, narrow])
+				}
+				const one = bench.lane('one')
+				await bench.meter.reach('enter', 'one')
+				const two = bench.lane('two')
+				await Promise.race([bench.meter.reach('enter', 'two'), two.reach('lane: waiting behind')])
+				expect(bench.meter.present).toStrictEqual(['one', 'two'])
+				const sole = bench.lane('sole', { solo: true })
+				await sole.reach('lane: waiting behind "two"')
+				bench.meter.release('two')
+				await sole.reach('lane: waiting behind "one"')
+				expect(bench.meter.present).toStrictEqual(['one'])
+				bench.meter.release('one')
+				await bench.meter.reach('enter', 'sole')
+				const late = bench.lane('late')
+				await late.reach('lane: waiting behind "sole"')
+				expect(bench.meter.present).toStrictEqual(['sole'])
+				bench.meter.release('sole')
+				await bench.meter.reach('enter', 'late')
+				bench.meter.release('late')
+				expect(await Promise.all([one.exit(), two.exit(), sole.exit(), late.exit()])).toStrictEqual(
+					[0, 0, 0, 0],
+				)
+				const cwd = realpathSync(WORKSPACE_ROOT)
+				for (const label of ['one', 'two']) {
+					const records = readOutcomes(bench.root, renderKey(cwd, bench.command(label)))
+					expect(records).toHaveLength(RECENT_RUNS)
+					expect(records.at(-1)?.code).toBe(0)
+					expect(records.at(-1)?.processes).toBe(2)
+					expect(records.at(-1)?.memory).toBeGreaterThan(0)
+				}
+				// The seeded records end near the epoch, so the prune that the --solo run's opened key ran
+				// would have removed them had they been written before it.
+				const wide = bench.command('wide', 'branch')
+				bench.record(wide, [narrow, narrow, narrow])
+				const breached = bench.lane('wide', { grandchild: 'branch' })
+				expect(await breached.exit()).toBe(BREACH_CODE)
+				expect(breached.output).toContain('passed the light threshold')
+				const records = readOutcomes(bench.root, renderKey(cwd, wide))
+				expect(records.at(-1)).toMatchObject({ code: BREACH_CODE })
+				expect(records.at(-1)?.processes).toBeGreaterThan(2)
+				await waitForCondition(
+					'the ended tree leaves the meter',
+					() => !bench.meter.present.some((label) => label === 'wide' || label === 'branch'),
+					{ budget: 45_000, interval: 10 },
+				)
+				expect(bench.scratch.names('root').toSorted()).toStrictEqual([
+					HISTORY_DIRECTORY,
+					'limits.json',
+				])
+			})
+
+			it('shares one queue with a ticket the 0.0.138 build writes on Linux: its heavy holder runs beside light runs, its arrival waits on heavy tickets alone, and a --solo run waits for it', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit(LIMITS)
+				bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+				// A 0.0.138 process on Linux reads no limits, so its ticket carries no `light` field, and it
+				// decides its turn with no limits.
+				const holder = new Token()
+				onTestFinished(() => holder.destroy())
+				const arrival = new Token()
+				onTestFinished(() => arrival.destroy())
+				await holder.listen(renderEndpoint(bench.root, FIRST_TOKEN))
+				writeStage(bench.root, buildTicket(FIRST_TOKEN, 'released-heavy'))
+				linkStage(bench.root, FIRST_TOKEN)
+				bench.scratch.remove(join('root', `${FIRST_TOKEN}.stage`))
+				writeRun(bench.root, 1, { started: Date.now(), launcher: undefined, command: undefined })
+				holder.publish()
+				holder.hold()
+				const one = bench.lane('one')
+				await Promise.race([bench.meter.reach('enter', 'one'), one.reach('lane: waiting behind')])
+				expect(bench.meter.present).toStrictEqual(['one'])
+				await arrival.listen(renderEndpoint(bench.root, THIRD_TOKEN))
+				writeStage(bench.root, buildTicket(THIRD_TOKEN, 'released-arrival'))
+				const sequence = linkStage(bench.root, THIRD_TOKEN)
+				bench.scratch.remove(join('root', `${THIRD_TOKEN}.stage`))
+				arrival.publish()
+				expect(readQueue(bench.root).map((entry) => entry.ticket?.light)).toStrictEqual([
+					undefined,
+					{ cores: CLEAN.cpu / CLEAN.duration, memory: CLEAN.memory, processes: CLEAN.processes },
+					undefined,
+				])
+				const turn = decideTurn(bench.root, sequence, THIRD_TOKEN)
+				expect(turn.state === 'behind' ? turn.entry.sequence : turn.state).toBe(1)
+				const sole = bench.lane('sole', { solo: true })
+				await sole.reach('lane: waiting behind "released-arrival"')
+				bench.scratch.remove(join('root', renderName(sequence, TICKET_SUFFIX)))
+				await arrival.destroy()
+				await sole.reach('lane: waiting behind "one"')
+				bench.meter.release('one')
+				await sole.reach('lane: waiting behind "released-heavy"')
+				expect(bench.meter.present).toStrictEqual([])
+				bench.scratch.remove(join('root', renderName(1, RUN_SUFFIX)))
+				bench.scratch.remove(join('root', renderName(1, TICKET_SUFFIX)))
+				await holder.destroy()
+				await bench.meter.reach('enter', 'sole')
+				bench.meter.release('sole')
+				expect(await Promise.all([one.exit(), sole.exit()])).toStrictEqual([0, 0])
+			})
+
+			it('reads a measure at arrival from limits.json: a seeded light kind at the threshold, any other command heavy and measured', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				const run = {
+					root: bench.root,
+					label: 'measure',
+					journal: 'run.jsonl',
+					errors: 'run.err',
+					cap: 40,
+					solo: false,
+				}
+				const format = [...NPM, 'run', 'format:check']
+				expect(readMeasure({ ...run, command: format }, FIRST_TOKEN)).toBeUndefined()
+				bench.limit(LIMITS)
+				const measure = readMeasure({ ...run, command: format }, FIRST_TOKEN)
+				const { cores, memory, processes } = LIMITS.threshold
+				expect(measure?.light).toStrictEqual({ cores, memory, processes })
+				expect(measure?.limits).toStrictEqual(LIMITS)
+				expect(join('root', HISTORY_DIRECTORY, measure?.key ?? '')).toBe(bench.history(format))
+				const inline = readMeasure({ ...run, command: [process.execPath, '-e', ''] }, FIRST_TOKEN)
+				expect(inline).toBeDefined()
+				expect(inline?.light).toBeUndefined()
+				expect(readMeasure({ ...run, command: format, solo: true }, FIRST_TOKEN)?.light).toBe(
+					undefined,
+				)
+			})
+
+			it('runs a light command at below-normal priority and a heavy one at the priority of the lane', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit(LIMITS)
+				bench.record(bench.command('one'), [CLEAN, CLEAN, CLEAN])
+				const one = bench.lane('one')
+				const alpha = bench.lane('alpha')
+				await Promise.all([bench.meter.reach('enter', 'one'), bench.meter.reach('enter', 'alpha')])
+				const [light, heavy] = ['one', 'alpha'].map((label) =>
+					Number(readFileSync(`${join(bench.journals, `${label}.jsonl`)}.pid`, 'utf8').trim()),
+				)
+				expect(getPriority(light)).toBe(constants.priority.PRIORITY_BELOW_NORMAL)
+				expect(getPriority(heavy)).toBe(getPriority(process.pid))
+				bench.meter.releaseAll()
+				expect(await Promise.all([one.exit(), alpha.exit()])).toStrictEqual([0, 0])
+			})
+		},
+	)
+
+	// The sampler reads `Win32_Process` through PowerShell, which only Windows serves; Linux reads its
+	// own table in the preceding block, and any other host runs every ticket heavy.
 	describe.runIf(process.platform === 'win32')('light lanes, driven as processes', () => {
 		it('runs every ticket heavy without limits.json and writes no record', async () => {
 			const bench = await startLaneBench()
