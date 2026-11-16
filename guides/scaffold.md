@@ -2356,8 +2356,8 @@ row entering or leaving the manifest moves a test rather than passing unnoticed.
 of `STYLES_DEV_DEPENDENCIES`, is a seed as well: it carries the `^1.105.1` range the
 `@orkestrel/veneer` checkout declared on 2026-09-30, and that test names it in the seeded set.
 
-`CAPTURE_DEV_DEPENDENCIES` seeds `@orkestrel/capture` at `^0.0.9`, the first release that exports
-the `buildCaptureWrapper` factory the seeded journey wrapper calls, only when the blueprint plans a
+`CAPTURE_DEV_DEPENDENCIES` seeds `@orkestrel/capture` at `^0.0.10`, which exports the
+`buildCaptureWrapper` factory the seeded journey wrapper calls, only when the blueprint plans a
 journey: the `journey` axis with the base entry or an app-side browser face. `CAPTURE_UPSTREAM` withholds that
 seed from capture itself and its fleet runtime closure: `@orkestrel/contract`,
 `@orkestrel/emitter`, `@orkestrel/process`, `@orkestrel/test`, which capture takes as a peer, and

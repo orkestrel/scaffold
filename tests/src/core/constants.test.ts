@@ -92,7 +92,7 @@ describe('seed guide paths', () => {
 
 describe('shared dependency tables', () => {
 	it('keeps the capture seed frozen at the release whose wrapper factory the journey calls', () => {
-		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.9' })
+		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.10' })
 		expect(Object.isFrozen(CAPTURE_DEV_DEPENDENCIES)).toBe(true)
 	})
 

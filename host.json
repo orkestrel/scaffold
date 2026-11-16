@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "fb60b90ce142d70816c8cb7d8633b3eec8c76bdb6d42bf17f546fdba4fcb34aa"
+			"digest": "9889130ed94124fe0f23edcc9ea27b3a2a3a03c8d685fabf72d9bf8d6649b88d"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1018,7 +1018,7 @@
 			"storage": "guides/capture.md",
 			"destination": "guides/capture.md",
 			"executable": false,
-			"digest": "4af37c0a2dc040abb0bfa60d8a19cb4e099b1b9122c8ee8007e4e5bec212761d"
+			"digest": "aa14ae83360a535e25d30356b5b8500ec0a7538b23726079cbd1a60a8479be06"
 		},
 		{
 			"storage": "guides/codec.md",
@@ -1150,7 +1150,7 @@
 			"storage": "guides/process.md",
 			"destination": "guides/process.md",
 			"executable": false,
-			"digest": "a27ae09cf95bef112162dcba2ae51b688fcb10b7a8591617f6ab0929d0e09c9e"
+			"digest": "a3271f4fae8bed6c35e3a3b66c7d657d4f86dcd22ea06c8e9448cb6c79a0b676"
 		},
 		{
 			"storage": "guides/program.md",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "4a501c961b3288f93638a0e76a21b0badf44a0bfdc0bdbebeb546341fa50e702"
+			"digest": "98457f674dafe966f7d53bd525a74014496c4f5410f5a1fde0607ca1fc47e7a6"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1252,7 +1252,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "16f9cfed81725791fbd2b817677f9042511a1e7af4236b8a08c3642d1ff95fb3"
+			"digest": "25654abd6d15895a4298d49159dc775272dd2d93e02f76bbced6c89fb9bfd061"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "97325d398ecc00e88b61af00e32bdbabf7e7c3020f0069d19bcb45999b0a4326"
+	"digest": "08d965160483170e4db000763be59daf7a99380f106bc5bda8c7c5d5541d7e49"
 }

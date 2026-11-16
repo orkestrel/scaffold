@@ -806,11 +806,11 @@ export const BROWSE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.
  * ```ts
  * import { CAPTURE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'
  *
- * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.9'
+ * CAPTURE_DEV_DEPENDENCIES['@orkestrel/capture'] // '^0.0.10'
  * ```
  */
 export const CAPTURE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/capture': '^0.0.9',
+	'@orkestrel/capture': '^0.0.10',
 })
 
 /**
