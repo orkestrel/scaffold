@@ -346,7 +346,7 @@
 			"storage": "agents/skills/orkestrel-journey/SKILL.md",
 			"destination": ".agents/skills/orkestrel-journey/SKILL.md",
 			"executable": false,
-			"digest": "4a5e776657770bb103c78efbe4e48fac51cb2cc3dcb8fee9e9beaeb39cd935bb"
+			"digest": "229fdf02aaa1915cdb8c056edf2f4ff7ba50bb7b8d7bea95676d4bf68c1cd09d"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/agents/openai.yaml",
@@ -358,7 +358,7 @@
 			"storage": "agents/skills/orkestrel-journey/references/captures.md",
 			"destination": ".agents/skills/orkestrel-journey/references/captures.md",
 			"executable": false,
-			"digest": "56706ea383f8c17a6b26b1c99442a5f7ce363b15e0f3e15c19de0def1f7cd92d"
+			"digest": "95d178549624859414c90d8e53c7fc7417a4abdba76f7e9ec6c1894d6e4595d6"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/references/decide.md",
@@ -460,7 +460,7 @@
 			"storage": "agents/skills/orkestrel-polish/references/capture-harness.md",
 			"destination": ".agents/skills/orkestrel-polish/references/capture-harness.md",
 			"executable": false,
-			"digest": "e6a6149fd9e85abbc6f3976ec0daf7d590b02226f3bb8619d4d46e5a5c6909e6"
+			"digest": "9e6dda1a3be870271723863f180a9fd5933953ea35c9a92524905766af25b828"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "03e3847f07145094f3f67aa2697396e3f310487218cb65d6da1f7e5416a13fbe"
+	"digest": "5e6814a19ee1e4e260b60d7cac0987311f4062c7f93e3188c6ebe9007164c53f"
 }

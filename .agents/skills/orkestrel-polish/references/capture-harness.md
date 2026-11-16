@@ -64,6 +64,11 @@ A spawned harness produces each artifact itself.
 
 ## Preflight before spending a round
 
+For a journey-generated portfolio, run the machine half of preflight as the pass the
+`@orkestrel/capture` guide's Choosing what to run section names under Recommended pass. Its
+`sheets` command carries every member of the `READER` line, so run no separate
+`capture preflight all` command in the round.
+
 Open every artifact yourself before dispatching a verdict lane, whichever source produced it.
 Confirm each of the following:
 

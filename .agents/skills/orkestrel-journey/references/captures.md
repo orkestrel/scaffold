@@ -15,7 +15,14 @@ import type {
 	PortfolioInterface,
 	PortfolioOptions,
 } from '@orkestrel/test/browser'
-import { captureFrame, createPortfolio, expandCaptures, readFrame } from '@orkestrel/test/browser'
+import {
+	captureFrame,
+	createPortfolio,
+	expandCaptures,
+	readFrame,
+	settleCapture,
+	stageMedia,
+} from '@orkestrel/test/browser'
 import { inject } from 'vitest'
 ```
 
@@ -148,6 +155,21 @@ after the click returns.
 - Attach a one-shot listener to the resolved control, call `place` from inside it, then click
   through the normal verb and await the promise the listener recorded.
 - Fail the step when the listener never ran.
+
+## Navigate under reduced motion
+
+Apply this section to a capture-bearing journey whose navigation runs transitions, smooth scrolls,
+or entrance animations. Leave every other journey under default motion.
+
+- Stage reduced motion with a `stageMedia({ motion: false })` call before the journey navigates,
+  then restore motion with a `stageMedia({ motion: true })` call before each `settleCapture()`
+  call.
+- Keep one declared journey per transition kind under default motion end to end, so a run still
+  navigates the transitions a person sees.
+- Keep a journey on the default-motion path when its stage reads the `prefers-reduced-motion`
+  media feature once at mount: that stage keeps the reduced reading after the restore, so its
+  frames differ from a default-motion run's. The `@orkestrel/test` guide's Place a capture
+  portfolio section states this limit.
 
 ## Hygiene
 

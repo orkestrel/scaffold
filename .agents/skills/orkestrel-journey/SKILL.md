@@ -277,8 +277,18 @@ and no title scheme.
   ([layer.md](references/layer.md) → Role vocabulary).
 - Every census phase states the screen state it starts from, measures the pointer route at arrival
   before any key, and proves a focus-presented state (a skip link, a focus tooltip) by its own case.
+- A reachability row takes its stop set once, through one `collectTabStops` call or one
+  `walkFocus` call, and asserts both the pointer route and the reached set against that one walk.
+  It walks the Tab cycle once per row, never once per assertion, and the census set stays the
+  row's proof.
 - The reachability walk asserts that focusing each control leaves fixed chrome's geometry
   unchanged.
+
+Take the row's walk from the journey layer:
+
+```ts
+import { collectTabStops, walkFocus } from '@orkestrel/test/browser'
+```
 
 ## Declare the transport family
 
@@ -313,8 +323,9 @@ transition, the runner, the mounted harness, and the gate that reads its tally.
 ## Generate the portfolio
 
 Follow [captures.md](references/captures.md) for the state registry and its placement rules, the
-variant matrix, the always-on filename proof, the capture-run membership proof, and how a state that
-exists only during an activation is captured.
+variant matrix, the always-on filename proof, the capture-run membership proof, how a state that
+exists only during an activation is captured, and when a capture-bearing journey navigates under
+reduced motion.
 
 Where a capture and a green suite disagree, take the capture as the evidence and the fixture as the
 defect.
