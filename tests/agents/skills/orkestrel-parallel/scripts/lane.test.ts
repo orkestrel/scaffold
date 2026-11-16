@@ -1,3 +1,4 @@
+import type { Member } from '../../../../../.agents/skills/orkestrel-parallel/scripts/lane.ts'
 import { spawn, spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { constants, getPriority, tmpdir, userInfo } from 'node:os'
@@ -11,6 +12,7 @@ import {
 	LANE_SCRIPT,
 	renderLaneZombie,
 	readProcessPriority,
+	renderLaneFixture,
 	renderLaneFlags,
 	renderLanePublisher,
 	renderLaneResolver,
@@ -32,6 +34,7 @@ import {
 	decideTurn,
 	exceedsThreshold,
 	extractMutation,
+	killCensus,
 	fitsBudget,
 	HISTORY_AGE_MS,
 	HISTORY_DIRECTORY,
@@ -72,6 +75,7 @@ import {
 	readMember,
 	readMembers,
 	readResident,
+	readStart,
 	readTask,
 	readThreads,
 	readLimits,
@@ -1943,6 +1947,7 @@ describe('lane.ts', () => {
 				created: BOOT + 600 * CLOCK_TICK_MS,
 				cpu: 10 * CLOCK_TICK_MS,
 				memory: 0,
+				start: 600,
 			})
 			expect(parseMember('no fields\n', BOOT)).toBeUndefined()
 			expect(parseMember('100 (lead) S 1 100 100\n', BOOT)).toBeUndefined()
@@ -2041,6 +2046,66 @@ describe('lane.ts', () => {
 			},
 		)
 
+		// The fixture table stands in for the moment between the sample and the kill: it holds one real
+		// member's own `stat`, and another's with its start ticks changed, as a process that took that id
+		// after the sample would show.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'ends the group, then a counted member outside it whose start ticks still match, and skips one whose id reads another start',
+			async () => {
+				const scratch = createScratch({ prefix: 'orkestrel-lane-census-' })
+				onTestFinished(() => scratch.destroy())
+				const sleepers = ['leader', 'matched', 'reused'].map(() =>
+					spawn(process.execPath, ['-e', 'setTimeout(() => undefined, 60000)'], {
+						detached: true,
+						stdio: 'ignore',
+					}),
+				)
+				const pids = sleepers.map((child) => child.pid ?? 0)
+				onTestFinished(() => {
+					for (const pid of pids) {
+						try {
+							process.kill(-pid, 'SIGKILL')
+						} catch {}
+					}
+				})
+				const [leader = 0, matched = 0, reused = 0] = pids
+				await waitForCondition(
+					'every sleeper reads in the table',
+					() => pids.every((pid) => readStart(pid) !== undefined),
+					{ budget: 45_000, interval: 10 },
+				)
+				const members = (readMembers() ?? []).filter((member) => pids.includes(member.pid))
+				expect(members.map((member) => member.group).toSorted()).toStrictEqual(pids.toSorted())
+				const own = readFileSync(join('/proc', String(reused), 'stat'), 'utf8')
+				const close = own.lastIndexOf(')')
+				const fields = own.slice(close + 2).split(' ')
+				const shifted = fields.map((field, index) =>
+					index === 19 ? String(Number(field) + 1) : field,
+				)
+				scratch.write(
+					`table/${String(matched)}/stat`,
+					readFileSync(join('/proc', String(matched), 'stat'), 'utf8'),
+				)
+				scratch.write(
+					`table/${String(reused)}/stat`,
+					`${own.slice(0, close + 2)}${shifted.join(' ')}`,
+				)
+				const table = join(scratch.path, 'table')
+				expect(readStart(reused, table)).toBe((readStart(reused) ?? 0) + 1)
+				expect(killCensus(leader, members, table)).toStrictEqual([matched])
+				await waitForCondition(
+					'the leader and the matched member have ended',
+					() =>
+						!(readMembers() ?? []).some(
+							(member) => member.pid === leader || member.pid === matched,
+						),
+					{ budget: 45_000, interval: 10 },
+				)
+				expect(process.kill(reused, 0)).toBe(true)
+				expect(readStart(999_999_999)).toBeUndefined()
+			},
+		)
+
 		it('checks a tally against the memory and the process threshold, the boundary inside', () => {
 			const threshold = { cores: 0, memory: 100, processes: 2 }
 			const tally = { cpu: new Map<string, number>(), memory: 100, processes: 2 }
@@ -2055,7 +2120,7 @@ describe('lane.ts', () => {
 			for (const [path, text] of Object.entries(TABLE)) scratch.write(path, text)
 			const table = join(scratch.path, 'table')
 			const threshold = { cores: 0, memory: 10_000_000, processes: 2 }
-			const breach = createRecorder<[number]>()
+			const breach = createRecorder<[number, readonly Member[]]>()
 			const census = new Census(threshold, breach.handler, table)
 			onTestFinished(() => census.stop())
 			expect(await census.ready(0)).toBe(true)
@@ -2067,12 +2132,18 @@ describe('lane.ts', () => {
 			expect(census.tally.memory).toBe(3500 * 1024)
 			expect(census.tally.processes).toBe(3)
 			expect(buildOutcome(census.tally, 1000, 0).cpu).toBe(62 * CLOCK_TICK_MS)
-			expect(breach.calls).toStrictEqual([[100]])
+			// The handler receives the members of the breaching sample, the one outside the group included.
+			expect(
+				breach.calls.map(([launcher, members]) => [
+					launcher,
+					members.map((member) => `${String(member.pid)}:${String(member.start)}`).toSorted(),
+				]),
+			).toStrictEqual([[100, ['100:500', '101:600', '102:700']]])
 			expect(census.breached).toBe(true)
 			await census.sample()
 			expect(breach.count).toBe(1)
 			// The control: the same table read after the seal counts the tree and ends nothing.
-			const quiet = createRecorder<[number]>()
+			const quiet = createRecorder<[number, readonly Member[]]>()
 			const sealed = new Census(threshold, quiet.handler, table)
 			onTestFinished(() => sealed.stop())
 			sealed.seed([100], 0)
@@ -2084,7 +2155,7 @@ describe('lane.ts', () => {
 			await census.stop()
 			expect(await census.sample()).toBeUndefined()
 			expect(await census.ready(0)).toBe(false)
-			const memory = createRecorder<[number]>()
+			const memory = createRecorder<[number, readonly Member[]]>()
 			const large = new Census(
 				{ ...threshold, memory: 3000 * 1024, processes: 100 },
 				memory.handler,
@@ -2093,7 +2164,7 @@ describe('lane.ts', () => {
 			onTestFinished(() => large.stop())
 			large.seed([100], 0)
 			await large.sample()
-			expect(memory.calls).toStrictEqual([[100]])
+			expect(memory.calls.map(([launcher]) => launcher)).toStrictEqual([100])
 			const blind = new Census(undefined, () => undefined, join(scratch.path, 'absent'))
 			expect(await blind.ready(0)).toBe(false)
 			await blind.destroy()
@@ -2292,6 +2363,90 @@ describe('lane.ts', () => {
 				expect(getPriority(heavy)).toBe(getPriority(process.pid))
 				bench.meter.releaseAll()
 				expect(await Promise.all([one.exit(), alpha.exit()])).toStrictEqual([0, 0])
+			})
+
+			it.each([
+				['a heavy holder of this build', false],
+				['a holder of the 0.0.138 build', true],
+			])(
+				'ends a light run past its threshold and leaves %s and a sibling light run alive',
+				async (_name, released) => {
+					const bench = await startLaneBench()
+					onTestFinished(() => bench.destroy())
+					bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+					const narrow = { ...CLEAN, processes: 2 }
+					bench.record(bench.command('one'), [narrow, narrow, narrow])
+					bench.record(bench.command('wide', 'branch'), [narrow, narrow, narrow])
+					const holder = released ? 'released' : 'alpha'
+					if (released) {
+						// The 0.0.138 holder's tree leads a group of its own, as a launcher does, and its run
+						// record names it.
+						const tree = bench.spawn([bench.command('released')[2] ?? ''], undefined, '-e', true)
+						await bench.meter.reach('enter', 'released')
+						const token = new Token()
+						onTestFinished(() => token.destroy())
+						await token.listen(renderEndpoint(bench.root, FIRST_TOKEN))
+						writeStage(bench.root, buildTicket(FIRST_TOKEN, 'released'))
+						linkStage(bench.root, FIRST_TOKEN)
+						bench.scratch.remove(join('root', `${FIRST_TOKEN}.stage`))
+						writeRun(bench.root, 1, { started: Date.now(), launcher: tree.pid, command: undefined })
+						token.publish()
+						token.hold()
+					} else {
+						bench.lane('alpha')
+						await bench.meter.reach('enter', 'alpha')
+					}
+					const one = bench.lane('one')
+					await bench.meter.reach('enter', 'one')
+					const breached = bench.lane('wide', { grandchild: 'branch' })
+					expect(await breached.exit()).toBe(BREACH_CODE)
+					await waitForCondition(
+						'the ended tree leaves the meter',
+						() => !bench.meter.present.some((label) => label === 'wide' || label === 'branch'),
+						{ budget: 45_000, interval: 10 },
+					)
+					expect(bench.meter.present.toSorted()).toStrictEqual([holder, 'one'].toSorted())
+					expect(
+						bench.meter.marks.filter((mark) => mark.event === 'drop').map((mark) => mark.label),
+					).not.toContain('one')
+					bench.meter.release('one')
+					expect(await one.exit()).toBe(0)
+					expect(bench.meter.present).toStrictEqual([holder])
+				},
+			)
+
+			it('counts a descendant in a group of its own and ends it with the run past its threshold', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+				const narrow = { ...CLEAN, processes: 2 }
+				const stray = renderLaneFixture(bench.meter.port, 'stray')
+				const command = [
+					process.execPath,
+					'-e',
+					`const c=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(stray)}],{stdio:'ignore',detached:true});c.unref();console.log('stray '+c.pid);${renderLaneFixture(bench.meter.port, 'detacher')}`,
+				]
+				bench.record(command, [narrow, narrow, narrow])
+				const run = bench.spawn([
+					...renderLaneFlags(bench.root, bench.journals, 'detacher'),
+					'--',
+					...command,
+				])
+				expect(await run.exit()).toBe(BREACH_CODE)
+				const pid = Number(
+					/stray (\d+)/u.exec(readFileSync(join(bench.journals, 'detacher.jsonl'), 'utf8'))?.[1],
+				)
+				expect(pid).toBeGreaterThan(0)
+				const records = readOutcomes(bench.root, renderKey(realpathSync(WORKSPACE_ROOT), command))
+				expect(records.at(-1)).toMatchObject({ code: BREACH_CODE })
+				expect(records.at(-1)?.processes).toBeGreaterThan(2)
+				await waitForCondition(
+					'the descendant in a group of its own has ended and left the meter',
+					() =>
+						!(readMembers() ?? []).some((member) => member.pid === pid) &&
+						!bench.meter.present.includes('stray'),
+					{ budget: 45_000, interval: 10 },
+				)
 			})
 		},
 	)

@@ -81,14 +81,18 @@
 //   Only the holder kills, and only inside its own bounds.
 // - Process-identifier reuse, other hosts. A group id cannot be reused while the group has a member.
 //   An empty group's id can be reused by a later group leader, so a reclaimer might refuse on a stale
-//   run record. It never kills on one.
+//   run record. It never kills on one. A breach signals a counted member outside the group by its id
+//   only while its `stat` shows the start ticks the census sampled, so a reuse of that id inside one
+//   `CLOCK_TICK_MS` tick of the sampled start is the one reuse it cannot tell apart.
 // - A descendant that detached itself. A process that left the group, a run started through the WMI
 //   detach of `.agents/platforms/windows.md`, and a Windows descendant whose parent exited before the
 //   reading and is no recorded seed are all outside every reading. A background child of a `bash`
 //   command can be that case, so pass a command directly rather than through `bash -c`. "No surviving
 //   process tree" means the group, or the parent-link closure, and no more. A Linux census counts a
 //   process that left the group while its parent is a member, such as a browser a test runner starts,
-//   but neither the group kill nor the handover reading reaches it.
+//   and a breach ends what the breaching sample counted: the group, then each counted member outside
+//   it. The handover reading reads the group alone, so such a process that outlives a run that ended
+//   without a breach stays outside it.
 // - An owner ended alone mid-run. No event reports a foreign tree's end. Arrivals exit 75 until that
 //   tree is gone, and the next arrival then reclaims.
 // - An owner ended between the run record and the launcher id. The tree cannot be identified. Arrivals
@@ -588,12 +592,14 @@ export interface Gauge extends Row {
 
 /**
  * Describes one Linux process-table entry a census reads: a gauge whose creation date is the boot
- * second plus its start ticks, whose memory is its resident bytes, with its process group and its
- * state.
+ * second plus its start ticks, whose memory is its resident bytes, with its process group, its
+ * state, and its start ticks since boot (the twenty-second `stat` field), which a kill compares to
+ * confirm the process it signals is the one the census counted.
  */
 export interface Member extends Gauge {
 	readonly group: number
 	readonly state: string
+	readonly start: number
 }
 
 /** Describes what a history prune did: the keys it removed and the names it skipped. */
@@ -2261,6 +2267,7 @@ export function parseMember(text: string, boot: number): Member | undefined {
 		created: boot + Number(start) * CLOCK_TICK_MS,
 		cpu: (Number(user) + Number(system)) * CLOCK_TICK_MS,
 		memory: 0,
+		start: Number(start),
 	}
 }
 
@@ -2374,6 +2381,54 @@ export function selectGroup(members: readonly Member[], group: number): readonly
  */
 export function exceedsThreshold(tally: Tally, threshold: Usage): boolean {
 	return tally.memory > threshold.memory || tally.processes > threshold.processes
+}
+
+/**
+ * Reads the start ticks of one Linux process from the process table.
+ *
+ * @param pid - The process id.
+ * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
+ * @returns The twenty-second `stat` field, or undefined when the entry is gone, unreadable, or
+ * malformed.
+ */
+export function readStart(pid: number, table = PROCESS_TABLE): number | undefined {
+	try {
+		return parseMember(readFileSync(join(table, String(pid), 'stat'), 'utf8'), 0)?.start
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Ends what one Linux census sample counted: the launcher's group, then each counted member outside
+ * it.
+ *
+ * @remarks
+ * The group kill reaches every member of the group, and {@link killMembers} pauses after it. A
+ * member outside the group, such as a process a member started in a group of its own, is signalled
+ * by its id only when a read of its `stat` taken after the group kill shows the start ticks the census
+ * sampled, so an id the host reused for another process after the sample is skipped.
+ *
+ * @param group - The launcher's id, which is its group's id.
+ * @param members - The members the breaching sample selected per {@link selectGroup}.
+ * @param table - The process table's root, for a proof. Default: {@link PROCESS_TABLE}.
+ * @returns The ids outside the group that were signalled.
+ */
+export function killCensus(
+	group: number,
+	members: readonly Member[],
+	table = PROCESS_TABLE,
+): readonly number[] {
+	killMembers([group])
+	return members.flatMap((member) => {
+		if (member.group === group || readStart(member.pid, table) !== member.start) return []
+		try {
+			process.kill(member.pid, 'SIGKILL')
+			return [member.pid]
+		} catch {
+			return []
+		}
+	})
 }
 
 /**
@@ -3106,13 +3161,14 @@ export class Sampler {
  * no process and readies at once when the table reads. A {@link Census.sample} call reads after one
  * turn of the event loop; after the first, a timer also samples every {@link SAMPLE_MS} until
  * {@link Census.stop}. A threshold, given for a light run, calls the breach handler once with the
- * launcher's id, on the first sample before {@link Census.seal} whose memory or process count passes
- * it; the handler ends the launcher's group, as {@link killMembers} does on this host.
+ * launcher's id and the members that sample selected, on the first sample before
+ * {@link Census.seal} whose memory or process count passes it; {@link killCensus} ends exactly
+ * those members.
  */
 export class Census {
 	readonly #table: string
 	readonly #threshold: Usage | undefined
-	readonly #breach: (launcher: number) => void
+	readonly #breach: (launcher: number, members: readonly Member[]) => void
 	#group: number | undefined
 	#sealed = false
 	#tally: Tally = { cpu: new Map(), memory: 0, processes: 0 }
@@ -3124,12 +3180,13 @@ export class Census {
 	 * Creates the census.
 	 *
 	 * @param threshold - The light run's threshold, or undefined for a heavy run.
-	 * @param breach - Called once with the launcher's id when a sample passes the threshold.
+	 * @param breach - Called once with the launcher's id and the members the sample selected when a
+	 * sample passes the threshold.
 	 * @param table - The process table's root, for a proof. Default: {@link PROCESS_TABLE}.
 	 */
 	constructor(
 		threshold: Usage | undefined,
-		breach: (launcher: number) => void,
+		breach: (launcher: number, members: readonly Member[]) => void,
 		table = PROCESS_TABLE,
 	) {
 		this.#threshold = threshold
@@ -3245,7 +3302,7 @@ export class Census {
 			return selected
 		}
 		this.#breached = true
-		this.#breach(group)
+		this.#breach(group, selected)
 		return selected
 	}
 }
@@ -3460,7 +3517,7 @@ export async function enterLane(
 				? undefined
 				: process.platform === 'win32'
 					? new Sampler(threshold, (pid) => killMembers([pid]))
-					: new Census(threshold, (pid) => killMembers([pid]))
+					: new Census(threshold, killCensus)
 		try {
 			await token.listen(renderEndpoint(root, tokenId))
 			const edits =
