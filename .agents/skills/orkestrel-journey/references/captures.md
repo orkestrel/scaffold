@@ -164,12 +164,10 @@ or entrance animations. Leave every other journey under default motion.
 - Stage reduced motion with a `stageMedia({ motion: false })` call before the journey navigates,
   then restore motion with a `stageMedia({ motion: true })` call before each `settleCapture()`
   call.
-- Keep one declared journey per transition kind under default motion end to end, so a run still
-  navigates the transitions a person sees.
+- Keep one declared journey per transition kind under default motion end to end.
 - Keep a journey on the default-motion path when its stage reads the `prefers-reduced-motion`
-  media feature once at mount: that stage keeps the reduced reading after the restore, so its
-  frames differ from a default-motion run's. The `@orkestrel/test` guide's Place a capture
-  portfolio section states this limit.
+  media feature once at mount: that stage keeps the reduced reading after the restore. The
+  `@orkestrel/test` guide's Place a capture portfolio section states this limit.
 
 ## Hygiene
 

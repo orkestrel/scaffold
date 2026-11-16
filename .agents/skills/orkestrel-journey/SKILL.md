@@ -277,10 +277,9 @@ and no title scheme.
   ([layer.md](references/layer.md) → Role vocabulary).
 - Every census phase states the screen state it starts from, measures the pointer route at arrival
   before any key, and proves a focus-presented state (a skip link, a focus tooltip) by its own case.
-- A reachability row takes its stop set once, through one `collectTabStops` call or one
-  `walkFocus` call, and asserts both the pointer route and the reached set against that one walk.
-  It walks the Tab cycle once per row, never once per assertion, and the census set stays the
-  row's proof.
+- Take a reachability row's stop set once, through one `collectTabStops` call or one `walkFocus`
+  call. Assert both the pointer route and the reached set against that one walk, never walking the
+  Tab cycle once per assertion. Keep the census set as the row's proof.
 - The reachability walk asserts that focusing each control leaves fixed chrome's geometry
   unchanged.
 
