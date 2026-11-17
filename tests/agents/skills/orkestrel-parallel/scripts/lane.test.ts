@@ -2321,78 +2321,82 @@ describe('lane.ts', () => {
 			},
 		)
 
-		it('stops reading at the budget and kills every group it stopped, the launcher’s last', () => {
-			// Each reading shows one more process, the child of the last, in a group of its own.
-			const chain = Array.from({ length: KILL_BUDGET + 2 }, (_, index) => ({
-				pid: 10 + index,
-				parent: index === 0 ? 1 : 9 + index,
-				group: 10 + index,
-				state: 'S',
-				created: 0,
-				cpu: 0,
-				memory: 0,
-				start: index,
-			}))
-			const readings = Array.from({ length: KILL_BUDGET + 1 }, (_, index) =>
-				chain.slice(0, index + 2),
-			)
-			const start = { group: 10, groups: [10], members: [], settled: false }
-			const reads = createRecorder<[]>()
-			const stops = createRecorder<[number, NodeJS.Signals]>()
-			const cursor = readings.values()
-			const collection = collectTree(
-				() => {
-					reads.handler()
-					return cursor.next().value ?? readings.at(-1)
-				},
-				stops.handler,
-				start,
-				KILL_BUDGET,
-			)
-			expect(reads.count).toBe(KILL_BUDGET)
-			expect(collection.settled).toBe(false)
-			const stopped = chain.slice(1, KILL_BUDGET + 1).map((member) => member.group)
-			expect(collection.groups).toStrictEqual([10, ...stopped])
-			expect(stops.calls).toStrictEqual(stopped.map((id) => [-id, 'SIGSTOP']))
-			const kills = createRecorder<[number, NodeJS.Signals]>()
-			expect(killTree(collection, kills.handler)).toStrictEqual({
-				settled: false,
-				groups: [...stopped.toReversed(), 10],
-				members: stopped,
-			})
-			expect(kills.calls).toStrictEqual([
-				...stopped.toReversed().map((id) => [-id, 'SIGKILL']),
-				...stopped.map((id) => [id, 'SIGKILL']),
-				[-10, 'SIGKILL'],
-			])
-			// The control: a budget past the growth settles on the first reading that adds no group.
-			const more = createRecorder<[]>()
-			const again = readings.values()
-			const settled = collectTree(
-				() => {
-					more.handler()
-					return again.next().value ?? readings.at(-1)
-				},
-				createRecorder<[number, NodeJS.Signals]>().handler,
-				start,
-				KILL_BUDGET + 3,
-			)
-			expect(more.count).toBe(KILL_BUDGET + 2)
-			expect(settled.settled).toBe(true)
-			// A reading that fails or throws ends the collection unsettled, with what it held.
-			expect(collectTree(() => undefined, stops.handler, start, KILL_BUDGET)).toBe(start)
-			expect(
-				collectTree(
+		// killMembers ends the launcher's group through taskkill on Windows, which the recorder cannot observe.
+		it.skipIf(process.platform === 'win32')(
+			'stops reading at the budget and kills every group it stopped, the launcher’s last',
+			() => {
+				// Each reading shows one more process, the child of the last, in a group of its own.
+				const chain = Array.from({ length: KILL_BUDGET + 2 }, (_, index) => ({
+					pid: 10 + index,
+					parent: index === 0 ? 1 : 9 + index,
+					group: 10 + index,
+					state: 'S',
+					created: 0,
+					cpu: 0,
+					memory: 0,
+					start: index,
+				}))
+				const readings = Array.from({ length: KILL_BUDGET + 1 }, (_, index) =>
+					chain.slice(0, index + 2),
+				)
+				const start = { group: 10, groups: [10], members: [], settled: false }
+				const reads = createRecorder<[]>()
+				const stops = createRecorder<[number, NodeJS.Signals]>()
+				const cursor = readings.values()
+				const collection = collectTree(
 					() => {
-						throw new Error('the table is unreadable')
+						reads.handler()
+						return cursor.next().value ?? readings.at(-1)
 					},
 					stops.handler,
 					start,
 					KILL_BUDGET,
-				),
-			).toBe(start)
-			expect(stops.count).toBe(stopped.length)
-		})
+				)
+				expect(reads.count).toBe(KILL_BUDGET)
+				expect(collection.settled).toBe(false)
+				const stopped = chain.slice(1, KILL_BUDGET + 1).map((member) => member.group)
+				expect(collection.groups).toStrictEqual([10, ...stopped])
+				expect(stops.calls).toStrictEqual(stopped.map((id) => [-id, 'SIGSTOP']))
+				const kills = createRecorder<[number, NodeJS.Signals]>()
+				expect(killTree(collection, kills.handler)).toStrictEqual({
+					settled: false,
+					groups: [...stopped.toReversed(), 10],
+					members: stopped,
+				})
+				expect(kills.calls).toStrictEqual([
+					...stopped.toReversed().map((id) => [-id, 'SIGKILL']),
+					...stopped.map((id) => [id, 'SIGKILL']),
+					[-10, 'SIGKILL'],
+				])
+				// The control: a budget past the growth settles on the first reading that adds no group.
+				const more = createRecorder<[]>()
+				const again = readings.values()
+				const settled = collectTree(
+					() => {
+						more.handler()
+						return again.next().value ?? readings.at(-1)
+					},
+					createRecorder<[number, NodeJS.Signals]>().handler,
+					start,
+					KILL_BUDGET + 3,
+				)
+				expect(more.count).toBe(KILL_BUDGET + 2)
+				expect(settled.settled).toBe(true)
+				// A reading that fails or throws ends the collection unsettled, with what it held.
+				expect(collectTree(() => undefined, stops.handler, start, KILL_BUDGET)).toBe(start)
+				expect(
+					collectTree(
+						() => {
+							throw new Error('the table is unreadable')
+						},
+						stops.handler,
+						start,
+						KILL_BUDGET,
+					),
+				).toBe(start)
+				expect(stops.count).toBe(stopped.length)
+			},
+		)
 
 		it('checks a tally against the memory and the process threshold, the boundary inside', () => {
 			const threshold = { cores: 0, memory: 100, processes: 2 }
