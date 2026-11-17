@@ -2401,7 +2401,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			createBlueprint('router', { src: ['core'] }),
 			createBlueprint('service', { src: [], app: ['server'] }),
 		]) {
-			expect(blueprintToDevDependencies(blueprint)['@orkestrel/contract']).toBe('^0.0.24')
+			expect(blueprintToDevDependencies(blueprint)['@orkestrel/contract']).toBe('^0.0.26')
 		}
 		expect(
 			blueprintToDevDependencies(createBlueprint('contract', { src: ['core'] }))[

@@ -2822,7 +2822,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.42",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.43",`,
 					blocking: false,
 				},
 			])
@@ -3182,7 +3182,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: @orkestrel/contract. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/contract": "^0.0.24",`,
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: @orkestrel/contract. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/contract": "^0.0.26",`,
 					blocking: false,
 				},
 			])
@@ -9864,7 +9864,7 @@ describe('CLI catalog', () => {
 				{
 					name: '@orkestrel/contract',
 					lookup: 'found',
-					version: '0.0.24',
+					version: '0.0.26',
 					dependencies: [],
 					peers: [],
 				},
