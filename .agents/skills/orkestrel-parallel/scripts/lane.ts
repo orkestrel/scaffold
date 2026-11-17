@@ -81,18 +81,32 @@
 //   Only the holder kills, and only inside its own bounds.
 // - Process-identifier reuse, other hosts. A group id cannot be reused while the group has a member.
 //   An empty group's id can be reused by a later group leader, so a reclaimer might refuse on a stale
-//   run record. It never kills on one. A breach signals a counted member outside the group by its id
-//   only while its `stat` shows the start ticks the census sampled, so a reuse of that id inside one
-//   `CLOCK_TICK_MS` tick of the sampled start is the one reuse it cannot tell apart.
+//   run record. It never kills on one. A breach signals the launcher's group by the launcher's id,
+//   which the host keeps while the lane has not reaped the launcher. It signals any other group, and
+//   a member by its id, only after a read of the process table shows that member with the start
+//   ticks recorded for it. These reuses pass that check, and each needs the id space to wrap inside
+//   its window: an id given to another process inside the `CLOCK_TICK_MS` tick of the recorded
+//   start; an id given to another process between that read and the signal; and a parent id given
+//   to another process inside one reading, whose children then read as the member's. On the Linux
+//   container measured 2026-11-16, `pid_max` is 32,768 and Node started 366 processes a second.
 // - A descendant that detached itself. A process that left the group, a run started through the WMI
 //   detach of `.agents/platforms/windows.md`, and a Windows descendant whose parent exited before the
 //   reading and is no recorded seed are all outside every reading. A background child of a `bash`
 //   command can be that case, so pass a command directly rather than through `bash -c`. "No surviving
-//   process tree" means the group, or the parent-link closure, and no more. A Linux census counts a
-//   process that left the group while its parent is a member, such as a browser a test runner starts,
-//   and a breach ends what the breaching sample counted: the group, then each counted member outside
-//   it. The handover reading reads the group alone, so such a process that outlives a run that ended
-//   without a breach stays outside it.
+//   process tree" means the group, or the parent-link closure, and no more.
+//   A Linux census counts a process that left the group while its parent is a member, such as a
+//   browser a test runner starts. A breach sends `SIGSTOP` to the launcher's group and to the group
+//   of every counted member, reads the table again while each parent still lives, sends `SIGSTOP`
+//   to the group of every process a parent link then reaches, and repeats until a reading adds no
+//   group or `KILL_BUDGET` readings have run. It then sends `SIGKILL` to every group and member it
+//   collected, the launcher's group last. These cases stay outside that kill: a process whose
+//   parent exited before a reading could link it, such as a daemon that forks twice, which reads as
+//   a child of the host's init in a group and a session of its own; a process started after the
+//   last reading when the budget ended the readings, which a tree that keeps starting detached
+//   processes produces; a member the lane's account may not signal; and a member the host hides
+//   from `/proc`. A lane that ends between the stop and the kill leaves its tree stopped, and
+//   arrivals exit 75 until a person ends that tree. The handover reading reads the group alone, so
+//   a process outside the group that outlives a run that ended without a breach stays outside it.
 // - An owner ended alone mid-run. No event reports a foreign tree's end. Arrivals exit 75 until that
 //   tree is gone, and the next arrival then reclaims.
 // - An owner ended between the run record and the launcher id. The tree cannot be identified. Arrivals
@@ -154,8 +168,10 @@
 // - A denied root. A sandbox that refuses the root or the endpoint exits 75; no sandboxed bench exec
 //   has run this script.
 // - Linux. The socket file, the process group, and the zombie reading were read on a Linux container
-//   on 2026-11-14 (Node 22.23.5, an init that does not reap as a child ends), and the census and the
-//   light lanes on 2026-11-16 (4 CPUs); the signal handling is unread on Linux.
+//   on 2026-11-14 (Node 22.23.5, an init that does not reap as a child ends), the census and the
+//   light lanes on 2026-11-16 (4 CPUs), and the breach kill's group stop, its fixpoint readings,
+//   and its kill order on the same container on 2026-11-16; the handling of a signal the lane
+//   process receives is unread on Linux.
 // Migration stop: a second queue does not see the first, so while a host's sessions run another
 // serializer, no caller moves. After a scaffold release carries this script and no command runs on the
 // host, move every caller in one step and delete the serializer this replaces.
@@ -299,11 +315,14 @@ export const STOP_SIGNALS: readonly NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SI
 export const CLOCK_ALLOWANCE_MS = 16
 
 /**
- * Holds the kill attempts the handover reading makes before it stays held.
+ * Holds the kill attempts the handover reading makes before it stays held, and the readings a Linux
+ * breach kill takes toward a fixpoint.
  *
  * @remarks
  * Each attempt on Windows is a synchronous `taskkill` per member and a process snapshot. A member
  * that outlives this many forced kills is a defect a person reads rather than a wait the queue absorbs.
+ * A breach kill of a Chromium launch and of a tree of 41 to 46 processes settled in 1 or 2 readings
+ * of 1 to 4 ms each on the Linux container measured 2026-11-16.
  */
 export const KILL_BUDGET = 5
 
@@ -697,6 +716,28 @@ export interface Task {
 /** Describes what a sweep confirmed: whether the tree reads as gone, and the members it left. */
 export interface Sweep {
 	readonly gone: boolean
+	readonly members: readonly number[]
+}
+
+/**
+ * Describes what the readings of a breach kill collected: the launcher's group, every group sent
+ * `SIGSTOP` in order with the launcher's first, the members the last reading selected, and whether
+ * a reading added no group.
+ */
+export interface Collection {
+	readonly group: number
+	readonly groups: readonly number[]
+	readonly members: readonly Member[]
+	readonly settled: boolean
+}
+
+/**
+ * Describes what a breach kill signalled: whether its readings settled, each group sent `SIGKILL`
+ * in order with the launcher's last, and each member sent `SIGKILL` by its id.
+ */
+export interface Kill {
+	readonly settled: boolean
+	readonly groups: readonly number[]
 	readonly members: readonly number[]
 }
 
@@ -2351,17 +2392,26 @@ export function readResident(pid: number, table = PROCESS_TABLE): number {
  * Selects the members of one run's process tree from a Linux census.
  *
  * @remarks
- * A member of the launcher's process group counts, and so does every process a parent link reaches
- * from a counted one, such as a browser a test runner starts in a group of its own. A group id
- * cannot be reused while the group has a member, so a member never names an unrelated process.
+ * A member of the launcher's process group counts, and so does a known member the census still
+ * shows with its start ticks, and every process a parent link reaches from a counted one, such as a
+ * browser a test runner starts in a group of its own. A group id cannot be reused while the group
+ * has a member, so a member never names an unrelated process.
  *
  * @param members - The census.
  * @param group - The launcher's id, which is its group's id.
+ * @param known - Members an earlier reading counted. Default: none.
  * @returns The members.
  */
-export function selectGroup(members: readonly Member[], group: number): readonly Member[] {
+export function selectGroup(
+	members: readonly Member[],
+	group: number,
+	known: readonly Member[] = [],
+): readonly Member[] {
+	const starts = new Map(known.map((member) => [member.pid, member.start]))
 	const reached = new Map(
-		members.filter((member) => member.group === group).map((member) => [member.pid, member]),
+		members
+			.filter((member) => member.group === group || starts.get(member.pid) === member.start)
+			.map((member) => [member.pid, member]),
 	)
 	for (const member of reached.values()) {
 		for (const row of members) {
@@ -2384,51 +2434,153 @@ export function exceedsThreshold(tally: Tally, threshold: Usage): boolean {
 }
 
 /**
- * Reads the start ticks of one Linux process from the process table.
+ * Reads one Linux process from the process table, with no memory read.
  *
  * @param pid - The process id.
  * @param table - The process table's root. Default: {@link PROCESS_TABLE}.
- * @returns The twenty-second `stat` field, or undefined when the entry is gone, unreadable, or
- * malformed.
+ * @returns The member its `stat` shows, its creation date counted from 0, or undefined when the
+ * entry is gone, unreadable, or malformed.
  */
-export function readStart(pid: number, table = PROCESS_TABLE): number | undefined {
+export function readProcess(pid: number, table = PROCESS_TABLE): Member | undefined {
 	try {
-		return parseMember(readFileSync(join(table, String(pid), 'stat'), 'utf8'), 0)?.start
+		return parseMember(readFileSync(join(table, String(pid), 'stat'), 'utf8'), 0)
 	} catch {
 		return undefined
 	}
 }
 
 /**
- * Ends what one Linux census sample counted: the launcher's group, then each counted member outside
- * it.
+ * Sends one signal to a process id, or to a group when the target is negative.
+ *
+ * @param target - The process id, or the negated group id.
+ * @param signal - The signal.
+ */
+export function sendSignal(target: number, signal: NodeJS.Signals): void {
+	try {
+		process.kill(target, signal)
+	} catch {}
+}
+
+/**
+ * Takes one reading of the process table, and reads a thrown error as a failed reading.
+ *
+ * @param read - Takes the reading; undefined means it could not read the table.
+ * @returns The members the reading listed, or undefined when it failed or threw.
+ */
+export function takeReading(
+	read: () => readonly Member[] | undefined,
+): readonly Member[] | undefined {
+	try {
+		return read()
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Collects a breaching tree to a fixpoint: each reading selects the launcher's group, the members
+ * collected so far that it still shows with their start ticks, and every process a parent link
+ * reaches from those, and sends `SIGSTOP` to each selected member's group that has received none.
  *
  * @remarks
- * The group kill reaches every member of the group, and {@link killMembers} pauses after it. A
- * member outside the group, such as a process a member started in a group of its own, is signalled
- * by its id only when a read of its `stat` taken after the group kill shows the start ticks the census
- * sampled, so an id the host reused for another process after the sample is skipped.
+ * A stopped parent keeps its children's parent field, so the next reading reaches what an earlier
+ * one missed, and a group-directed signal reaches the child of a fork in flight. The collection
+ * settles when a reading adds no group, and ends unsettled when a reading fails or the budget ends.
+ *
+ * @param read - Takes one reading of the process table; undefined means it could not read it.
+ * @param signal - Sends a signal to a process id, or to a group when the target is negative.
+ * @param collection - What the earlier readings collected.
+ * @param budget - The readings left.
+ * @returns What the readings collected.
+ */
+export function collectTree(
+	read: () => readonly Member[] | undefined,
+	signal: (target: number, signal: NodeJS.Signals) => void,
+	collection: Collection,
+	budget: number,
+): Collection {
+	const members = budget > 0 ? takeReading(read) : undefined
+	if (members === undefined) return collection
+	const selected = selectGroup(members, collection.group, collection.members)
+	const known = new Set(collection.groups)
+	const added = [...new Set(selected.map((member) => member.group))].filter(
+		(group) => !known.has(group),
+	)
+	for (const group of added) signal(-group, 'SIGSTOP')
+	const next = { ...collection, groups: [...collection.groups, ...added], members: selected }
+	return added.length === 0
+		? { ...next, settled: true }
+		: collectTree(read, signal, next, budget - 1)
+}
+
+/**
+ * Kills what a breach collected: each collected group other than the launcher's, in reverse order
+ * of collection; each collected member outside the launcher's group by its id; and the launcher's
+ * group last.
+ *
+ * @remarks
+ * A child group ends before the group of its parent, because the exit that orphans a group with
+ * stopped members of the same session sends that group `SIGHUP` and `SIGCONT`. The by-id signal
+ * reaches a member that left its group after the last reading. The launcher's group ends through
+ * {@link killMembers}, which pauses after it. `SIGKILL` ends a stopped process, so nothing is left
+ * stopped.
+ *
+ * @param collection - What the readings collected.
+ * @param signal - Sends a signal, for a proof. Default: {@link sendSignal}.
+ * @returns What the kill signalled, and whether the readings settled.
+ */
+export function killTree(
+	collection: Collection,
+	signal: (target: number, signal: NodeJS.Signals) => void = sendSignal,
+): Kill {
+	const { group } = collection
+	const others = collection.groups.filter((id) => id !== group).toReversed()
+	for (const id of others) signal(-id, 'SIGKILL')
+	const outside = collection.members
+		.filter((member) => member.group !== group)
+		.map((member) => member.pid)
+	for (const pid of outside) signal(pid, 'SIGKILL')
+	killMembers([group], signal)
+	return { settled: collection.settled, groups: [...others, group], members: outside }
+}
+
+/**
+ * Ends the tree one Linux census sample breached: it stops the launcher's group and each counted
+ * member's group, collects the tree to a fixpoint, and kills what it collected.
+ *
+ * @remarks
+ * The launcher's group takes `SIGSTOP` first. A counted member outside it is a seed only while a
+ * fresh read of its `stat` shows the start ticks the census sampled, and its group, as that read
+ * shows it, takes `SIGSTOP` next. {@link collectTree} then reads up to {@link KILL_BUDGET} times,
+ * and every path, a failed reading included, ends in {@link killTree}.
  *
  * @param group - The launcher's id, which is its group's id.
  * @param members - The members the breaching sample selected per {@link selectGroup}.
  * @param table - The process table's root, for a proof. Default: {@link PROCESS_TABLE}.
- * @returns The ids outside the group that were signalled.
+ * @param signal - Sends a signal, for a proof. Default: {@link sendSignal}.
+ * @returns What the kill signalled, and whether its readings settled.
  */
 export function killCensus(
 	group: number,
 	members: readonly Member[],
 	table = PROCESS_TABLE,
-): readonly number[] {
-	killMembers([group])
-	return members.flatMap((member) => {
-		if (member.group === group || readStart(member.pid, table) !== member.start) return []
-		try {
-			process.kill(member.pid, 'SIGKILL')
-			return [member.pid]
-		} catch {
-			return []
-		}
+	signal: (target: number, signal: NodeJS.Signals) => void = sendSignal,
+): Kill {
+	signal(-group, 'SIGSTOP')
+	const seeds = members.flatMap((member) => {
+		if (member.group === group) return []
+		const fresh = readProcess(member.pid, table)
+		return fresh?.start === member.start ? [fresh] : []
 	})
+	const groups = [...new Set(seeds.map((member) => member.group))].filter((id) => id !== group)
+	for (const id of groups) signal(-id, 'SIGSTOP')
+	const collection = collectTree(
+		() => readMembers(table),
+		signal,
+		{ group, groups: [group, ...groups], members: seeds, settled: false },
+		KILL_BUDGET,
+	)
+	return killTree(collection, signal)
 }
 
 /**
@@ -2480,8 +2632,13 @@ export function selectTree(
  * group, and a pause follows, because no event reports the end of a foreign group.
  *
  * @param members - The ids a reading returned.
+ * @param signal - Sends a signal on a host other than Windows, for a proof. Default:
+ * {@link sendSignal}.
  */
-export function killMembers(members: readonly number[]): void {
+export function killMembers(
+	members: readonly number[],
+	signal: (target: number, signal: NodeJS.Signals) => void = sendSignal,
+): void {
 	for (const member of members) {
 		if (process.platform === 'win32') {
 			spawnSync('taskkill', ['/pid', String(member), '/T', '/F'], {
@@ -2489,9 +2646,7 @@ export function killMembers(members: readonly number[]): void {
 				windowsHide: true,
 			})
 		} else {
-			try {
-				process.kill(-member, 'SIGKILL')
-			} catch {}
+			signal(-member, 'SIGKILL')
 			Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, KILL_PAUSE_MS)
 		}
 	}
@@ -3162,8 +3317,9 @@ export class Sampler {
  * turn of the event loop; after the first, a timer also samples every {@link SAMPLE_MS} until
  * {@link Census.stop}. A threshold, given for a light run, calls the breach handler once with the
  * launcher's id and the members that sample selected, on the first sample before
- * {@link Census.seal} whose memory or process count passes it; {@link killCensus} ends exactly
- * those members.
+ * {@link Census.seal} whose memory or process count passes it. The holder passes {@link killCensus},
+ * which stops those members' groups and collects what they started after the sample before it
+ * kills.
  */
 export class Census {
 	readonly #table: string
@@ -3517,7 +3673,14 @@ export async function enterLane(
 				? undefined
 				: process.platform === 'win32'
 					? new Sampler(threshold, (pid) => killMembers([pid]))
-					: new Census(threshold, killCensus)
+					: new Census(threshold, (group, members) => {
+							const kill = killCensus(group, members)
+							if (!kill.settled) {
+								console.error(
+									`lane: the breach readings of ${quote(options.label)} ended unsettled, at ${String(KILL_BUDGET)} readings or on a failed reading; the lane killed the groups ${kill.groups.join(', ')} and the members ${kill.members.join(', ') || 'none'} it collected`,
+								)
+							}
+						})
 		try {
 			await token.listen(renderEndpoint(root, tokenId))
 			const edits =
