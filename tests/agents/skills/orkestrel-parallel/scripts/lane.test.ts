@@ -980,8 +980,11 @@ describe('lane.ts', () => {
 				await holder.reach('zombie ')
 				const zombie = Number(/zombie (\d+)/u.exec(holder.output)?.[1])
 				await waitForCondition(
-					'the holder keeps its exited child as a zombie',
-					() => readTasks(zombie)?.some((task) => task.state === 'Z') === true,
+					'the holder keeps its exited child as one zombie thread and no other thread',
+					() => {
+						const tasks = readTasks(zombie)
+						return tasks?.length === 1 && tasks.every((task) => task.state === 'Z')
+					},
 					{ budget: 45_000, interval: 10 },
 				)
 				expect(readTasks(zombie)).toStrictEqual([
