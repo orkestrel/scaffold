@@ -133,6 +133,7 @@ import {
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
 	mergeResults,
+	mirrorsToQuestions,
 	pinsToLifts,
 	releasesToExit,
 	releasesToPins,
@@ -564,10 +565,13 @@ export class CLI implements CLIInterface {
 		const groups = selectionToGroups(command.groups)
 		const declared = manifestToWritableDependencies(manifest, blueprint)
 		const versions = await this.#versions(declared, command.offline === true, blueprint)
+		const guides = await this.#guides(command, target, blueprint, manifest, groups)
 		const questions = [
 			...this.#targetQuestions(target, blueprint, groups),
 			...releasesToQuestions(versions.releases, undefined, blueprintToToolchainHolds(blueprint)),
+			...guides.questions,
 		]
+		const forced = versions.forced || guides.baseline === 'floor'
 		const host = await this.#host(command.from, target, command.offline === true)
 		try {
 			const [measured] = this.#survey(host.materializer, blueprint, target, groups)
@@ -580,6 +584,7 @@ export class CLI implements CLIInterface {
 				releases: versions.releases,
 				provenance: {
 					...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+					...(guides.baseline === undefined ? {} : { guides: guides.baseline }),
 					...(host.baseline === undefined ? {} : { host: host.baseline }),
 				},
 			}
@@ -588,15 +593,61 @@ export class CLI implements CLIInterface {
 				this.#present(audit)
 				if (command.offline !== true) this.#reportReleases(versions.releases)
 			}
-			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
+			if (forced || host.forced) this.#reportBaselines(outcome.provenance)
 			if (command.offline === true) return auditToExit(audit)
 			return Math.max(
 				auditToExit(audit),
 				releasesToExit(versions.releases),
-				versions.forced || host.forced ? EXIT_DRIFT : EXIT_CLEAN,
+				forced || host.forced ? EXIT_DRIFT : EXIT_CLEAN,
 			)
 		} finally {
 			host.materializer.destroy()
+		}
+	}
+
+	// Compare each present guide mirror with the guide on its repository's main
+	// branch, the same read `catalog` performs, and write nothing. A mirror of a
+	// package the hosted catalog does not list, the target's own guide, `README.md`,
+	// and a nested path are not compared. An offline run and a run that excludes the
+	// `guides` group read nothing and raise nothing.
+	async #guides(
+		command: AuditCommand,
+		target: string,
+		blueprint: Blueprint,
+		manifest: string,
+		groups: readonly ArtifactGroup[] | undefined,
+	): Promise<{ readonly questions: readonly Question[]; readonly baseline?: Baseline }> {
+		if (command.offline === true || (groups !== undefined && !groups.includes('guides'))) {
+			return { questions: [] }
+		}
+		const directory = resolveContainedPath(target, 'guides')
+		const listed = new Set(catalogToNames(resolveFloor(command.from)))
+		const names = (directory === undefined ? [] : listFiles(directory))
+			.filter(
+				(file) =>
+					!file.includes('/') &&
+					file.endsWith('.md') &&
+					file !== 'README.md' &&
+					`guides/${file}` !== nameToGuide(blueprint.name),
+			)
+			.map((file) => `@orkestrel/${file.slice(0, -'.md'.length)}`)
+			.filter((name) => listed.has(name))
+		if (names.length === 0) return { questions: [] }
+		const dependencies = manifestToDependencies(manifest)
+		const declared = [
+			...dependencies.runtime,
+			...dependencies.development,
+			...dependencies.peer,
+		].map((dependency) => dependency.name)
+		const upstream = new Upstream(this.#upstream)
+		try {
+			const mirrors = await upstream.fetch(names, readSnapshot(target, names.map(nameToGuide)))
+			return {
+				questions: mirrorsToQuestions(mirrors, declared),
+				baseline: mirrors.some((mirror) => mirror.lookup !== 'found') ? 'floor' : 'live',
+			}
+		} finally {
+			upstream.destroy()
 		}
 	}
 

@@ -1279,7 +1279,7 @@ describe('Materializer mirror', () => {
 		}
 	})
 
-	it('reports differing foreign mirrors as non-blocking catalog questions and preserves them during repair', () => {
+	it('raises no guide question during audit and preserves a differing mirror during repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
@@ -1295,19 +1295,7 @@ describe('Materializer mirror', () => {
 					'# Authored guide\n',
 				)
 				const audit = materializer.audit(plan, target)
-				expect(audit.questions).toContainEqual({
-					field: 'guides',
-					message:
-						'The mirror at guides/emitter.md differs from the hosted guide. Run catalog to refresh it.',
-					blocking: false,
-				})
-				expect(audit.questions).toContainEqual({
-					field: 'guides',
-					message:
-						'The mirror at guides/guide.md differs from the hosted guide. Run catalog to refresh it.',
-					blocking: false,
-				})
-				expect(audit.questions.every((question) => !question.blocking)).toBe(true)
+				expect(audit.questions).toStrictEqual([])
 				expect(audit.findings.find((finding) => finding.path === 'guides/guide.md')?.drift).toBe(
 					'aligned',
 				)

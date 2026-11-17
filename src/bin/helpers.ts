@@ -49,6 +49,7 @@ import {
 	CATALOG_AGENT_PATH,
 	CENTRAL_FILE_NAMES,
 	compareVersions,
+	contentToHex,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
 	FRAMEWORKS,
@@ -884,6 +885,50 @@ export function releasesToQuestions(
 			]
 		})
 		.toArray()
+}
+
+/**
+ * Projects fetched guide mirrors into audit questions.
+ *
+ * @param mirrors - The mirror verdicts that `Upstream.fetch` returned for the present guide mirrors.
+ * @param declared - The package names the target's manifest declares.
+ * @returns One non-blocking `guides` question for each mirror that differs from its repository's
+ * main branch or that no read could compare; a mirror that matches raises none.
+ *
+ * @remarks
+ * A differing mirror of an undeclared package advises `catalog --all`, because `catalog` alone
+ * refreshes only the declared packages.
+ *
+ * @example
+ * ```ts
+ * import { mirrorsToQuestions } from './helpers.js'
+ *
+ * mirrorsToQuestions([], ['@orkestrel/router']) // []
+ * ```
+ */
+export function mirrorsToQuestions(
+	mirrors: readonly Mirror[],
+	declared: readonly string[],
+): readonly Question[] {
+	return mirrors.flatMap((mirror): readonly Question[] => {
+		if (mirror.lookup !== 'found') {
+			return [
+				{
+					field: 'guides',
+					message: `The guide for ${mirror.name} could not be read from its repository (${mirror.note}); the mirror at ${mirror.path} was not compared.`,
+					blocking: false,
+				},
+			]
+		}
+		if (mirror.observed === undefined || contentToHex(mirror.content) === mirror.observed) return []
+		return [
+			{
+				field: 'guides',
+				message: `The mirror at ${mirror.path} differs from the guide on ${mirror.name}'s main branch. Run ${declared.includes(mirror.name) ? 'catalog' : 'catalog --all'} to refresh it.`,
+				blocking: false,
+			},
+		]
+	})
 }
 
 /**

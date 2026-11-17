@@ -11,6 +11,7 @@ import {
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
+	contentToHex,
 	createBlueprint,
 	MAX_PATH_LENGTH,
 	MAX_RANGE_LENGTH,
@@ -58,6 +59,7 @@ import {
 	manifestToWritableScripts,
 	matchesStep,
 	mergeResults,
+	mirrorsToQuestions,
 	optionToName,
 	pinsToLifts,
 	releasesToExit,
@@ -865,6 +867,97 @@ describe('release evidence', () => {
 		).toStrictEqual([
 			{ name: '@orkestrel/router', range: '^0.0.10' },
 			{ name: '@orkestrel/emitter', range: '^0.0.5' },
+		])
+	})
+})
+
+describe('mirrorsToQuestions', () => {
+	const MIRROR_NAME = '@orkestrel/emitter'
+	const MIRROR_PATH = 'guides/emitter.md'
+
+	it('raises no question for a mirror that equals its repository guide', () => {
+		expect(
+			mirrorsToQuestions(
+				[
+					{
+						name: MIRROR_NAME,
+						path: MIRROR_PATH,
+						lookup: 'found',
+						content: '# Emitter\n',
+						observed: contentToHex('# Emitter\n'),
+					},
+				],
+				[MIRROR_NAME],
+			),
+		).toStrictEqual([])
+	})
+
+	it('advises catalog for a differing mirror of a declared package', () => {
+		expect(
+			mirrorsToQuestions(
+				[
+					{
+						name: MIRROR_NAME,
+						path: MIRROR_PATH,
+						lookup: 'found',
+						content: '# Emitter\n',
+						observed: contentToHex('# Stale emitter\n'),
+					},
+				],
+				[MIRROR_NAME],
+			),
+		).toStrictEqual([
+			{
+				field: 'guides',
+				message: `The mirror at ${MIRROR_PATH} differs from the guide on ${MIRROR_NAME}'s main branch. Run catalog to refresh it.`,
+				blocking: false,
+			},
+		])
+	})
+
+	it('advises catalog --all for a differing mirror of an undeclared package', () => {
+		expect(
+			mirrorsToQuestions(
+				[
+					{
+						name: MIRROR_NAME,
+						path: MIRROR_PATH,
+						lookup: 'found',
+						content: '# Emitter\n',
+						observed: contentToHex('# Stale emitter\n'),
+					},
+				],
+				['@orkestrel/router'],
+			),
+		).toStrictEqual([
+			{
+				field: 'guides',
+				message: `The mirror at ${MIRROR_PATH} differs from the guide on ${MIRROR_NAME}'s main branch. Run catalog --all to refresh it.`,
+				blocking: false,
+			},
+		])
+	})
+
+	it('names the note of a mirror whose repository read did not complete', () => {
+		expect(
+			mirrorsToQuestions(
+				[
+					{
+						name: MIRROR_NAME,
+						path: MIRROR_PATH,
+						lookup: 'failed',
+						note: 'HTTP 500',
+						observed: contentToHex('# Emitter\n'),
+					},
+				],
+				[MIRROR_NAME],
+			),
+		).toStrictEqual([
+			{
+				field: 'guides',
+				message: `The guide for ${MIRROR_NAME} could not be read from its repository (HTTP 500); the mirror at ${MIRROR_PATH} was not compared.`,
+				blocking: false,
+			},
 		])
 	})
 })

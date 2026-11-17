@@ -1,4 +1,5 @@
 import {
+	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
 	BROWSER_ENTRIES,
@@ -19,6 +20,9 @@ import {
 import { buildBlueprint, DEPENDENCY_TABLES, TOOLCHAIN_RANGE_PATTERN } from '../../setup.js'
 import {
 	collectRuntimeClosure,
+	findSeedDrift,
+	readCatalogEdges,
+	readCatalogVersions,
 	readCheckoutRanges,
 	selectSeededNames,
 	WORKSPACE_ROOT,
@@ -94,6 +98,55 @@ describe('shared dependency tables', () => {
 	it('keeps the capture seed frozen at the release whose wrapper factory the journey calls', () => {
 		expect(CAPTURE_DEV_DEPENDENCIES).toStrictEqual({ '@orkestrel/capture': '^0.0.10' })
 		expect(Object.isFrozen(CAPTURE_DEV_DEPENDENCIES)).toBe(true)
+	})
+
+	// The three application-server rows are seeds held at the version the committed catalog lists,
+	// so a catalog re-pin that leaves a seed behind reddens here.
+	it('seeds each application-server fleet row at the version the committed catalog lists', () => {
+		const rows = Object.fromEntries(
+			['@orkestrel/middleware', '@orkestrel/router', '@orkestrel/server'].map((name) => [
+				name,
+				APP_SERVER_DEV_DEPENDENCIES[name] ?? '',
+			]),
+		)
+		expect(Object.values(rows).every((range) => range !== '')).toBe(true)
+		expect(findSeedDrift(rows, readCatalogVersions())).toStrictEqual([])
+	})
+
+	// The control the preceding claim needs: a seed one release behind is reported with the
+	// version the catalog lists.
+	it('reports a seed that differs from the catalog', () => {
+		const versions = readCatalogVersions()
+		const router = versions.get('@orkestrel/router')
+		expect(router).toBeDefined()
+		expect(
+			findSeedDrift({ '@orkestrel/router': '^0.0.10', '@orkestrel/ghost': '^0.0.1' }, versions),
+		).toStrictEqual([
+			`@orkestrel/router: ^0.0.10, catalog ${router}`,
+			'@orkestrel/ghost: ^0.0.1, catalog absent',
+		])
+	})
+
+	it('plans application-server seeds that satisfy each other catalog edges', () => {
+		const names = ['@orkestrel/middleware', '@orkestrel/router', '@orkestrel/server']
+		const edges = readCatalogEdges()
+		const found = names.flatMap((owner) =>
+			names.flatMap((other) => {
+				const range = new RegExp(`${other} (\\^\\d+\\.\\d+\\.\\d+)`, 'u').exec(
+					edges.get(owner) ?? '',
+				)?.[1]
+				return range === undefined ? [] : [{ owner, other, range }]
+			}),
+		)
+		expect(found.map(({ owner, other }) => `${owner} -> ${other}`)).toContain(
+			'@orkestrel/middleware -> @orkestrel/server',
+		)
+		expect(
+			found.filter(
+				({ other, range }) =>
+					!matchesRange(range, (APP_SERVER_DEV_DEPENDENCIES[other] ?? '').slice(1)),
+			),
+		).toStrictEqual([])
 	})
 
 	// Scaffold installs most table rows itself, so those derive. The rest are

@@ -28,6 +28,7 @@ import {
 	CATALOG_END_MARKER,
 	CATALOG_START_MARKER,
 	CONFIG_TEMPLATES,
+	contentToHex,
 	createBlueprint,
 	isCanonPath,
 	RELEASE_PROOF_COMMAND,
@@ -71,6 +72,7 @@ import {
 	APP_SERVER_WRAPPERS,
 	AUDIT_REPLIES,
 	buildAlignedManifest,
+	CATALOG_AGENT_TEXT,
 	buildCLIOptions,
 	buildFleetManifest,
 	buildHostManifest,
@@ -83,6 +85,7 @@ import {
 	createCatalogFleet,
 	createCheckout,
 	createFleet,
+	createGuideFleet,
 	createHostRoot,
 	createRepository,
 	createSink,
@@ -2641,10 +2644,10 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('keeps guide difference questions non-blocking and excludes the target guide during audit', async () => {
+	it('raises no guide question during an offline audit of a differing mirror', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			const fleet = createFleet(workspace)
+			const fleet = createGuideFleet(workspace)
 			const repaired = createSink()
 			expect(
 				await new CLI(repaired.options).execute([
@@ -2657,7 +2660,6 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			workspace.write('target/guides/emitter.md', '# Different emitter\n')
-			workspace.write('target/guides/README.md', '# Authored index\n')
 			const sink = createSink()
 			expect(
 				await new CLI(sink.options).execute([
@@ -2673,14 +2675,29 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
-			expect(result.questions).toStrictEqual([
-				{
-					field: 'guides',
-					message:
-						'The mirror at guides/emitter.md differs from the hosted guide. Run catalog to refresh it.',
-					blocking: false,
-				},
-			])
+			expect(result.questions.filter(({ field }) => field === 'guides')).toStrictEqual([])
+			expect(result.provenance.guides).toBeUndefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('excludes the target guide, the guide index, and nested paths from an online guide comparison', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...AUDIT_REPLIES,
+			...FLEET_MIRROR_REPLIES,
+			[FLEET_UPSTREAM_PATHS.mirrors.router]: {
+				status: 200,
+				body: '# Router upstream\n',
+				type: 'text/plain',
+			},
+		})
+		try {
+			const fleet = createGuideFleet(workspace)
+			workspace.write('target/guides/emitter.md', '# Different emitter\n')
+			workspace.write('target/guides/README.md', '# Authored index\n')
+			workspace.write('target/guides/nested/router.md', '# Nested router\n')
 			const manifest: Record<string, unknown> = JSON.parse(
 				requireValue(workspace.read('target/package.json')),
 			)
@@ -2689,13 +2706,133 @@ describe('CLI audit', () => {
 				JSON.stringify({ ...manifest, name: '@orkestrel/router' }),
 			)
 			workspace.write('target/guides/router.md', '# Authored router\n')
-			const own = createSink()
+			const sink = createSink()
+			await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'audit',
+				'--groups',
+				'guides',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.questions.filter(({ field }) => field === 'guides')).toStrictEqual([
+				{
+					field: 'guides',
+					message:
+						"The mirror at guides/emitter.md differs from the guide on @orkestrel/emitter's main branch. Run catalog to refresh it.",
+					blocking: false,
+				},
+			])
+			expect(server.paths).toContain(FLEET_UPSTREAM_PATHS.mirrors.emitter)
+			expect(server.paths).not.toContain(FLEET_UPSTREAM_PATHS.mirrors.router)
+			expect(server.paths.some((path) => path.endsWith('/README.md'))).toBe(false)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('raises no guide question for a mirror that matches its repository main while the hosted guide differs', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({ ...AUDIT_REPLIES, ...FLEET_MIRROR_REPLIES })
+		try {
+			const fleet = createGuideFleet(workspace)
+			const repaired = createSink()
 			expect(
-				await new CLI(own.options).execute([
-					'audit',
+				await new CLI(repaired.options).execute([
+					'repair',
 					'--offline',
-					'--groups',
-					'guides',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write('target/guides/emitter.md', '# Emitter\n')
+			const hosted = readHostFloor(fleet.host).bytes['guides/emitter.md']
+			expect(hosted).toBeDefined()
+			expect(hosted).not.toBe(contentToHex('# Emitter\n'))
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'audit',
+				'--groups',
+				'guides',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.questions).toStrictEqual([])
+			expect(result.provenance.guides).toBe('live')
+			expect(code).toBe(EXIT_CLEAN)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('advises catalog for a mirror that differs from its repository main, and catalog then aligns it', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...AUDIT_REPLIES,
+			...FLEET_MIRROR_REPLIES,
+			[FLEET_UPSTREAM_PATHS.organization]: {
+				status: 200,
+				body: buildOrganization([...FLEET_NAMES, '@orkestrel/router']),
+			},
+			[FLEET_UPSTREAM_PATHS.mirrors.router]: {
+				status: 200,
+				body: '# Router upstream\n',
+				type: 'text/plain',
+			},
+		})
+		try {
+			const fleet = createGuideFleet(workspace)
+			workspace.write(`target/${CATALOG_AGENT_PATH}`, CATALOG_AGENT_TEXT)
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write('target/guides/emitter.md', '# Stale emitter\n')
+			workspace.write('target/guides/router.md', '# Stale router\n')
+			const argv = ['--groups', 'guides', '--from', fleet.host, '--target', fleet.target, '--json']
+			const before = createSink()
+			expect(await new CLI(buildCLIOptions(before, server.base)).execute(['audit', ...argv])).toBe(
+				EXIT_CLEAN,
+			)
+			const stale: AuditResult = JSON.parse(before.output[0] ?? '')
+			expect(stale.provenance.guides).toBe('live')
+			expect(stale.questions.filter(({ field }) => field === 'guides')).toStrictEqual([
+				{
+					field: 'guides',
+					message:
+						"The mirror at guides/emitter.md differs from the guide on @orkestrel/emitter's main branch. Run catalog to refresh it.",
+					blocking: false,
+				},
+				{
+					field: 'guides',
+					message:
+						"The mirror at guides/router.md differs from the guide on @orkestrel/router's main branch. Run catalog --all to refresh it.",
+					blocking: false,
+				},
+			])
+			const refreshed = createSink()
+			expect(
+				await new CLI(buildCLIOptions(refreshed, server.base)).execute([
+					'catalog',
+					'--all',
 					'--from',
 					fleet.host,
 					'--target',
@@ -2703,9 +2840,68 @@ describe('CLI audit', () => {
 					'--json',
 				]),
 			).toBe(EXIT_CLEAN)
-			const excluded: AuditResult = JSON.parse(own.output[0] ?? '')
-			expect(excluded.questions).toStrictEqual(result.questions)
+			expect(workspace.read('target/guides/emitter.md')).toBe('# Emitter\n')
+			expect(workspace.read('target/guides/router.md')).toBe('# Router upstream\n')
+			const after = createSink()
+			await new CLI(buildCLIOptions(after, server.base)).execute(['audit', ...argv])
+			const aligned: AuditResult = JSON.parse(after.output[0] ?? '')
+			expect(aligned.questions.filter(({ field }) => field === 'guides')).toStrictEqual([])
+			expect(aligned.provenance.guides).toBe('live')
 		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('reports an unread guide and a floor guides baseline when the repository read fails', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const live = await createUpstreamServer({ ...AUDIT_REPLIES, ...FLEET_MIRROR_REPLIES })
+		const failing = await createUpstreamServer({
+			...AUDIT_REPLIES,
+			...FLEET_MIRROR_REPLIES,
+			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 500, body: '{"error":"Internal"}' },
+		})
+		try {
+			const fleet = createGuideFleet(workspace)
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write('target/guides/emitter.md', '# Emitter\n')
+			workspace.write('target/guides/contract.md', '# Contract\n')
+			const argv = ['--groups', 'guides', '--from', fleet.host, '--target', fleet.target, '--json']
+			const control = createSink()
+			expect(await new CLI(buildCLIOptions(control, live.base)).execute(['audit', ...argv])).toBe(
+				EXIT_CLEAN,
+			)
+			const answered: AuditResult = JSON.parse(control.output[0] ?? '')
+			expect(answered.questions).toStrictEqual([])
+			expect(answered.provenance.guides).toBe('live')
+			const sink = createSink()
+			expect(await new CLI(buildCLIOptions(sink, failing.base)).execute(['audit', ...argv])).toBe(
+				EXIT_DRIFT,
+			)
+			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.questions).toStrictEqual([
+				{
+					field: 'guides',
+					message:
+						'The guide for @orkestrel/emitter could not be read from its repository (HTTP 500); the mirror at guides/emitter.md was not compared.',
+					blocking: false,
+				},
+			])
+			expect(result.provenance.guides).toBe('floor')
+			expect(sink.diagnostic.join('\n')).toContain('guides=floor')
+		} finally {
+			await failing.destroy()
+			await live.destroy()
 			workspace.destroy()
 		}
 	})
@@ -6371,6 +6567,7 @@ describe('CLI audit', () => {
 
 	it('moves deleted content paths from bytes to existence', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const mirrored = await createUpstreamServer({ ...AUDIT_REPLIES, ...FLEET_MIRROR_REPLIES })
 		try {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('fresh')
@@ -6388,7 +6585,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const repaired = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
+				await new CLI(buildCLIOptions(repaired, mirrored.base)).execute([
 					'audit',
 					'--from',
 					host,
@@ -6398,7 +6595,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const repairedJSON = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...repairedJSON.options }).execute([
+				await new CLI(buildCLIOptions(repairedJSON, mirrored.base)).execute([
 					'audit',
 					'--from',
 					host,
@@ -6447,7 +6644,7 @@ describe('CLI audit', () => {
 			for (const path of deleted) workspace.remove(`fresh/${path}`)
 			const report = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...report.options }).execute([
+				await new CLI(buildCLIOptions(report, mirrored.base)).execute([
 					'audit',
 					'--from',
 					host,
@@ -6457,7 +6654,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const deletedJSON = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...deletedJSON.options }).execute([
+				await new CLI(buildCLIOptions(deletedJSON, mirrored.base)).execute([
 					'audit',
 					'--from',
 					host,
@@ -6507,6 +6704,7 @@ describe('CLI audit', () => {
 				repairedNothing.map((finding) => finding.path),
 			)
 		} finally {
+			await mirrored.destroy()
 			workspace.destroy()
 		}
 	})

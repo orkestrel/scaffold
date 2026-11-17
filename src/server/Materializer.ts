@@ -12,7 +12,6 @@ import type {
 	ManifestRegionSet,
 	Mirror,
 	Plan,
-	Question,
 	ScaffoldErrorCode,
 } from '@src/core'
 import type {
@@ -50,7 +49,6 @@ import {
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
 	matchesArtifactDriftReachability,
-	nameToGuide,
 	planToArtifactFindings,
 	replaceManifestRanges,
 	replaceManifestOverrides,
@@ -225,7 +223,7 @@ export class Materializer implements MaterializerInterface {
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
 	 * @returns Findings for hydrated planned paths and selected foreign candidates,
-	 * plus non-blocking questions for present foreign mirrors differing from hosted guides.
+	 * and no questions.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape, `TARGET` when the host or target cannot be read within its
 	 * bounds, and `DESTROYED` after teardown.
@@ -698,35 +696,9 @@ export class Materializer implements MaterializerInterface {
 			...listCanonPaths(target, plan.groups),
 			...listWrapperPaths(target, plan.groups),
 		])
-		const questions: Question[] = []
-		if (plan.groups.includes('guides')) {
-			const directory = resolveContainedPath(target, 'guides')
-			const spent: number[] = []
-			for (const file of directory === undefined ? [] : listFiles(directory)) {
-				const path = `guides/${file}`
-				if (
-					file.includes('/') ||
-					file === 'README.md' ||
-					!file.endsWith('.md') ||
-					path === nameToGuide(plan.blueprint.name)
-				)
-					continue
-				const hosted = this.#reference(path, MAX_TOTAL_ARTIFACT_BYTES - computeTotal(spent))
-				if (hosted === undefined) continue
-				spent.push(hosted.length / 2)
-				const present = readFileHex(target, path)
-				if (present !== undefined && present !== hosted) {
-					questions.push({
-						field: 'guides',
-						message: `The mirror at ${path} differs from the hosted guide. Run catalog to refresh it.`,
-						blocking: false,
-					})
-				}
-			}
-		}
 		return {
 			findings: planToArtifactFindings(hydrated, readSnapshot(target, [...paths])),
-			questions,
+			questions: [],
 		}
 	}
 

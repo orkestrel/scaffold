@@ -68,7 +68,9 @@ import {
 	resolveExecutable,
 } from '@orkestrel/process/server'
 import { parseSync } from 'vite'
+import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
+	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	blueprintToConfigArtifacts,
 	blueprintToManifest,
@@ -77,6 +79,8 @@ import {
 	CAPTURE_DEV_DEPENDENCIES,
 	CONFIG_TEMPLATES,
 	DECLARATION_DEV_DEPENDENCIES,
+	DEPENDENCY_NAME_PATTERN,
+	extractVersion,
 	FRAMEWORK_MATRIX,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	CATALOG_AGENT_PATH,
@@ -2599,6 +2603,65 @@ export function createFleet(workspace: ScratchInterface): {
 }
 
 /**
+ * Holds the catalog agent file a guide-comparing audit reads the hosted package list from.
+ *
+ * @remarks
+ * Lists the packages {@link FLEET_MIRROR_REPLIES} and the fleet fixture serve guides for, and
+ * `@orkestrel/router`, which the target never declares.
+ */
+export const GUIDE_CATALOG_TEXT = [
+	'# Orkestrel',
+	'',
+	CATALOG_START_MARKER,
+	'| Package | Version |',
+	'| --- | --- |',
+	'| @orkestrel/contract | 0.0.9 |',
+	'| @orkestrel/emitter | 0.0.5 |',
+	'| @orkestrel/router | 0.0.10 |',
+	CATALOG_END_MARKER,
+	'',
+].join('\n')
+
+/**
+ * Writes a fleet whose host lists packages in its catalog and whose target manifest matches the registry.
+ *
+ * @param workspace - The temporary workspace both roots are written into.
+ * @returns The host root's absolute path and the target directory's absolute path.
+ *
+ * @remarks
+ * {@link createFleet} hosts a catalog file with no rows, so an audit that reads the hosted list
+ * compares no guide. This host carries {@link GUIDE_CATALOG_TEXT}, and its manifest records that
+ * file's digest, so the host verifies.
+ */
+export function createGuideFleet(workspace: ScratchInterface): {
+	readonly host: string
+	readonly target: string
+} {
+	const fleet = createFleet(workspace)
+	const manifest = buildFleetManifest()
+	const entries = manifest.entries.map((entry) =>
+		entry.destination === CATALOG_AGENT_PATH
+			? { ...entry, digest: computeDigest(GUIDE_CATALOG_TEXT) }
+			: entry,
+	)
+	const membership = { entries, roots: manifest.roots, surface: manifest.surface }
+	workspace.write(`host/${pathToStorage(CATALOG_AGENT_PATH)}`, GUIDE_CATALOG_TEXT)
+	workspace.write(
+		'host/manifest.json',
+		`${JSON.stringify(
+			{
+				...membership,
+				digest: computeManifestDigest(membership.entries, membership.roots, membership.surface),
+			},
+			null,
+			'\t',
+		)}\n`,
+	)
+	workspace.write('target/package.json', ALIGNED_MANIFEST_TEXT)
+	return fleet
+}
+
+/**
  * Writes a fleet beside a target that already carries a rewritable catalog file.
  *
  * @param workspace - The temporary workspace both roots are written into.
@@ -5084,17 +5147,26 @@ export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object
 	'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.5') },
 	'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
 	'/@orkestrel%2Fhtml': { status: 200, body: buildPackument('0.0.4') },
-	'/@orkestrel%2Fmiddleware': { status: 200, body: buildPackument('0.0.16') },
+	'/@orkestrel%2Fmiddleware': {
+		status: 200,
+		body: buildPackument(APP_SERVER_DEV_DEPENDENCIES['@orkestrel/middleware']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Fprobe': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
 	},
-	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
+	'/@orkestrel%2Frouter': {
+		status: 200,
+		body: buildPackument(APP_SERVER_DEV_DEPENDENCIES['@orkestrel/router']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Fscaffold': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
 	},
-	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
+	'/@orkestrel%2Fserver': {
+		status: 200,
+		body: buildPackument(APP_SERVER_DEV_DEPENDENCIES['@orkestrel/server']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Ftest': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
@@ -5157,6 +5229,81 @@ export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object
 		body: buildPackument(FRAMEWORK_MATRIX.vue.dependencies['vue-tsc']?.slice(1) ?? ''),
 	},
 })
+
+/**
+ * Reads each fleet row of the committed catalog as its cell texts.
+ *
+ * @returns Each package name mapped to the text of every cell in its row, in column order; thrown
+ * when the catalog file is absent.
+ */
+export function readCatalogRows(): ReadonlyMap<string, readonly string[]> {
+	const text = readFileText(WORKSPACE_ROOT, CATALOG_AGENT_PATH)
+	if (text === undefined) throw new Error(`The checkout holds no ${CATALOG_AGENT_PATH}`)
+	return new Map(
+		createMarkdown(text)
+			.filter(isTableNode)
+			.flatMap((table) =>
+				table.rows.flatMap((row): ReadonlyArray<readonly [string, readonly string[]]> => {
+					const cells = row.map((cell) => cell.map(flattenText).join('').trim())
+					const [name] = cells
+					return name !== undefined && DEPENDENCY_NAME_PATTERN.test(name) ? [[name, cells]] : []
+				}),
+			),
+	)
+}
+
+/**
+ * Reads the version each fleet row of the committed catalog lists.
+ *
+ * @returns Each package name mapped to its Version cell; thrown when the catalog file is absent or a
+ * row's Version cell is not a version.
+ */
+export function readCatalogVersions(): ReadonlyMap<string, string> {
+	return new Map(
+		[...readCatalogRows()].map(([name, [, version]]): readonly [string, string] => {
+			if (version === undefined || extractVersion(version) === undefined) {
+				throw new Error(
+					`The catalog row for ${name} lists ${JSON.stringify(version)}, which is not a version`,
+				)
+			}
+			return [name, version]
+		}),
+	)
+}
+
+/**
+ * Reads the runtime and peer edges each fleet row of the committed catalog records.
+ *
+ * @returns Each package name mapped to the text of its runtime and peer cells, joined.
+ */
+export function readCatalogEdges(): ReadonlyMap<string, string> {
+	return new Map(
+		[...readCatalogRows()].map(([name, cells]): readonly [string, string] => [
+			name,
+			cells.slice(3).join(', '),
+		]),
+	)
+}
+
+/**
+ * Finds each seed row whose range is not the caret range of the version the catalog lists.
+ *
+ * @param table - The seed rows, each a package name mapped to its range.
+ * @param versions - The versions the committed catalog lists, keyed by package name.
+ * @returns One `"<name>: <range>, catalog <version>"` line for each row that differs from
+ * `^<version>`, and none when every row matches; a row the catalog does not list reads `absent`.
+ */
+export function findSeedDrift(
+	table: Readonly<Record<string, string>>,
+	versions: ReadonlyMap<string, string>,
+): readonly string[] {
+	return Object.entries(table).flatMap(([name, range]): readonly string[] => {
+		const version = versions.get(name)
+		return version !== undefined && range === `^${version}`
+			? []
+			: [`${name}: ${range}, catalog ${version ?? 'absent'}`]
+	})
+}
 
 /**
  * Reads the checkout manifest as text from disk and parses it.

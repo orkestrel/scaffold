@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "caabb0824320128d41b44dd5f7c9eaa444da900f402f03b8c8287b70682eb468"
+			"digest": "c7c7aa6d46de191344b01668d7baca2e5a15c61dbce12cc6fe9c6e0215525439"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "e7ef07eee354d8f155640d7f012d1c538be5579b3d131e925b634e5940bba7b8"
+	"digest": "d94b5bf6ea81515f042565c22a2fee0b1e9141b50b177bd2d9cca783d145e446"
 }
