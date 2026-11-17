@@ -54,7 +54,7 @@ An adoption that moves a refusal's class, code, message, or path lists each move
 ## Deferrals
 
 - Taverna and veneer adopt in their own sessions after this wave closes, by the user's ruling of 2026-11-17; veneer holds contract `^0.0.24` until then (veneer `08a688a`) and yields the host lane to the wave.
-- `ROADMAP.md` item 185 waits on one check in veneer: with the two hand-held `optimizeDeps` rows removed and `node_modules/.vite` deleted, run `npm run test:src:browser` and read the log for "Failed to scan for dependencies" and "new dependencies optimized". `@vitest/browser` 5.1.0 already lists the setup files in `optimizeDeps.entries`, so a clean run closes the item and a scan failure names the cause to fix. Owner: veneer's session, at its go-ahead.
+- `ROADMAP.md` item 185 waits on one check in veneer: with the two hand-held `optimizeDeps` rows removed and the Vite dependency cache deleted, run `npm run test:src:browser` and read the log for "Failed to scan for dependencies" and "new dependencies optimized". `@vitest/browser` 5.1.0 already lists the setup files in `optimizeDeps.entries`, so a clean run closes the item and a scan failure names the cause to fix. Owner: veneer's session, at its go-ahead.
 
 ## State
 
@@ -68,7 +68,8 @@ An adoption that moves a refusal's class, code, message, or path lists each move
 - 2026-11-17, layer 3 published and confirmed apart from server: capture 0.0.11, guide 0.0.33, interpret 0.0.25, lsp 0.0.17, qualifier 0.0.24, queue 0.0.25, rater 0.0.24, relation 0.0.26, sea 0.0.25, terminal 0.0.28, and workspace 0.0.21. Capture's chain needed two test corrections on this host: X7 pins POSIX's permanent EACCES (capture `ad4aa08`) and the thumbnail cost bars read a contended run (capture `4c51f03`).
 - 2026-11-17, layer 4 published apart from mcp and middleware, which peer on server: brief 0.0.20, program 0.0.23, worker 0.0.25, and workflow 0.0.31.
 - 2026-11-17, scaffold carries its adoption (scaffold `ad86d34`) and items 182 and 186 (scaffold `eae8bb4`), and opens item 188.
-- Next: server 0.0.30 after its Windows-bound integration rows hold, then mcp and middleware, then layers 5 to 7 and scaffold 0.0.140.
+- 2026-11-17, the rest of the wave published and confirmed: server 0.0.30 (its Windows-bound integration rows held by server `df2a898`), mcp 0.0.45, middleware 0.0.36, agent 0.0.46, browser 0.0.35, probe 0.0.32, ollama 0.0.40, toolbox 0.0.35, study 0.0.22, and scaffold 0.0.140 (scaffold `46a2f83`, with items 186 and 182 and the catalog refresh `d369cc5`). Browser ships five distribution cases unread that need a Linux host, as 0.0.34 did; ollama's service proof passed 89 of 89 against a second daemon on 11435.
+- Next: the closing round, one visit per catalog package against scaffold 0.0.140, then the registry sweep; then tell veneer's session the wave is closed, with item 185's check.
 
 ## Sequence
 

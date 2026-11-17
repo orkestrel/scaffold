@@ -45,3 +45,13 @@ Each row records one package's release in this wave: the version the registry se
 | `@orkestrel/program` | 4 | 0.0.23 | dist same, runtime ranges moved | program `b021810` |
 | `@orkestrel/worker` | 4 | 0.0.25 | dist same, runtime ranges moved | worker `59ed8ea` |
 | `@orkestrel/workflow` | 4 | 0.0.31 | dist same, runtime ranges moved | workflow `ceb0fd7` |
+| `@orkestrel/server` | 3 | 0.0.30 | dist moved (adoption), runtime ranges moved | server `f4ad569` |
+| `@orkestrel/mcp` | 4 | 0.0.45 | dist moved (adoption), runtime ranges moved | mcp `082308e` |
+| `@orkestrel/middleware` | 4 | 0.0.36 | dist moved (adoption), runtime ranges moved | middleware `fa92741` |
+| `@orkestrel/agent` | 5 | 0.0.46 | dist same, runtime ranges moved | agent `6d5d34d7` |
+| `@orkestrel/browser` | 5 | 0.0.35 | dist moved (adoption), runtime ranges moved | browser `7e08e00` |
+| `@orkestrel/probe` | 5 | 0.0.32 | dist moved (embedded version), runtime ranges moved | probe `0ee847c` |
+| `@orkestrel/ollama` | 6 | 0.0.40 | dist same, runtime ranges moved | ollama `4294bc4` |
+| `@orkestrel/toolbox` | 6 | 0.0.35 | dist same, runtime ranges moved | toolbox `5b9dfa5` |
+| `@orkestrel/study` | 7 | 0.0.22 | dist same, runtime ranges moved | study `897f85d` |
+| `@orkestrel/scaffold` | after 7 | 0.0.140 | dist moved (items 186 and 182, adoption), runtime ranges moved | scaffold `46a2f83` |

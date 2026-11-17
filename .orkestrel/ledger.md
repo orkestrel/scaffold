@@ -22,3 +22,4 @@
 | 2026-11-17 | Review items 186 and 182 | `reviewer` (Claude Opus 5.5) | repaired: the online non-blocking exit asserted |
 | 2026-11-17 | Diagnose capture's X7 on this host | `builder` (Claude Sonnet 5.5) | capture `ad4aa08` |
 | 2026-11-17 | Hold server's drip and FIN rows on this host | `builder` (Claude Sonnet 5.5), then `opus` (Claude Opus 5.5) for the helper proofs and a strict 408 arm, by the user's ruling | in flight |
+| 2026-11-17 | Hold server's drip and FIN rows on this host, then prove the helpers and add a strict 408 arm | `builder` (Claude Sonnet 5.5), then `opus` (Claude Opus 5.5) | server `df2a898` |
