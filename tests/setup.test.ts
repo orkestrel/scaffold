@@ -818,8 +818,10 @@ describe('the entry workspace fixtures', () => {
 		const before = ENTRY_GUIDE.split('\n')
 		const after = ENTRY_GUIDE_WRITTEN.split('\n')
 		expect(after).toHaveLength(before.length)
-		// The write owes exactly the three planted cells, so every other line is unmoved.
-		expect(before.filter((line, index) => line !== after[index])).toHaveLength(3)
+		// The write owes the three planted cells and pads the two tables two of them sit in.
+		const moved = before.filter((line, index) => line !== after[index])
+		expect(moved.filter((line) => line.startsWith('|'))).toHaveLength(7)
+		expect(moved.filter((line) => !line.startsWith('|'))).toEqual(["shape('round')"])
 		const frame = ENTRY_OVERLAP_SOURCE.split('\n')
 		const written = ENTRY_OVERLAP_WRITTEN.split('\n')
 		expect(written).toHaveLength(frame.length)

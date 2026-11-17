@@ -1909,8 +1909,9 @@ export const ENTRY_GUIDE = [
 /**
  * Holds the widget guide a write toward the guide must produce.
  *
- * What `--to guide` owes: the planted cells carrying the source text and
- * every other byte of `ENTRY_GUIDE` unmoved. A sampled reading cannot see a row
+ * What `--to guide` owes: the planted cells carrying the source text, each
+ * touched table padded as `oxfmt` pads it, and every other line of
+ * `ENTRY_GUIDE` unmoved. A sampled reading cannot see a row
  * the table re-render drops, a heading it disturbs, or padding it re-aligns,
  * which is the class the claim exists to catch, so the write is compared whole.
  */
@@ -1921,17 +1922,17 @@ export const ENTRY_GUIDE_WRITTEN = [
 	'',
 	'## Surface',
 	'',
-	'| Name | Kind | Signature | Summary |',
-	'| --- | --- | --- | --- |',
-	'| `shape` | function | `(parts: string) => string` | Shapes a widget from the parts it is given. |',
-	'| `Widget` | interface | `{ paint() }` | One widget the workspace renders. |',
+	'| Name     | Kind      | Signature                   | Summary                                     |',
+	'| -------- | --------- | --------------------------- | ------------------------------------------- |',
+	'| `shape`  | function  | `(parts: string) => string` | Shapes a widget from the parts it is given. |',
+	'| `Widget` | interface | `{ paint() }`               | One widget the workspace renders.           |',
 	'',
 	'## Methods',
 	'',
 	'#### `Widget`',
 	'',
-	'| Method | Summary |',
-	'| --- | --- |',
+	'| Method  | Summary                           |',
+	'| ------- | --------------------------------- |',
 	'| `paint` | Paints the widget onto the frame. |',
 	'',
 	'## Examples',
