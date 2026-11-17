@@ -16,3 +16,9 @@
 | 2026-11-17 | Review the middleware, guide, and browser diffs | `reviewer` (Claude Opus 5.5) | repaired: middleware test returns and guide sentence, guide's width measure, browser's `remove` and `#commitTemporary` |
 | 2026-11-17 | Adopt contract 0.0.25's helpers in scaffold | `builder` (Claude Sonnet 5.5) | in flight |
 | 2026-11-17 | Design `ROADMAP.md` items 182, 185, and 186 | `planner` (Claude Opus 5.5) | in flight |
+| 2026-11-17 | Adopt contract 0.0.25's helpers in scaffold | `builder` (Claude Sonnet 5.5) | scaffold `ad86d34` |
+| 2026-11-17 | Design items 182, 185, and 186 | `planner` (Claude Opus 5.5) | `plan.md` § State |
+| 2026-11-17 | Land items 186 and 182 | `builder` (Claude Sonnet 5.5) | scaffold `eae8bb4` |
+| 2026-11-17 | Review items 186 and 182 | `reviewer` (Claude Opus 5.5) | repaired: the online non-blocking exit asserted |
+| 2026-11-17 | Diagnose capture's X7 on this host | `builder` (Claude Sonnet 5.5) | capture `ad4aa08` |
+| 2026-11-17 | Hold server's drip and FIN rows on this host | `builder` (Claude Sonnet 5.5), then `opus` (Claude Opus 5.5) for the helper proofs and a strict 408 arm, by the user's ruling | in flight |

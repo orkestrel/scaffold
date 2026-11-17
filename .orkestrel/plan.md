@@ -54,6 +54,7 @@ An adoption that moves a refusal's class, code, message, or path lists each move
 ## Deferrals
 
 - Taverna and veneer adopt in their own sessions after this wave closes, by the user's ruling of 2026-11-17; veneer holds contract `^0.0.24` until then (veneer `08a688a`) and yields the host lane to the wave.
+- `ROADMAP.md` item 185 waits on one check in veneer: with the two hand-held `optimizeDeps` rows removed and `node_modules/.vite` deleted, run `npm run test:src:browser` and read the log for "Failed to scan for dependencies" and "new dependencies optimized". `@vitest/browser` 5.1.0 already lists the setup files in `optimizeDeps.entries`, so a clean run closes the item and a scan failure names the cause to fix. Owner: veneer's session, at its go-ahead.
 
 ## State
 
@@ -63,7 +64,11 @@ An adoption that moves a refusal's class, code, message, or path lists each move
 - 2026-11-17, layer 1 published and confirmed, each release commit pushed.
 - 2026-11-17, layer 2 published and confirmed: console 0.0.22, csv 0.0.16, database 0.0.28, form 0.0.20, markdown 0.0.23, msg 0.0.19, pool 0.0.23, process 0.0.22, reason 0.0.20, router 0.0.24, sse 0.0.16, table 0.0.19, template 0.0.16, tool 0.0.25, and websocket 0.0.21, each release commit pushed.
 - 2026-11-17, every adoption unit outside scaffold is reviewed and committed: capture `1d0f14c`, relation `8cc88ff`, guide `90f7210` (the formatter-stable table rewrite), mcp `dd12c59` (server 0.0.29's exchange seam), middleware `04066e8`, and browser `1a9d0cd`.
-- Next: release layer 3, then layers 4 to 7; scaffold's adoption and `ROADMAP.md` items 182, 185, and 186 run beside them.
+- 2026-11-17, a design pass (`planner`, Claude Opus 5.5) ruled item 182 as catalog-tied seeds with a proof, and item 186 as an online comparison against each repository's `main` with an unread read reported as a floor baseline; both ride scaffold 0.0.140.
+- 2026-11-17, layer 3 published and confirmed apart from server: capture 0.0.11, guide 0.0.33, interpret 0.0.25, lsp 0.0.17, qualifier 0.0.24, queue 0.0.25, rater 0.0.24, relation 0.0.26, sea 0.0.25, terminal 0.0.28, and workspace 0.0.21. Capture's chain needed two test corrections on this host: X7 pins POSIX's permanent EACCES (capture `ad4aa08`) and the thumbnail cost bars read a contended run (capture `4c51f03`).
+- 2026-11-17, layer 4 published apart from mcp and middleware, which peer on server: brief 0.0.20, program 0.0.23, worker 0.0.25, and workflow 0.0.31.
+- 2026-11-17, scaffold carries its adoption (scaffold `ad86d34`) and items 182 and 186 (scaffold `eae8bb4`), and opens item 188.
+- Next: server 0.0.30 after its Windows-bound integration rows hold, then mcp and middleware, then layers 5 to 7 and scaffold 0.0.140.
 
 ## Sequence
 
