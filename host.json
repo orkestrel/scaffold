@@ -442,7 +442,7 @@
 			"storage": "agents/skills/orkestrel-parallel/scripts/lane.ts",
 			"destination": ".agents/skills/orkestrel-parallel/scripts/lane.ts",
 			"executable": false,
-			"digest": "9d629001e4a2555da73d9c410d7b35684c82ee4fb89f5e91ee9bd6ec79c0b589"
+			"digest": "257108796b183e5ce3f0a6bcea179662562e812e6403d23e4231dc2b16fdd592"
 		},
 		{
 			"storage": "agents/skills/orkestrel-polish/SKILL.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "0416f09c70aa18c7f9c5f8c872461a5a974dc7cc63ce6b134fdd64fe2a69f7aa"
+	"digest": "aa7a18c58a88bf0d2f30ea43ab95c21f07b3ab7a1a89b6bc29e8b6041abe5c5c"
 }

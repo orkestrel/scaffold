@@ -2193,6 +2193,81 @@ describe('lane.ts', () => {
 			},
 		)
 
+		// The leader leads a group of its own, its child starts a member of that group, and the member
+		// starts a child in a group of its own. When the leader's child exits, no parent link reaches the
+		// member, so only its group's membership selects it; the control keeps the leader's child alive.
+		it.skipIf(!existsSync('/proc/self/stat')).each([
+			[
+				'ends the group that a member no parent link reaches started, with the leader’s group',
+				false,
+			],
+			['ends the group that a member a parent link reaches started, with the leader’s group', true],
+		])('%s', async (_title, kept) => {
+			const descendant = 'setTimeout(() => undefined, 60000)'
+			const outer = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(descendant)}],{stdio:'ignore',detached:true});setTimeout(()=>{},60000)`
+			const middle = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(outer)}],{stdio:'ignore'})${kept ? ';setTimeout(()=>{},60000)' : '.unref()'}`
+			const leader = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(middle)}],{stdio:'ignore'});setTimeout(()=>{},60000)`
+			const launcher = spawn(
+				process.execPath,
+				[
+					'-e',
+					`require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(leader)}],{stdio:'ignore',detached:true});setTimeout(()=>{},60000)`,
+				],
+				{ detached: true, stdio: 'ignore' },
+			)
+			const group = launcher.pid ?? 0
+			onTestFinished(() => {
+				try {
+					process.kill(-group, 'SIGKILL')
+				} catch {}
+			})
+			await waitForCondition(
+				'the leader’s group holds a member whose child leads a group of its own',
+				() => {
+					const members = readMembers() ?? []
+					const lead = members.find((member) => member.parent === group)
+					const held = members.filter((member) => member.group === lead?.pid)
+					return (
+						held.length === (kept ? 3 : 2) &&
+						held.some((member) =>
+							members.some((row) => row.parent === member.pid && row.group === row.pid),
+						)
+					)
+				},
+				{ budget: 45_000, interval: 10 },
+			)
+			const members = readMembers() ?? []
+			const lead = members.find((member) => member.parent === group)?.pid ?? 0
+			const held = members.filter((member) => member.group === lead).map((member) => member.pid)
+			const detached =
+				members.find((row) => held.includes(row.parent) && row.group === row.pid)?.pid ?? 0
+			onTestFinished(() => {
+				for (const id of [lead, detached]) {
+					try {
+						process.kill(-id, 'SIGKILL')
+					} catch {}
+				}
+			})
+			const sample = selectGroup(members, group)
+			expect(detached).toBeGreaterThan(0)
+			expect(
+				sample.map((member) => member.pid).toSorted((left, right) => left - right),
+			).toStrictEqual(
+				(kept ? [group, ...held, detached] : [group, lead]).toSorted((left, right) => left - right),
+			)
+			const kill = killCensus(group, sample)
+			await waitForCondition(
+				'no member of the launcher’s group, the leader’s group, or the detached child’s group lives',
+				() =>
+					!(readMembers() ?? []).some((member) => [group, lead, detached].includes(member.group)),
+				{ budget: 45_000, interval: 10 },
+			)
+			expect(kill).toMatchObject({ settled: true, groups: [detached, lead, group] })
+			expect(kill.members.toSorted((left, right) => left - right)).toStrictEqual(
+				[...held, detached].toSorted((left, right) => left - right),
+			)
+		})
+
 		// The launcher's child leads a session of its own and has a child, and the breaching sample holds
 		// the launcher's group alone, so only a reading after the stop reaches either.
 		it.skipIf(!existsSync('/proc/self/stat'))(
@@ -2612,6 +2687,15 @@ describe('lane.ts', () => {
 						token.publish()
 						token.hold()
 					}
+					// A failure leaves the holder's tree outside every bench kill, stopped if a breach stopped it.
+					const run = readRun(bench.root, 1)
+					const tree = typeof run === 'object' ? run.launcher : undefined
+					expect(tree).toBeGreaterThan(0)
+					onTestFinished(() => {
+						try {
+							if (tree !== undefined) process.kill(-tree, 'SIGKILL')
+						} catch {}
+					})
 					const one = bench.lane('one')
 					await bench.meter.reach('enter', 'one')
 					const breached = bench.lane('wide', { grandchild: 'branch' })

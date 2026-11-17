@@ -87,8 +87,12 @@
 //   ticks recorded for it. These reuses pass that check, and each needs the id space to wrap inside
 //   its window: an id given to another process inside the `CLOCK_TICK_MS` tick of the recorded
 //   start; an id given to another process between that read and the signal; and a parent id given
-//   to another process inside one reading, whose children then read as the member's. On the Linux
-//   container measured 2026-11-16, `pid_max` is 32,768 and Node started 366 processes a second.
+//   to another process inside one reading, whose children then read as the member's. A reading also
+//   selects every member of a group the breach stopped, whose id the host holds while a stopped
+//   member lives; it reads another process there only after every member is killed from outside
+//   the lane and the id goes to another group inside one reading, a reuse of the second kind. On
+//   the Linux container measured 2026-11-16, `pid_max` is 32,768 and Node started 366 processes a
+//   second.
 // - A descendant that detached itself. A process that left the group, a run started through the WMI
 //   detach of `.agents/platforms/windows.md`, and a Windows descendant whose parent exited before the
 //   reading and is no recorded seed are all outside every reading. A background child of a `bash`
@@ -97,15 +101,16 @@
 //   A Linux census counts a process that left the group while its parent is a member, such as a
 //   browser a test runner starts. A breach sends `SIGSTOP` to the launcher's group and to the group
 //   of every counted member, reads the table again while each parent still lives, sends `SIGSTOP`
-//   to the group of every process a parent link then reaches, and repeats until a reading adds no
-//   group or `KILL_BUDGET` readings have run. It then sends `SIGKILL` to every group and member it
-//   collected, the launcher's group last. These cases stay outside that kill: a process whose
-//   parent exited before a reading could link it, such as a daemon that forks twice, which reads as
-//   a child of the host's init in a group and a session of its own; a process started after the
-//   last reading when the budget ended the readings, which a tree that keeps starting detached
-//   processes produces; a member the lane's account may not signal; and a member the host hides
-//   from `/proc`. A lane that ends between the stop and the kill leaves its tree stopped, and
-//   arrivals exit 75 until a person ends that tree. The handover reading reads the group alone, so
+//   to the group of every process a parent link then reaches from a counted member or from any
+//   member of a stopped group, and repeats until a reading adds no group or `KILL_BUDGET` readings
+//   have run. It then sends `SIGKILL` to every group and member it collected, the launcher's group
+//   last. These cases stay outside that kill: a process outside every stopped group whose parent
+//   exited before a reading could link it, such as a daemon that forks twice, which reads as a
+//   child of the host's init in a group and a session of its own; a process started after the last
+//   reading when the budget ended the readings, which a tree that keeps starting detached processes
+//   produces; a member the lane's account may not signal; and a member the host hides from
+//   `/proc`. A lane that ends between the stop and the kill leaves its tree stopped, and arrivals
+//   exit 75 until a person ends that tree. The handover reading reads the group alone, so
 //   a process outside the group that outlives a run that ended without a breach stays outside it.
 // - An owner ended alone mid-run. No event reports a foreign tree's end. Arrivals exit 75 until that
 //   tree is gone, and the next arrival then reclaims.
@@ -2478,9 +2483,10 @@ export function takeReading(
 }
 
 /**
- * Collects a breaching tree to a fixpoint: each reading selects the launcher's group, the members
- * collected so far that it still shows with their start ticks, and every process a parent link
- * reaches from those, and sends `SIGSTOP` to each selected member's group that has received none.
+ * Collects a breaching tree to a fixpoint: each reading selects the launcher's group, every member
+ * of a group collected so far, the members collected so far that it still shows with their start
+ * ticks, and every process a parent link reaches from those, and sends `SIGSTOP` to each selected
+ * member's group that has received none.
  *
  * @remarks
  * A stopped parent keeps its children's parent field, so the next reading reaches what an earlier
@@ -2501,8 +2507,11 @@ export function collectTree(
 ): Collection {
 	const members = budget > 0 ? takeReading(read) : undefined
 	if (members === undefined) return collection
-	const selected = selectGroup(members, collection.group, collection.members)
 	const known = new Set(collection.groups)
+	const selected = selectGroup(members, collection.group, [
+		...collection.members,
+		...members.filter((member) => known.has(member.group)),
+	])
 	const added = [...new Set(selected.map((member) => member.group))].filter(
 		(group) => !known.has(group),
 	)
