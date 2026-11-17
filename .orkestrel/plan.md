@@ -60,7 +60,10 @@ An adoption that moves a refusal's class, code, message, or path lists each move
 - 2026-11-17, contract 0.0.26, router 0.0.23, server 0.0.29, middleware 0.0.35, test 0.0.43, and scaffold 0.0.139 serve; every other catalog package declares contract `^0.0.24`.
 - 2026-11-17, layer 1 holds release commits for every package: abort 0.0.19, budget 0.0.20, codec 0.0.12, emitter 0.0.18, html 0.0.18, indexeddb 0.0.20, jsonrpc 0.0.5, ndjson 0.0.19, sqlite 0.0.20, test 0.0.44, and timeout 0.0.19, each chain green.
 - 2026-11-17, browser waits on mcp's release for its router and server re-pin, because mcp 0.0.44 peers router `^0.0.22`; browser carries contract `^0.0.26` alone (browser `9571066`).
-- Next: publish layer 1 with the user's one-time code, then re-pin and release layer 2.
+- 2026-11-17, layer 1 published and confirmed, each release commit pushed.
+- 2026-11-17, layer 2 published and confirmed: console 0.0.22, csv 0.0.16, database 0.0.28, form 0.0.20, markdown 0.0.23, msg 0.0.19, pool 0.0.23, process 0.0.22, reason 0.0.20, router 0.0.24, sse 0.0.16, table 0.0.19, template 0.0.16, tool 0.0.25, and websocket 0.0.21, each release commit pushed.
+- 2026-11-17, every adoption unit outside scaffold is reviewed and committed: capture `1d0f14c`, relation `8cc88ff`, guide `90f7210` (the formatter-stable table rewrite), mcp `dd12c59` (server 0.0.29's exchange seam), middleware `04066e8`, and browser `1a9d0cd`.
+- Next: release layer 3, then layers 4 to 7; scaffold's adoption and `ROADMAP.md` items 182, 185, and 186 run beside them.
 
 ## Sequence
 

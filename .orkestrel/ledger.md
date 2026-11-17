@@ -10,3 +10,9 @@
 | 2026-11-17 | Adopt contract 0.0.25's helpers in database, process, router, and server | `builder` (Claude Sonnet 5.5) | database `30117f4`, process `b875e16`, router `9d72177`, server `83e9008` |
 | 2026-11-17 | Review the database, process, router, and server adoptions | `reviewer` (Claude Opus 5.5) | repaired: database TSDoc, router `Navigator#judge` kept, server's timeout relation and its assertions |
 | 2026-11-17 | Adopt contract 0.0.25's helpers in capture, relation, middleware, and browser; make guide's table rewrite formatter-stable; move mcp onto server 0.0.29 | `builder` (Claude Sonnet 5.5) | in flight |
+| 2026-11-17 | Review the capture, relation, and mcp diffs | `reviewer` (Claude Opus 5.5) | repaired: mcp's locked-body pass-through, its secret refusal listed, and three guide passages |
+| 2026-11-17 | Repair mcp's migration findings | `builder` (Claude Sonnet 5.5) | mcp `dd12c59` |
+| 2026-11-17 | Admit middleware's foreign keys through `interfaceShape` and `own` | `builder` (Claude Sonnet 5.5) | middleware `04066e8` |
+| 2026-11-17 | Review the middleware, guide, and browser diffs | `reviewer` (Claude Opus 5.5) | repaired: middleware test returns and guide sentence, guide's width measure, browser's `remove` and `#commitTemporary` |
+| 2026-11-17 | Adopt contract 0.0.25's helpers in scaffold | `builder` (Claude Sonnet 5.5) | in flight |
+| 2026-11-17 | Design `ROADMAP.md` items 182, 185, and 186 | `planner` (Claude Opus 5.5) | in flight |
