@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "b29b5a278e6c9d64603cdcf794ec6ef04ca1c769d6f7c1b1604905b7a646941e"
+			"digest": "5246f3925aa1cfefbeadec36ca8a741fa5ad0fe1e98d72dc160595802c5640da"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -988,7 +988,7 @@
 			"storage": "guides/abort.md",
 			"destination": "guides/abort.md",
 			"executable": false,
-			"digest": "0e4806f67d06130b9a0f1635d999f30caff87b5e64f3b043202ae826233574db"
+			"digest": "698004e4eda87316929093ec1e67dd26f0c29be8c86b96aef40de7777254d41a"
 		},
 		{
 			"storage": "guides/agent.md",
@@ -1006,7 +1006,7 @@
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "cb79077f8e0df55e3eed41eb6636bcc732cb25b0e0e8be79f63a05c72445864c"
+			"digest": "73eaef8bd226bee664e7f9759d0582b57e0c28a962a10cd7603fd0d60c9a76a8"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -1066,7 +1066,7 @@
 			"storage": "guides/guide.md",
 			"destination": "guides/guide.md",
 			"executable": false,
-			"digest": "60696bb79f692a605a152cbee706829479e74f2f6ddf1651a5f821f24c68d441"
+			"digest": "8800e587f6b61941240a8f20a52488a42036fda300a4f1c3c83f38bc3e8d1818"
 		},
 		{
 			"storage": "guides/html.md",
@@ -1108,13 +1108,13 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "c549421c2e5257cfbe132ad3ad8744ddf3e89b11efee92abd8663cda2feb6d90"
+			"digest": "b6ee90154f7b92988c5e04776d4242412a39d7fa367f9ac0dbac90dee90b18a0"
 		},
 		{
 			"storage": "guides/middleware.md",
 			"destination": "guides/middleware.md",
 			"executable": false,
-			"digest": "d3a06d7904ebff0c028443c59d5b8a223a9c9c0aedb854fc2a03f7e3c078d3bb"
+			"digest": "1933d17f2dbaf8c4fee8570f27cf224767e4f6f1a774b68e2eb0baeb929c0508"
 		},
 		{
 			"storage": "guides/msg.md",
@@ -1144,7 +1144,7 @@
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "fbe5d6256e44088ed571bf64793f876b94e393ccc210a0d914b843625c52b355"
+			"digest": "101bb7d39130f8f8a8224d65e4066cc758a4644cb248bc2c553df99f7ffa4c5b"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1210,7 +1210,7 @@
 			"storage": "guides/server.md",
 			"destination": "guides/server.md",
 			"executable": false,
-			"digest": "be54eea16d4c1ba9f1d56e193362d0137bc93bbd624096b68af29db90bfeabff"
+			"digest": "cf2b0b9896b0f229b50f266d0af81f448cd8509503d7dc263f7c6b6b5360469f"
 		},
 		{
 			"storage": "guides/sqlite.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "d94b5bf6ea81515f042565c22a2fee0b1e9141b50b177bd2d9cca783d145e446"
+	"digest": "e3865f03afe2d94007794c961ff1b40d2a6d707265fa6eb722b4aada898a32b7"
 }
