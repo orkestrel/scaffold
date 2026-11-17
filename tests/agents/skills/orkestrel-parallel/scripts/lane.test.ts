@@ -1,3 +1,4 @@
+import type { Member } from '../../../../../.agents/skills/orkestrel-parallel/scripts/lane.ts'
 import { spawn, spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { constants, getPriority, tmpdir, userInfo } from 'node:os'
@@ -11,6 +12,7 @@ import {
 	LANE_SCRIPT,
 	renderLaneZombie,
 	readProcessPriority,
+	renderLaneFixture,
 	renderLaneFlags,
 	renderLanePublisher,
 	renderLaneResolver,
@@ -29,9 +31,11 @@ import {
 	Census,
 	classifyLight,
 	CLOCK_TICK_MS,
+	collectTree,
 	decideTurn,
 	exceedsThreshold,
 	extractMutation,
+	killCensus,
 	fitsBudget,
 	HISTORY_AGE_MS,
 	HISTORY_DIRECTORY,
@@ -42,7 +46,9 @@ import {
 	isLimits,
 	isTicket,
 	KILL_BUDGET,
+	KILL_PAUSE_MS,
 	killMembers,
+	killTree,
 	linkStage,
 	MAX_CAP_SECONDS,
 	measurePeak,
@@ -72,6 +78,7 @@ import {
 	readMember,
 	readMembers,
 	readResident,
+	readProcess,
 	readTask,
 	readThreads,
 	readLimits,
@@ -973,8 +980,11 @@ describe('lane.ts', () => {
 				await holder.reach('zombie ')
 				const zombie = Number(/zombie (\d+)/u.exec(holder.output)?.[1])
 				await waitForCondition(
-					'the holder keeps its exited child as a zombie',
-					() => readTasks(zombie)?.some((task) => task.state === 'Z') === true,
+					'the holder keeps its exited child as one zombie thread and no other thread',
+					() => {
+						const tasks = readTasks(zombie)
+						return tasks?.length === 1 && tasks.every((task) => task.state === 'Z')
+					},
 					{ budget: 45_000, interval: 10 },
 				)
 				expect(readTasks(zombie)).toStrictEqual([
@@ -1943,6 +1953,7 @@ describe('lane.ts', () => {
 				created: BOOT + 600 * CLOCK_TICK_MS,
 				cpu: 10 * CLOCK_TICK_MS,
 				memory: 0,
+				start: 600,
 			})
 			expect(parseMember('no fields\n', BOOT)).toBeUndefined()
 			expect(parseMember('100 (lead) S 1 100 100\n', BOOT)).toBeUndefined()
@@ -1978,6 +1989,21 @@ describe('lane.ts', () => {
 			// The controls: another group reaches only its own, and an absent group reaches nothing.
 			expect(selectGroup(members, 300).map((member) => member.pid)).toStrictEqual([300])
 			expect(selectGroup(members, 999)).toStrictEqual([])
+			// A known member the table still shows with its start ticks is counted outside the group, and
+			// one whose id now reads another start is not.
+			const browser = members.filter((member) => member.pid === 102)
+			expect(
+				selectGroup(members, 300, browser)
+					.map((member) => member.pid)
+					.toSorted(),
+			).toStrictEqual([102, 300])
+			expect(
+				selectGroup(
+					members,
+					300,
+					browser.map((member) => ({ ...member, start: member.start + 1 })),
+				).map((member) => member.pid),
+			).toStrictEqual([300])
 			scratch.remove('table/stat')
 			scratch.write('table/stat', 'cpu  1 2 3\n')
 			expect(readBoot(table)).toBeUndefined()
@@ -2041,6 +2067,258 @@ describe('lane.ts', () => {
 			},
 		)
 
+		// The fixture table stands in for the moment between the sample and the kill: it holds one real
+		// member's own `stat`, and another's with its start ticks changed, as a process that took that id
+		// after the sample would show. It holds no boot line, so the readings after the stop fail.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'ends the group and a counted member outside it whose start ticks still match after a failed reading, and leaves one whose id reads another start running',
+			async () => {
+				const scratch = createScratch({ prefix: 'orkestrel-lane-census-' })
+				onTestFinished(() => scratch.destroy())
+				const sleepers = ['leader', 'matched', 'reused'].map(() =>
+					spawn(process.execPath, ['-e', 'setTimeout(() => undefined, 60000)'], {
+						detached: true,
+						stdio: 'ignore',
+					}),
+				)
+				const pids = sleepers.map((child) => child.pid ?? 0)
+				onTestFinished(() => {
+					for (const pid of pids) {
+						try {
+							process.kill(-pid, 'SIGKILL')
+						} catch {}
+					}
+				})
+				const [leader = 0, matched = 0, reused = 0] = pids
+				await waitForCondition(
+					'every sleeper reads in the table',
+					() => pids.every((pid) => readProcess(pid) !== undefined),
+					{ budget: 45_000, interval: 10 },
+				)
+				const members = (readMembers() ?? []).filter((member) => pids.includes(member.pid))
+				expect(members.map((member) => member.group).toSorted()).toStrictEqual(pids.toSorted())
+				const own = readFileSync(join('/proc', String(reused), 'stat'), 'utf8')
+				const close = own.lastIndexOf(')')
+				const fields = own.slice(close + 2).split(' ')
+				const shifted = fields.map((field, index) =>
+					index === 19 ? String(Number(field) + 1) : field,
+				)
+				scratch.write(
+					`table/${String(matched)}/stat`,
+					readFileSync(join('/proc', String(matched), 'stat'), 'utf8'),
+				)
+				scratch.write(
+					`table/${String(reused)}/stat`,
+					`${own.slice(0, close + 2)}${shifted.join(' ')}`,
+				)
+				const table = join(scratch.path, 'table')
+				expect(readProcess(reused, table)?.start).toBe((readProcess(reused)?.start ?? 0) + 1)
+				expect(readMembers(table)).toBeUndefined()
+				expect(killCensus(leader, members, table)).toStrictEqual({
+					settled: false,
+					groups: [matched, leader],
+					members: [matched],
+				})
+				await waitForCondition(
+					'the leader and the matched member have ended',
+					() =>
+						!(readMembers() ?? []).some(
+							(member) => member.pid === leader || member.pid === matched,
+						),
+					{ budget: 45_000, interval: 10 },
+				)
+				expect(process.kill(reused, 0)).toBe(true)
+				expect(readProcess(reused)?.state).not.toBe('T')
+				expect(readProcess(999_999_999)).toBeUndefined()
+			},
+		)
+
+		// The leader leads a group of its own, and the orphan sits in that group after its parent exited,
+		// so no parent link reaches it: only a signal to the leader's group does.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'ends a process in a counted leader’s group that no parent link reaches',
+			async () => {
+				const orphan = 'setTimeout(() => undefined, 60000)'
+				const middle = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(orphan)}],{stdio:'ignore'}).unref()`
+				const leader = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(middle)}],{stdio:'ignore'});setTimeout(()=>{},60000)`
+				const launcher = spawn(
+					process.execPath,
+					[
+						'-e',
+						`require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(leader)}],{stdio:'ignore',detached:true});setTimeout(()=>{},60000)`,
+					],
+					{ detached: true, stdio: 'ignore' },
+				)
+				const group = launcher.pid ?? 0
+				onTestFinished(() => {
+					try {
+						process.kill(-group, 'SIGKILL')
+					} catch {}
+				})
+				await waitForCondition(
+					'the leader holds an orphan in its group whose parent exited',
+					() => {
+						const members = readMembers() ?? []
+						const lead = members.find((member) => member.parent === group)
+						const held = members.filter((member) => member.group === lead?.pid)
+						return (
+							held.length === 2 &&
+							held.some((member) => member.pid !== lead?.pid && member.parent !== lead?.pid)
+						)
+					},
+					{ budget: 45_000, interval: 10 },
+				)
+				const members = readMembers() ?? []
+				const lead = members.find((member) => member.parent === group)?.pid ?? 0
+				const stray = members.find((member) => member.group === lead && member.pid !== lead)?.pid
+				onTestFinished(() => {
+					try {
+						process.kill(-lead, 'SIGKILL')
+					} catch {}
+				})
+				const sample = selectGroup(members, group)
+				expect(
+					sample.map((member) => member.pid).toSorted((left, right) => left - right),
+				).toStrictEqual([group, lead].toSorted((left, right) => left - right))
+				expect(stray).toBeGreaterThan(0)
+				expect(killCensus(group, sample)).toMatchObject({ settled: true, groups: [lead, group] })
+				await waitForCondition(
+					'no member of the launcher’s group or of the leader’s group lives',
+					() =>
+						!(readMembers() ?? []).some(
+							(member) => member.group === group || member.group === lead,
+						),
+					{ budget: 45_000, interval: 10 },
+				)
+			},
+		)
+
+		// The launcher's child leads a session of its own and has a child, and the breaching sample holds
+		// the launcher's group alone, so only a reading after the stop reaches either.
+		it.skipIf(!existsSync('/proc/self/stat'))(
+			'ends a descendant that formed a group of its own after the sample, and its child',
+			async () => {
+				const grandchild = 'setTimeout(() => undefined, 60000)'
+				const child = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(grandchild)}],{stdio:'ignore'});setTimeout(()=>{},60000)`
+				const launcher = spawn(
+					process.execPath,
+					[
+						'-e',
+						`require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(child)}],{stdio:'ignore',detached:true});setTimeout(()=>{},60000)`,
+					],
+					{ detached: true, stdio: 'ignore' },
+				)
+				const group = launcher.pid ?? 0
+				onTestFinished(() => {
+					try {
+						process.kill(-group, 'SIGKILL')
+					} catch {}
+				})
+				await waitForCondition(
+					'the launcher’s child and its child read in the table',
+					() => selectGroup(readMembers() ?? [], group).length === 3,
+					{ budget: 45_000, interval: 10 },
+				)
+				const tree = selectGroup(readMembers() ?? [], group)
+				const leader = tree.find((member) => member.parent === group)?.pid ?? 0
+				const descendant = tree.find((member) => member.parent === leader)?.pid ?? 0
+				onTestFinished(() => {
+					try {
+						process.kill(-leader, 'SIGKILL')
+					} catch {}
+				})
+				expect(tree.find((member) => member.pid === leader)?.group).toBe(leader)
+				const sample = tree.filter((member) => member.group === group)
+				expect(sample.map((member) => member.pid)).toStrictEqual([group])
+				const kill = killCensus(group, sample)
+				expect(kill).toMatchObject({ settled: true, groups: [leader, group] })
+				expect(kill.members.toSorted((left, right) => left - right)).toStrictEqual(
+					[leader, descendant].toSorted((left, right) => left - right),
+				)
+				await waitForCondition(
+					'no member of the launcher’s group or of its child’s group lives',
+					() =>
+						!(readMembers() ?? []).some(
+							(member) => member.group === group || member.group === leader,
+						),
+					{ budget: 45_000, interval: 10 },
+				)
+			},
+		)
+
+		it('stops reading at the budget and kills every group it stopped, the launcher’s last', () => {
+			// Each reading shows one more process, the child of the last, in a group of its own.
+			const chain = Array.from({ length: KILL_BUDGET + 2 }, (_, index) => ({
+				pid: 10 + index,
+				parent: index === 0 ? 1 : 9 + index,
+				group: 10 + index,
+				state: 'S',
+				created: 0,
+				cpu: 0,
+				memory: 0,
+				start: index,
+			}))
+			const readings = Array.from({ length: KILL_BUDGET + 1 }, (_, index) =>
+				chain.slice(0, index + 2),
+			)
+			const start = { group: 10, groups: [10], members: [], settled: false }
+			const reads = createRecorder<[]>()
+			const stops = createRecorder<[number, NodeJS.Signals]>()
+			const cursor = readings.values()
+			const collection = collectTree(
+				() => {
+					reads.handler()
+					return cursor.next().value ?? readings.at(-1)
+				},
+				stops.handler,
+				start,
+				KILL_BUDGET,
+			)
+			expect(reads.count).toBe(KILL_BUDGET)
+			expect(collection.settled).toBe(false)
+			const stopped = chain.slice(1, KILL_BUDGET + 1).map((member) => member.group)
+			expect(collection.groups).toStrictEqual([10, ...stopped])
+			expect(stops.calls).toStrictEqual(stopped.map((id) => [-id, 'SIGSTOP']))
+			const kills = createRecorder<[number, NodeJS.Signals]>()
+			expect(killTree(collection, kills.handler)).toStrictEqual({
+				settled: false,
+				groups: [...stopped.toReversed(), 10],
+				members: stopped,
+			})
+			expect(kills.calls).toStrictEqual([
+				...stopped.toReversed().map((id) => [-id, 'SIGKILL']),
+				...stopped.map((id) => [id, 'SIGKILL']),
+				[-10, 'SIGKILL'],
+			])
+			// The control: a budget past the growth settles on the first reading that adds no group.
+			const more = createRecorder<[]>()
+			const again = readings.values()
+			const settled = collectTree(
+				() => {
+					more.handler()
+					return again.next().value ?? readings.at(-1)
+				},
+				createRecorder<[number, NodeJS.Signals]>().handler,
+				start,
+				KILL_BUDGET + 3,
+			)
+			expect(more.count).toBe(KILL_BUDGET + 2)
+			expect(settled.settled).toBe(true)
+			// A reading that fails or throws ends the collection unsettled, with what it held.
+			expect(collectTree(() => undefined, stops.handler, start, KILL_BUDGET)).toBe(start)
+			expect(
+				collectTree(
+					() => {
+						throw new Error('the table is unreadable')
+					},
+					stops.handler,
+					start,
+					KILL_BUDGET,
+				),
+			).toBe(start)
+			expect(stops.count).toBe(stopped.length)
+		})
+
 		it('checks a tally against the memory and the process threshold, the boundary inside', () => {
 			const threshold = { cores: 0, memory: 100, processes: 2 }
 			const tally = { cpu: new Map<string, number>(), memory: 100, processes: 2 }
@@ -2055,7 +2333,7 @@ describe('lane.ts', () => {
 			for (const [path, text] of Object.entries(TABLE)) scratch.write(path, text)
 			const table = join(scratch.path, 'table')
 			const threshold = { cores: 0, memory: 10_000_000, processes: 2 }
-			const breach = createRecorder<[number]>()
+			const breach = createRecorder<[number, readonly Member[]]>()
 			const census = new Census(threshold, breach.handler, table)
 			onTestFinished(() => census.stop())
 			expect(await census.ready(0)).toBe(true)
@@ -2067,12 +2345,18 @@ describe('lane.ts', () => {
 			expect(census.tally.memory).toBe(3500 * 1024)
 			expect(census.tally.processes).toBe(3)
 			expect(buildOutcome(census.tally, 1000, 0).cpu).toBe(62 * CLOCK_TICK_MS)
-			expect(breach.calls).toStrictEqual([[100]])
+			// The handler receives the members of the breaching sample, the one outside the group included.
+			expect(
+				breach.calls.map(([launcher, members]) => [
+					launcher,
+					members.map((member) => `${String(member.pid)}:${String(member.start)}`).toSorted(),
+				]),
+			).toStrictEqual([[100, ['100:500', '101:600', '102:700']]])
 			expect(census.breached).toBe(true)
 			await census.sample()
 			expect(breach.count).toBe(1)
 			// The control: the same table read after the seal counts the tree and ends nothing.
-			const quiet = createRecorder<[number]>()
+			const quiet = createRecorder<[number, readonly Member[]]>()
 			const sealed = new Census(threshold, quiet.handler, table)
 			onTestFinished(() => sealed.stop())
 			sealed.seed([100], 0)
@@ -2084,7 +2368,7 @@ describe('lane.ts', () => {
 			await census.stop()
 			expect(await census.sample()).toBeUndefined()
 			expect(await census.ready(0)).toBe(false)
-			const memory = createRecorder<[number]>()
+			const memory = createRecorder<[number, readonly Member[]]>()
 			const large = new Census(
 				{ ...threshold, memory: 3000 * 1024, processes: 100 },
 				memory.handler,
@@ -2093,7 +2377,7 @@ describe('lane.ts', () => {
 			onTestFinished(() => large.stop())
 			large.seed([100], 0)
 			await large.sample()
-			expect(memory.calls).toStrictEqual([[100]])
+			expect(memory.calls.map(([launcher]) => launcher)).toStrictEqual([100])
 			const blind = new Census(undefined, () => undefined, join(scratch.path, 'absent'))
 			expect(await blind.ready(0)).toBe(false)
 			await blind.destroy()
@@ -2292,6 +2576,173 @@ describe('lane.ts', () => {
 				expect(getPriority(heavy)).toBe(getPriority(process.pid))
 				bench.meter.releaseAll()
 				expect(await Promise.all([one.exit(), alpha.exit()])).toStrictEqual([0, 0])
+			})
+
+			it.each([
+				['a heavy holder of this build', false],
+				['a holder of the 0.0.138 build', true],
+			])(
+				'ends a light run past its threshold and leaves %s and a sibling light run alive',
+				async (_name, released) => {
+					const bench = await startLaneBench()
+					onTestFinished(() => bench.destroy())
+					bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+					const narrow = { ...CLEAN, processes: 2 }
+					bench.record(bench.command('one'), [narrow, narrow, narrow])
+					bench.record(bench.command('wide', 'branch'), [narrow, narrow, narrow])
+					const holder = released ? 'released' : 'alpha'
+					// The 0.0.138 holder's tree leads a group of its own, as a launcher does, and its run
+					// record names it.
+					const holding = released
+						? bench.spawn([bench.command('released')[2] ?? ''], undefined, '-e', true)
+						: bench.lane('alpha')
+					await bench.meter.reach('enter', holder)
+					if (released) {
+						const token = new Token()
+						onTestFinished(() => token.destroy())
+						await token.listen(renderEndpoint(bench.root, FIRST_TOKEN))
+						writeStage(bench.root, buildTicket(FIRST_TOKEN, 'released'))
+						linkStage(bench.root, FIRST_TOKEN)
+						bench.scratch.remove(join('root', `${FIRST_TOKEN}.stage`))
+						writeRun(bench.root, 1, {
+							started: Date.now(),
+							launcher: holding.pid,
+							command: undefined,
+						})
+						token.publish()
+						token.hold()
+					}
+					const one = bench.lane('one')
+					await bench.meter.reach('enter', 'one')
+					const breached = bench.lane('wide', { grandchild: 'branch' })
+					expect(await breached.exit()).toBe(BREACH_CODE)
+					await waitForCondition(
+						'the ended tree leaves the meter',
+						() => !bench.meter.present.some((label) => label === 'wide' || label === 'branch'),
+						{ budget: 45_000, interval: 10 },
+					)
+					expect(bench.meter.present.toSorted()).toStrictEqual([holder, 'one'].toSorted())
+					expect(
+						bench.meter.marks.filter((mark) => mark.event === 'drop').map((mark) => mark.label),
+					).not.toContain('one')
+					bench.meter.release('one')
+					expect(await one.exit()).toBe(0)
+					expect(bench.meter.present).toStrictEqual([holder])
+					// A holder the breach stopped keeps its meter socket, so only its release reads it running.
+					bench.meter.release(holder)
+					expect(await holding.exit()).toBe(0)
+				},
+			)
+
+			it('counts a descendant in a group of its own and ends it with the run past its threshold', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+				const narrow = { ...CLEAN, processes: 2 }
+				const stray = renderLaneFixture(bench.meter.port, 'stray')
+				const command = [
+					process.execPath,
+					'-e',
+					`const c=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(stray)}],{stdio:'ignore',detached:true});c.unref();console.log('stray '+c.pid);${renderLaneFixture(bench.meter.port, 'detacher')}`,
+				]
+				bench.record(command, [narrow, narrow, narrow])
+				const run = bench.spawn([
+					...renderLaneFlags(bench.root, bench.journals, 'detacher'),
+					'--',
+					...command,
+				])
+				expect(await run.exit()).toBe(BREACH_CODE)
+				const pid = Number(
+					/stray (\d+)/u.exec(readFileSync(join(bench.journals, 'detacher.jsonl'), 'utf8'))?.[1],
+				)
+				expect(pid).toBeGreaterThan(0)
+				const records = readOutcomes(bench.root, renderKey(realpathSync(WORKSPACE_ROOT), command))
+				expect(records.at(-1)).toMatchObject({ code: BREACH_CODE })
+				expect(records.at(-1)?.processes).toBeGreaterThan(2)
+				await waitForCondition(
+					'the descendant in a group of its own has ended and left the meter',
+					() =>
+						!(readMembers() ?? []).some((member) => member.pid === pid) &&
+						!bench.meter.present.includes('stray'),
+					{ budget: 45_000, interval: 10 },
+				)
+			})
+
+			// The leader starts its children when the command holding its stdin ends, which falls after
+			// the breaching sample and inside the pause of a kill that ends the launcher's group first.
+			it('ends the children a counted leader in a group of its own starts after the breaching sample', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+				const narrow = { ...CLEAN, processes: 2 }
+				const late = renderLaneFixture(bench.meter.port, 'late')
+				const leader = `process.stdin.on('end',()=>[1,2,3].forEach(()=>require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(late)}],{stdio:'ignore'})));process.stdin.resume();setTimeout(()=>{},60000)`
+				const command = [
+					process.execPath,
+					'-e',
+					`const c=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(leader)}],{stdio:['pipe','ignore','ignore'],detached:true});console.log('leader '+c.pid);${renderLaneFixture(bench.meter.port, 'starter')}`,
+				]
+				bench.record(command, [narrow, narrow, narrow])
+				const run = bench.spawn([
+					...renderLaneFlags(bench.root, bench.journals, 'starter'),
+					'--',
+					...command,
+				])
+				const code = await run.exit()
+				const pid = Number(
+					/leader (\d+)/u.exec(readFileSync(join(bench.journals, 'starter.jsonl'), 'utf8'))?.[1],
+				)
+				onTestFinished(() => {
+					try {
+						process.kill(-pid, 'SIGKILL')
+					} catch {}
+				})
+				expect(code).toBe(BREACH_CODE)
+				expect(pid).toBeGreaterThan(0)
+				await waitForCondition(
+					'the leader and every child it started have ended and left the meter',
+					() =>
+						!(readMembers() ?? []).some((member) => member.group === pid) &&
+						!bench.meter.present.some((label) => label === 'late' || label === 'starter'),
+					{ budget: 45_000, interval: 10 },
+				)
+			})
+
+			it('ends a counted leader in a group of its own that keeps starting children, and every child', async () => {
+				const bench = await startLaneBench()
+				onTestFinished(() => bench.destroy())
+				bench.limit({ ...LIMITS, threshold: { ...LIMITS.threshold, processes: 2 } })
+				const narrow = { ...CLEAN, processes: 2 }
+				const forker = `const go=(n)=>{if(n>0){require('node:child_process').spawn('sleep',['60'],{stdio:'ignore'});setTimeout(()=>go(n-1),${String(KILL_PAUSE_MS / 5)})}};go(250);${renderLaneFixture(bench.meter.port, 'forker')}`
+				const command = [
+					process.execPath,
+					'-e',
+					`const c=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(forker)}],{stdio:'ignore',detached:true});console.log('leader '+c.pid);${renderLaneFixture(bench.meter.port, 'spawner')}`,
+				]
+				bench.record(command, [narrow, narrow, narrow])
+				const run = bench.spawn([
+					...renderLaneFlags(bench.root, bench.journals, 'spawner'),
+					'--',
+					...command,
+				])
+				const code = await run.exit()
+				const pid = Number(
+					/leader (\d+)/u.exec(readFileSync(join(bench.journals, 'spawner.jsonl'), 'utf8'))?.[1],
+				)
+				onTestFinished(() => {
+					try {
+						process.kill(-pid, 'SIGKILL')
+					} catch {}
+				})
+				expect(code).toBe(BREACH_CODE)
+				expect(pid).toBeGreaterThan(0)
+				await waitForCondition(
+					'the leader and every child it started have ended and left the meter',
+					() =>
+						!(readMembers() ?? []).some((member) => member.group === pid) &&
+						!bench.meter.present.some((label) => label === 'forker' || label === 'spawner'),
+					{ budget: 45_000, interval: 10 },
+				)
 			})
 		},
 	)
