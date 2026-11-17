@@ -1,5 +1,5 @@
 import type { ReadAllowanceInterface } from './types.js'
-import { isNonNegativeInteger } from '@orkestrel/contract'
+import { isNonNegativeInteger, isSafeInteger } from '@orkestrel/contract'
 import { ScaffoldError } from '@src/core'
 
 /**
@@ -32,7 +32,7 @@ export class ReadAllowance implements ReadAllowanceInterface {
 	 * non-negative safe integer.
 	 */
 	constructor(budget: number) {
-		if (!isNonNegativeInteger(budget) || !Number.isSafeInteger(budget)) {
+		if (!isNonNegativeInteger(budget) || !isSafeInteger(budget)) {
 			throw new ScaffoldError('INVALID', 'The read budget is not a non-negative safe integer.', {
 				field: 'budget',
 			})
@@ -63,7 +63,7 @@ export class ReadAllowance implements ReadAllowanceInterface {
 	 * ```
 	 */
 	spend(bytes: number): void {
-		if (!isNonNegativeInteger(bytes) || !Number.isSafeInteger(bytes)) {
+		if (!isNonNegativeInteger(bytes) || !isSafeInteger(bytes)) {
 			throw new ScaffoldError('INVALID', 'The spent bytes are not a non-negative safe integer.', {
 				field: 'bytes',
 			})

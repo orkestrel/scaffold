@@ -47,7 +47,7 @@ import {
 	holds,
 	isDefined,
 	isError,
-	isNumber,
+	isSafeInteger,
 	isString,
 	parseJSONAs,
 } from '@orkestrel/contract'
@@ -660,7 +660,7 @@ export function climbRealPath(
 	pending: readonly string[],
 	depth: number,
 ): string | undefined {
-	if (!Number.isSafeInteger(depth) || depth < 0 || depth > MAX_PATH_DEPTH) return undefined
+	if (!isSafeInteger(depth) || depth < 0 || depth > MAX_PATH_DEPTH) return undefined
 	const real = attempt(() => realpathSync(current))
 	if (real.success) return pending.length === 0 ? real.value : join(real.value, ...pending)
 	if (!matchesMissingPath(real.error)) return undefined
@@ -1167,7 +1167,7 @@ export function readFileHex(
 	path: string,
 	limit: number = MAX_ARTIFACT_BYTES,
 ): string | undefined {
-	if (!isNumber(limit) || !Number.isSafeInteger(limit) || limit < 0 || limit > MAX_ARTIFACT_BYTES) {
+	if (!isSafeInteger(limit) || limit < 0 || limit > MAX_ARTIFACT_BYTES) {
 		throw new ScaffoldError('INVALID', `Byte limit is outside the artifact ceiling at ${path}`, {
 			root,
 			path,

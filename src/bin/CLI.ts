@@ -48,7 +48,7 @@ import type {
 	VersionResolution,
 } from './types.js'
 import { renderTable } from '@orkestrel/console'
-import { attempt, isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import { attempt, isArray, isRecord, isString, parseJSON, settle } from '@orkestrel/contract'
 import {
 	AXES,
 	BIN_ENTRY_PATH,
@@ -243,11 +243,10 @@ export class CLI implements CLIInterface {
 		// no command was read: there is no machine-readable value for it to pollute.
 		if (!read.success) return this.#refuse(read.error, false)
 		const command = read.value
-		try {
-			return await this.#dispatch(command)
-		} catch (error) {
-			return this.#refuse(error, command.json === true)
-		}
+		const dispatched = await settle(() => this.#dispatch(command))
+		return dispatched.success
+			? dispatched.value
+			: this.#refuse(dispatched.error, command.json === true)
 	}
 
 	// One verb per branch, each answering with its own exit code. The switch is
@@ -945,9 +944,9 @@ export class CLI implements CLIInterface {
 		blueprint: Blueprint,
 	): Promise<Omit<OverwriteResult, 'audit' | 'additions' | 'lifts'>> {
 		const previous = catalogToNames(target)
-		try {
+		const confirmed = await settle(async () => {
 			const versions = await this.#versions(declared.pins, false, blueprint)
-			return await this.#confirm(
+			return this.#confirm(
 				materializer,
 				target,
 				declared,
@@ -955,9 +954,10 @@ export class CLI implements CLIInterface {
 				versions,
 				previous,
 			)
-		} catch (error) {
-			return this.#unfinished(target, [], { ...(host === undefined ? {} : { host }) }, error)
-		}
+		})
+		return confirmed.success
+			? confirmed.value
+			: this.#unfinished(target, [], { ...(host === undefined ? {} : { host }) }, confirmed.error)
 	}
 
 	// The membership read and the writes that follow the version read. A step that
