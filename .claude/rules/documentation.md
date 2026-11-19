@@ -61,6 +61,7 @@ For behavioral interfaces/classes:
 - The table's methods exactly match the interface's call-signature members.
 - Readonly data properties remain in the interface's `## Surface` row.
 - Each implementing class exposes exactly its interface methods—no missing or extra public behavior.
+- Name the interface a class implements `{Class}Interface` when one method table serves both: parity pairs a class with the interface named for it alone. A class with members that implements an interface of another name, such as `MemorySource` implementing `ByteSourceInterface`, carries its own `## Methods` table, and each method in it carries its own doc block, because parity reads that table's summaries from the class and never from the interface.
 
 Parity scope:
 

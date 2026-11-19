@@ -49,6 +49,7 @@ Stop and report (expected, found, evidence, done or not done, one hypothesis) on
 1. CHEAP_CHECKS (regeneration, then the format check, lint, and type check over the owned files)
 2. SCOPED_TEST
 3. ARTIFACT_CRITERION
+4. When the unit adds an exported name, a `tests/setup*.ts` export included: `scaffold surface` reports no collision the unit added, per `.claude/rules/names.md` § Fleet name ownership.
 
 **Observations, not criteria.** TIMING_SENSITIVE_OR_TREE_WIDE_GATES the unit reports and the Orchestrator re-runs.
 

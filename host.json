@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "c852ff9886b2a2d24b8a0d69efe10f58dac37bd217d676c133048c148b5e877e"
+			"digest": "c6693448ec348b9732969418b9cb28516e5fee59be5002a7a8a1e615bab6253b"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -556,7 +556,7 @@
 			"storage": "agents/templates/brief.md",
 			"destination": ".agents/templates/brief.md",
 			"executable": false,
-			"digest": "7dc057870174bda3f0aee305c0e8e86b9552ddf8f4f0e84ae66aba4fae45ab95"
+			"digest": "98612cfd700a5d7739ee3e3d410aba7d9e98e0834ff87dbcd1bfe3c3b9c3db2e"
 		},
 		{
 			"storage": "agents/transports/claude-cli.md",
@@ -688,7 +688,7 @@
 			"storage": "claude/rules/documentation.md",
 			"destination": ".claude/rules/documentation.md",
 			"executable": false,
-			"digest": "d6fd22a39159770582fb0ab6cfa1a67bd67c5ce68035f23f348bfc53f524260c"
+			"digest": "b9917176bf2c368f5b25125400ba3090db932dd348826a544f3ae1b7119c56c2"
 		},
 		{
 			"storage": "claude/rules/names.md",
@@ -712,7 +712,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "7e66c0adcd56827ce2ed20459e50b6ecec8ccccfd2f7fdcb93eadf96e71ad625"
+			"digest": "ea322356f3caa088c17e67342baa73b40554a9946d6ae7db2e52d4ce66adfeae"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "d023fbae058238dcd4206e2b6fe7d9a8bfa71dfe7e7e7c32b4355eed29aa7803"
+	"digest": "816462775feb6dd16a56b6206d1ee0b0865e2590928086f252cd410943dc8b37"
 }

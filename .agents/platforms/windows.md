@@ -23,6 +23,7 @@ The commands an agent runs on a Windows host, and their quirks. `.claude/rules/p
 ## Git Bash
 
 - Write `C:/` in every path Windows Node reads from inside a string, such as `node -e`: Git Bash translates a path argument and leaves a string alone, so `/c/Users/...` reads as `C:\c\Users\...`.
+- Write each entry of an `export PATH=` line as `/c/...`: the drive colon in `C:/...` splits the entry, and the shell resolves the next `node` on `PATH` instead (read 2026-11-19: three probe runs read Node 24.22.3 where Node 22 was meant). A chain plan that sets `PATH` in Windows form, with `;` between entries, reads correctly.
 - Chain a command that gates the next with `&&`, because the command after `;` runs on a failure.
 
 ## PowerShell 5.1
