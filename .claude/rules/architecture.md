@@ -105,9 +105,11 @@ neither reads meaning.
   data-kind file, that every centralized declaration is exported, that a class sits in its matching
   implementation or errors file, that `constants.ts` declares only UPPER_SNAKE_CASE consts with
   no bare collection literal, and that every interface or type-alias property is `readonly`.
-- The plugin proves that no file declares a `let` that `prefer-const` leaves, and, over
+- The plugin proves that no file declares a `let` that `prefer-const` leaves, other than the counted
+  loop index and accumulators `.claude/rules/typescript.md` § Bindings admits, and, over
   `POLICY_NESTED_GLOBS` and `POLICY_SCRIPT_GLOBS`, that no function sits inside another outside the
-  callback positions.
+  callback positions. It does not read whether a counted loop's body computes over a typed array,
+  an array, or a string; review rules that.
 - The plugin proves that a skill script exports every top-level declaration with a doc block and
   runs nothing but its entry guard, over `POLICY_SCRIPT_GLOBS`.
 - The sweep proves that no source, test, config, script, or sheet file carries an `eslint-disable`,

@@ -274,7 +274,7 @@
 			"storage": "agents/skills/orkestrel-harden/references/bindings.md",
 			"destination": ".agents/skills/orkestrel-harden/references/bindings.md",
 			"executable": false,
-			"digest": "e6a4f62ba4e590135c2cd80f72b66184d06f7a930e054187b3627d06ee194d16"
+			"digest": "77fbd8e4a0b978b25446cf8c02fe062d404e6dfe6ccfcf2b56e18bc2bfdd9464"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden/references/centralization.md",
@@ -670,7 +670,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "dff1adae3da831d43ca339af8e96ed95f33239abdc20ed0eeedbb28f2f628d45"
+			"digest": "383be84cb040fa5ba2e8756ccba251991ee9f648e1b036918078e9897c1dd1de"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -730,7 +730,7 @@
 			"storage": "claude/rules/typescript.md",
 			"destination": ".claude/rules/typescript.md",
 			"executable": false,
-			"digest": "25ed2168c556f5addf446731424395aa91d8eb7b0eb92b6edef7cff9651a6570"
+			"digest": "88b22b23da6ec2773d38916ac9b0e8302954c9892d5aa6cfc073e57233a32e04"
 		},
 		{
 			"storage": "claude/rules/workspace.md",
@@ -916,7 +916,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "b80d6a2b5e4d693341cec7c02ad6097d04218d4adcd4640976971c19fda219ab"
+			"digest": "00cf906c747c5b37c1951de5589c8b9cb89dae94a4f9b39b24de404ccf07624e"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "2fdde0aa178e50cf03838ecd3516a58ca642dbb8c2fc59ddc2cf54be0a3b1a42"
+			"digest": "35dd10a07654856cb15c3d8c51064e7622cf50a7625b69b3c33260e4f8ca91aa"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "e3865f03afe2d94007794c961ff1b40d2a6d707265fa6eb722b4aada898a32b7"
+	"digest": "e09a122458dfbe2bd62e17f42ef987d3605bbc4d7be13bf29a6deb48f324770b"
 }

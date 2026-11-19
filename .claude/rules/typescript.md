@@ -40,16 +40,27 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 
 ## Bindings
 
-- **Variables.** Never write a `let` or `var` declaration, at module scope, in a function, in a loop
-  head, or in a test; declare each variable with the `const` keyword. Never assign to a parameter or
+- **Variables.** Never write a `var` declaration. Declare each variable with the `const` keyword,
+  and write `let` only where the **Counted loops** bullet admits it. Never assign to a parameter or
   a `catch` binding, whether by `=`, by a compound operator such as `+=` or `??=`, by `++` or `--`,
   or as a destructuring target. The lint rules `no-var`, `prefer-const`, `policy/no-let`,
-  `no-param-reassign`, and `no-ex-assign` enforce this bullet.
-- **Derivation.** Derive a value instead of accumulating it: write the expression that produces it
-  (`some`, `every`, `find`, `filter`, `map`, `reduce`, a conditional expression), or extract a
-  `{verb}{Noun}` helper that returns it. Build text from its parts with `join` or a template literal,
-  never with a fold whose step appends a part to the text it carries.
-- **Iteration.** Iterate with `for…of` over `entries()` or an iterable instead of an index counter.
+  `no-param-reassign`, and `no-ex-assign` enforce this bullet and the `let` shapes of the next.
+- **Counted loops.** In a `for (…; …; …)` statement, declare the index with `let` in the head when
+  the update clause makes its only write; a bound that nothing writes can sit beside it in that
+  head. Declare an accumulator with `let` and a value in a block inside a function, before an
+  unlabeled loop of that form with only variable declarations between them; write it only in that
+  loop's body and read it only in that loop and after it. Never write an index or an accumulator
+  inside a nested function or class, never write an accumulator inside a `while`, `do…while`, or
+  `try` statement, and never read an accumulator from a nested function or class. Write a counted
+  loop only where its body computes from the index over a typed array, an array, or a string, and
+  iterate everything else with `for…of`.
+- **Derivation.** Outside a counted loop's accumulator, derive a value instead of accumulating it:
+  write the expression that produces it (`some`, `every`, `find`, `filter`, `map`, `reduce`, a
+  conditional expression), or extract a `{verb}{Noun}` helper that returns it. Build text from its
+  parts with `join` or a template literal, never with a fold whose step appends a part to the text
+  it carries.
+- **Iteration.** Iterate with `for…of` over `entries()` or an iterable instead of an index counter,
+  except in a counted loop.
 - **Try results.** Take a value out of a `try` block through a helper that runs the block and
   returns the value. Treat a log that the block appends to as a log rather than such a value, and
   apply the **Lists and logs** rule to it.
@@ -102,8 +113,10 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
     value, and one write per key into a fresh local object that builds a fixture a literal cannot
     express, such as a cycle or a sparse array;
   - a preallocated typed array written once per index, in index order, as the input a byte API
-    requires, such as zlib, a PNG encoder, or `Buffer`, which is a platform-API write; write no
-    index twice.
+    requires, such as zlib, a PNG encoder, or `Buffer`, which is a platform-API write, or as the
+    result a counted loop computes into a typed array its own function creates; write no index
+    twice;
+  - a counted loop's index and its accumulators, which the **Counted loops** bullet admits.
 - **Per-call state.** Keep state that the awaits or callbacks of one call change, other than a log,
   in `#` fields of an entity created for that call. Treat a list that more than one concurrently
   pending async path of one call appends to, such as the workers of a pool, as state of that call:

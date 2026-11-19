@@ -2177,6 +2177,68 @@ describe('policy plugin', () => {
 				name: 'accepts a let in a namespace nested in a declared module',
 				code: "declare module 'm' { namespace Inner { let value: number } }",
 			},
+			...[
+				{
+					form: 'a counter loop',
+					code: 'for (let index = 0; index < 3; index++) read(index)',
+				},
+				{
+					form: 'two indices written in one update',
+					code: 'for (let low = 0, high = 9; low < high; low++, high--) read(low, high)',
+				},
+				{
+					form: 'an index that a closure in the body reads',
+					code: 'for (let index = 0; index < 3; index++) { listen(() => read(index)) }',
+				},
+				{
+					form: 'an index loop at the top level',
+					code: 'for (let row = 0; row < 3; row += 2) read(row)',
+				},
+				{
+					form: 'a bound beside the index that nothing writes',
+					code: 'for (let index = 0, size = values.length; index < size; index++) read(values[index])',
+				},
+			].map(({ form, code }) => ({
+				name: `accepts ${form} [membership: counted index written only in its update]`,
+				code,
+			})),
+			...[
+				{
+					form: 'an accumulator summed in a function',
+					code: 'function total(values) {\n let sum = 0\n for (let index = 0; index < values.length; index++) { sum += values[index] }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator with a const between it and the loop',
+					code: 'function total(values) {\n let sum = 0\n const size = values.length\n for (let index = 0; index < size; index++) { sum += values[index] }\n return sum\n}',
+				},
+				{
+					form: 'two accumulators written under an if',
+					code: 'function bounds(values) {\n let min = Infinity, max = -Infinity\n for (let index = 0; index < values.length; index++) {\n if (values[index] < min) { min = values[index] }\n if (values[index] > max) { max = values[index] }\n }\n return [min, max]\n}',
+				},
+				{
+					form: 'an accumulator read in the loop test for an early exit',
+					code: 'function find(values) {\n let found = false\n for (let index = 0; index < values.length && !found; index++) { found = values[index] === 0 }\n return found\n}',
+				},
+				{
+					form: 'a nested kernel that writes its own output after the inner loop',
+					code: 'function rows(grid) {\n const out = new Float64Array(grid.length)\n for (let row = 0; row < grid.length; row++) {\n let sum = 0\n for (let column = 0; column < grid[row].length; column++) { sum += grid[row][column] }\n out[row] = sum\n }\n return out\n}',
+				},
+				{
+					form: 'an accumulator written inside a nested counted loop',
+					code: 'function total(grid) {\n let sum = 0\n for (let row = 0; row < grid.length; row++) {\n for (let column = 0; column < grid[row].length; column++) { sum += grid[row][column] }\n }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator in a try block that also holds the loop',
+					code: 'function total(values) {\n try {\n let sum = 0\n for (let index = 0; index < values.length; index++) { sum += values[index] }\n return sum\n } catch {\n return 0\n }\n}',
+				},
+				{
+					form: 'an accumulator in a while body before a counted loop',
+					code: 'function drain(queues) {\n while (queues.length > 0) {\n let sum = 0\n for (let index = 0; index < 3; index++) { sum += index }\n read(sum)\n }\n}',
+				},
+			].map(({ form, code }) => ({
+				name: `accepts ${form} [membership: block-local accumulator written only in the counted loop body]`,
+				code,
+			})),
 		],
 		invalid: [
 			...[
@@ -2184,7 +2246,6 @@ describe('policy plugin', () => {
 				{ form: 'compound assignment', code: 'let count = 0\ncount += 1' },
 				{ form: 'logical assignment', code: 'let count: number | undefined = 0\ncount ??= 1' },
 				{ form: 'update', code: 'let count = 0\ncount++' },
-				{ form: 'counter loop', code: 'for (let index = 0; index < 3; index++) read(index)' },
 				{ form: 'array destructuring target', code: 'let [first] = [1]\n;[first] = [2]' },
 				{ form: 'object destructuring target', code: 'let { a } = record\n;({ a } = other)' },
 				{
@@ -2197,6 +2258,116 @@ describe('policy plugin', () => {
 				{ form: 'value assigned later', code: 'let value: number\nvalue = 1\nread(value)' },
 			].map(({ form, code }) => ({
 				name: `rejects a let by ${form} [membership: let that prefer-const leaves]`,
+				code,
+				errors: [{ messageId: 'let' }],
+			})),
+			...[
+				{
+					form: 'an index written in the body',
+					code: 'for (let index = 0; index < 3; index++) { index += 1 }',
+				},
+				{
+					form: 'an index written in the test',
+					code: 'for (let index = 0; index++ < 3;) read(index)',
+				},
+				{
+					form: 'an index written in the test beside an update',
+					code: 'for (let index = 0; index++ < 3; index++) read(index)',
+				},
+				{
+					form: 'an index written by a closure in the update clause',
+					code: 'for (let index = 0; index < 3; defer(() => index++)) read(index)',
+				},
+				{
+					form: 'an accumulator at module scope before a counted loop',
+					code: 'let sum = 0\nfor (let index = 0; index < 3; index++) { sum += index }',
+				},
+				{
+					form: 'an accumulator in a class static block',
+					code: 'class Holder { static { let sum = 0\n for (let index = 0; index < 3; index++) { sum += index } } }',
+				},
+				{
+					form: 'an accumulator in a top-level block before a counted loop',
+					code: '{\n let sum = 0\n for (let index = 0; index < 3; index++) { sum += index }\n}',
+				},
+				{
+					form: 'an accumulator in a block inside a class static block',
+					code: 'class Holder { static { {\n let sum = 0\n for (let index = 0; index < 3; index++) { sum += index }\n } } }',
+				},
+				{
+					form: 'an accumulator before a while loop',
+					code: 'function drain() {\n let sum = 0\n while (more()) { sum += 1 }\n return sum\n}',
+				},
+				{
+					form: 'a let written in a try and its catch',
+					code: 'function load() {\n let result = 0\n try { result = fetch() } catch { result = 1 }\n return result\n}',
+				},
+				{
+					form: 'an accumulator written inside a try in the loop body',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { try { sum += index } catch { read(index) } }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator written inside a while in the loop body',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { while (more()) { sum += index } }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator written inside a do-while in the loop body',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { do { sum += index } while (more()) }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator read before the loop in a sibling declaration',
+					code: 'function total() {\n let sum = 0\n const start = sum\n for (let index = 0; index < 3; index++) { sum += index }\n return start\n}',
+				},
+				{
+					form: 'an accumulator written after the loop',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { sum += index }\n sum = 0\n return sum\n}',
+				},
+				{
+					form: 'an accumulator written by a closure in the loop body',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { listen(() => { sum += index }) }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator read by a closure after the loop',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { sum += index }\n return () => sum\n}',
+				},
+				{
+					form: 'an accumulator written by a class field in the loop body',
+					code: 'function total(list) {\n let sum = 0\n for (let index = 0; index < 3; index++) { list.push(class { value = sum++ }) }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator read by a class field after the loop',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++) { sum += index }\n return class { value = sum }\n}',
+				},
+				{
+					form: 'a statement other than a declaration between the accumulator and the loop',
+					code: 'function total() {\n let sum = 0\n log()\n for (let index = 0; index < 3; index++) { sum += index }\n return sum\n}',
+				},
+				{
+					form: 'a function declaration between the accumulator and the loop',
+					code: 'function total() {\n let sum = 0\n function step() { return 1 }\n for (let index = 0; index < 3; index++) { sum += step() }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator before a labeled counted loop',
+					code: 'function total() {\n let sum = 0\n outer: for (let index = 0; index < 3; index++) { sum += index\n if (sum > 2) break outer }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator before a for-of loop',
+					code: 'function total(values) {\n let sum = 0\n for (const value of values) { sum += value }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator before a for loop with no let index',
+					code: 'function total() {\n let sum = 0\n for (const bound = 3; sum < bound;) { sum += 1 }\n return sum\n}',
+				},
+				{
+					form: 'an accumulator written in the loop update clause',
+					code: 'function total() {\n let sum = 0\n for (let index = 0; index < 3; index++, sum++) { read(index) }\n return sum\n}',
+				},
+				{
+					form: 'a bare accumulator',
+					code: 'function total() {\n let sum\n for (let index = 0; index < 3; index++) { sum = index }\n return sum\n}',
+				},
+			].map(({ form, code }) => ({
+				name: `rejects ${form} [membership: let that no contained shape admits]`,
 				code,
 				errors: [{ messageId: 'let' }],
 			})),
@@ -5050,6 +5221,19 @@ createSomething({
 					].join('\n'),
 				)
 			}
+			scratch.write(
+				'src/clean/helpers.ts',
+				[
+					'/** Sums the numbers of a list. */',
+					'export function sumNumbers(values: readonly number[]): number {',
+					'\tlet total = 0',
+					'\tfor (let index = 0; index < values.length; index++) {',
+					'\t\ttotal += values[index] ?? 0',
+					'\t}',
+					'\treturn total',
+					'}',
+				].join('\n'),
+			)
 			scratch.write(
 				'src/clean/CleanMember.ts',
 				[

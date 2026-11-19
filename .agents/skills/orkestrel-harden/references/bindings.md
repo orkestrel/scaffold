@@ -37,7 +37,8 @@ signatures or the reading before you run the item over the checkout.
 
 ## Keys outside the census
 
-- Run no item for the **Variables** bullet; the lint rules it names decide it.
+- Run no item for the **Variables** and **Counted loops** bullets; the lint rules they name decide
+  them, apart from where a counted loop is worth writing, which review rules.
 - Run no item for these keys: `derivation.expression`, `iteration.counter`, `try.helper`, `try.log`, `running.definition`, `lists.derived`, `logs.loop`,
   `logs.scan`, `exemptions.reach`, `percall.entity`, `percall.lifetime`, `percall.relative`,
   `entity.home`, `entity.pointers`, `slots.route`, `slots.exclusions`, `resets.home`, `bound.read`,
