@@ -44,6 +44,7 @@ import {
 	placeBlock,
 	planPin,
 	planRestore,
+	proveKept,
 	readBlock,
 	readPack,
 	readString,
@@ -56,6 +57,7 @@ import {
 	runNpm,
 	scanLedgerNames,
 	scanLocalSpecs,
+	scanLocked,
 	scanNames,
 	scanPinRequest,
 	serializeJSON,
@@ -79,6 +81,7 @@ import {
 	commitFiles,
 	createRepository,
 	createSwapSession,
+	createUpstreamServer,
 	installSwapFixture,
 	lockManifest,
 	probeManifestLock,
@@ -894,6 +897,186 @@ describe('swap.ts', () => {
 				expect([directory, restored.status]).toStrictEqual([directory, 0])
 				expect([directory, readFileSync(manifestPath, 'utf8')]).toStrictEqual([directory, original])
 			}
+		} finally {
+			await session.destroy()
+		}
+	})
+
+	it('restores a served package from the registry and keeps the recorded range of one the registry answers 404 for', async () => {
+		const session = await createSwapSession('orkestrel-swap-kept-')
+		try {
+			const { scratch, fixture, environment } = session
+			const options = { cwd: scratch.path, env: environment }
+			await installSwapFixture(fixture.consumer, environment)
+			const delta = writeSwapSource(scratch.path, 'delta')
+			const manifestPath = join(fixture.consumer, 'package.json')
+			const record = readInstalledRecord(fixture.consumer)
+			writeFileSync(
+				manifestPath,
+				renderPackageManifest({
+					...record,
+					dependencies: {
+						...(isRecord(record.dependencies) ? record.dependencies : {}),
+						'@orkestrel/swapfix-delta': SWAP_RANGE,
+					},
+				}),
+			)
+			const pinned = await spawnSkillScript(
+				SWAP_SCRIPT,
+				[
+					'--pin',
+					'--consumer',
+					fixture.consumer,
+					'--source',
+					fixture.alpha,
+					'--source',
+					delta,
+					'--no-build',
+				],
+				options,
+			)
+			expect(pinned).toMatchObject({ status: 0 })
+			const entry = readSwapEntry(fixture.consumer, '@orkestrel/swapfix-delta')
+			const restored = await spawnSkillScript(
+				SWAP_SCRIPT,
+				['--restore', '--consumer', fixture.consumer, '--json'],
+				options,
+			)
+			expect(restored).toMatchObject({ status: 0 })
+			expect(restored.json).toMatchObject({
+				mode: 'restore',
+				ok: true,
+				problems: [],
+				restored: [
+					{
+						name: '@orkestrel/swapfix-alpha',
+						range: SWAP_RANGE,
+						resolved: expect.stringContaining(session.registry.url),
+					},
+				],
+				kept: [
+					{
+						name: '@orkestrel/swapfix-delta',
+						range: entry.replaced,
+						registry: 'absent',
+						resolved: expect.stringContaining(String(entry.tarball)),
+					},
+				],
+			})
+			const manifest = readInstalledRecord(fixture.consumer)
+			expect(isRecord(manifest.dependencies) && manifest.dependencies).toMatchObject({
+				'@orkestrel/swapfix-alpha': SWAP_RANGE,
+				'@orkestrel/swapfix-delta': entry.replaced,
+			})
+			expect(readFileSync(join(fixture.consumer, 'package-lock.json'), 'utf8')).toContain(
+				String(entry.tarball),
+			)
+		} finally {
+			await session.destroy()
+		}
+	})
+
+	it('exits 1 and writes nothing when the registry answers neither a release nor a 404 for a pinned package', async () => {
+		const session = await createSwapSession('orkestrel-swap-silent-')
+		const failing = await createUpstreamServer({
+			'/@orkestrel%2fswapfix-delta': { status: 500, body: '{"error":"Internal"}' },
+		})
+		try {
+			const { scratch, fixture, environment } = session
+			const options = { cwd: scratch.path, env: environment }
+			await installSwapFixture(fixture.consumer, environment)
+			const delta = writeSwapSource(scratch.path, 'delta')
+			const manifestPath = join(fixture.consumer, 'package.json')
+			const record = readInstalledRecord(fixture.consumer)
+			writeFileSync(
+				manifestPath,
+				renderPackageManifest({
+					...record,
+					dependencies: {
+						...(isRecord(record.dependencies) ? record.dependencies : {}),
+						'@orkestrel/swapfix-delta': SWAP_RANGE,
+					},
+				}),
+			)
+			const pinned = await spawnSkillScript(
+				SWAP_SCRIPT,
+				['--pin', '--consumer', fixture.consumer, '--source', delta, '--no-build'],
+				options,
+			)
+			expect(pinned).toMatchObject({ status: 0 })
+			const ledgerPath = join(fixture.consumer, 'tmp', 'tarballs', 'pins.json')
+			const manifestBefore = readFileSync(manifestPath, 'utf8')
+			const ledgerBefore = readFileSync(ledgerPath, 'utf8')
+			const refused = await spawnSkillScript(
+				SWAP_SCRIPT,
+				['--restore', '--consumer', fixture.consumer, '--json'],
+				{
+					cwd: scratch.path,
+					env: {
+						...environment,
+						npm_config_registry: `${failing.base}/`,
+						npm_config_fetch_retries: '0',
+					},
+				},
+			)
+			expect(refused.status).toBe(1)
+			expect(refused.stderr).toContain('the registry did not answer for @orkestrel/swapfix-delta')
+			expect(readFileSync(manifestPath, 'utf8')).toBe(manifestBefore)
+			expect(readFileSync(ledgerPath, 'utf8')).toBe(ledgerBefore)
+		} finally {
+			await failing.destroy()
+			await session.destroy()
+		}
+	})
+
+	it('refuses a mixed restore before writing when a kept package is locked outside its recorded range', async () => {
+		const session = await createSwapSession('orkestrel-swap-outside-')
+		try {
+			const { scratch, fixture, environment } = session
+			const options = { cwd: scratch.path, env: environment }
+			await installSwapFixture(fixture.consumer, environment)
+			const delta = writeSwapSource(scratch.path, 'delta', { version: '0.0.2' })
+			const manifestPath = join(fixture.consumer, 'package.json')
+			const record = readInstalledRecord(fixture.consumer)
+			writeFileSync(
+				manifestPath,
+				renderPackageManifest({
+					...record,
+					dependencies: {
+						...(isRecord(record.dependencies) ? record.dependencies : {}),
+						'@orkestrel/swapfix-delta': '^0.0.1',
+					},
+				}),
+			)
+			const pinned = await spawnSkillScript(
+				SWAP_SCRIPT,
+				[
+					'--pin',
+					'--consumer',
+					fixture.consumer,
+					'--source',
+					fixture.alpha,
+					'--source',
+					delta,
+					'--no-build',
+				],
+				options,
+			)
+			expect(pinned).toMatchObject({ status: 0 })
+			const ledgerPath = join(fixture.consumer, 'tmp', 'tarballs', 'pins.json')
+			const manifestBefore = readFileSync(manifestPath, 'utf8')
+			const ledgerBefore = readFileSync(ledgerPath, 'utf8')
+			const refused = await spawnSkillScript(
+				SWAP_SCRIPT,
+				['--restore', '--consumer', fixture.consumer, '--json'],
+				options,
+			)
+			expect(refused.status).toBe(1)
+			expect(refused.stderr).toContain('@orkestrel/swapfix-delta')
+			expect(refused.stderr).toContain('locked at 0.0.2')
+			expect(refused.stderr).toContain('^0.0.1')
+			expect(readFileSync(manifestPath, 'utf8')).toBe(manifestBefore)
+			expect(readFileSync(ledgerPath, 'utf8')).toBe(ledgerBefore)
 		} finally {
 			await session.destroy()
 		}
@@ -1924,5 +2107,87 @@ describe('the copied helpers', () => {
 describe('the parseArgs refusals', () => {
 	it('names the flag parseArgs refuses through the source, a linked directory, and the built twin, and leaves the directory untouched', () => {
 		expect(runFlagRefusals(SWAP_SCRIPT, OPTIONS)).toStrictEqual([])
+	})
+})
+
+describe('proveKept', () => {
+	it('accepts a manifest range with the ledger tarball in the lock and names each missing half', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-kept-proof-' })
+		try {
+			scratch.write('consumer/package.json', '{"dependencies":{"@o/kept":"^1.0.0"}}\n')
+			scratch.write(
+				'consumer/package-lock.json',
+				JSON.stringify({
+					packages: {
+						'node_modules/@o/kept': {
+							version: '1.0.0',
+							resolved: 'file:tmp/tarballs/o-kept-1.0.0-abc.tgz',
+						},
+					},
+				}),
+			)
+			const consumer = join(scratch.path, 'consumer')
+			expect(proveKept(consumer, '@o/kept', '^1.0.0', 'o-kept-1.0.0-abc.tgz')).toStrictEqual([])
+			expect(proveKept(consumer, '@o/kept', '^2.0.0', 'o-kept-1.0.0-abc.tgz')).toStrictEqual([
+				'@o/kept is ^1.0.0 in the manifest, not ^2.0.0',
+				'@o/kept is locked at 1.0.0 but its recorded range ^2.0.0 does not admit it',
+			])
+			scratch.write(
+				'consumer/package-lock.json',
+				JSON.stringify({
+					packages: {
+						'node_modules/@o/kept': {
+							version: '1.0.0',
+							resolved: 'http://127.0.0.1/@o/kept/-/kept-1.0.0.tgz',
+						},
+					},
+				}),
+			)
+			expect(proveKept(consumer, '@o/kept', '^1.0.0', 'o-kept-1.0.0-abc.tgz')).toStrictEqual([
+				'the lockfile no longer names o-kept-1.0.0-abc.tgz for @o/kept',
+			])
+			scratch.write(
+				'consumer/package-lock.json',
+				JSON.stringify({
+					packages: {
+						'node_modules/@o/kept': {
+							version: '2.0.0',
+							resolved: 'file:tmp/tarballs/o-kept-1.0.0-abc.tgz',
+						},
+					},
+				}),
+			)
+			expect(proveKept(consumer, '@o/kept', '^1.0.0', 'o-kept-1.0.0-abc.tgz')).toStrictEqual([
+				'@o/kept is locked at 2.0.0 but its recorded range ^1.0.0 does not admit it',
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('scanLocked', () => {
+	it('admits the caret, tilde, exact, and wildcard ranges the lock satisfies and names each one it does not', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-swap-locked-' })
+		try {
+			scratch.write(
+				'consumer/package-lock.json',
+				JSON.stringify({ packages: { 'node_modules/@o/kept': { version: '1.2.3' } } }),
+			)
+			const consumer = join(scratch.path, 'consumer')
+			for (const range of ['^1.0.0', '~1.2.0', '1.2.3', '*', '>=1.2.0 <2.0.0']) {
+				expect([range, scanLocked(consumer, '@o/kept', range)]).toStrictEqual([range, []])
+			}
+			for (const range of ['^1.3.0', '~1.3.0', '1.2.4', '^2.0.0']) {
+				expect(scanLocked(consumer, '@o/kept', range)).toStrictEqual([
+					`@o/kept is locked at 1.2.3 but its recorded range ${range} does not admit it`,
+				])
+			}
+			expect(scanLocked(consumer, '@o/absent', '^1.0.0')).toStrictEqual([
+				'@o/absent is locked at (no version) but its recorded range ^1.0.0 does not admit it',
+			])
+		} finally {
+			scratch.destroy()
+		}
 	})
 })

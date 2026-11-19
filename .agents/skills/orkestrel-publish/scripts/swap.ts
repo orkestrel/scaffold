@@ -28,7 +28,15 @@
 // installed copy of each package it restores from the registry or whose override it drops so the
 // install resolves them again, installs, and proves each package is installed at what its range
 // names. Before it writes anything, --restore refuses with 64 a ledger whose package or override
-// keys are not package names, and a removal whose install path resolves outside node_modules.
+// keys are not package names, and a removal whose install path resolves outside node_modules. It
+// also asks the registry (`npm view <name> name --json` in the consumer) about each package it
+// returns to a registry range, and exits 1 with "the registry did not answer for <name>" without
+// writing when an answer is neither served nor a 404. A package the registry answers 404 for is
+// kept: --restore writes its recorded range into the manifest and the ledger only, removes no lock
+// entry or install, runs no install for it, proves the manifest holds the range and the lockfile
+// `resolved` still names the ledger tarball, and lists it under `kept` in the receipt. A kept package
+// whose locked version its recorded range does not admit refuses with exit 1 before any write. No install
+// runs when every restored package is kept and no override is dropped.
 // --status writes nothing and reports each drift between the ledger, the manifest, the tarballs, the
 // installed bytes, and the source commits; a manifest spec holds its tarball only when it names the
 // ledger archive's full location.
@@ -1682,6 +1690,84 @@ export function proveRestored(consumer: string, name: string, range: string): re
 }
 
 /**
+ * Reads whether the registry serves a package.
+ *
+ * @remarks
+ * Runs `npm view <name> name --json` in the consumer through the npm entry the install uses, with an
+ * argument array and no shell.
+ *
+ * @param consumer - The consumer directory, whose npm configuration names the registry.
+ * @param name - The package name.
+ * @returns `served` when npm exits 0, `absent` when its JSON error code is `E404`, and undefined for
+ * any other answer.
+ */
+export function classifyRegistry(consumer: string, name: string): 'served' | 'absent' | undefined {
+	const result = runNpm(['view', name, 'name', '--json'], consumer)
+	if (result.error !== undefined) return undefined
+	if (result.status === 0) return 'served'
+	const error = parseJsonRecord(result.stdout.trim())?.error
+	return isRecord(error) && error.code === 'E404' ? 'absent' : undefined
+}
+
+/**
+ * Lists the problem with a locked version that a recorded range does not admit.
+ *
+ * @remarks
+ * An install that finds the lock entry outside the manifest range resolves the package from the
+ * registry again, which a kept package cannot survive. A range outside the subset
+ * {@link supportsRange} reads is not judged.
+ *
+ * @param consumer - The consumer directory.
+ * @param name - The package name.
+ * @param range - The recorded range.
+ * @returns One message naming the package, its locked version, and the range when the lock entry's
+ * version is absent or outside the range, and none otherwise.
+ */
+export function scanLocked(consumer: string, name: string, range: string): readonly string[] {
+	if (!supportsRange(range)) return []
+	const packages = loadJSONRecord(join(consumer, 'package-lock.json'))?.packages
+	const entry = isRecord(packages) ? packages[`node_modules/${name}`] : undefined
+	const version = readString(isRecord(entry) ? entry : undefined, 'version')
+	return version !== undefined && matchesRange(version, range)
+		? []
+		: [
+				`${name} is locked at ${version ?? '(no version)'} but its recorded range ${range} does not admit it`,
+			]
+}
+
+/**
+ * Lists the problems with one kept package.
+ *
+ * @remarks
+ * A kept package returns to its recorded range in the manifest alone, so its lock entry and installed
+ * tarball must still stand.
+ *
+ * @param consumer - The consumer directory.
+ * @param name - The package name.
+ * @param range - The recorded range the manifest must hold.
+ * @param archive - The ledger archive's file name.
+ * @returns One message per problem, empty when the manifest holds the range and the lockfile
+ * `resolved` still names the archive.
+ */
+export function proveKept(
+	consumer: string,
+	name: string,
+	range: string,
+	archive: string,
+): readonly string[] {
+	const manifest = loadJSONRecord(join(consumer, 'package.json'))
+	const held = manifest === undefined ? undefined : findDeclaration(manifest, name)?.spec
+	const resolved = loadResolved(consumer, name)
+	return [
+		...(held === range ? [] : [`${name} is ${held ?? '(absent)'} in the manifest, not ${range}`]),
+		...(resolved !== undefined && normalizeSlashes(resolved).endsWith(archive)
+			? []
+			: [`the lockfile no longer names ${archive} for ${name}`]),
+		...scanLocked(consumer, name, range),
+	]
+}
+
+/**
  * Locates a consumer's ledger file.
  *
  * @param consumer - The consumer directory.
@@ -2216,7 +2302,8 @@ export function scanRemovals(consumer: string, names: readonly string[]): readon
  *
  * @param command - The parsed command.
  * @returns 0 when the restore installed and proved, 1 when a proof failed, 64 on a usage refusal.
- * @throws Thrown when the ledger is malformed or the install fails.
+ * @throws Thrown when the ledger is malformed, the registry gave no served or 404 answer for a package,
+ * or the install fails.
  */
 export function executeRestore(command: Command): number {
 	const manifestPath = join(command.consumer, 'package.json')
@@ -2238,12 +2325,42 @@ export function executeRestore(command: Command): number {
 	const removals = listRemovals(plan)
 	const refusals = scanRemovals(command.consumer, removals)
 	if (refusals.length > 0) return reportUsage(refusals.join('\n'))
+	const registry = plan.rows
+		.filter((row) => removals.includes(row.name))
+		.map((row) => ({ name: row.name, answer: classifyRegistry(command.consumer, row.name) }))
+	const silent = registry.filter((row) => row.answer === undefined).map((row) => row.name)
+	if (silent.length > 0) throw new Error(`the registry did not answer for ${silent.join(', ')}`)
+	const absent = new Set(registry.filter((row) => row.answer === 'absent').map((row) => row.name))
+	const outside = plan.rows.flatMap((row) =>
+		absent.has(row.name) && row.entry.replaced !== undefined
+			? scanLocked(command.consumer, row.name, row.entry.replaced)
+			: [],
+	)
+	if (outside.length > 0) throw new Error(outside.join('; '))
 	replaceFile(manifestPath, serializeJSON(plan.manifest))
 	replaceFile(locateLedger(command.consumer), serializeJSON(plan.ledger))
-	removePinnedInstalls(command.consumer, removals)
-	installConsumer(command.consumer)
+	removePinnedInstalls(
+		command.consumer,
+		removals.filter((name) => !absent.has(name)),
+	)
+	if (plan.rows.some((row) => !absent.has(row.name)) || plan.dropped.length > 0) {
+		installConsumer(command.consumer)
+	}
+	const kept = plan.rows.flatMap((row) =>
+		absent.has(row.name) && row.entry.replaced !== undefined
+			? [
+					{
+						name: row.name,
+						range: row.entry.replaced,
+						registry: 'absent',
+						resolved: loadResolved(command.consumer, row.name),
+						problems: proveKept(command.consumer, row.name, row.entry.replaced, row.entry.tarball),
+					},
+				]
+			: [],
+	)
 	const proved = plan.rows.flatMap((row) =>
-		row.entry.field === undefined || row.entry.replaced === undefined
+		row.entry.field === undefined || row.entry.replaced === undefined || absent.has(row.name)
 			? []
 			: [
 					{
@@ -2253,7 +2370,7 @@ export function executeRestore(command: Command): number {
 					},
 				],
 	)
-	const failures = proved.flatMap((proof) => proof.problems)
+	const failures = [...proved, ...kept].flatMap((proof) => proof.problems)
 	const receipt = {
 		mode: 'restore',
 		consumer: normalizeSlashes(command.consumer),
@@ -2268,6 +2385,12 @@ export function executeRestore(command: Command): number {
 			),
 			resolved: loadResolved(command.consumer, proof.name),
 		})),
+		kept: kept.map(({ name, range, registry: answer, resolved }) => ({
+			name,
+			range,
+			registry: answer,
+			resolved,
+		})),
 		dropped: plan.dropped,
 		changes: plan.changes,
 		repin: buildRepin(command.consumer, plan),
@@ -2279,6 +2402,10 @@ export function executeRestore(command: Command): number {
 		command.json,
 		[
 			...proved.map((proof) => `swap: restored ${proof.name} to ${proof.range}`),
+			...kept.map(
+				(proof) =>
+					`swap: restored ${proof.name} to ${proof.range} in the manifest only: the registry serves no release; the install still holds the tarball`,
+			),
 			...plan.dropped.map((name) => `swap: dropped overrides.${name}`),
 			...failures.map((failure) => `swap: problem: ${failure}`),
 			`swap: re-pin with ${receipt.repin.join(' ')}`,

@@ -53,6 +53,7 @@ import {
 	environmentToUpstream,
 	errorToEnvelope,
 	fetchToRefusal,
+	filterUnpublished,
 	findGitRefusal,
 	manifestToAdditions,
 	manifestToWritableDependencies,
@@ -1469,6 +1470,34 @@ describe('sanitizeLine', () => {
 	})
 })
 
+describe('filterUnpublished', () => {
+	it('returns each fleet missing row in order', () => {
+		const learn: Release = {
+			name: '@orkestrel/learn',
+			range: '^0.0.1',
+			lookup: 'missing',
+			note: 'absent',
+		}
+		const found: Release = {
+			name: '@orkestrel/emitter',
+			range: '^0.0.5',
+			lookup: 'found',
+			latest: '0.0.6',
+		}
+		expect(filterUnpublished([found, learn])).toStrictEqual([learn])
+	})
+
+	it('excludes a missing row outside the fleet, a fleet unmatched row, and a fleet failed row', () => {
+		expect(
+			filterUnpublished([
+				{ name: 'left-pad', range: '^1.0.0', lookup: 'missing', note: 'absent' },
+				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'unmatched', note: 'none' },
+				{ name: '@orkestrel/test', range: '^0.0.8', lookup: 'failed', note: 'transport' },
+			]),
+		).toStrictEqual([])
+	})
+})
+
 describe('versionsToRefusal', () => {
 	const pins = { runtime: [], development: [] }
 
@@ -1479,7 +1508,7 @@ describe('versionsToRefusal', () => {
 	it('names every dependency the registry could not answer for', () => {
 		const refusal = versionsToRefusal({
 			releases: [
-				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'missing', note: 'absent' },
+				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'unmatched', note: 'absent' },
 				{ name: '@orkestrel/router', range: '^0.0.8', lookup: 'found', latest: '0.0.8' },
 			],
 			pins,
@@ -1489,6 +1518,25 @@ describe('versionsToRefusal', () => {
 		expect(refusal?.code).toBe('FETCH')
 		expect(refusal?.message).toContain('@orkestrel/emitter')
 		expect(refusal?.message).not.toContain('@orkestrel/router')
+	})
+
+	it('names no unpublished fleet package and refuses a missing package outside the fleet', () => {
+		const learn: Release = {
+			name: '@orkestrel/learn',
+			range: '^0.0.1',
+			lookup: 'missing',
+			note: 'absent',
+		}
+		expect(
+			versionsToRefusal({ releases: [learn], pins, forced: false, complete: true }),
+		).toBeUndefined()
+		const refusal = versionsToRefusal({
+			releases: [learn, { name: 'left-pad', range: '^1.0.0', lookup: 'missing', note: 'absent' }],
+			pins,
+			forced: false,
+			complete: false,
+		})
+		expect(refusal?.message).toBe('The registry named no release for left-pad.')
 	})
 
 	it('reports an incomplete resolution that named no failed release', () => {
@@ -1606,13 +1654,93 @@ describe('releasesToPins', () => {
 		})
 	})
 
-	it('refuses the whole set when one release is missing', () => {
+	it('refuses the whole set when one release is unmatched', () => {
 		expect(() =>
 			releasesToPins(
-				[{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'missing', note: 'absent' }],
+				[{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'unmatched', note: 'absent' }],
 				{ runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }], development: [] },
 			),
 		).toThrow(ScaffoldError)
+	})
+
+	it('refuses a missing release outside the fleet', () => {
+		expect(() =>
+			releasesToPins([{ name: 'left-pad', range: '^1.0.0', lookup: 'missing', note: 'absent' }], {
+				runtime: [{ name: 'left-pad', range: '^1.0.0' }],
+				development: [],
+			}),
+		).toThrow(ScaffoldError)
+	})
+
+	it('drops an unpublished fleet row and its declaration, keeping the split aligned', () => {
+		expect(
+			releasesToPins(
+				[
+					{ name: '@orkestrel/learn', range: '^0.0.1', lookup: 'missing', note: 'absent' },
+					{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
+					{ name: '@orkestrel/test', range: '^0.0.8', lookup: 'found', latest: '0.0.9' },
+				],
+				{
+					runtime: [
+						{ name: '@orkestrel/learn', range: '^0.0.1' },
+						{ name: '@orkestrel/emitter', range: '^0.0.5' },
+					],
+					development: [{ name: '@orkestrel/test', range: '^0.0.8' }],
+				},
+			),
+		).toStrictEqual({
+			runtime: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
+			development: [{ name: '@orkestrel/test', range: '^0.0.9' }],
+		})
+	})
+
+	it('keeps the split aligned for a kept development row, kept rows at both ends, and adjacent kept rows across the split', () => {
+		const learn: Release = {
+			name: '@orkestrel/learn',
+			range: '^0.0.1',
+			lookup: 'missing',
+			note: 'absent',
+		}
+		const one: Release = { ...learn, name: '@orkestrel/one' }
+		const two: Release = { ...learn, name: '@orkestrel/two' }
+		const a: Release = { name: '@o/a', range: '^0.0.1', lookup: 'found', latest: '0.0.2' }
+		const b: Release = { name: '@o/b', range: '^0.0.1', lookup: 'found', latest: '0.0.3' }
+		expect(
+			releasesToPins([a, learn], {
+				runtime: [{ name: a.name, range: a.range }],
+				development: [{ name: learn.name, range: learn.range }],
+			}),
+		).toStrictEqual({ runtime: [{ name: '@o/a', range: '^0.0.2' }], development: [] })
+		expect(
+			releasesToPins([one, a, b, two], {
+				runtime: [
+					{ name: one.name, range: one.range },
+					{ name: a.name, range: a.range },
+				],
+				development: [
+					{ name: b.name, range: b.range },
+					{ name: two.name, range: two.range },
+				],
+			}),
+		).toStrictEqual({
+			runtime: [{ name: '@o/a', range: '^0.0.2' }],
+			development: [{ name: '@o/b', range: '^0.0.3' }],
+		})
+		expect(
+			releasesToPins([a, one, two, b], {
+				runtime: [
+					{ name: a.name, range: a.range },
+					{ name: one.name, range: one.range },
+				],
+				development: [
+					{ name: two.name, range: two.range },
+					{ name: b.name, range: b.range },
+				],
+			}),
+		).toStrictEqual({
+			runtime: [{ name: '@o/a', range: '^0.0.2' }],
+			development: [{ name: '@o/b', range: '^0.0.3' }],
+		})
 	})
 
 	it('refuses a verdict list that does not match the declaration set', () => {

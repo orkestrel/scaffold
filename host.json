@@ -484,7 +484,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/release.md",
 			"destination": ".agents/skills/orkestrel-publish/references/release.md",
 			"executable": false,
-			"digest": "c36bddded880e36af57d266b308feccd3bb929f66d4739e268274e68c102eb63"
+			"digest": "f13cfb4b9a2acd5d07d55aecc00f8ca939e33530667ebafe15f0c544e6b6313d"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
@@ -520,7 +520,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/swap.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/swap.ts",
 			"executable": false,
-			"digest": "7dc0a0fb358b0f34ab9f85ce69d8eeb7c357fccfbb5fc03193736f9cff357838"
+			"digest": "81d2686387d2f6adb31f41bd4ac155f6d3a67def700b0b1e2c185bdc8d3b9b86"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/wave.ts",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "c7c7aa6d46de191344b01668d7baca2e5a15c61dbce12cc6fe9c6e0215525439"
+			"digest": "02678a3be7d5eeb8227b1a7f1639b62c91408a159b0e26e08f190a62ecd39f14"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "816462775feb6dd16a56b6206d1ee0b0865e2590928086f252cd410943dc8b37"
+	"digest": "d133cfb332af76eebe675f580ca1376ec2b40391a74b5dfb72e401cfc2f93eb3"
 }

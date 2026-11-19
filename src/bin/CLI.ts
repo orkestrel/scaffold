@@ -127,6 +127,7 @@ import {
 	dependenciesToFloors,
 	dependenciesToFleet,
 	entriesToReleases,
+	filterUnpublished,
 	errorToEnvelope,
 	fetchToRefusal,
 	manifestToAdditions,
@@ -521,6 +522,15 @@ export class CLI implements CLIInterface {
 			},
 			command.offline === true,
 		)
+		const unpublished = filterUnpublished(versions.releases)
+		if (unpublished.length > 0) {
+			const names = versions.releases
+				.filter((release) => release.lookup !== 'found')
+				.map((release) => release.name)
+			throw new ScaffoldError('FETCH', `The registry named no release for ${names.join(', ')}.`, {
+				names: names.length,
+			})
+		}
 		const refusal = versionsToRefusal(versions)
 		if (refusal !== undefined) throw refusal
 		const resolved = replacePlanRanges(plan, versions.pins)
@@ -712,8 +722,9 @@ export class CLI implements CLIInterface {
 				this.#say(resultToTally(result))
 			}
 			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
+			const kept = this.#keep(versions.releases)
 			if (command.offline !== true && (versions.forced || host.forced)) return EXIT_DRIFT
-			return auditToExit(terminal)
+			return Math.max(auditToExit(terminal), kept)
 		} finally {
 			host.materializer.destroy()
 		}
@@ -735,9 +746,10 @@ export class CLI implements CLIInterface {
 		const outcome = await this.#assemble(command, target, floor, materializer, previous)
 		if (command.json === true) this.#report(outcome)
 		else this.#recount(outcome)
+		const kept = this.#keep(outcome.membership?.releases ?? [])
 		return outcome.membership === undefined || outcome.provenance.guides === 'floor'
 			? EXIT_DRIFT
-			: EXIT_CLEAN
+			: kept
 	}
 
 	// The outcome one `catalog` run reports. The materializer is released whether
@@ -947,8 +959,9 @@ export class CLI implements CLIInterface {
 				}
 				if (remainder.note !== undefined) this.#warn(remainder.note)
 			}
+			const kept = this.#keep(outcome.releases)
 			if (remainder.note !== undefined) return EXIT_DRIFT
-			return auditToExit(terminal)
+			return Math.max(auditToExit(terminal), kept)
 		} finally {
 			host.materializer.destroy()
 		}
@@ -1233,8 +1246,11 @@ export class CLI implements CLIInterface {
 			}
 		}
 		const releases = await this.#lookup(dependencies)
+		const unpublished = filterUnpublished(releases)
 		const absent = releases.filter(
-			(release) => release.lookup === 'missing' || release.lookup === 'unmatched',
+			(release) =>
+				(release.lookup === 'missing' || release.lookup === 'unmatched') &&
+				!unpublished.includes(release),
 		)
 		if (absent.length > 0) {
 			return {
@@ -1258,7 +1274,14 @@ export class CLI implements CLIInterface {
 			}
 			return {
 				releases,
-				pins: floorPins,
+				pins: {
+					runtime: floorPins.runtime.filter(
+						({ name }) => !unpublished.some((release) => release.name === name),
+					),
+					development: floorPins.development.filter(
+						({ name }) => !unpublished.some((release) => release.name === name),
+					),
+				},
 				baseline: 'floor',
 				forced: true,
 				complete: true,
@@ -2271,6 +2294,18 @@ export class CLI implements CLIInterface {
 				this.#warn(`${release.name}: ${release.range} differs from ^${release.latest}.`)
 			}
 		}
+	}
+
+	// Name each fleet package whose declared range the verb kept, and answer with the exit
+	// the kept set earns.
+	#keep(releases: readonly Release[]): number {
+		const kept = filterUnpublished(releases)
+		for (const { name, range } of kept) {
+			this.#warn(
+				`Kept the declared range ${range} for ${name}: the registry or the organization catalog names no release of it, so no range was written for it.`,
+			)
+		}
+		return kept.length > 0 ? EXIT_DRIFT : EXIT_CLEAN
 	}
 
 	// Name each stale content path the verb replaced, beside the line-count

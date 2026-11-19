@@ -1083,6 +1083,31 @@ export function sanitizeLine(line: string): string {
 }
 
 /**
+ * Filters the release rows that name an `@orkestrel` package the registry has never published.
+ *
+ * @param releases - The release verdicts to filter.
+ * @returns Each row whose lookup is `missing` and whose name starts with `@orkestrel/`, in order.
+ *
+ * @remarks
+ * A `missing` lookup is a packument `404` or a package the organization catalog does not list.
+ * An `unmatched` row, a `failed` row, and a `missing` row outside the fleet are not unpublished.
+ *
+ * @example
+ * ```ts
+ * import { filterUnpublished } from './helpers.js'
+ *
+ * filterUnpublished([
+ * 	{ name: '@orkestrel/learn', range: '^0.0.1', lookup: 'missing', note: 'the registry answered 404' },
+ * ]).length // 1
+ * ```
+ */
+export function filterUnpublished(releases: readonly Release[]): readonly Release[] {
+	return releases.filter(
+		(release) => release.lookup === 'missing' && release.name.startsWith('@orkestrel/'),
+	)
+}
+
+/**
  * Projects an incomplete version resolution into the refusal it earns.
  *
  * @param versions - The resolution to measure.
@@ -1090,7 +1115,8 @@ export function sanitizeLine(line: string): string {
  *
  * @remarks
  * Read before a caller opens a write, so a run that could not name every floor
- * refuses instead of writing a partial pin set.
+ * refuses instead of writing a partial pin set. A fleet package the registry has
+ * never published is not named, because its verb keeps the declared range.
  *
  * @example
  * ```ts
@@ -1102,8 +1128,9 @@ export function sanitizeLine(line: string): string {
  */
 export function versionsToRefusal(versions: VersionResolution): ScaffoldError | undefined {
 	if (versions.complete) return undefined
+	const unpublished = filterUnpublished(versions.releases)
 	const names = versions.releases
-		.filter((release) => release.lookup !== 'found')
+		.filter((release) => release.lookup !== 'found' && !unpublished.includes(release))
 		.map((release) => release.name)
 	return new ScaffoldError(
 		'FETCH',
@@ -1198,22 +1225,33 @@ export function entriesToReleases(
  * @param releases - The release verdicts, one per declared dependency, in the
  * order the declarations were looked up.
  * @param declared - The runtime and development declarations the verdicts answer for.
- * @returns The runtime and development pins, each at the caret of its release.
- * @throws `ScaffoldError('FETCH', …)` when a verdict named no release, when a
- * verdict has no matching declaration, or when the two sets differ in length.
+ * @returns The runtime and development pins, each at the caret of its release, without
+ * the declaration of an unpublished `@orkestrel` package.
+ * @throws `ScaffoldError('FETCH', …)` when a verdict other than an unpublished one named no
+ * release, when a verdict has no matching declaration, or when the two sets differ in length.
  *
  * @remarks
  * All or nothing: a caller never writes a partial pin set, because a manifest
  * carrying some raised ranges and some stale ones is harder to recover from than
- * one that was not written at all.
+ * one that was not written at all. The one omission is each row `filterUnpublished`
+ * returns, whose declared range the write keeps.
  *
  * @example
  * ```ts
  * import { releasesToPins } from './helpers.js'
  *
  * releasesToPins(
- * 	[{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' }],
- * 	{ runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }], development: [] },
+ * 	[
+ * 		{ name: '@orkestrel/learn', range: '^0.0.1', lookup: 'missing', note: 'the registry answered 404' },
+ * 		{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
+ * 	],
+ * 	{
+ * 		runtime: [
+ * 			{ name: '@orkestrel/learn', range: '^0.0.1' },
+ * 			{ name: '@orkestrel/emitter', range: '^0.0.5' },
+ * 		],
+ * 		development: [],
+ * 	},
  * ) // { runtime: [{ name: '@orkestrel/emitter', range: '^0.0.6' }], development: [] }
  * ```
  */
@@ -1221,7 +1259,10 @@ export function releasesToPins(
 	releases: readonly Release[],
 	declared: DependencyPinSet,
 ): DependencyPinSet {
-	const refused = releases.filter((release) => release.lookup !== 'found')
+	const unpublished = filterUnpublished(releases)
+	const refused = releases.filter(
+		(release) => release.lookup !== 'found' && !unpublished.includes(release),
+	)
 	if (refused.length > 0) {
 		throw new ScaffoldError(
 			'FETCH',
@@ -1231,12 +1272,13 @@ export function releasesToPins(
 	}
 	const dependencies = [...declared.runtime, ...declared.development]
 	// The keys name a hole too, so a release the answer lacks reads as one with no declaration.
-	const pins = Array.from(releases.keys(), (index): Dependency => {
+	const pins = Array.from(releases.keys(), (index): Dependency | undefined => {
 		const release = releases[index]
 		const dependency = dependencies[index]
 		if (release === undefined || dependency === undefined) {
 			throw new ScaffoldError('FETCH', 'The release answer has no matching declaration.')
 		}
+		if (unpublished.includes(release)) return undefined
 		if (release.lookup !== 'found') {
 			throw new ScaffoldError('FETCH', `The registry named no release for ${release.name}.`)
 		}
@@ -1245,9 +1287,11 @@ export function releasesToPins(
 	if (pins.length !== dependencies.length) {
 		throw new ScaffoldError('FETCH', 'The release answer does not match the declaration set.')
 	}
+	const runtime = pins.slice(0, declared.runtime.length)
+	const development = pins.slice(declared.runtime.length)
 	return {
-		runtime: pins.slice(0, declared.runtime.length),
-		development: pins.slice(declared.runtime.length),
+		runtime: runtime.filter((pin) => pin !== undefined),
+		development: development.filter((pin) => pin !== undefined),
 	}
 }
 

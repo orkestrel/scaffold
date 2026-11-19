@@ -628,10 +628,15 @@ the target's own package. The result carries an explanatory `note` and omits `me
 claims no version provenance, and exits `1`.
 
 For `new`, `repair`, `catalog`, and `overwrite`, authoritative absence on a version surface never
-selects `floor`. A registry `404` or a packument with no admitted version stays a `FETCH` refusal,
-because writing a version the registry says is absent produces an uninstallable manifest. `audit`
-turns release absence into questions and returns its audit result. Transport faults, timeouts, rate
-refusals, byte-bound refusals, and integrity refusals can select the floor.
+selects `floor`, and no verb writes a range for a package the registry says is absent, because that
+range produces an uninstallable manifest. `repair`, `overwrite`, and `catalog` keep the declared
+`dependencies` or `devDependencies` range of an `@orkestrel` package that the registry answers
+`404` for or the organization catalog does not list, byte for byte, re-pin every other declaration,
+name the kept package on standard error, carry its release row with `lookup: 'missing'`, and exit
+`1`. Every other absence stays a `FETCH` refusal: a packument with no admitted version, a `404` for
+a package outside the fleet, and a `404` for a package `new` would declare. `audit` turns release
+absence into questions and returns its audit result. Transport faults, timeouts, rate refusals,
+byte-bound refusals, and integrity refusals can select the floor.
 
 The guide surface is the per-row exception to whole-surface fallback, for absence as well as for
 faults. A foreign guide the host could not serve — a failed read, or the `404` a published package

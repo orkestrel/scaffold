@@ -415,7 +415,10 @@ export interface ToolchainHold {
  * `range` is the declared range, and `latest` is the version the producer
  * selected. A found lookup carries that selected version; one that produced no
  * answer carries the cause and no selected version. `major`, when present, is
- * the stable major named by the registry's `latest` tag in the same answer.
+ * the stable major named by the registry's `latest` tag in the same answer. A
+ * `missing` lookup on an `@orkestrel` package means the registry answered 404, or
+ * the organization catalog does not list the package, and `repair`, `overwrite`,
+ * and `catalog` keep its declared range.
  */
 export type Release =
 	| {

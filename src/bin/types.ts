@@ -285,7 +285,13 @@ export interface HostResolution {
 	readonly forced: boolean
 }
 
-/** Represents one resolved version baseline beside its evidence and writable ranges. */
+/**
+ * Represents one resolved version baseline beside its evidence and writable ranges.
+ *
+ * @remarks
+ * `pins` omits each `@orkestrel` declaration whose lookup is `missing`, and `complete` stays
+ * true when every other declaration resolved.
+ */
 export interface VersionResolution {
 	readonly releases: readonly Release[]
 	readonly pins: DependencyPinSet

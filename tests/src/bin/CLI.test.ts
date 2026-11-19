@@ -80,6 +80,7 @@ import {
 	buildHostManifestEntry,
 	buildOrganization,
 	buildPackument,
+	buildTargetManifest,
 	commitFiles,
 	createBornTarget,
 	createCatalogFleet,
@@ -10436,6 +10437,230 @@ describe('CLI new dependencies', () => {
 			// Nothing was written, because a workspace pinned to a range that does
 			// not resolve is worse than no workspace at all.
 			expect(readFileHex(fresh, 'package.json')).toBeUndefined()
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+})
+
+describe('CLI new with an unpublished fleet dependency', () => {
+	it('refuses with FETCH naming every package the registry could not answer for', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 404, body: '{"error":"Not found"}' },
+			[FLEET_UPSTREAM_PATHS.packages.router]: {
+				status: 200,
+				body: JSON.stringify({ 'dist-tags': {}, versions: {} }),
+			},
+		})
+		try {
+			const fleet = createFleet(workspace)
+			const fresh = workspace.ensure('fresh')
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'new',
+				'widget',
+				'--src',
+				'core',
+				'--deps',
+				'@orkestrel/emitter,@orkestrel/router',
+				'--from',
+				fleet.host,
+				'--target',
+				fresh,
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			const text = sink.diagnostic.join('\n')
+			expect(text).toContain('FETCH')
+			expect(text).toContain('@orkestrel/emitter')
+			expect(text).toContain('@orkestrel/router')
+			expect(readFileHex(fresh, 'package.json')).toBeUndefined()
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+})
+
+describe('CLI unpublished fleet dependency', () => {
+	const learnRange = '^0.0.1'
+	const declared = {
+		'@orkestrel/learn': learnRange,
+		'@orkestrel/emitter': '^0.0.5',
+		vite: '~8.2.0',
+	}
+	const development = { ...TARGET_DEV_DEPENDENCIES, '@orkestrel/guide': '^0.0.9' }
+	const learnManifest = buildTargetManifest(undefined, declared, development)
+	const replies = {
+		...FLEET_RELEASE_REPLIES,
+		...FLEET_MIRROR_REPLIES,
+		[FLEET_UPSTREAM_PATHS.organization]: { status: 200, body: buildOrganization(FLEET_NAMES) },
+		[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
+		[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
+	}
+
+	it.each([
+		['repair', []],
+		['overwrite', ['--dirty']],
+	])('keeps the declared range under %s, re-pins the rest, and exits 1', async (verb, extra) => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		// The learn path has no reply, so the fixture answers it with its 404 branch.
+		const server = await createUpstreamServer(replies)
+		try {
+			const fleet = createCatalogFleet(workspace)
+			const first = createSink()
+			await new CLI(buildCLIOptions(first, server.base)).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			workspace.write('target/package.json', learnManifest)
+			workspace.write('target/AGENTS.md', '# Drifted pointer\n')
+			const drifted = readFileHex(fleet.target, 'AGENTS.md')
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				verb,
+				...extra,
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			const manifest = requireValue(workspace.read('target/package.json'))
+			expect(manifest).toContain(`"@orkestrel/learn": "${learnRange}"`)
+			expect(manifest).toContain('"@orkestrel/emitter": "^0.0.6"')
+			expect(readFileHex(fleet.target, 'AGENTS.md')).not.toBe(drifted)
+			const result: RepairResult | OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.releases).toContainEqual(
+				expect.objectContaining({ name: '@orkestrel/learn', lookup: 'missing' }),
+			)
+			expect(
+				sink.diagnostic.filter((line) => line.startsWith('Kept the declared range')),
+			).toStrictEqual([
+				`Kept the declared range ${learnRange} for @orkestrel/learn: the registry or the organization catalog names no release of it, so no range was written for it.`,
+			])
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('keeps the declared range under catalog when the organization list omits the package', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer(replies)
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/package.json', learnManifest)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'catalog',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			expect(workspace.read(`target/${CATALOG_AGENT_PATH}`)).toContain('@orkestrel/emitter')
+			const manifest = requireValue(workspace.read('target/package.json'))
+			expect(manifest).toContain(`"@orkestrel/learn": "${learnRange}"`)
+			expect(manifest).toContain('"@orkestrel/emitter": "^0.0.6"')
+			expect(sink.diagnostic.join('\n')).toContain('Kept the declared range')
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('still reports the missing release and exits 1 under audit', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer(replies)
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/package.json', learnManifest)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.releases).toContainEqual(
+				expect.objectContaining({ name: '@orkestrel/learn', lookup: 'missing' }),
+			)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a fleet packument that admits no version and leaves the manifest unchanged', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...replies,
+			[FLEET_UPSTREAM_PATHS.packages.emitter]: {
+				status: 200,
+				body: JSON.stringify({ 'dist-tags': {}, versions: {} }),
+			},
+		})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/package.json', learnManifest)
+			const before = readFileHex(fleet.target, 'package.json')
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			expect(sink.diagnostic.join('\n')).toContain('FETCH')
+			expect(sink.diagnostic.join('\n')).toContain('@orkestrel/emitter')
+			expect(readFileHex(fleet.target, 'package.json')).toBe(before)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a 404 outside the fleet in devDependencies and writes nothing', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		// `oxfmt` is a planned development tool, so the writable set carries it and its 404 refuses.
+		const server = await createUpstreamServer({
+			...replies,
+			'/oxfmt': { status: 404, body: '{"error":"Not found"}' },
+		})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/package.json', learnManifest)
+			const before = readFileHex(fleet.target, 'package.json')
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			expect(sink.diagnostic.join('\n')).toContain('FETCH')
+			expect(sink.diagnostic.join('\n')).toContain('oxfmt')
+			expect(readFileHex(fleet.target, 'package.json')).toBe(before)
+			expect(readFileHex(fleet.target, 'AGENTS.md')).toBeUndefined()
 		} finally {
 			await server.destroy()
 			workspace.destroy()
