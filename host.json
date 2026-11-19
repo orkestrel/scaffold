@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "5246f3925aa1cfefbeadec36ca8a741fa5ad0fe1e98d72dc160595802c5640da"
+			"digest": "0427bffb612160f87b2035c25c8966998b4dd3bc07e8fbc7816d66a711b9748c"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -994,7 +994,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "9985c8acc0c7debf976280b98735e7e071e49d9d8a248828e80223b20613e5f2"
+			"digest": "99efc20d7e4347469d080d8e51860c2c885f98451db1beb3851017fbd5957d8b"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -1132,7 +1132,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "832d1dcd60951f654c9264163fe81adb9fb2774dca41155640ac7e6d81a09aee"
+			"digest": "fec0f39990c1d962a9e0190c7e2c8a2b1308bddb7772e842fc277c7f29e52b30"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1228,7 +1228,7 @@
 			"storage": "guides/study.md",
 			"destination": "guides/study.md",
 			"executable": false,
-			"digest": "c0a76c3efd998e10b133aa37b40adcc38552d6c0e1e6b6f07b1fd4721d702225"
+			"digest": "6cba19a9fb40e9b18c0b46e3513ae29880390d02566d6a790ffc3f5278860075"
 		},
 		{
 			"storage": "guides/table.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "e09a122458dfbe2bd62e17f42ef987d3605bbc4d7be13bf29a6deb48f324770b"
+	"digest": "c8c778c517c8af19bb5fb25d2710428011834bfd501e0a859466ffa11a0f8956"
 }
