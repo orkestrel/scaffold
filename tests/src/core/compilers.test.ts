@@ -5145,7 +5145,7 @@ describe('blueprintToConfigArtifacts app check scopes', () => {
 		expect(server.content).toBe(`{
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "WebWorker"],
 		"types": ["node"]
 	},
 	"include": [

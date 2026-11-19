@@ -1352,11 +1352,9 @@ describe('root configuration', () => {
 				const lib: unknown = Object.getOwnPropertyDescriptor(compilerOptions, 'lib')?.value
 				const types: unknown = Object.getOwnPropertyDescriptor(compilerOptions, 'types')?.value
 				const expectedLib =
-					environment === 'core'
-						? ['ESNext', 'WebWorker']
-						: environment === 'browser' || environment === 'vue'
-							? ['ESNext', 'DOM', 'DOM.Iterable']
-							: ['ESNext']
+					environment === 'browser' || environment === 'vue'
+						? ['ESNext', 'DOM', 'DOM.Iterable']
+						: ['ESNext', 'WebWorker']
 				const expectedTypes =
 					environment === 'core'
 						? []
@@ -5221,6 +5219,33 @@ createSomething({
 					].join('\n'),
 				)
 			}
+			// A worker-only global read in a host-independent or a Node environment draws the built-in
+			// restriction; each file reads one fenced name as a global.
+			for (const { path, source } of [
+				{ path: 'src/server/worker.ts', source: 'export const sent = postMessage' },
+				{ path: 'src/core/worker.ts', source: 'export const scope = self' },
+				{ path: 'src/bin/worker.ts', source: 'export const listen = addEventListener' },
+				{ path: 'app/core/worker.ts', source: 'export const reach = origin' },
+				{ path: 'app/server/worker.ts', source: 'export const ended = close' },
+				{ path: 'app/browser/worker.ts', source: 'export const frame = requestAnimationFrame' },
+			]) {
+				scratch.write(path, source)
+			}
+			// A local binding, a parameter, a property, and a `globalThis` member that share a fenced
+			// name are no global read, so the real binary reports nothing on a core file that also
+			// names a WebAssembly type.
+			scratch.write(
+				'src/core/helpers.ts',
+				[
+					'/** Reads the name of a module. */',
+					'export function readName(module: WebAssembly.Module, origin: string): string {',
+					"\tconst name = 'module'",
+					'\tconst record = { name, origin, scope: globalThis.self }',
+					'\tvoid module',
+					'\treturn record.name',
+					'}',
+				].join('\n'),
+			)
 			scratch.write(
 				'src/clean/helpers.ts',
 				[
@@ -5282,6 +5307,7 @@ createSomething({
 					'src/violations',
 					'src/bin',
 					'src/server',
+					'src/core/worker.ts',
 					'app',
 					'scripts',
 					'tests',
@@ -5291,7 +5317,7 @@ createSomething({
 			)
 			const clean = spawnSync(
 				process.execPath,
-				[binary, '--config', config, '--format', 'json', 'src/clean'],
+				[binary, '--config', config, '--format', 'json', 'src/clean', 'src/core/helpers.ts'],
 				{ cwd: scratch.path, encoding: 'utf8', timeout: 15_000 },
 			)
 			const reports = [violations, clean].map((result): string[] => {
@@ -5323,6 +5349,11 @@ createSomething({
 			expect(violations.status).toBe(1)
 			for (const { code, filename } of [
 				{ code: 'policy(no-mocking)', filename: 'src/violations/fixture.ts' },
+				{ code: 'eslint(no-restricted-globals)', filename: 'src/server/worker.ts' },
+				{ code: 'eslint(no-restricted-globals)', filename: 'src/core/worker.ts' },
+				{ code: 'eslint(no-restricted-globals)', filename: 'src/bin/worker.ts' },
+				{ code: 'eslint(no-restricted-globals)', filename: 'app/core/worker.ts' },
+				{ code: 'eslint(no-restricted-globals)', filename: 'app/server/worker.ts' },
 				{ code: 'policy(no-keyword-privacy)', filename: 'src/violations/fixture.ts' },
 				{ code: 'policy(no-let)', filename: 'src/violations/fixture.ts' },
 				{ code: 'eslint(prefer-const)', filename: 'src/violations/fixture.ts' },
@@ -5385,6 +5416,10 @@ createSomething({
 					`${code} ${normalizePolicyFilename(comparisonRoot, filename)}`,
 				)
 			}
+			// The browser scope compiles under DOM, so a worker-only name read there draws no fence.
+			expect(violationCodes).not.toContain(
+				`eslint(no-restricted-globals) ${normalizePolicyFilename(comparisonRoot, 'app/browser/worker.ts')}`,
+			)
 			expect(violationCodes).toContain(
 				`eslint(no-debugger) ${normalizePolicyFilename(comparisonRoot, 'src/violations/ambient.ts')}`,
 			)

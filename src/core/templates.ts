@@ -1054,7 +1054,7 @@ export function benchBrowser(override?: UserConfig): UserConfig {
 			server: `{
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "WebWorker"],
 		"types": ["node"],
 		"noEmit": false,
 		"declaration": true,
@@ -1105,7 +1105,7 @@ export function benchBrowser(override?: UserConfig): UserConfig {
 			server: `{
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "WebWorker"],
 		"types": ["node"]
 	},
 	"include": [
@@ -1117,7 +1117,7 @@ export function benchBrowser(override?: UserConfig): UserConfig {
 		bin: `{
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "WebWorker"],
 		"types": ["node"],
 		"noEmit": false,
 		"declaration": true,

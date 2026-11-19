@@ -191,6 +191,18 @@ describe('configuration templates', () => {
 		expect(rootVite?.content).toContain('\t\t\tprobe,')
 		expect(coreConfig?.content).toContain('"lib": ["ESNext", "WebWorker"]')
 		expect(coreConfig?.content).toContain('"types": []')
+		for (const path of [
+			'configs/src/tsconfig.server.json',
+			'configs/src/tsconfig.bin.json',
+			'configs/app/tsconfig.server.json',
+		]) {
+			const config = artifacts.find((artifact) => artifact.path === path)
+			if (config === undefined || config.origin === 'host') {
+				throw new Error(`Expected the ${path} template content`)
+			}
+			expect(config.content).toContain('"lib": ["ESNext", "WebWorker"]')
+			expect(config.content).toContain('"types": ["node"]')
+		}
 		expect(browserConfig?.content).toContain('"types": ["vite/client"]')
 		expect(blueprintToDevDependencies(blueprint)['vite-plugin-singlefile']).toBe('2.3.3')
 	})

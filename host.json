@@ -736,7 +736,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "a6cb8abb75e63dfd7ea26b502f9aec6a9c80205e1c44c336c1c8cc6c540dd375"
+			"digest": "7235250c756fa018661e01251bec7f123ae65a3a400c20dde7fceaf2f848a001"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -970,7 +970,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "3103eb040c1fa8015439e010c250355ac60171d03946b35effbc368c97bda875"
+			"digest": "5862eeea15c6e440d1f48cbcef0edde34a0e75238055b372b2f54e67a7961a9d"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "35dd10a07654856cb15c3d8c51064e7622cf50a7625b69b3c33260e4f8ca91aa"
+			"digest": "2967e824ecdfa892ed2a856032efbef5941ec6fcb6b4477b1343c0f31b4ae7ac"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "c8c778c517c8af19bb5fb25d2710428011834bfd501e0a859466ffa11a0f8956"
+	"digest": "3e7e81e919d5a9d95320ef7f39c3c2f34d70e218a660e287ad60746c76564dcb"
 }
