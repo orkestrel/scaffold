@@ -116,6 +116,13 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
     requires, such as zlib, a PNG encoder, or `Buffer`, which is a platform-API write, or as the
     result a counted loop computes into a typed array its own function creates; write no index
     twice;
+  - a null-prototype record (`{ __proto__: null }`) that a function creates and fills in a counted
+    loop over a list that function owns, with one own data property per key, each key written once,
+    as the record that function returns or freezes; never write into a record a caller passed or
+    that a parameter reaches;
+  - a copy that a traversal creates before it visits the copy's members, so that a cycle can reach
+    the copy, filled with one own property per key, each key written once, by the traversal step
+    that owns the copy;
   - a counted loop's index and its accumulators, which the **Counted loops** bullet admits.
 - **Per-call state.** Keep state that the awaits or callbacks of one call change, other than a log,
   in `#` fields of an entity created for that call. Treat a list that more than one concurrently

@@ -764,6 +764,111 @@ function collectQuestions(target: string, writing: boolean): readonly Question[]
 }
 ```
 
+## `exemptions.record` and `exemptions.copy` (**Exemptions**)
+
+- **Signatures.** Computed-key writes, `\b[A-Za-z_$][\w$]*\[(?:[^\]'"\[]|\[[^\]]*\])+\]\s*=[^=>]`,
+  and member definitions, `\.define(?:Property|Properties)?\(`. Then resolve the object each hit
+  writes to the binding that creates it.
+- **Reading.**
+  - Drop a write into a record that meets every condition of the record item (**Exemptions**): the
+    function that writes the record creates it as a `{ __proto__: null }` literal, fills it in a
+    counted loop over a list that function owns, writes one own data property per key, writes no
+    key twice, and returns or freezes the record.
+  - Drop a definition on a copy that meets every condition of the copy item (**Exemptions**): a
+    traversal creates the copy before it visits the copy's members, the traversal step that owns the
+    copy writes it, each write defines one own property, and no key is written twice.
+  - Keep a write into a record that a caller passed or that a parameter reaches, a write whose key
+    can repeat, such as a key list that can name one key twice or a tally that rewrites its key, and
+    a definition on a copy that another step owns. Rule each kept hit under **Running values**,
+    **Lists and logs**, and **Per-call state**.
+  - Drop a write into a typed array, and a write that `exemptions.platform` drops.
+
+Hit fixture, `exemptions.record.hit.ts`:
+
+```ts
+function countWords(words: readonly string[], counts: Record<string, number>): void {
+	for (let index = 0; index < words.length; index++) {
+		const word = words[index]
+		if (word !== undefined) counts[word] = (counts[word] ?? 0) + 1
+	}
+}
+```
+
+Hit fixture, `exemptions.copy.hit.ts`:
+
+```ts
+interface TreeFrame {
+	readonly source: Readonly<Record<string, unknown>>
+	readonly copy: object
+	readonly parent: TreeFrame | undefined
+}
+
+function fillFrame(frame: TreeFrame): void {
+	for (const key of Object.keys(frame.source)) {
+		Object.defineProperty(frame.copy, key, { value: frame.source[key], enumerable: true })
+	}
+	if (frame.parent !== undefined) {
+		Object.defineProperty(frame.parent.copy, 'last', { value: frame.copy, configurable: true })
+	}
+}
+```
+
+Clear fixture, `exemptions.record.clear.ts`:
+
+```ts
+function selectMembers(
+	source: Readonly<Record<string, unknown>>,
+	keys: readonly string[],
+): Readonly<Record<string, unknown>> {
+	const present = [...new Set(keys)].filter((key) => Object.hasOwn(source, key))
+	const result: Record<string, unknown> = { __proto__: null }
+	for (let index = 0; index < present.length; index++) {
+		const key = present[index]
+		if (key !== undefined) result[key] = source[key]
+	}
+	return Object.freeze(result)
+}
+```
+
+Clear fixture, `exemptions.copy.clear.ts`:
+
+```ts
+interface CopyFrame {
+	readonly source: object
+	readonly copy: Record<string, unknown>
+}
+
+function captureValue(
+	value: unknown,
+	copies: Map<object, Record<string, unknown>>,
+	pending: CopyFrame[],
+): unknown {
+	if (typeof value !== 'object' || value === null) return value
+	const known = copies.get(value)
+	if (known !== undefined) return known
+	const copy: Record<string, unknown> = { __proto__: null }
+	copies.set(value, copy)
+	pending.push({ source: value, copy })
+	return copy
+}
+
+function cloneGraph(root: object): unknown {
+	const copies = new Map<object, Record<string, unknown>>()
+	const pending: CopyFrame[] = []
+	const clone = captureValue(root, copies, pending)
+	for (const frame of pending) {
+		for (const key of Object.keys(frame.source)) {
+			Object.defineProperty(frame.copy, key, {
+				value: captureValue(Reflect.get(frame.source, key), copies, pending),
+				enumerable: true,
+			})
+		}
+		Object.freeze(frame.copy)
+	}
+	return clone
+}
+```
+
 ## `percall.builtins` (**Per-call state**)
 
 - **Signatures.** In an `async` function, or one that registers callbacks, find every local
