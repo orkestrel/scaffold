@@ -30,11 +30,10 @@ The next fleet wave runs its layer preparation, release commits, and fleet sweep
 ## Sequence
 
 One writer at a time, in this order:
-1. **U3** (`builder`): `pins.ts --catalog` classes a hit as `mirror` or `own`, and exits 0 when only mirror hits remain.
-2. **U4** (`opus`, objective): `wave.ts` gains the `pull` step, the `PATH` lead, and a ruling split into own and mirror hits. `readVerdict` and `failed` in `wave.ts` read a step whose child ends with no exit status, killed by a signal or by `ENOBUFS` past `maxBuffer`, as failed, never as a dry-run row; a dry-run row stays the only row with no exit.
-3. **U5** (`opus`): `wave.ts --sweep` and `--plan --root`, with `--checkout`.
-4. **U6** (`opus`): `release.ts --prepare` and `--commit`.
-5. **U7** (`opus`): the skill's instruction lines and ROADMAP 69.
+1. **U4** (`opus`, objective): `wave.ts` gains the `pull` step, the `PATH` lead, and a ruling split into own and mirror hits. `readVerdict` and `failed` in `wave.ts` read a step whose child ends with no exit status, killed by a signal or by `ENOBUFS` past `maxBuffer`, as failed, never as a dry-run row; a dry-run row stays the only row with no exit.
+2. **U5** (`opus`): `wave.ts --sweep` and `--plan --root`, with `--checkout`.
+3. **U6** (`opus`): `release.ts --prepare` and `--commit`.
+4. **U7** (`opus`): the skill's instruction lines and ROADMAP 69.
 
 Each unit's proof carries a negative control, and each medium unit gets one review by a reviewer who did not write it.
 
@@ -49,5 +48,6 @@ Each unit's proof carries a negative control, and each medium unit gets one revi
 - 2026-11-20: U1 landed in `299ec9494`, after one review and a fix round whose closure check closed every finding.
 - 2026-11-20: the contract 0.0.27 wave's campaign files are retired. Its lessons live in ROADMAP 191 to 195 and in this campaign's U2, U5, U8, and U9.
 - 2026-11-20: U2 landed in `24c25ad88`, after one review, two fix rounds, and two closure checks that closed every finding.
+- 2026-11-20: U3 landed in `8f07b9868`, after one review, one fix round, and a closure check that closed every finding.
 
 Next action: hold U4 to U7 until the next fleet wave's preparation, then dispatch U4.
