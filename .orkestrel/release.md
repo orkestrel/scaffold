@@ -52,6 +52,8 @@ Each row: the package, its layer, the version it published, the bump ruling with
 | browser | L5 | 0.0.36 | runtime codec ^0.0.13, contract ^0.0.27, emitter ^0.0.19, html ^0.0.19, markdown ^0.0.24, mcp ^0.0.46, pool ^0.0.24, process ^0.0.23, router ^0.0.25, server ^0.0.31, tool ^0.0.26, websocket ^0.0.22 moved; dist moved by the HAR creator stamp; five Linux-host distribution cases unread | 5 |
 | probe | L5 | 0.0.33 | runtime contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, lsp ^0.0.18, mcp ^0.0.46, pool ^0.0.24, process ^0.0.23, tool ^0.0.26 moved; dist moved by the server identity version | 5 |
 | agent | L5 | 0.0.48 | runtime abort ^0.0.20, budget ^0.0.21, contract ^0.0.27, emitter ^0.0.19, ndjson ^0.0.20, timeout ^0.0.20, database ^0.0.29, queue ^0.0.26, tool ^0.0.26, workflow ^0.0.32, workspace ^0.0.22 moved; dist same; published from the `agent-release` clone | 6 |
+| ollama | L6 | 0.0.45 | runtime budget ^0.0.21, contract ^0.0.27, emitter ^0.0.19, ndjson ^0.0.20, agent ^0.0.48, process ^0.0.23, tool ^0.0.26 moved; dist same; service 83 of 84 at 11434 and the dedicated case 1 of 1 at 127.0.0.1:11435 | 7 |
+| toolbox | L6 | 0.0.36 | runtime contract ^0.0.27, agent ^0.0.48, database ^0.0.29, form ^0.0.21, relation ^0.0.27, server ^0.0.31, terminal ^0.0.29, tool ^0.0.26, workflow ^0.0.32, workspace ^0.0.22 moved; server declarations moved by the WebWorker rename | 7 |
 
 ## Standing readings
 
