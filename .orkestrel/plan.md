@@ -34,6 +34,6 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 ## State
 
 - 2026-11-20: L1 published and pushed (round 1). The user ruled the rest of the wave release-ready without publishing overnight: L3 to L7 prove against local tarballs of their unpublished upstream candidates (swap.ts), and the lockfile and the release-mode distribution proof wait for the morning publish.
-- 2026-11-20: agent releases from the clone  cut at .
+- 2026-11-20: agent releases from the clone `agent-release` cut at `fdd0996e`.
 
 Next action: when L2 is release-ready, run L3 in tarball mode, then L4 to L7, then publish layer by layer with the user's codes.
