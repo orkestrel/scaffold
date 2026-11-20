@@ -28,7 +28,7 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 
 ## ROADMAP items this wave meets
 
-- **43:** this wave re-pins every catalog package to the served contract, tool, server, and mcp releases, which supersedes the 2026-10-01 leftovers. Close it when the exit criterion holds.
+- **43:** closed 2026-11-20. Every catalog package serves the contract 0.0.27 wave's ranges, which supersedes the 2026-10-01 leftovers.
 - **69:** its trigger, "the next fleet wave", is met. The wave runs the layer tools as throwaway drivers under `tmp/`. Promote the bump, self-pin sweep, release chain, and release-commit writer into an `orkestrel-publish` script with a proof after the wave closes. Owner: scaffold.
 
 ## State
@@ -90,4 +90,6 @@ Findings for the debrief:
 - `lane.ts` cannot start `npm` or `npm.cmd` on Windows; spawn `npm-cli.js` through Node.
 - A visit's pin step re-pinned scaffold's own `vitest` and left `@vitest/browser-playwright` at `^5.1.0`.
 
-Next action: finish the close round, then take a registry sweep and close ROADMAP 43 when it lists no trailing range.
+- 2026-11-20: the wave closed. The close round visited every catalog package but agent, whose session visited it (agent `700d240a` and `9b0c36dc`): 46 closed directly, and capture, server, and browser closed after their holds were ruled (capture's gates passed on rerun, and server's and browser's self-pin hits name each package's own unbumped version). The registry sweep after the round lists every package serving its checkout's version and no trailing development range; capture's `@orkestrel/test` peer `~0.0.41` admits 0.0.45 and stays as declared. ROADMAP 43 is closed.
+
+Next action: run the `orkestrel-debrief` round over this folder and the findings for the debrief, then retire the folder; promote ROADMAP 69's wave tools; land D14 (`lane.ts --detach`).
