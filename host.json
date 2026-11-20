@@ -466,7 +466,7 @@
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
 			"destination": ".agents/skills/orkestrel-publish/SKILL.md",
 			"executable": false,
-			"digest": "33ac2a08e3f5b1aec2ef255ceab349c44caf2ecca7737f6c62b334e92ac0e925"
+			"digest": "16cd432dc186a7c8f9fd4798071f81a4320ad11d6d6af5b5a5ae491ec501fd2b"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/agents/openai.yaml",
@@ -490,13 +490,13 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "d1d258680c9b8334eb68a5c991826c8cf0fcdde7a8915699b3fa025837986883"
+			"digest": "6218fd3bac4b97479774cfe39f1da9d0f0f7ae51fca993155a99e011b0ad5698"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
 			"destination": ".agents/skills/orkestrel-publish/references/window.md",
 			"executable": false,
-			"digest": "7669916a92cc5cd39160c6742f39e687f282279e7362eea5a22278ac571f3c21"
+			"digest": "495cff7f6064018d7bd8d828754b043bbd453e453f38490c19549495574d337a"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/compare.ts",
@@ -532,7 +532,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/window.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/window.ts",
 			"executable": false,
-			"digest": "ca026ab18c35af430c069e8cb51a5f08d37fd76077f7ed0c16a0b29750c1f492"
+			"digest": "fe561c0874351a5f7d676407cc92c718a8e50b663f1e5e04dc04dacc0d347625"
 		},
 		{
 			"storage": "agents/skills/orkestrel-scout/SKILL.md",
@@ -670,7 +670,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "383be84cb040fa5ba2e8756ccba251991ee9f648e1b036918078e9897c1dd1de"
+			"digest": "b6c5bf9d53de8ea58873ae40d5ff391db26934bfb80fe6d00d1dbe8ce4ac6ea8"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -700,7 +700,7 @@
 			"storage": "claude/rules/patterns.md",
 			"destination": ".claude/rules/patterns.md",
 			"executable": false,
-			"digest": "3e4a6598d11e2c59baf9e5872fcc584d3125e16414b06c8bd07e890d83c5c446"
+			"digest": "1291cc9a7856fd1934cbf8d8e31a2dc0e45d8b76799351ccd1ff994a21e4e71a"
 		},
 		{
 			"storage": "claude/rules/portability.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "6c7207a3bc2d5ee4c97de4863f4efb69a0bd95534062b5300903396892c68b4b"
+	"digest": "f36b60fdbef573253e6959e1db70a1afbdf17d9a0548d94cdf66134168eaf2ba"
 }

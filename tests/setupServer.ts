@@ -7698,45 +7698,126 @@ export interface TestPublishInterface extends TestWhoamiInterface {
 }
 
 /**
+ * Describes how the publish fixture registry serves what it accepted, per package name.
+ *
+ * @remarks
+ * `delays` maps a name to the tarball reads that answer 404 before the first 200; a name it omits
+ * answers 404 to every tarball read. `stalled` names the packages whose tarball request is never
+ * answered. `lags` maps a name to the packument reads after its upload that answer 404 before the
+ * packument lists the upload, as a registry that accepted an upload before its read serves it.
+ */
+export interface TestPublishOptions {
+	readonly delays?: ReadonlyMap<string, number>
+	readonly stalled?: ReadonlySet<string>
+	readonly lags?: ReadonlyMap<string, number>
+}
+
+/** Describes what the publish fixture registry knows when it answers one request. */
+export interface TestPublishContext {
+	readonly user: string | undefined
+	readonly refused: readonly string[]
+	readonly published: Map<string, Readonly<Record<string, unknown>>>
+	readonly options: TestPublishOptions
+	readonly requests: readonly string[]
+}
+
+/**
  * Answers one request the publish fixture registry receives.
  *
  * Answers like {@link answerWhoami} except that a `PUT` from a session that answers `whoami` stores
  * the upload and answers 200 unless the package is on the refused list, which answers 403; a later
- * read of the stored name answers its packument, so a confirm reads the version after the upload.
+ * read of the stored name answers its packument once its lag has passed, so a confirm reads the
+ * version after the upload. A `GET` or `HEAD` of the `dist.tarball` URL npm wrote into a stored
+ * packument answers the uploaded tarball once its delay has passed, 404 before, and nothing at all
+ * for a stalled name.
  *
- * @param user - The user `whoami` reports, or undefined for none.
- * @param refused - The package names an upload of which the registry refuses.
- * @param published - The packuments the registry stored, keyed by package name.
+ * @param context - The registry's user, refusals, stored uploads, options, and every request it
+ * recorded, this one included.
  * @param request - The request to answer.
  * @param body - The request body.
  * @param response - The response to write.
  */
 export function answerPublish(
-	user: string | undefined,
-	refused: readonly string[],
-	published: Map<string, Readonly<Record<string, unknown>>>,
+	context: TestPublishContext,
 	request: IncomingMessage,
 	body: string,
 	response: ServerResponse,
 ): void {
-	const name = decodeURIComponent((request.url ?? '').split('?')[0] ?? '').slice(1)
-	if (request.method === 'PUT' && user !== undefined) {
+	const path = (request.url ?? '').split('?')[0] ?? ''
+	const name = decodeURIComponent(path).slice(1)
+	if (request.method === 'PUT' && context.user !== undefined) {
 		const sent: unknown = parseJSON(body)
-		const refusal = refused.includes(name) ? 403 : isRecord(sent) ? 200 : 400
+		const refusal = context.refused.includes(name) ? 403 : isRecord(sent) ? 200 : 400
 		if (refusal === 200 && isRecord(sent)) {
-			published.set(name, { name, 'dist-tags': sent['dist-tags'], versions: sent.versions })
+			context.published.set(name, {
+				name,
+				'dist-tags': sent['dist-tags'],
+				versions: sent.versions,
+				attachments: sent['_attachments'],
+			})
 		}
 		response.writeHead(refusal, { 'content-type': 'application/json' })
 		response.end(JSON.stringify(refusal === 200 ? { success: true } : { error: 'Forbidden' }))
 		return
 	}
-	const stored = published.get(name)
-	if (request.method === 'GET' && stored !== undefined) {
-		response.writeHead(200, { 'content-type': 'application/json' })
-		response.end(JSON.stringify(stored))
+	const owner = [...context.published.values()].find(
+		(stored) =>
+			isRecord(stored.versions) &&
+			Object.values(stored.versions).some(
+				(entry) =>
+					isRecord(entry) &&
+					isRecord(entry.dist) &&
+					typeof entry.dist.tarball === 'string' &&
+					URL.parse(entry.dist.tarball)?.pathname === path,
+			),
+	)
+	if (owner !== undefined && (request.method === 'GET' || request.method === 'HEAD')) {
+		const owned = typeof owner.name === 'string' ? owner.name : ''
+		if (context.options.stalled?.has(owned) === true) return
+		const reads = context.requests.filter(
+			(line) => line === `GET ${request.url ?? ''}` || line === `HEAD ${request.url ?? ''}`,
+		).length
+		const delay = context.options.delays?.get(owned)
+		if (delay !== undefined && reads > delay) {
+			const attachment = isRecord(owner.attachments)
+				? Object.values(owner.attachments).find(isRecord)
+				: undefined
+			response.writeHead(200, { 'content-type': 'application/octet-stream' })
+			response.end(
+				typeof attachment?.data === 'string'
+					? Buffer.from(attachment.data, 'base64')
+					: Buffer.alloc(0),
+			)
+			return
+		}
+		answerWhoami(context.user, request, response)
 		return
 	}
-	answerWhoami(user, request, response)
+	const lines = context.requests.map((line) => ({
+		method: line.slice(0, line.indexOf(' ')),
+		name: decodeURIComponent(line.slice(line.indexOf(' ') + 1).split('?')[0] ?? '').slice(1),
+	}))
+	const upload = lines.findLastIndex((line) => line.method === 'PUT' && line.name === name)
+	const reads = lines
+		.slice(upload + 1)
+		.filter((line) => line.method === 'GET' && line.name === name).length
+	const stored = context.published.get(name)
+	if (
+		request.method === 'GET' &&
+		stored !== undefined &&
+		reads > (context.options.lags?.get(name) ?? 0)
+	) {
+		response.writeHead(200, { 'content-type': 'application/json' })
+		response.end(
+			JSON.stringify({
+				name: stored.name,
+				'dist-tags': stored['dist-tags'],
+				versions: stored.versions,
+			}),
+		)
+		return
+	}
+	answerWhoami(context.user, request, response)
 }
 
 /**
@@ -7744,12 +7825,15 @@ export function answerPublish(
  *
  * @param user - The user `whoami` reports, or undefined for none.
  * @param refused - The package names an upload of which the registry refuses. Default: none.
+ * @param options - How the registry serves each accepted package's tarball and packument. Default:
+ * every tarball read answers 404 and every packument lists its upload at once.
  * @returns The running registry with its recorded requests and the names it accepted, which the
  * caller destroys in a `finally`.
  */
 export async function createPublishRegistry(
 	user: string | undefined,
 	refused: readonly string[] = [],
+	options: TestPublishOptions = {},
 ): Promise<TestPublishInterface> {
 	const requests = createRecorder<readonly [string]>()
 	const published = new Map<string, Readonly<Record<string, unknown>>>()
@@ -7762,9 +7846,13 @@ export async function createPublishRegistry(
 			})
 			request.on('end', () => {
 				answerPublish(
-					user,
-					refused,
-					published,
+					{
+						user,
+						refused,
+						published,
+						options,
+						requests: requests.calls.map(([line]) => line),
+					},
 					request,
 					Buffer.concat(chunks).toString('utf8'),
 					response,

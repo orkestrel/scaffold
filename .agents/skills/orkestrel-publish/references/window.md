@@ -167,7 +167,8 @@ the same status. Rule from the evidence, never from which cause reads likelier.
 
 ## Read the verdict from the registry
 
-- Confirm a layer with `node .agents/skills/orkestrel-publish/scripts/window.ts --confirm <name@version>...`, which re-reads the registry until it serves each version or the wait ends. `--confirm` prints `results`; read that key.
+- Confirm a layer with `node .agents/skills/orkestrel-publish/scripts/window.ts --confirm <name@version>...`, which re-reads the registry until it lists each version with a `dist.tarball` URL, then sends a `HEAD` request to that URL until it answers `200` or the wait ends. A version counts as served only on that `200`: the registry lists a version before its tarball serves, and an install in that gap fails `E404`. `--wait SECONDS` bounds each target on its own, so a layer of several targets can take several waits. `--confirm` prints `results`; read each entry's `served`, and its `listed` and `tarball` members for which read stopped short.
+- Read an exit 3 from `--confirm` behind an authenticated registry or a proxy as unread, never as a tarball that does not serve. The `HEAD` request carries no npm credential and ignores npm's proxy settings, so there every tarball reads not served and the run exits 3.
 
 - Read `+ @orkestrel/<name>@<version>` in the upload's own journal as the accepted verdict, and
   advance the chain on it. The registry's read lags its processing by minutes, which the

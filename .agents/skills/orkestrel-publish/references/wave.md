@@ -285,10 +285,8 @@ resolvable previous pin and takes its development-only re-pin after the window c
 takes the self-pin sweep too, because the snapshot class moves with no bump.
 
 - Before waiting on an upstream release, read its deprecation notice and its dist-tags.
-- After a window confirms a release, poll its tarball URL, read with
-  `npm view NAME@VERSION dist.tarball`, until it answers `200` before an install names that
-  version. The registry lists a version in the packument minutes before it serves the tarball, and
-  an install in that gap fails `E404`.
+- Before an install names a version a window published, confirm it per
+  [window.md](window.md) § Read the verdict from the registry.
 - Run every visit and install that follows a publish with `npm_config_prefer_online=true`. A
   cached packument answers `notarget` for a version the registry already serves.
 

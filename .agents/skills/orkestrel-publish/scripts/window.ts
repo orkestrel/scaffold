@@ -1,7 +1,7 @@
 // Work the npm authentication window. Run from the checkout root:
 //   node .agents/skills/orkestrel-publish/scripts/window.ts --whoami [--wait SECONDS]
 //   node .agents/skills/orkestrel-publish/scripts/window.ts --login [--wait SECONDS]
-//   node .agents/skills/orkestrel-publish/scripts/window.ts --publish DIR... --otp CODE [--json]
+//   node .agents/skills/orkestrel-publish/scripts/window.ts --publish DIR... --otp CODE [--wait SECONDS] [--json]
 //   node .agents/skills/orkestrel-publish/scripts/window.ts --confirm NAME@VERSION... [--wait SECONDS]
 // --whoami reads `npm whoami` once, or polls it every 5 seconds until it answers or the wait ends.
 // --login prints the command the operator runs in a real terminal (npm offers its approval only to a
@@ -13,11 +13,23 @@
 // directory back to back under captured pipes (npm's non-TTY guard turns a refused code into
 // EOTP with no prompt, so the path needs no TTY), journals each upload to tmp/units/publish-<name>.log, reads the `+ name@version`
 // acceptance line, stops at the first refusal and names the package to resume from, then confirms
-// each accepted version against the registry. --confirm re-reads the registry for each name@version every 5
-// seconds until it serves the version or the wait (default 120 seconds) ends. Exit 0 when the mode
-// succeeded, 3 when it did not, 64 on usage. The script reads its flags with `parseArgs` in strict
-// mode, and takes the directories of --publish and the targets of --confirm as its positional
-// arguments.
+// each accepted version against the registry. --confirm reads `npm view NAME@VERSION version
+// dist.tarball` every 5 seconds until the registry lists the version with a tarball URL, then sends
+// a HEAD request to that URL every 5 seconds until it answers 200. --wait (default 120 seconds)
+// bounds each target on its own, the listing and the tarball together, so a run of N targets can
+// take N waits; the last read falls at the wait's end, and each `npm view` is killed after the
+// wait that remains plus READ_MS and read as not listed. Where no npm-cli.js sits beside the
+// running Node, npm runs through the Windows shell: the kill ends the shell and the read still
+// returns at its bound, but npm outlives the kill and can hold its registry connection open (read
+// 2026-11-20 on a Windows 11 host against a registry that never answers). --wait above WAIT_LIMIT (2147473 seconds, the
+// bound Node gives a timer less one read) is refused with 64. A version counts as served only when its
+// tarball answered 200, so a listed version whose tarball never answered is not served, and
+// --publish reads an accepted upload as unconfirmed by the same rule, within its own --wait per
+// upload. The HEAD request carries no npm credential and ignores npm's proxy settings, so behind an
+// authenticated registry or a proxy every tarball reads not served and the run exits 3. Each
+// --confirm result reads { target, listed, served, tarball: { url, served } }. Exit 0 when the mode succeeded, 3 when it
+// did not, 64 on usage. The script reads its flags with `parseArgs` in strict mode, and takes the
+// directories of --publish and the targets of --confirm as its positional arguments.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
@@ -29,12 +41,21 @@ import { parseArgs } from 'node:util'
 /** Holds the milliseconds between two polls of the registry. */
 export const POLL_MS = 5_000
 
+/** Holds the milliseconds one `npm view` read may run past the wait that remains before it is killed. */
+export const READ_MS = 10_000
+
+/** Holds the longest delay in milliseconds a Node timer accepts; a longer one fires after 1 ms. */
+export const TIMER_MS = 2 ** 31 - 1
+
+/** Holds the longest `--wait` in seconds whose wait plus one read fits inside `TIMER_MS`. */
+export const WAIT_LIMIT = Math.floor((TIMER_MS - READ_MS) / 1000)
+
 /** Matches the acceptance line `npm publish` prints and captures the name and the version. */
 export const ACCEPTED = /^\+ (\S+)@(\S+)\s*$/mu
 
 /** Holds the usage line the script prints when no mode or two modes were given. */
 export const USAGE =
-	'usage: window.ts --whoami [--wait SECONDS] | --login [--wait SECONDS] | --publish DIR... --otp CODE [--json] | --confirm NAME@VERSION... [--wait SECONDS]'
+	'usage: window.ts --whoami [--wait SECONDS] | --login [--wait SECONDS] | --publish DIR... --otp CODE [--wait SECONDS] [--json] | --confirm NAME@VERSION... [--wait SECONDS]'
 
 /** Declares every flag the script reads, for `parseArgs`. */
 export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
@@ -105,6 +126,24 @@ export interface Upload {
 	readonly journal: string
 }
 
+/** Describes what the registry lists for one version: whether it lists it, and its tarball URL. */
+export interface Listing {
+	readonly listed: boolean
+	readonly url: string | undefined
+}
+
+/** Describes a version's tarball: the URL the registry names, and whether that URL answered 200. */
+export interface Tarball {
+	readonly url: string | undefined
+	readonly served: boolean
+}
+
+/** Describes one confirmation: whether the registry lists the version, and its tarball. */
+export interface Confirmation {
+	readonly listed: boolean
+	readonly tarball: Tarball
+}
+
 /** Describes the uploads a batch made and whether a refusal stopped it. */
 export interface Published {
 	readonly uploads: readonly Upload[]
@@ -162,9 +201,15 @@ export function resolveNpm(): NpmCommand {
  *
  * @param args - The npm arguments, such as `['whoami']`.
  * @param cwd - The working directory. Default: the current directory.
+ * @param timeout - The milliseconds after which the child is killed and its status reads null.
+ * Default: none.
  * @returns The spawn result with `utf8` stdout and stderr.
  */
-export function runNpm(args: readonly string[], cwd?: string): SpawnSyncReturns<string> {
+export function runNpm(
+	args: readonly string[],
+	cwd?: string,
+	timeout?: number,
+): SpawnSyncReturns<string> {
 	const npm = resolveNpm()
 	return spawnSync(npm.file, [...npm.prefix, ...args], {
 		encoding: 'utf8',
@@ -172,6 +217,7 @@ export function runNpm(args: readonly string[], cwd?: string): SpawnSyncReturns<
 		shell: npm.shell,
 		maxBuffer: 64 * 1024 * 1024,
 		...(cwd === undefined ? {} : { cwd }),
+		...(timeout === undefined ? {} : { timeout }),
 	})
 }
 
@@ -204,35 +250,132 @@ export async function pollWhoami(
 }
 
 /**
- * Checks whether the registry serves one version of a package.
+ * Parses what `npm view NAME@VERSION version dist.tarball --json` printed.
  *
- * @param name - The package name.
- * @param version - The version.
- * @returns True if `npm view` reads exactly that version; false otherwise.
+ * @remarks
+ * npm prints one object keyed `version` and `dist.tarball` when the packument names both, and the
+ * bare version string when it names no tarball.
+ *
+ * @param text - npm's standard output.
+ * @param version - The version the target names.
+ * @returns Listed when the printed version equals the target's, with the tarball URL when one is named.
  */
-export function readServed(name: string, version: string): boolean {
-	const result = runNpm(['view', `${name}@${version}`, 'version', '--json'])
-	return result.status === 0 && result.stdout.replace(/["\s]/gu, '') === version
+export function parseListing(text: string, version: string): Listing {
+	const record = parseJsonRecord(text)
+	if (record === undefined) {
+		return { listed: text.replace(/["\s]/gu, '') === version, url: undefined }
+	}
+	const listed = readString(record, 'version') === version
+	return { listed, url: listed ? readString(record, 'dist.tarball') : undefined }
 }
 
 /**
- * Polls the registry until it serves one version or the wait ends.
+ * Reads whether the registry lists one version and the tarball URL it names, from one packument read.
+ *
+ * @remarks
+ * The kill reaches npm itself when `resolveNpm` spawns `npm-cli.js` beside the running Node. On the
+ * Windows shell fallback it ends the shell and the read still returns at its bound, but npm outlives
+ * the kill and can hold its registry connection open.
  *
  * @param name - The package name.
  * @param version - The version.
- * @param waitSeconds - How long to keep polling; 0 reads once.
- * @param started - The millisecond the polling began. Default: now.
- * @returns True if the registry served the version within the wait; false otherwise.
+ * @param timeout - The milliseconds after which the read is killed.
+ * @returns The listing; not listed when npm exits nonzero or the read is killed.
+ */
+export function readListing(name: string, version: string, timeout: number): Listing {
+	const result = runNpm(
+		['view', `${name}@${version}`, 'version', 'dist.tarball', '--json'],
+		undefined,
+		timeout,
+	)
+	return result.status === 0
+		? parseListing(result.stdout, version)
+		: { listed: false, url: undefined }
+}
+
+/**
+ * Requests a tarball once with a HEAD request and reads whether it answered 200.
+ *
+ * @remarks
+ * registry.npmjs.org answers HEAD on a tarball URL with the status a GET receives (read 2026-11-20:
+ * 200 for a served tarball, 404 for an absent one), so no body is fetched. A request that outlasts
+ * `POLL_MS` is aborted and reads as not served.
+ *
+ * @param url - The tarball URL the packument names.
+ * @returns True if the URL answered 200; false on any other status or a network error.
+ */
+export async function readTarball(url: string): Promise<boolean> {
+	try {
+		const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(POLL_MS) })
+		return response.status === 200
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Computes the milliseconds left in a wait.
+ *
+ * @param waitSeconds - The wait's length.
+ * @param started - The `performance.now()` reading the wait began at.
+ * @returns The milliseconds left, 0 or below once the wait ended.
+ */
+export function computeRemaining(waitSeconds: number, started: number): number {
+	return waitSeconds * 1000 - (performance.now() - started)
+}
+
+/**
+ * Polls a tarball URL until it answers 200 or the wait ends.
+ *
+ * @param url - The tarball URL.
+ * @param waitSeconds - How long to keep polling; 0 requests once.
+ * @param started - The `performance.now()` reading the wait began at. Default: now.
+ * @returns True if the URL answered 200 within the wait; false otherwise.
+ */
+export async function pollTarball(
+	url: string,
+	waitSeconds: number,
+	started = performance.now(),
+): Promise<boolean> {
+	if (await readTarball(url)) return true
+	const remaining = computeRemaining(waitSeconds, started)
+	if (remaining <= 0) return false
+	await setTimeout(Math.min(POLL_MS, remaining))
+	return pollTarball(url, waitSeconds, started)
+}
+
+/**
+ * Polls the registry until it lists one version with a tarball URL and that URL answers 200, or the
+ * wait ends.
+ *
+ * @param name - The package name.
+ * @param version - The version.
+ * @param waitSeconds - How long to keep polling, the listing and the tarball together; 0 reads each
+ * once.
+ * @param started - The `performance.now()` reading the wait began at. Default: now.
+ * @returns Whether the registry listed the version, and its tarball URL with whether it served.
  */
 export async function confirmServed(
 	name: string,
 	version: string,
 	waitSeconds: number,
-	started = Date.now(),
-): Promise<boolean> {
-	const served = readServed(name, version)
-	if (served || Date.now() - started >= waitSeconds * 1000) return served
-	await setTimeout(POLL_MS)
+	started = performance.now(),
+): Promise<Confirmation> {
+	// spawnSync throws ERR_OUT_OF_RANGE on a fractional timeout.
+	const listing = readListing(
+		name,
+		version,
+		Math.ceil(Math.max(computeRemaining(waitSeconds, started), 0)) + READ_MS,
+	)
+	if (listing.url !== undefined) {
+		return {
+			listed: listing.listed,
+			tarball: { url: listing.url, served: await pollTarball(listing.url, waitSeconds, started) },
+		}
+	}
+	const remaining = computeRemaining(waitSeconds, started)
+	if (remaining <= 0) return { listed: listing.listed, tarball: { url: undefined, served: false } }
+	await setTimeout(Math.min(POLL_MS, remaining))
 	return confirmServed(name, version, waitSeconds, started)
 }
 
@@ -348,7 +491,7 @@ export async function publishAll(
 		}
 		confirmed.push({
 			...upload,
-			confirmed: await confirmServed(upload.name, upload.version, waitSeconds),
+			confirmed: (await confirmServed(upload.name, upload.version, waitSeconds)).tarball.served,
 		})
 	}
 	return confirmed
@@ -379,6 +522,12 @@ export async function main(argv: readonly string[]): Promise<number> {
 	if (given !== undefined && (given.trim() === '' || !Number.isFinite(wait) || wait < 0)) {
 		console.error(
 			`window: --wait takes a number of seconds from 0, not ${JSON.stringify(given)}; ${USAGE}`,
+		)
+		return 64
+	}
+	if (wait > WAIT_LIMIT) {
+		console.error(
+			`window: --wait takes at most ${String(WAIT_LIMIT)} seconds, not ${JSON.stringify(given)}; ${USAGE}`,
 		)
 		return 64
 	}
@@ -469,13 +618,15 @@ export async function main(argv: readonly string[]): Promise<number> {
 			console.error('usage: window.ts --confirm NAME@VERSION... [--wait SECONDS]')
 			return 64
 		}
-		const results: Array<{ readonly target: string; readonly served: boolean }> = []
+		const results: Array<{ readonly target: string; readonly served: boolean } & Confirmation> = []
 		for (const target of targets) {
 			const at = target.lastIndexOf('@')
-			results.push({
-				target,
-				served: await confirmServed(target.slice(0, at), target.slice(at + 1), wait),
-			})
+			const { listed, tarball } = await confirmServed(
+				target.slice(0, at),
+				target.slice(at + 1),
+				wait,
+			)
+			results.push({ target, listed, served: tarball.served, tarball })
 		}
 		console.log(JSON.stringify({ mode: 'confirm', results }))
 		return results.every((result) => result.served) ? 0 : 3

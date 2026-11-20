@@ -1,18 +1,26 @@
 import { existsSync } from 'node:fs'
+import { createServer } from 'node:http'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
-import { createScratch } from '@orkestrel/test/server'
+import { createLoopback, createScratch } from '@orkestrel/test/server'
 import {
 	OPTIONS,
+	POLL_MS,
+	READ_MS,
+	computeRemaining,
 	parseArguments,
+	parseListing,
 	findGitRoot,
 	parseJsonRecord,
+	pollTarball,
 	readErrorCode,
 	readManifestName,
 	readString,
+	readTarball,
 	resolveNpm,
 	runNpm,
+	WAIT_LIMIT,
 } from '../../../../../.agents/skills/orkestrel-publish/scripts/window.ts'
 import {
 	buildWhoamiEnvironment,
@@ -196,6 +204,38 @@ describe('window.ts', () => {
 		}
 	})
 
+	it('refuses a --wait above the longest a Node timer holds before it contacts npm, and reads the limit itself', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-limit-' })
+		const registry = await createWhoamiRegistry('fixture')
+		try {
+			const env = buildWhoamiEnvironment(scratch.path, registry)
+			for (const argv of [
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', String(WAIT_LIMIT + 1)],
+				['--whoami', '--wait', '1e308'],
+				['--login', `--wait=${String(WAIT_LIMIT + 0.5)}`],
+			]) {
+				const run = await spawnSkillScript(WINDOW_SCRIPT, argv, { cwd: scratch.path, env })
+				expect([argv, run.status]).toStrictEqual([argv, 64])
+				expect(run.stderr).toContain(`--wait takes at most ${String(WAIT_LIMIT)} seconds, not "`)
+				expect(run.stdout).toBe('')
+			}
+			expect(registry.requests).toEqual([])
+			// A Node timer holds at most 2147483647 ms: the limit plus one read fits it, and one second more does not.
+			expect(WAIT_LIMIT * 1000 + READ_MS).toBeLessThanOrEqual(2_147_483_647)
+			expect((WAIT_LIMIT + 1) * 1000 + READ_MS).toBeGreaterThan(2_147_483_647)
+			const limit = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--whoami', '--wait', String(WAIT_LIMIT)],
+				{ cwd: scratch.path, env },
+			)
+			expect(limit.status).toBe(0)
+			expect(limit.json).toEqual({ mode: 'whoami', user: 'fixture', live: true })
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
 	it('reads --publish A B --otp X as the directories A and B, and refuses a list without the mode that takes it', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-list-' })
 		const dark = await createWhoamiRegistry(undefined)
@@ -336,7 +376,14 @@ describe('window.ts', () => {
 			expect(confirm.status).toBe(3)
 			expect(confirm.json).toEqual({
 				mode: 'confirm',
-				results: [{ target: '@fixture/pkg@1.0.0', served: false }],
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: false,
+						served: false,
+						tarball: { served: false },
+					},
+				],
 			})
 		} finally {
 			await registry.destroy()
@@ -344,7 +391,7 @@ describe('window.ts', () => {
 		}
 	})
 
-	it('accepts an upload, journals the acceptance line, and confirms the version the registry then serves', async () => {
+	it('accepts an upload, journals the acceptance line, and leaves it unconfirmed while the registry lists the version and its tarball answers 404', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-accepted-' })
 		const registry = await createPublishRegistry('fixture')
 		try {
@@ -361,10 +408,10 @@ describe('window.ts', () => {
 			expect(before.status).toBe(3)
 			const published = await spawnSkillScript(
 				WINDOW_SCRIPT,
-				['--publish', 'pkg', '--otp', '123456', '--json'],
+				['--publish', 'pkg', '--otp', '123456', '--json', '--wait', '0'],
 				{ cwd: scratch.path, env },
 			)
-			expect(published.status).toBe(0)
+			expect(published.status).toBe(3)
 			expect(published.stderr).toContain('window: accepted @fixture/pkg@1.0.0')
 			expect(registry.uploads).toEqual(['@fixture/pkg'])
 			const uploads = published.json?.uploads
@@ -376,21 +423,29 @@ describe('window.ts', () => {
 				version: '1.0.0',
 				exit: 0,
 				accepted: true,
-				confirmed: true,
+				confirmed: false,
 				journal: 'tmp/units/publish--fixture-pkg.log',
 			})
 			expect(scratch.read('tmp/units/publish--fixture-pkg.log') ?? '').toContain(
 				'+ @fixture/pkg@1.0.0',
 			)
-			const served = await spawnSkillScript(
+			const url = `${registry.url}@fixture/pkg/-/@fixture/pkg-1.0.0.tgz`
+			const listed = await spawnSkillScript(
 				WINDOW_SCRIPT,
 				['--confirm', '@fixture/pkg@1.0.0', '--wait', '0'],
 				{ cwd: scratch.path, env },
 			)
-			expect(served.status).toBe(0)
-			expect(served.json).toEqual({
+			expect(listed.status).toBe(3)
+			expect(listed.json).toEqual({
 				mode: 'confirm',
-				results: [{ target: '@fixture/pkg@1.0.0', served: true }],
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: true,
+						served: false,
+						tarball: { url, served: false },
+					},
+				],
 			})
 			const other = await spawnSkillScript(
 				WINDOW_SCRIPT,
@@ -401,10 +456,29 @@ describe('window.ts', () => {
 			expect(other.json).toEqual({
 				mode: 'confirm',
 				results: [
-					{ target: '@fixture/pkg@1.0.0', served: true },
-					{ target: '@fixture/pkg@2.0.0', served: false },
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: true,
+						served: false,
+						tarball: { url, served: false },
+					},
+					{
+						target: '@fixture/pkg@2.0.0',
+						listed: false,
+						served: false,
+						tarball: { served: false },
+					},
 				],
 			})
+			expect(
+				registry.requests.filter((line) =>
+					line.endsWith(' /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz'),
+				),
+			).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
 		} finally {
 			await registry.destroy()
 			scratch.destroy()
@@ -451,7 +525,7 @@ describe('window.ts', () => {
 		}
 	})
 
-	it('confirms the packages a batch published before its refusal and leaves the rest unpublished', async () => {
+	it('reads the packages a batch published before its refusal against the registry and leaves the rest unpublished', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-partial-' })
 		const registry = await createPublishRegistry('fixture', ['@fixture/b'])
 		try {
@@ -464,14 +538,14 @@ describe('window.ts', () => {
 			}
 			const run = await spawnSkillScript(
 				WINDOW_SCRIPT,
-				['--publish', 'a', 'b', 'c', '--otp', '123456'],
+				['--publish', 'a', 'b', 'c', '--otp', '123456', '--wait', '0'],
 				{ cwd: scratch.path, env },
 			)
 			expect(run.status).toBe(3)
 			expect(registry.uploads).toEqual(['@fixture/a'])
 			const rows = run.stdout.split(/\r\n|\n/u).filter((line) => line.startsWith('window: '))
 			expect(rows).toEqual([
-				'window: a\t@fixture/a@1.0.0\taccepted\tconfirmed\ttmp/units/publish--fixture-a.log',
+				'window: a\t@fixture/a@1.0.0\taccepted\tunconfirmed\ttmp/units/publish--fixture-a.log',
 				'window: b\t@fixture/b@1.0.0\trefused E403\tunconfirmed\ttmp/units/publish--fixture-b.log',
 			])
 			expect(scratch.has('tmp/units/publish--fixture-c.log')).toBe(false)
@@ -479,6 +553,404 @@ describe('window.ts', () => {
 			await registry.destroy()
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the tarball confirmation', () => {
+	it('reads a listed version as served only after its tarball answers 200, one HEAD request per poll', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-late-' })
+		const registry = await createPublishRegistry('fixture', [], {
+			delays: new Map([['@fixture/pkg', 2]]),
+		})
+		try {
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, registry),
+				npm_config_loglevel: 'silent',
+			}
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const published = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', '--otp', '123456', '--wait', '0'],
+				{ cwd: scratch.path, env },
+			)
+			expect(published.status).toBe(3)
+			expect(published.stdout).toContain('\taccepted\tunconfirmed\t')
+			const mark = registry.requests.length
+			const started = performance.now()
+			const run = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', '30'],
+				{ cwd: scratch.path, env },
+			)
+			const elapsed = performance.now() - started
+			expect(run.status).toBe(0)
+			expect(run.json).toEqual({
+				mode: 'confirm',
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: true,
+						served: true,
+						tarball: { url: `${registry.url}@fixture/pkg/-/@fixture/pkg-1.0.0.tgz`, served: true },
+					},
+				],
+			})
+			expect(registry.requests.slice(mark).filter((line) => line.includes('/-/'))).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
+			expect(elapsed).toBeGreaterThanOrEqual(POLL_MS)
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('reads a listed version whose tarball never answers 200 as not served, polling at the start and at the end of a wait shorter than one poll interval', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-never-' })
+		const registry = await createPublishRegistry('fixture')
+		try {
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, registry),
+				npm_config_loglevel: 'silent',
+			}
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const published = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', '--otp', '123456', '--wait', '0'],
+				{ cwd: scratch.path, env },
+			)
+			expect(published.status).toBe(3)
+			const result = {
+				mode: 'confirm',
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: true,
+						served: false,
+						tarball: { url: `${registry.url}@fixture/pkg/-/@fixture/pkg-1.0.0.tgz`, served: false },
+					},
+				],
+			}
+			const once = registry.requests.length
+			const single = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', '0'],
+				{ cwd: scratch.path, env },
+			)
+			expect(single.status).toBe(3)
+			expect(single.json).toEqual(result)
+			expect(registry.requests.slice(once).filter((line) => line.includes('/-/'))).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
+			const mark = registry.requests.length
+			const started = performance.now()
+			const waited = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', '4'],
+				{ cwd: scratch.path, env },
+			)
+			const elapsed = performance.now() - started
+			expect(waited.status).toBe(3)
+			expect(waited.json).toEqual(result)
+			expect(registry.requests.slice(mark).filter((line) => line.includes('/-/'))).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
+			expect(elapsed).toBeGreaterThanOrEqual(4000)
+			expect(elapsed).toBeLessThanOrEqual(4000 + READ_MS + POLL_MS)
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('ends a never-served target whose wait is shorter than one poll interval before that interval elapses', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-short-' })
+		const registry = await createPublishRegistry('fixture')
+		try {
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, registry),
+				npm_config_loglevel: 'silent',
+			}
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const published = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', '--otp', '123456', '--wait', '0'],
+				{ cwd: scratch.path, env },
+			)
+			expect(published.status).toBe(3)
+			const mark = registry.requests.length
+			const started = performance.now()
+			const run = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', '1'],
+				{ cwd: scratch.path, env },
+			)
+			const elapsed = performance.now() - started
+			expect(run.status).toBe(3)
+			expect(run.json).toMatchObject({
+				results: [{ target: '@fixture/pkg@1.0.0', listed: true, served: false }],
+			})
+			const reads = registry.requests.slice(mark).filter((line) => line.includes('/-/'))
+			expect(reads.length).toBeGreaterThanOrEqual(1)
+			expect(elapsed).toBeGreaterThanOrEqual(1000)
+			// The run ends at the wait, or after one npm read and one HEAD round trip when the read
+			// outlasts it; a full POLL_MS sleep after the first poll ends it past POLL_MS.
+			expect(elapsed).toBeLessThan(POLL_MS)
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('ends a target whose registry never answers within the wait plus one read bound plus one poll interval', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-silent-' })
+		const silent = await createLoopback(createServer(() => undefined))
+		try {
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, {
+					url: `${silent.url}/`,
+					port: silent.port,
+					requests: [],
+					destroy: async () => silent.destroy(),
+				}),
+				npm_config_fetch_retries: '0',
+				npm_config_fetch_timeout: String(2 * (READ_MS + POLL_MS)),
+			}
+			const started = performance.now()
+			const run = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', '2'],
+				{ cwd: scratch.path, env },
+			)
+			const elapsed = performance.now() - started
+			expect(run.status).toBe(3)
+			expect(run.json).toEqual({
+				mode: 'confirm',
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: false,
+						served: false,
+						tarball: { served: false },
+					},
+				],
+			})
+			expect(elapsed).toBeGreaterThanOrEqual(2000)
+			expect(elapsed).toBeLessThanOrEqual(2000 + READ_MS + POLL_MS)
+		} finally {
+			await silent.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('polls the listing until the packument lists the upload, then confirms its tarball', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-lag-' })
+		const registry = await createPublishRegistry('fixture', [], {
+			delays: new Map([['@fixture/pkg', 0]]),
+			lags: new Map([['@fixture/pkg', 2]]),
+		})
+		try {
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, registry),
+				npm_config_loglevel: 'silent',
+			}
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const published = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', '--otp', '123456', '--wait', '0'],
+				{ cwd: scratch.path, env },
+			)
+			expect(published.status).toBe(3)
+			const mark = registry.requests.length
+			const run = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--confirm', '@fixture/pkg@1.0.0', '--wait', '30'],
+				{ cwd: scratch.path, env },
+			)
+			expect(run.status).toBe(0)
+			expect(run.json).toEqual({
+				mode: 'confirm',
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: true,
+						served: true,
+						tarball: { url: `${registry.url}@fixture/pkg/-/@fixture/pkg-1.0.0.tgz`, served: true },
+					},
+				],
+			})
+			const reads = registry.requests.slice(mark)
+			expect(reads.filter((line) => line === 'GET /@fixture%2fpkg')).toEqual([
+				'GET /@fixture%2fpkg',
+				'GET /@fixture%2fpkg',
+			])
+			expect(reads.filter((line) => line.includes('/-/'))).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('reads a version the registry does not list as not served, requests no tarball, and exits 3 while any target is not served', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-absent-' })
+		const registry = await createPublishRegistry('fixture', [], {
+			delays: new Map([['@fixture/pkg', 0]]),
+		})
+		try {
+			const env = {
+				...buildWhoamiEnvironment(scratch.path, registry),
+				npm_config_loglevel: 'silent',
+			}
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const published = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', '--otp', '123456', '--wait', '0'],
+				{ cwd: scratch.path, env },
+			)
+			expect(published.status).toBe(0)
+			expect(published.stdout).toContain('\taccepted\tconfirmed\t')
+			const mark = registry.requests.length
+			const run = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				[
+					'--confirm',
+					'@fixture/pkg@1.0.0',
+					'@fixture/pkg@2.0.0',
+					'@fixture/absent@1.0.0',
+					'--wait',
+					'0',
+				],
+				{ cwd: scratch.path, env },
+			)
+			expect(run.status).toBe(3)
+			expect(run.json).toEqual({
+				mode: 'confirm',
+				results: [
+					{
+						target: '@fixture/pkg@1.0.0',
+						listed: true,
+						served: true,
+						tarball: { url: `${registry.url}@fixture/pkg/-/@fixture/pkg-1.0.0.tgz`, served: true },
+					},
+					{
+						target: '@fixture/pkg@2.0.0',
+						listed: false,
+						served: false,
+						tarball: { served: false },
+					},
+					{
+						target: '@fixture/absent@1.0.0',
+						listed: false,
+						served: false,
+						tarball: { served: false },
+					},
+				],
+			})
+			expect(registry.requests.slice(mark).filter((line) => line.includes('/-/'))).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('confirms an accepted upload only after its tarball answers 200', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-fresh-' })
+		const registry = await createPublishRegistry('fixture', [], {
+			delays: new Map([['@fixture/pkg', 1]]),
+		})
+		try {
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const run = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', '--otp', '123456', '--json', '--wait', '30'],
+				{
+					cwd: scratch.path,
+					env: { ...buildWhoamiEnvironment(scratch.path, registry), npm_config_loglevel: 'silent' },
+				},
+			)
+			expect(run.status).toBe(0)
+			const uploads = run.json?.uploads
+			if (!isArray(uploads) || uploads.length !== 1)
+				throw new Error('The publish reported no upload')
+			expect(uploads[0]).toMatchObject({
+				name: '@fixture/pkg',
+				version: '1.0.0',
+				accepted: true,
+				confirmed: true,
+			})
+			expect(registry.requests.filter((line) => line.includes('/-/@fixture/'))).toEqual([
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+				'HEAD /@fixture/pkg/-/@fixture/pkg-1.0.0.tgz',
+			])
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('reads a tarball as served on a 200 alone, and a refused, stalled, or malformed request as not served', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-reader-' })
+		const registry = await createPublishRegistry('fixture', [], {
+			delays: new Map([['@fixture/pkg', 0]]),
+			stalled: new Set(['@fixture/stalled']),
+		})
+		try {
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			scratch.write('stalled/package.json', '{"name":"@fixture/stalled","version":"1.0.0"}')
+			const published = await spawnSkillScript(
+				WINDOW_SCRIPT,
+				['--publish', 'pkg', 'stalled', '--otp', '123456', '--wait', '0'],
+				{
+					cwd: scratch.path,
+					env: { ...buildWhoamiEnvironment(scratch.path, registry), npm_config_loglevel: 'silent' },
+				},
+			)
+			expect(published.status).toBe(3)
+			expect(registry.uploads).toEqual(['@fixture/pkg', '@fixture/stalled'])
+			const base = registry.url
+			expect(await readTarball(`${base}@fixture/pkg/-/@fixture/pkg-1.0.0.tgz`)).toBe(true)
+			expect(await readTarball(`${base}@fixture/pkg/-/@fixture/pkg-2.0.0.tgz`)).toBe(false)
+			expect(await readTarball('not a url')).toBe(false)
+			expect(await readTarball('ftp://127.0.0.1/pkg-1.0.0.tgz')).toBe(false)
+			const started = performance.now()
+			expect(await readTarball(`${base}@fixture/stalled/-/@fixture/stalled-1.0.0.tgz`)).toBe(false)
+			expect(performance.now() - started).toBeGreaterThanOrEqual(POLL_MS)
+			const mark = registry.requests.length
+			expect(await pollTarball(`${base}@fixture/pkg/-/@fixture/pkg-2.0.0.tgz`, 0)).toBe(false)
+			expect(registry.requests.slice(mark)).toEqual(['HEAD /@fixture/pkg/-/@fixture/pkg-2.0.0.tgz'])
+		} finally {
+			await registry.destroy()
+			scratch.destroy()
+		}
+	})
+
+	it('parses the listing npm prints and counts the wait down', () => {
+		expect(
+			parseListing(
+				'{\n  "version": "1.0.0",\n  "dist.tarball": "http://registry/a.tgz"\n}\n',
+				'1.0.0',
+			),
+		).toEqual({ listed: true, url: 'http://registry/a.tgz' })
+		expect(parseListing('{"version":"1.0.0"}', '1.0.0')).toEqual({ listed: true, url: undefined })
+		expect(parseListing('"1.0.0"\n', '1.0.0')).toEqual({ listed: true, url: undefined })
+		expect(
+			parseListing('{"version":"2.0.0","dist.tarball":"http://registry/a.tgz"}', '1.0.0'),
+		).toEqual({ listed: false, url: undefined })
+		expect(parseListing('', '1.0.0')).toEqual({ listed: false, url: undefined })
+		expect(parseListing('{"version":1,"dist.tarball":2}', '1.0.0')).toEqual({
+			listed: false,
+			url: undefined,
+		})
+		const now = performance.now()
+		expect(computeRemaining(2, now)).toBeGreaterThan(0)
+		expect(computeRemaining(2, now)).toBeLessThanOrEqual(2000)
+		expect(computeRemaining(0, now)).toBeLessThanOrEqual(0)
 	})
 })
 
