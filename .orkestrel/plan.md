@@ -24,6 +24,7 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 - 2026-11-20, the user: agent publishes from a clone of `origin/main` at `fdd0996e`, apart from the agent session's unpushed work. The agent session holds its pushes until scaffold posts "AGENT RELEASED", then rebases onto the released `origin/main`.
 - 2026-11-20, the user: learn and train are unpublished and outside the wave; they adopt after it closes.
 - 2026-11-20, the user: study's session is told its L7 visit before it runs.
+- 2026-11-20, the user: every visit passes `--regenerate`, which replaces the lockfile and `node_modules` from the manifest when an install fails `ERESOLVE`.
 
 ## ROADMAP items this wave meets
 
@@ -32,6 +33,7 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 
 ## State
 
-- 2026-11-20: L1 visits running (abort, budget, emitter, html, indexeddb, jsonrpc, ndjson, sqlite, test, timeout).
+- 2026-11-20: L1 published and pushed (round 1). The user ruled the rest of the wave release-ready without publishing overnight: L3 to L7 prove against local tarballs of their unpublished upstream candidates (swap.ts), and the lockfile and the release-mode distribution proof wait for the morning publish.
+- 2026-11-20: agent releases from the clone  cut at .
 
-Next action: release the L1 packages whose visits pass, then open the L1 window.
+Next action: when L2 is release-ready, run L3 in tarball mode, then L4 to L7, then publish layer by layer with the user's codes.
