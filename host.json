@@ -16,7 +16,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "594a5321c1866a4a85a4decda33834ddc9974e34ac00edc177c0fdbb4fc2399e"
+			"digest": "272534241be2f22073a5dcd89e96601c16b18d8663ea17f035d0af64c1ef7338"
 		},
 		{
 			"storage": "agents/platforms/posix.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "bf263972995459e5d900a51dc98e85d12e1a57d3166682aa7343ab59bb84eca8"
+	"digest": "ad09e0b64ef72e8c66aec2484ca6f91dfa0f18e9ee03d7a4c60f2e6e5bc80cbd"
 }

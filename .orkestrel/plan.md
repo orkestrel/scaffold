@@ -78,6 +78,7 @@ Run each batch's settle steps (Publish procedure step 1) under one lane ticket o
 
 - 2026-11-20: scaffold landed, unreleased, the vendored config proof's isolation fix (`f7dfe17d4`) and learn's debrief refinements (`ecd6412a8`), with the root items the user approved after a Fable 5.2 consultation. Learn pins a tarball of `ecd6412a8` until the next scaffold release, which carries both.
 - 2026-11-20: the close round held capture on two timing-bound `src:server` cases that timed out under suite load; its gates rerun from the visit's commits.
+- Open, for the next scaffold release: learn's U4 wrote in its own worktree beside U2 in the main checkout, both into the same kind files (learn `b2712c0` merged 18 conflicts). D9's landed text names each writer's declarations, which prevents duplicate names but not a textual conflict when two worktrees insert at one position. Rule whether writers in separate worktrees serialize their kind-file additions, against § Parallelism's worktree line.
 
 Findings for the debrief:
 
