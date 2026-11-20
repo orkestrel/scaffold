@@ -66,11 +66,11 @@ After L7, release scaffold: re-pin its runtime ranges, run `scaffold catalog --a
 Remaining rounds, one one-time code each:
 
 1. browser and probe: published, each tarball served, and each release commit pushed (round 5, 2026-11-20).
-2. agent: settle `agent-release` after probe serves, publish, push, and post "AGENT RELEASED".
+2. agent: published from `agent-release`, its tarball served, `a51863eb` pushed, and "AGENT RELEASED" posted (round 6, 2026-11-20).
 3. ollama and toolbox: settle after agent serves. Ollama's release commit carries its `test:service` readings.
-4. study: tell the study session, then settle and publish.
+4. study: settle and publish. The study session was told on 2026-11-20 to leave its checkout to the wave, and no study session is live.
 5. scaffold: re-pin its runtime ranges, run `scaffold catalog --all`, build, run its chain, and publish. Then close the wave.
 
 Run each batch's settle steps (Publish procedure step 1) under one lane ticket on Node 22, so no other ticket runs between a package's install and its distribution proof.
 
-Next action: settle agent in `agent-release`, then publish it with the user's one-time code.
+Next action: settle ollama and toolbox, then publish them with the user's one-time code.

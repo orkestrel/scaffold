@@ -51,6 +51,7 @@ Each row: the package, its layer, the version it published, the bump ruling with
 | workflow | L4 | 0.0.32 | runtime abort ^0.0.20, budget ^0.0.21, contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, database ^0.0.29, queue ^0.0.26 moved; dist same | 4 |
 | browser | L5 | 0.0.36 | runtime codec ^0.0.13, contract ^0.0.27, emitter ^0.0.19, html ^0.0.19, markdown ^0.0.24, mcp ^0.0.46, pool ^0.0.24, process ^0.0.23, router ^0.0.25, server ^0.0.31, tool ^0.0.26, websocket ^0.0.22 moved; dist moved by the HAR creator stamp; five Linux-host distribution cases unread | 5 |
 | probe | L5 | 0.0.33 | runtime contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, lsp ^0.0.18, mcp ^0.0.46, pool ^0.0.24, process ^0.0.23, tool ^0.0.26 moved; dist moved by the server identity version | 5 |
+| agent | L5 | 0.0.48 | runtime abort ^0.0.20, budget ^0.0.21, contract ^0.0.27, emitter ^0.0.19, ndjson ^0.0.20, timeout ^0.0.20, database ^0.0.29, queue ^0.0.26, tool ^0.0.26, workflow ^0.0.32, workspace ^0.0.22 moved; dist same; published from the `agent-release` clone | 6 |
 
 ## Standing readings
 
