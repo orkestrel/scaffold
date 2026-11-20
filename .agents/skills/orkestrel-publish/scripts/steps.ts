@@ -12,8 +12,14 @@
 // out when a `.node`, `.dll`, or `.exe` file under `node_modules` refuses a write-mode open at chain start,
 // and `--no-ci` leaves `ci` out with the reason `--no-ci`. The script writes the plan to
 // `DIR/plan.json` and every omitted step to `DIR/omitted.txt`, prints each omitted step on its own
-// line, and runs the sibling `chain.ts` with stdio inherited and `npm_config_prefer_online=true`
-// merged into its environment. `--dry-run` prints the steps and omissions, writes nothing, and runs
+// line, and runs the sibling `chain.ts` with stdio inherited. The chain's environment leads `PATH`
+// with the directory of the Node binary that runs this script, whatever the inherited `PATH` leads
+// with, and sets `npm_config_prefer_online=true`, each merged by case-folded name. After the chain
+// returns, the script writes `DIR/result.json` as `{ exit, node, npm, binary, cli }`: the chain's
+// code, `process.version`, the version `npm --version` reports through the plan's npm entry
+// (absent when that command fails), `process.execPath`, and the npm entry the plan resolved. A
+// missing `result.json` means the chain did not finish or its record could not be written. A run removes an earlier `result.json` from the journal before the chain starts. `--dry-run` prints the steps and omissions,
+// writes nothing, and runs
 // nothing; `--json`, which `--dry-run` must accompany, prints them as one JSON value. The script
 // reads its flags with `parseArgs` in strict mode.
 // Exit with the chain's code: 0 when every step exited 0, the failing step's code when one did not,
@@ -30,9 +36,10 @@ import {
 	readdirSync,
 	readFileSync,
 	realpathSync,
+	rmSync,
 	writeFileSync,
 } from 'node:fs'
-import { dirname, extname, join } from 'node:path'
+import { delimiter, dirname, extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
@@ -152,6 +159,15 @@ export interface Step {
 	readonly name: string
 	readonly command: string
 	readonly args: readonly string[]
+}
+
+/** Describes `result.json`: the chain's code and the toolchain that ran it. */
+export interface ResultRecord {
+	readonly exit: number
+	readonly node: string
+	readonly npm: string | undefined
+	readonly binary: string
+	readonly cli: string
 }
 
 /** Describes a function that throws when a file refuses a write-mode open. */
@@ -501,7 +517,8 @@ export function formatSegment(segment: Segment): string {
 }
 
 /**
- * Writes the plan and the omissions into the journal directory.
+ * Writes the plan and the omissions into the journal directory and removes an earlier run's
+ * `result.json`.
  *
  * @param journal - The journal directory, created when absent.
  * @param plan - The plan entries.
@@ -516,6 +533,7 @@ export function writeJournal(
 ): string | undefined {
 	try {
 		mkdirSync(journal, { recursive: true })
+		rmSync(join(journal, 'result.json'), { force: true })
 		writeFileSync(join(journal, 'plan.json'), `${JSON.stringify(plan, null, '\t')}\n`)
 		writeFileSync(
 			join(journal, 'omitted.txt'),
@@ -553,18 +571,95 @@ export function mergeEnv(
 }
 
 /**
+ * Builds the environment every chain step runs in.
+ *
+ * @remarks
+ * `PATH` leads with the directory of the Node binary, so a step that names `node` reaches that
+ * binary whatever the inherited `PATH` leads with. The inherited value is read by case-folded name
+ * before it is dropped, because a Windows environment names it `Path`.
+ *
+ * @param inherited - The environment the chain would inherit. Default: `process.env`.
+ * @param binary - The Node binary. Default: `process.execPath`.
+ * @returns The inherited variables no added name claims, followed by `PATH` and `npm_config_prefer_online`.
+ */
+export function buildEnvironment(
+	inherited: Readonly<Record<string, string | undefined>> = process.env,
+	binary: string = process.execPath,
+): Record<string, string | undefined> {
+	const found = Object.entries(inherited).filter(([name]) => name.toLowerCase() === 'path')
+	const path = inherited.PATH ?? found.find(([, value]) => value !== undefined)?.[1]
+	return mergeEnv(inherited, {
+		PATH:
+			path === undefined || path === '' ? dirname(binary) : `${dirname(binary)}${delimiter}${path}`,
+		npm_config_prefer_online: 'true',
+	})
+}
+
+/**
+ * Reads the npm entry a plan resolved.
+ *
+ * @param npm - How the plan starts npm.
+ * @returns The `npm-cli.js` path, or the shim or command name where no entry sits beside the binary.
+ */
+export function readEntry(npm: NpmCommand): string {
+	return npm.prefix.at(-1) ?? npm.file
+}
+
+/**
+ * Reads the version npm reports through the entry the plan resolved.
+ *
+ * @param npm - How the plan starts npm.
+ * @param env - The environment to run it in.
+ * @returns The trimmed version, or undefined when the command cannot start or exits nonzero.
+ */
+export function readNpmVersion(
+	npm: NpmCommand,
+	env: Readonly<Record<string, string | undefined>>,
+): string | undefined {
+	const result = spawnSync(npm.file, [...npm.prefix, '--version'], {
+		encoding: 'utf8',
+		env,
+		windowsHide: true,
+		shell: false,
+	})
+	if (result.status !== 0) return undefined
+	const [line] = result.stdout.split(/\r?\n/u)
+	return line === undefined || line.trim() === '' ? undefined : line.trim()
+}
+
+/**
+ * Writes the outcome of a chain into the journal directory.
+ *
+ * @param journal - The journal directory.
+ * @param record - The outcome to write as `result.json`.
+ * @returns The reason the write failed, or undefined when it succeeded.
+ */
+export function writeResult(journal: string, record: ResultRecord): string | undefined {
+	try {
+		writeFileSync(join(journal, 'result.json'), `${JSON.stringify(record, null, '\t')}\n`)
+		return undefined
+	} catch (error) {
+		return error instanceof Error ? error.message : String(error)
+	}
+}
+
+/**
  * Runs the sibling chain over the plan in a journal directory, its stdio inherited.
  *
  * @param journal - The journal directory that holds `plan.json`.
+ * @param env - The environment the chain runs in. Default: `buildEnvironment()`.
  * @returns The chain's exit code, or 2 when it cannot start or a signal ended it.
  */
-export function runChain(journal: string): number {
+export function runChain(
+	journal: string,
+	env: Record<string, string | undefined> = buildEnvironment(),
+): number {
 	const result = spawnSync(
 		process.execPath,
 		[CHAIN, '--plan', join(journal, 'plan.json'), '--journal', journal],
 		{
 			stdio: 'inherit',
-			env: mergeEnv(process.env, { npm_config_prefer_online: 'true' }),
+			env,
 			windowsHide: true,
 			shell: false,
 		},
@@ -612,7 +707,8 @@ export function main(argv: readonly string[]): number {
 		...omissions,
 	]
 	const selected = selectSegments(derivation.segments, omitted)
-	const plan = buildPlan(selected, resolveNpm())
+	const npm = resolveNpm()
+	const plan = buildPlan(selected, npm)
 	if (values.json === true) {
 		console.log(JSON.stringify({ steps: plan, omitted }))
 		return 0
@@ -628,7 +724,19 @@ export function main(argv: readonly string[]): number {
 		return 2
 	}
 	for (const line of lines) console.log(line)
-	return runChain(journal)
+	const env = buildEnvironment()
+	const exit = runChain(journal, env)
+	const record = {
+		exit,
+		node: process.version,
+		npm: readNpmVersion(npm, env),
+		binary: process.execPath,
+		cli: readEntry(npm),
+	}
+	const unwritten = writeResult(journal, record)
+	if (unwritten === undefined) return exit
+	console.error(`steps: cannot write result.json in ${quote(journal)}: ${unwritten}`)
+	return 2
 }
 
 if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {

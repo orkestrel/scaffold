@@ -1,13 +1,22 @@
 import { spawn, spawnSync } from 'node:child_process'
-import { copyFileSync, readFileSync } from 'node:fs'
-import { basename, delimiter, join } from 'node:path'
+import {
+	chmodSync,
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	writeFileSync,
+} from 'node:fs'
+import { basename, delimiter, dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { attempt } from '@orkestrel/contract'
 import { createRecorder, waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { runSkillScript, WORKSPACE_ROOT, runFlagRefusals } from '../../../../setupServer.js'
 import {
 	OPTIONS,
 	parseArguments,
+	buildEnvironment,
 	buildPlan,
 	CHAIN,
 	collectNative,
@@ -21,6 +30,8 @@ import {
 	parseSegment,
 	quote,
 	readCiOmissions,
+	readEntry,
+	readNpmVersion,
 	readDerivation,
 	readHolders,
 	readOmissionProblems,
@@ -30,6 +41,7 @@ import {
 	selectSegments,
 	STEP_NAME,
 	writeJournal,
+	writeResult,
 } from '../../../../../.agents/skills/orkestrel-publish/scripts/steps.ts'
 
 describe('steps.ts', () => {
@@ -448,6 +460,231 @@ describe('steps.ts', () => {
 			expect(run.status).toBe(0)
 			expect(scratch.read('j/report.txt')).toContain('online=true')
 		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('leads PATH with the running Node, folding an inherited Path, and keeps every other variable', () => {
+		const lead = dirname(process.execPath)
+		const built = buildEnvironment(
+			{ Path: 'one', pAtH: 'two', KEEP: 'k', NPM_CONFIG_PREFER_ONLINE: 'false' },
+			process.execPath,
+		)
+		expect(built).toStrictEqual({
+			KEEP: 'k',
+			PATH: `${lead}${delimiter}one`,
+			npm_config_prefer_online: 'true',
+		})
+		expect(buildEnvironment({ PATH: 'exact', Path: 'folded' }, process.execPath)).toStrictEqual({
+			PATH: `${lead}${delimiter}exact`,
+			npm_config_prefer_online: 'true',
+		})
+		expect(buildEnvironment({}, process.execPath).PATH).toBe(lead)
+		expect(buildEnvironment({ PATH: '' }, process.execPath).PATH).toBe(lead)
+		expect(buildEnvironment({ Path: '' }, process.execPath).PATH).toBe(lead)
+		expect(readEntry({ file: 'node', prefix: ['cli.js'] })).toBe('cli.js')
+		expect(readEntry({ file: 'npm', prefix: [] })).toBe('npm')
+	})
+
+	it('runs every step under the running Node when a decoy node leads the inherited PATH', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-steps-decoy-' })
+		try {
+			const decoy = process.platform === 'win32' ? 'node.cmd' : 'node'
+			scratch.write(
+				`decoy/${decoy}`,
+				process.platform === 'win32' ? '@echo decoy\r\n' : '#!/bin/sh\necho decoy\n',
+			)
+			chmodSync(join(scratch.path, 'decoy', decoy), 0o755)
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					scripts: {
+						prepublishOnly: 'npm run probe',
+						clean: 'node -e 0',
+						probe: 'node -p process.execPath',
+					},
+				}),
+			)
+			const inherited = process.env.PATH ?? process.env.Path ?? ''
+			const run = runSkillScript(script, ['--journal', 'j', '--no-ci'], {
+				cwd: scratch.path,
+				env: { ...env, PATH: `${join(scratch.path, 'decoy')}${delimiter}${inherited}` },
+			})
+			expect(run.status).toBe(0)
+			const journal = scratch.read('j/probe.txt') ?? ''
+			expect(journal).toContain(process.execPath)
+			expect(journal).not.toContain('decoy')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('records the chain in result.json after a green chain and a failing one, and none on --dry-run', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-steps-result-' })
+		try {
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					scripts: {
+						prepublishOnly: 'npm run one && npm run two',
+						clean: 'node -e 0',
+						one: 'node -e 0',
+						two: 'node -e 0',
+					},
+				}),
+			)
+			const cwd = { cwd: scratch.path, env }
+			const dry = runSkillScript(script, ['--journal', 'dry', '--dry-run', '--no-ci'], cwd)
+			expect(dry.status).toBe(0)
+			expect(scratch.has('dry/result.json')).toBe(false)
+			const green = runSkillScript(script, ['--journal', 'green', '--no-ci'], cwd)
+			expect(green.status).toBe(0)
+			const entry = readEntry(resolveNpm())
+			const record = parseJson(scratch.read('green/result.json') ?? '')
+			expect(record).toMatchObject({
+				exit: 0,
+				node: process.version,
+				binary: process.execPath,
+				cli: entry,
+			})
+			expect(record).toHaveProperty('npm', expect.stringMatching(/^\d+\.\d+\.\d+/u))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					scripts: {
+						prepublishOnly: 'npm run one && npm run two',
+						clean: 'node -e 0',
+						one: 'node -e "process.exit(7)"',
+						two: 'node -e 0',
+					},
+				}),
+			)
+			const red = runSkillScript(script, ['--journal', 'red', '--no-ci'], cwd)
+			expect(red.status).toBe(7)
+			expect(parseJson(scratch.read('red/result.json') ?? '')).toMatchObject({ exit: 7 })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('removes an earlier result.json before the first step and records the failing code', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-steps-stale-' })
+		try {
+			const stale = JSON.stringify({ exit: 0, node: 'v0.0.0', binary: 'old', cli: 'old' })
+			scratch.write('j/result.json', stale)
+			scratch.write(
+				'seen.js',
+				"require('node:fs').writeFileSync('seen.txt', String(require('node:fs').existsSync('j/result.json')))",
+			)
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					scripts: {
+						prepublishOnly: 'npm run seen && npm run fail',
+						clean: 'node -e 0',
+						seen: 'node seen.js',
+						fail: 'node -e "process.exit(7)"',
+					},
+				}),
+			)
+			const run = runSkillScript(script, ['--journal', 'j', '--no-ci'], {
+				cwd: scratch.path,
+				env,
+			})
+			expect(run.status).toBe(7)
+			expect(scratch.read('seen.txt')).toBe('false')
+			const record = parseJson(scratch.read('j/result.json') ?? '')
+			expect(record).toMatchObject({ exit: 7, binary: process.execPath })
+			expect(record).not.toMatchObject({ node: 'v0.0.0' })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('omits npm from the record when the entry reports no version, and never writes a placeholder', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-steps-noversion-' })
+		try {
+			expect(
+				readNpmVersion(
+					{ file: process.execPath, prefix: ['-e', 'process.exit(1)', '--'] },
+					process.env,
+				),
+			).toBeUndefined()
+			expect(
+				readNpmVersion(
+					{ file: process.execPath, prefix: ['-e', 'process.stdout.write("")', '--'] },
+					process.env,
+				),
+			).toBeUndefined()
+			expect(
+				readNpmVersion({ file: process.execPath, prefix: ['-p', '"9.8.7"', '--'] }, process.env),
+			).toBe('9.8.7')
+			expect(
+				writeResult(scratch.path, {
+					exit: 0,
+					node: process.version,
+					npm: undefined,
+					binary: process.execPath,
+					cli: 'npm',
+				}),
+			).toBeUndefined()
+			const record = parseJson(scratch.read('result.json') ?? '')
+			expect(record).toStrictEqual({
+				exit: 0,
+				node: process.version,
+				binary: process.execPath,
+				cli: 'npm',
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 2 and names the reason when the record cannot be written', (context) => {
+		const scratch = createScratch({ prefix: 'orkestrel-steps-deny-' })
+		const journal = join(scratch.path, 'j')
+		try {
+			if (process.platform !== 'win32') {
+				// A process that ignores directory mode bits, such as root, writes through chmod 0o500, so probe it first.
+				const probe = join(scratch.path, 'probe')
+				mkdirSync(probe)
+				chmodSync(probe, 0o500)
+				const written = attempt(() => writeFileSync(join(probe, 'write.txt'), 'x')).success
+				chmodSync(probe, 0o700)
+				if (written) {
+					context.skip(
+						'chmod 0o500 did not block a write in a probe directory, so this host cannot deny the record write',
+					)
+				}
+			}
+			// A read-only directory blocks no write on Windows, so a step denies the write to Everyone with icacls there.
+			scratch.write(
+				'deny.js',
+				"const { execFileSync } = require('node:child_process'); const { chmodSync } = require('node:fs'); const dir = process.argv[2]; if (process.platform === 'win32') execFileSync('icacls', [dir, '/deny', '*S-1-1-0:(WD)'], { stdio: 'ignore', windowsHide: true }); else chmodSync(dir, 0o500)",
+			)
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					scripts: {
+						prepublishOnly: 'npm run deny',
+						clean: 'node -e 0',
+						deny: 'node deny.js j',
+					},
+				}),
+			)
+			const run = runSkillScript(script, ['--journal', 'j', '--no-ci'], {
+				cwd: scratch.path,
+				env,
+			})
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain('cannot write result.json in "j"')
+			expect(scratch.has('j/result.json')).toBe(false)
+		} finally {
+			if (process.platform === 'win32') {
+				spawnSync('icacls', [journal, '/remove:d', '*S-1-1-0'], { windowsHide: true })
+			} else if (existsSync(journal)) {
+				chmodSync(journal, 0o700)
+			}
 			scratch.destroy()
 		}
 	})

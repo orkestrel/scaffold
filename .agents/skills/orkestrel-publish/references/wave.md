@@ -227,7 +227,9 @@ Prepare a published package's layer in this order, after the visit has ruled the
    floor a generated workspace declares in `devEngines`, launched under the `PATH` the
    `orkestrel-dispatch` skill's reference Long-running commands § Launch requires. The publish
    scripts spawn the npm CLI beside the running Node binary when one is there, whatever `PATH`
-   holds.
+   holds, and `steps.ts` leads the `PATH` of every chain step with that binary's directory and
+   writes the chain's outcome to `result.json` in its journal; a journal with no `result.json` holds
+   a chain that did not finish or whose record could not be written.
 5. **Write the release commit before the window opens. Push it only after the registry serves its version.**
    While a release commit waits for its upload, dispatch no writer into that checkout. When one
    ran, upload from a `git archive` export of the release commit, installed with `npm ci`, built,
