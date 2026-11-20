@@ -282,15 +282,10 @@ Every shape obeys:
 - If a declaration must not be public, make it a true local or runtime-private detail, or remove
   the capability for a substantive reason. Never leave an intentional reusable export stranded
   outside the barrel.
-- One-class-per-file evicts some classes from their only caller, and `export` on such a file is
-  structural rather than a statement of intent. Barrel that class when a consumer can construct it
-  from values they already hold. Intern it — out of the barrel, and named in the package's parity
-  `INTERNAL` list — when its constructor requires a value only its owner produces, or when the
-  public value is a projection of the instance rather than the instance. A class named in a public
-  signature is always barrelled.
-- Delete a barrel row whose class no consumer can construct, and delete its `@example` with it. A
-  row obliges a documented, runnable example, so a class kept public without one is drift that
-  parity cannot see.
+- Barrel every implementation class through its environment barrel, with its constructor shaped
+  per `.claude/rules/patterns.md` § Options and a documented, runnable `@example`. Keep a class out
+  of the barrel only for a demonstrated technical cause, such as a circular dependency the barrel
+  would create, and name that cause in the class's TSDoc.
 
 ```ts
 export * from './types.js'

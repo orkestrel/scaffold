@@ -28,7 +28,7 @@ These rules govern the shape of options, managers, emitters, and contracts, and 
 - Explain short option keys in TSDoc `@remarks`, not through longer names.
 - Give an entity class's constructor one `{Entity}Options` object, after at most one primary input or dependency the entity cannot exist without: `new Template(options)`, `new Agent(provider, options?)`. Never take a second positional value or a positional boolean; put each such setting in the options object.
 - Give a value class built over one input that input alone, as a parsed document takes its source text.
-- Give a `create{Entity}` factory the parameters of the constructor it calls.
+- Give a `create{Entity}` factory the constructor's parameters when it passes them through. When it reads or derives the constructor's options first, give it the constructor shape over its own input: that input, then one options object, an `AbortSignal` included as its `signal` option. Keep the `create` verb either way; `.claude/rules/architecture.md` § Kind purity places every function returning a live entity in `factories.ts`.
 - Give an error class its message first, then one options object carrying its `code` and `context`.
 
 ```ts
