@@ -68,9 +68,10 @@ Remaining rounds, one one-time code each:
 1. browser and probe: published, each tarball served, and each release commit pushed (round 5, 2026-11-20).
 2. agent: published from `agent-release`, its tarball served, `a51863eb` pushed, and "AGENT RELEASED" posted (round 6, 2026-11-20).
 3. ollama and toolbox: published, each tarball served, and each release commit pushed (round 7, 2026-11-20).
-4. study: settle and publish. The study session was told on 2026-11-20 to leave its checkout to the wave, and no study session is live.
-5. scaffold: re-pin its runtime ranges, run `scaffold catalog --all`, build, run its chain, and publish. Then close the wave.
+4. study: published, its tarball served, and `de4e789` pushed (round 8, 2026-11-20).
+5. scaffold: published 0.0.145, its tarball served, and `4fc341671` pushed (round 9, 2026-11-20): the visit re-pin `956762f5f`, the catalog refresh `5bcb5febd`, and the release.
+6. Close the wave per `wave.md` § Close the wave: visit every other catalog package with `--regenerate` to re-pin its trailing development ranges and adopt scaffold 0.0.145, and push each visit whose gates pass, whose ruling reads dist same and ranges same, and whose self-pin hits all sit in vendored mirrors. Agent's visit belongs to the agent session, which owns that checkout.
 
 Run each batch's settle steps (Publish procedure step 1) under one lane ticket on Node 22, so no other ticket runs between a package's install and its distribution proof.
 
-Next action: settle study, then publish it with the user's one-time code.
+Next action: run the close round in layer order, then take a registry sweep and close ROADMAP 43 when it lists no trailing range.
