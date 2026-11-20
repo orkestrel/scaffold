@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+	ARTIFACT_TEMPLATES,
 	CANON_PATHS,
 	blueprintToConfigArtifacts,
 	blueprintToTestArtifacts,
@@ -157,6 +158,32 @@ describe('installed package consumer', () => {
 			expect(parseJSON(requireValue(workspace.read('generated/package.json')))).toMatchObject({
 				devDependencies: { '@orkestrel/scaffold': emitted },
 			})
+			// The adopter opts in to the isolation fact, so its vendored config proof, its browser
+			// projects, and its journeys run against the guard and headers repair wires from the marker.
+			workspace.write('generated/tests/setupIsolation.ts', ARTIFACT_TEMPLATES.tests.isolation)
+			const isolated = await execute(
+				{
+					file: process.execPath,
+					arguments: [
+						entry,
+						'repair',
+						'--groups',
+						'configs',
+						'--target',
+						target,
+						'--offline',
+						'--json',
+					],
+				},
+				{ workspace: target, signal, strict: false, timeout: 60_000 },
+			)
+			console.info(
+				`adopter: isolation repair: exit ${String(isolated.code)}\n${isolated.stdout}${isolated.stderr}`,
+			)
+			expect(isolated.code).toBe(0)
+			const isolatedRoot = requireValue(workspace.read('generated/vite.config.ts'))
+			expect(isolatedRoot).toContain('server: { headers: isolation }')
+			expect(isolatedRoot).toContain("'./tests/setupBrowser.ts', './tests/setupIsolation.ts'")
 			if (!isRecord(manifest.scripts)) {
 				throw new Error('The adopter declares no scripts')
 			}
