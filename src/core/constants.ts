@@ -930,7 +930,7 @@ export const SHOWCASE_OVERRIDES: Readonly<Record<string, Readonly<Record<string,
 /** Lists the development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/emitter': manifest.dependencies['@orkestrel/emitter'],
-	'@orkestrel/middleware': '^0.0.36',
-	'@orkestrel/router': '^0.0.24',
-	'@orkestrel/server': '^0.0.30',
+	'@orkestrel/middleware': '^0.0.37',
+	'@orkestrel/router': '^0.0.25',
+	'@orkestrel/server': '^0.0.31',
 })

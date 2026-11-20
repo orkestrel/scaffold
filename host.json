@@ -628,7 +628,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "c872c4fab2c4ebc9032b605636c971e839586ff32cf92325e80b8a037b87759b"
+			"digest": "d72a915ee5ab736f818529d1e39cb294eb9906bf0fbc73749c765b440e8a73bb"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -1006,7 +1006,7 @@
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "73eaef8bd226bee664e7f9759d0582b57e0c28a962a10cd7603fd0d60c9a76a8"
+			"digest": "302b994351eb8ee5b9391e966bd4df3ed04af6f1d89af71e36989f07e448c289"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -1024,7 +1024,7 @@
 			"storage": "guides/codec.md",
 			"destination": "guides/codec.md",
 			"executable": false,
-			"digest": "6f386a2ad6b02178fb1bf1ae02e3c0d35b05b886ea1b70a14649a3ff91834afb"
+			"digest": "3e2af0b4805c9bf286d6a331d78a6952936f545363491f67fe2eba53d2c0a2aa"
 		},
 		{
 			"storage": "guides/console.md",
@@ -1210,7 +1210,7 @@
 			"storage": "guides/server.md",
 			"destination": "guides/server.md",
 			"executable": false,
-			"digest": "cf2b0b9896b0f229b50f266d0af81f448cd8509503d7dc263f7c6b6b5360469f"
+			"digest": "9d59a955443a8e2e458353117db3d058024f7f4d794054856acf2afdcbae66ea"
 		},
 		{
 			"storage": "guides/sqlite.md",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "e1d799d181e0b115e4905f42b09a94fa0b10c4e508f87e827350546d358128ee"
+	"digest": "66f5bdf52ab27fe0192b18f645a56ae78ba8706bada19ee1f7d207af8db29dd1"
 }
