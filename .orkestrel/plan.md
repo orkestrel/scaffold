@@ -48,6 +48,8 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 - Chromium builds 1254 and 1255 are installed for the browser projects.
 - 2026-11-20: L2 published, each tarball served, and each release commit pushed (round 2). L3 settles against the registry: each package's lockfile is installed from the registry, its release-mode distribution proof runs, and both are amended into its release commit, whose message names the `npm pack` staging.
 - 2026-11-20: L3 published, each tarball served, and each release commit pushed (round 3), except capture: its development range names guide `^0.0.34`, which served in the same round, so capture settles and publishes with L4. No package from L4 on depends on capture.
+- 2026-11-20: capture and L4 published and each release commit pushed (round 4). mcp's release-mode distribution proof composes agent 0.0.47, which requires a provider model; mcp's release commit carries the fixture repair. The registry lists capture 0.0.12 with its integrity, and its tarball answered 404 for the first checks after the upload.
+- Same-layer development closures order the rest: agent's closure names probe 0.0.33, so browser and probe publish first, then agent, then ollama and toolbox, which name agent at runtime, then study.
 
 ## Publish procedure
 
@@ -59,4 +61,4 @@ For each layer, L2 first:
 
 After L7, release scaffold: re-pin its runtime ranges, run `scaffold catalog --all`, build, and run its chain. Then close the wave per `wave.md` § Close the wave.
 
-Next action: publish capture and L4 with the user's one-time code after each settles.
+Next action: publish browser and probe with the user's one-time code after each settles, then settle and publish agent from `agent-release`.

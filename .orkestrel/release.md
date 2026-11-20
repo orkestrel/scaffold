@@ -42,6 +42,13 @@ Each row: the package, its layer, the version it published, the bump ruling with
 | server | L3 | 0.0.31 | runtime abort ^0.0.20, codec ^0.0.13, contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, router ^0.0.25 moved; dist same | 3 |
 | terminal | L3 | 0.0.29 | runtime contract ^0.0.27, emitter ^0.0.19, console ^0.0.23, database ^0.0.29, form ^0.0.21, sse ^0.0.17 moved; dist same | 3 |
 | workspace | L3 | 0.0.22 | runtime contract ^0.0.27, emitter ^0.0.19, database ^0.0.29 moved; dist same | 3 |
+| capture | L3 | 0.0.12 | runtime contract ^0.0.27, timeout ^0.0.20, process ^0.0.23 moved; dist same; development guide ^0.0.34 served in round 3 | 4 |
+| brief | L4 | 0.0.21 | runtime contract ^0.0.27, emitter ^0.0.19, interpret ^0.0.26, reason ^0.0.21 moved; dist same | 4 |
+| mcp | L4 | 0.0.46 | runtime codec ^0.0.13, contract ^0.0.27, emitter ^0.0.19, jsonrpc ^0.0.6, process ^0.0.23, sse ^0.0.17, tool ^0.0.26, websocket ^0.0.22 moved; dist same; distribution fixtures name the provider model agent 0.0.47 requires | 4 |
+| middleware | L4 | 0.0.37 | runtime budget ^0.0.21, contract ^0.0.27, timeout ^0.0.20 moved; server declarations moved by the WebWorker rename | 4 |
+| program | L4 | 0.0.24 | runtime contract ^0.0.27, emitter ^0.0.19, qualifier ^0.0.25, rater ^0.0.25, reason ^0.0.21 moved; dist same | 4 |
+| worker | L4 | 0.0.26 | runtime contract ^0.0.27, emitter ^0.0.19, database ^0.0.29, pool ^0.0.24, queue ^0.0.26 moved; server declarations moved by the WebWorker rename | 4 |
+| workflow | L4 | 0.0.32 | runtime abort ^0.0.20, budget ^0.0.21, contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, database ^0.0.29, queue ^0.0.26 moved; dist same | 4 |
 
 ## Standing readings
 
