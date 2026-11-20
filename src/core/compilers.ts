@@ -60,6 +60,7 @@ import {
 	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
+	ISOLATION_SETUP_PATH,
 	JOURNEY_CONFIG_PATH,
 	MANIFEST_KEY_ORDER,
 	MAX_ARTIFACT_BYTES,
@@ -1520,6 +1521,10 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	// itself. That is the case a global setup exists for, and it is why
 	// `src:browser`, `setup:browser`, and `integration` take the same span.
 	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
+	// Only a planned browser project reads the headers, so the fact renders nothing without one.
+	const isolated = blueprint.isolation && (planned.has('src:browser') || planned.has('app:browser'))
+	const headers = isolated ? '\t\tserver: { headers: isolation },\n' : ''
+	const guard = isolated ? ", './tests/setupIsolation.ts'" : ''
 	const imports = [
 		...(styled || machinery.showcase
 			? [
@@ -1580,6 +1585,8 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 							: '\t\t\t\toutput: {},',
 						exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 						global,
+						headers,
+						isolation: guard,
 					}),
 				)
 			: []),
@@ -1623,6 +1630,8 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			? [
 					fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
 						vuePlugin: machinery.frameworks.includes('vue') ? ', vue()' : '',
+						headers,
+						isolation: guard,
 						showcaseFactory: machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : '',
 						journeyFactory: journeyed ? CONFIG_TEMPLATES.factories.app.journey : '',
 						journeyExclude:
@@ -1772,7 +1781,8 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 			(machinery.browser
 				? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n' +
 					"// Vitest writes a page.screenshot() capture beside its test file unless a directory is named.\nconst screenshots = resolveWorkspacePath('tmp/captures/screenshots')\n\n" +
-					blueprintToOptimizedDependencies(blueprint)
+					blueprintToOptimizedDependencies(blueprint) +
+					(isolated ? CONFIG_TEMPLATES.root.isolation : '')
 				: '') +
 			((blueprint.journey || blueprint.showcase) && (base || applicationFaces.length > 0)
 				? `const applications = {\n${base ? '\tbrowser: appBrowser,\n' : ''}${applicationFaces
@@ -1964,6 +1974,7 @@ ${paths.join('\n')}
 										...includeSuffixes.map((suffix) => `../../tests/app/browser/**/*.${suffix}`),
 										'../../tests/setup.ts',
 										'../../tests/setupBrowser.ts',
+										...(blueprint.isolation ? ['../../tests/setupIsolation.ts'] : []),
 									]
 										.map(
 											(entry, index, entries) =>
@@ -2008,6 +2019,7 @@ ${paths.join('\n')}
 				),
 				'../../tests/setup.ts',
 				'../../tests/setupBrowser.ts',
+				...(blueprint.isolation ? ['../../tests/setupIsolation.ts'] : []),
 			]
 			const siblings = blueprint.src
 				.filter((environment) => environment === 'core' || environment === 'browser')
@@ -2442,6 +2454,19 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				},
 			]
 		: []
+	// The guard reads the page it runs in, so it plans beside the global setup it parallels and
+	// loads only where a browser project names it in `setupFiles`.
+	const isolations: readonly ContentArtifact[] = blueprint.isolation
+		? [
+				{
+					path: ISOLATION_SETUP_PATH,
+					group: 'tests',
+					ownership: 'birth',
+					origin: 'template',
+					content: ARTIFACT_TEMPLATES.tests.isolation,
+				},
+			]
+		: []
 	const globals: readonly ContentArtifact[] = blueprint.global
 		? [
 				{
@@ -2622,6 +2647,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 		...servers,
 		...services,
 		...globals,
+		...isolations,
 		...journeys,
 		...sources,
 		...bins,
@@ -4078,6 +4104,18 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 						field: 'showcase',
 						message:
 							'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
+						blocking: false,
+					},
+				]
+			: []),
+		...(blueprint.isolation &&
+		!blueprint.src.includes('browser') &&
+		!blueprint.app.includes('browser')
+			? [
+					{
+						field: 'isolation',
+						message:
+							'isolation serves the src:browser and app:browser projects, and this workspace declares neither, so it emits no headers.',
 						blocking: false,
 					},
 				]

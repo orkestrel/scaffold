@@ -15,6 +15,7 @@ import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToManifest,
+	blueprintToRootVite,
 	blueprintToScripts,
 	blueprintToTestArtifacts,
 	blueprintToSourceArtifacts,
@@ -303,6 +304,11 @@ describe('configuration templates', () => {
 					showcase: true,
 				}),
 				createBlueprint('unshowcased', { app: ['core', 'browser', 'server'] }),
+				createBlueprint('isolated', {
+					src: ['core', 'browser'],
+					app: ['browser'],
+					isolation: true,
+				}),
 				createBlueprint('studied', { app: ['core', 'server'], studies: true }),
 				createBlueprint('journeyed', {
 					app: ['core', 'browser'],
@@ -937,6 +943,124 @@ describe('emitted workspaces under their own gates', () => {
 			workspace.destroy()
 		}
 	}, 30_000)
+	// The browser projects read the page's own isolation: the seeded guard module and the headers
+	// the configuration serves are the two halves, and each control removes one half.
+	it('serves the browser project cross-origin isolated only with the isolation marker', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-isolation-' })
+		try {
+			const facts = { src: ['core', 'browser'] as const, setup: ['node'] as const }
+			for (const [prefix, isolation] of [
+				['isolated', true],
+				['plain', false],
+				['stripped', true],
+			] as const) {
+				stageRootConfig(createBlueprint('sample', { ...facts, isolation }), workspace, prefix)
+				workspace.write(`${prefix}/tests/setup.ts`, 'export {}\n')
+				workspace.write(`${prefix}/tests/setupBrowser.ts`, 'export {}\n')
+			}
+			workspace.write('isolated/tests/setupIsolation.ts', ARTIFACT_TEMPLATES.tests.isolation)
+			workspace.write('stripped/tests/setupIsolation.ts', ARTIFACT_TEMPLATES.tests.isolation)
+			const stripped = requireValue(workspace.read('stripped/vite.config.ts'))
+			expect(stripped).toContain('\t\tserver: { headers: isolation },\n')
+			workspace.write(
+				'stripped/vite.config.ts',
+				stripped.replace('\t\tserver: { headers: isolation },\n', ''),
+			)
+			for (const { prefix, expected, code, message } of [
+				{ prefix: 'isolated', expected: true, code: 0, message: '' },
+				{ prefix: 'plain', expected: false, code: 0, message: '' },
+				{ prefix: 'plain', expected: true, code: 1, message: '' },
+				{
+					prefix: 'stripped',
+					expected: true,
+					code: 1,
+					message: 'The tester page is not cross-origin isolated',
+				},
+			]) {
+				workspace.write(
+					`${prefix}/tests/src/browser/isolation.test.ts`,
+					`import { expect, it } from 'vitest'
+it('reads the page isolation', () => {
+	expect(globalThis.crossOriginIsolated).toBe(${expected})
+	expect(typeof SharedArrayBuffer === 'function').toBe(${expected})
+})
+`,
+				)
+				const run = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'run',
+							'--config',
+							'vite.config.ts',
+							'--project',
+							'src:browser',
+						],
+					},
+					{ workspace: join(workspace.path, prefix), timeout: 90_000, strict: false },
+				)
+				expect(run.code).toBe(code)
+				expect(run.stdout + run.stderr).toContain(message)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	}, 300_000)
+
+	// The Vue application and each journey variant compose on the browser application's project, so
+	// the spread carries the headers and the guard into them without a second declaration. This
+	// checkout installs no Vue plugin, so the Vue factory is read as text and the journey factory resolves.
+	it('carries the isolation headers and guard through the spread into the Vue and journey projects', async () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-isolation-spread-',
+		})
+		try {
+			const root = workspace.ensure('spread')
+			const blueprint = createBlueprint('sample', {
+				app: ['browser'],
+				journey: true,
+				isolation: true,
+			})
+			stageRootConfig(blueprint, workspace, 'spread')
+			workspace.write(
+				'spread/probe.config.ts',
+				"import { appBrowser, appJourney } from './vite.config.ts'\nexport default { projects: { browser: appBrowser(), journey: appJourney({ name: 'desktop', width: 1280, height: 800 }) } }\n",
+			)
+			const loaded = await loadConfigFromFile(
+				{ command: 'build', mode: 'test' },
+				join(root, 'probe.config.ts'),
+				root,
+			)
+			const projects: unknown = loaded === null ? undefined : Reflect.get(loaded.config, 'projects')
+			if (!isRecord(projects)) throw new Error('Expected the probe configuration to load')
+			const headers = {
+				'Cross-Origin-Opener-Policy': 'same-origin',
+				'Cross-Origin-Embedder-Policy': 'require-corp',
+			}
+			for (const name of ['browser', 'journey']) {
+				const project = projects[name]
+				if (!isRecord(project) || !isRecord(project.server) || !isRecord(project.test)) {
+					throw new Error('Expected ' + name + ' to carry a server and a test block')
+				}
+				expect([name, project.server.headers]).toEqual([name, headers])
+				expect(project.test.setupFiles).toContain('./tests/setupIsolation.ts')
+			}
+			const vue = blueprintToRootVite({
+				...blueprint,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+			})
+			const factory = requireValue(vue.match(/export function appVue\([^]*?\n\}/u)?.[0])
+			expect(factory).toContain('\t\t...browser,\n')
+			expect(factory).toContain('\t\t\t...browser.test,\n')
+			expect(factory).not.toContain('server:')
+			expect(factory).not.toContain('setupFiles')
+		} finally {
+			workspace.destroy()
+		}
+	}, 60_000)
+
 	it('refuses a non-object peer dependency declaration at config load', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-peers-' })
 		const root = workspace.ensure('malformed')

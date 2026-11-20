@@ -724,7 +724,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "9af7d5c55f423f2aa7ce00e732f6924f3bf68606c1ecd4a4e7a5d3e074bc10cb"
+			"digest": "2b96bef1b5b81115697f948f4e154d599a0ae6f65fcadc08a75e213e3c224f87"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -736,7 +736,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "7235250c756fa018661e01251bec7f123ae65a3a400c20dde7fceaf2f848a001"
+			"digest": "3b43e27f3a2baa84fbf78293cdcb2b99aa48bf1d1edcebd3a9aec8f61bdf8e4e"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -970,7 +970,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "5862eeea15c6e440d1f48cbcef0edde34a0e75238055b372b2f54e67a7961a9d"
+			"digest": "531af8440e9026af57b06b7d26492589b75a72e63279c59e415d8b9439af9ec4"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1198,7 +1198,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "02678a3be7d5eeb8227b1a7f1639b62c91408a159b0e26e08f190a62ecd39f14"
+			"digest": "c2c4f262ab74d251f9ceb771367d27208427d6ea49e321216928789247f6b812"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1336,7 +1336,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "2967e824ecdfa892ed2a856032efbef5941ec6fcb6b4477b1343c0f31b4ae7ac"
+			"digest": "07c1bd61e73ef1a684b2b711ea3746d850bc49a85318495c9014ade7716ad1df"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1348,7 +1348,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "9478c8d97001d922bb35e6b78590a68ca8e3258f71058bfe63c908d2ff106683"
+			"digest": "978cdd1a8fc6a99402aced0c63dc96b122ed03bec3cf04c05bfbf387e55b50d0"
 		}
 	],
 	"roots": [
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "d133cfb332af76eebe675f580ca1376ec2b40391a74b5dfb72e401cfc2f93eb3"
+	"digest": "a9e6bae3b16eef559e1c8077f8631adc4f7184b537a13c442afbc39e07ab2c40"
 }

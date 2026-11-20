@@ -249,6 +249,7 @@ refuses a helper placed under `fixtures/` outside the permitted raw-runtime supp
 - `tests/setupService.ts`: the `service` project's readiness setup, per § Live-service tests.
 - `tests/setupGlobal.ts`: the `globalSetup` module `.claude/rules/workspace.md` § Test project
   matrix assigns to `src:browser`, `setup:browser`, and `integration`.
+- `tests/setupIsolation.ts`: the isolation guard `src:browser` and `app:browser` load when it exists, per `.claude/rules/workspace.md` § Test project matrix; it exports nothing and owes no proof.
 - `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,
   its source tests too. Name it in no project's `setupFiles`; tests import it, as the policy proof
   imports `tests/setupPolicy.ts`.

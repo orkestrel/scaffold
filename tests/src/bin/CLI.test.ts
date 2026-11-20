@@ -4286,6 +4286,100 @@ describe('CLI audit', () => {
 		}
 	})
 
+	// The isolation marker selects the fact at exact case alone, and the headers follow the file.
+	it('infers isolation from the exact-case guard module and removes it with the marker', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.ensure('target/tests')
+			workspace.write('target/app/browser/main.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildAlignedManifest(createBlueprint('sample', { src: ['core'], app: ['browser'] })),
+			)
+			for (const { file, isolated } of [
+				{ file: 'SetupIsolation.ts', isolated: false },
+				{ file: 'setupIsolation.ts', isolated: true },
+				{ file: undefined, isolated: false },
+			]) {
+				for (const stale of ['SetupIsolation.ts', 'setupIsolation.ts']) {
+					if (workspace.read(`target/tests/${stale}`) !== undefined) {
+						workspace.remove(`target/tests/${stale}`)
+					}
+				}
+				if (file !== undefined) {
+					workspace.write(`target/tests/${file}`, ARTIFACT_TEMPLATES.tests.isolation)
+				}
+				expect(
+					await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+						'repair',
+						'--groups',
+						'configs',
+						'--from',
+						fleet.host,
+						'--target',
+						fleet.target,
+					]),
+				).toBe(EXIT_CLEAN)
+				const root = requireValue(workspace.read('target/vite.config.ts'))
+				expect(root.includes('server: { headers: isolation }')).toBe(isolated)
+				expect(root.includes("'./tests/setupBrowser.ts', './tests/setupIsolation.ts'")).toBe(
+					isolated,
+				)
+				expect(root.includes("'Cross-Origin-Embedder-Policy': 'require-corp'")).toBe(isolated)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps the isolation headers and the marker bytes through overwrite', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({})
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('isolated')
+			const args = ['--from', host, '--target', target, '--json']
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'isolated',
+					'--app',
+					'browser',
+					'--offline',
+					...args,
+				]),
+			).toBe(EXIT_CLEAN)
+			// The fixture upstream serves no catalog, so each overwrite writes its files and reports the open catalog step.
+			const marker = `${ARTIFACT_TEMPLATES.tests.isolation}// kept
+`
+			workspace.write('isolated/tests/setupIsolation.ts', marker)
+			createRepository(target)
+			expect(
+				await new CLI(buildCLIOptions(createSink(), server.base)).execute([
+					'overwrite',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(workspace.read('isolated/vite.config.ts')).toContain('server: { headers: isolation }')
+			expect(workspace.read('isolated/tests/setupIsolation.ts')).toBe(marker)
+
+			workspace.remove('isolated/tests/setupIsolation.ts')
+			expect(
+				await new CLI(buildCLIOptions(createSink(), server.base)).execute([
+					'overwrite',
+					'--dirty',
+					...args,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(workspace.read('isolated/vite.config.ts')).not.toContain('headers')
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
 	// The study project follows the exact-case test files beneath `tests/studies`, which is the
 	// population its include collects. Each row states its answer before the derivation reads the
 	// target, and `globSync` over the include is the second mechanism, filtered through the exclude

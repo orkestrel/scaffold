@@ -450,6 +450,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		vendors: andOf(isCollection, arrayOf(isString)),
 		studies: isBoolean,
 		global: isBoolean,
+		isolation: isBoolean,
 		showcase: isBoolean,
 		journey: isBoolean,
 		base: isBoolean,

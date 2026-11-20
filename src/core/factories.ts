@@ -73,6 +73,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		vendors: input?.vendors ?? [],
 		studies: input?.studies ?? false,
 		global: input?.global ?? false,
+		isolation: input?.isolation ?? false,
 		showcase: input?.showcase ?? false,
 		journey: input?.journey ?? false,
 		base: input?.base ?? input?.app?.includes('browser') ?? false,

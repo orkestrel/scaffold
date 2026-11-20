@@ -202,6 +202,13 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	},
 })
 `,
+		isolation: `// A cross-origin isolated page reads SharedArrayBuffer.\n// srcBrowser and appBrowser, and the projects and servers that spread them, serve these headers.
+export const isolation = {
+	'Cross-Origin-Opener-Policy': 'same-origin',
+	'Cross-Origin-Embedder-Policy': 'require-corp',
+}
+
+`,
 	}),
 	factories: Object.freeze({
 		sheet: `export function sheetProject(name: string, override?: UserConfig): UserConfig {
@@ -305,7 +312,7 @@ export function srcBrowser(override?: UserConfig): UserConfig {
 		resolve,
 		optimizeDeps,
 		publicDir: false,
-		plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser'){{vuePlugin}}],
+{{headers}}		plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser'){{vuePlugin}}],
 		build: {
 			emptyOutDir: true,
 			sourcemap: true,
@@ -325,7 +332,7 @@ export function srcBrowser(override?: UserConfig): UserConfig {
 		test: {
 			name: { label: 'src:browser', color: 'yellow' },
 			include: ['tests/src/browser/**/*.test.ts'],
-{{exclude}}			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+{{exclude}}			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'{{isolation}}],
 {{global}}
 			browser: {
 				enabled: true,
@@ -448,7 +455,7 @@ export function srcBin(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
 		optimizeDeps,
-		plugins: [outputBoundary(output), environmentBoundary('app/browser'){{vuePlugin}}],
+{{headers}}		plugins: [outputBoundary(output), environmentBoundary('app/browser'){{vuePlugin}}],
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		build: {
@@ -465,7 +472,7 @@ export function srcBin(override?: UserConfig): UserConfig {
 			root: resolveWorkspacePath('.'),
 			dir: resolveWorkspacePath('.'),
 			include: ['tests/app/browser/**/*.test.ts'],
-{{journeyExclude}}			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+{{journeyExclude}}			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'{{isolation}}],
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
@@ -1967,6 +1974,12 @@ describe('global setup', () => {
 })
 `,
 		}),
+		isolation: `if (!globalThis.crossOriginIsolated) {
+	throw new Error(
+		'The tester page is not cross-origin isolated: src:browser and app:browser must serve Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp.',
+	)
+}
+`,
 		entry: `import * as entry from {{specifier}}
 import { describe, expect, it } from 'vitest'
 

@@ -34,6 +34,7 @@ import {
 	blueprintToTestArtifacts,
 	blueprintToToolchainHolds,
 	blueprintToWritableScripts,
+	ARTIFACT_TEMPLATES,
 	BROWSE_DEV_DEPENDENCIES,
 	CAPTURE_UPSTREAM,
 	CONFIG_TEMPLATES,
@@ -50,6 +51,7 @@ import {
 	insertManifestSection,
 	INTEGRATION_TEST_PATH,
 	isCanonPath,
+	ISOLATION_SETUP_PATH,
 	manifestToDependencies,
 	MANIFEST_KEY_ORDER,
 	ORKESTREL_RANGE_PATTERN,
@@ -3709,6 +3711,68 @@ describe('blueprintToScripts config projects', () => {
 		expect(withGlobal.slice(browserStart, browserEnd)).toContain(
 			"globalSetup: ['./tests/setupGlobal.ts'],",
 		)
+	})
+
+	// The isolation fact gives both browser projects the two response headers and the guard module,
+	// and a workspace without the fact renders none of the three.
+	it('serves the browser projects isolated only for an isolation workspace', () => {
+		const isolated = buildBlueprint({
+			src: ['core', 'browser'],
+			app: ['browser'],
+			setup: ['node'],
+			isolation: true,
+		})
+		const root = blueprintToRootVite(isolated)
+		const source = root.slice(
+			root.indexOf('export function srcBrowser('),
+			root.indexOf('export function appBrowser('),
+		)
+		const application = root.slice(root.indexOf('export function appBrowser('))
+		expect(source).toContain('\t\tserver: { headers: isolation },\n')
+		expect(application).toContain('\t\tserver: { headers: isolation },\n')
+		expect(source).toContain(
+			"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupIsolation.ts'],",
+		)
+		expect(application).toContain(
+			"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupIsolation.ts'],",
+		)
+		expect(root).toContain(CONFIG_TEMPLATES.root.isolation)
+		expect(root).toContain("'Cross-Origin-Opener-Policy': 'same-origin',")
+		expect(root).toContain("'Cross-Origin-Embedder-Policy': 'require-corp',")
+		expect(
+			blueprintToTestArtifacts(isolated).find(({ path }) => path === ISOLATION_SETUP_PATH),
+		).toMatchObject({
+			ownership: 'birth',
+			content: ARTIFACT_TEMPLATES.tests.isolation,
+		})
+		expect(blueprintToQuestions(isolated)).toEqual([])
+		const control = blueprintToRootVite(
+			buildBlueprint({ src: ['core', 'browser'], app: ['browser'], setup: ['node'] }),
+		)
+		expect(control).not.toContain('headers')
+		expect(control).not.toContain('setupIsolation')
+		expect(control).not.toContain('export const isolation')
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ src: ['core', 'browser'] })).map(
+				({ path }) => path,
+			),
+		).not.toContain(ISOLATION_SETUP_PATH)
+	})
+
+	it('raises a non-blocking question and renders no headers for isolation without a browser', () => {
+		const blueprint = buildBlueprint({ src: ['core'], isolation: true })
+		expect(blueprintToQuestions(blueprint)).toEqual([
+			{
+				field: 'isolation',
+				message:
+					'isolation serves the src:browser and app:browser projects, and this workspace declares neither, so it emits no headers.',
+				blocking: false,
+			},
+		])
+		const root = blueprintToRootVite(blueprint)
+		expect(root).not.toContain('headers')
+		expect(root).not.toContain('setupIsolation')
+		expect(root).not.toContain('export const isolation')
 	})
 
 	it('keeps a browser application without extensions free of Vue tooling', () => {

@@ -77,6 +77,7 @@ import {
 	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
+	ISOLATION_SETUP_PATH,
 	JOURNEY_CONFIG_PATH,
 	isFloorPath,
 	isScaffoldError,
@@ -1472,6 +1473,7 @@ export class CLI implements CLIInterface {
 		const tree = resolveContainedPath(target, TREE_TEST_PATH)
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
+		const isolation = resolveContainedPath(target, ISOLATION_SETUP_PATH)
 		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
 		const browserEntry = resolveContainedPath(target, 'app/browser/main.ts')
 		const skills = resolveContainedPath(target, SKILLS_CONFIG_PATH)
@@ -1518,6 +1520,7 @@ export class CLI implements CLIInterface {
 			service: service !== undefined && isExactCaseFile(service),
 			studies,
 			global: global !== undefined && isExactCaseFile(global),
+			isolation: isolation !== undefined && isExactCaseFile(isolation),
 			journey: journey !== undefined && isExactCaseFile(journey),
 			base: browserEntry !== undefined && isExactCaseFile(browserEntry),
 			skills: skills !== undefined && isExactCaseFile(skills),

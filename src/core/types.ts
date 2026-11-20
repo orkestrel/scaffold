@@ -284,7 +284,7 @@ export interface Override {
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `integration`, `conformance`, `tree`, `service`,
- * `vendors`, `studies`, `global`, `showcase`, `journey`, `base`, `styles`, `themes`, and `skills` are structural facts: each is
+ * `vendors`, `studies`, `global`, `isolation`, `showcase`, `journey`, `base`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
@@ -318,6 +318,12 @@ export interface Override {
  * directory, which Vitest's default exclude never collects, and it alone registers
  * the `studies` Vitest project over that directory. The harness module the study tests import,
  * `tests/setupStudy.ts`, selects nothing and is not planned.
+ *
+ * `isolation` says the workspace holds the exact-case `tests/setupIsolation.ts` guard. It gives
+ * the `src:browser` and `app:browser` projects the `Cross-Origin-Opener-Policy: same-origin` and
+ * `Cross-Origin-Embedder-Policy: require-corp` response headers and appends the guard to their
+ * setup files, so a test page is cross-origin isolated. The gate answers an absent
+ * `src:browser` and `app:browser` environment with a non-blocking question.
  */
 export interface Blueprint {
 	readonly name: string
@@ -347,6 +353,7 @@ export interface Blueprint {
 	readonly vendors: readonly string[]
 	readonly studies: boolean
 	readonly global: boolean
+	readonly isolation: boolean
 	readonly showcase: boolean
 	readonly journey: boolean
 	/** Selects the exact-case `app/browser/main.ts` entry of the base browser application. */
@@ -845,7 +852,11 @@ export interface SurfaceAdvisory {
 
 /** Represents the configuration template text, grouped by the artifact each template builds. */
 export interface ConfigTemplateSet {
-	readonly root: { readonly tsconfig: string; readonly vite: string }
+	readonly root: {
+		readonly tsconfig: string
+		readonly vite: string
+		readonly isolation: string
+	}
 	readonly factories: {
 		readonly sheet: string
 		readonly src: {
@@ -940,6 +951,7 @@ export interface ArtifactTemplateSet {
 		readonly styles: { readonly module: string; readonly proof: string }
 		readonly setup: string
 		readonly global: { readonly module: string; readonly proof: string }
+		readonly isolation: string
 		readonly entry: string
 		readonly bin: string
 		readonly distribution: {

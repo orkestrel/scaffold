@@ -462,6 +462,9 @@ export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 /** Names the shared Vitest global-setup module whose presence makes a workspace `global`. */
 export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 
+/** Names the browser-isolation guard module whose presence makes a workspace `isolation`. */
+export const ISOLATION_SETUP_PATH = 'tests/setupIsolation.ts'
+
 /** Names the package-owned guide-parity entry used by `test:guides` and to select the `guides` project. */
 export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 
