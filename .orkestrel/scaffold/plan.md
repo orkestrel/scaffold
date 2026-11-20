@@ -24,6 +24,7 @@ The next fleet wave runs its layer preparation, release commits, and fleet sweep
   - Give `--sweep` and `--plan --root` a repeatable `--checkout NAME=DIR` override.
   - Read a same-layer development edge as a held range, never as an extra round.
 - 2026-11-20, the Orchestrator: staging a layer ahead against unpublished upstream tarballs (U8) waits on two readings, and then on the user's ruling, because it changes `wave.md`'s rule. The readings are which `swap.ts --pin` proof refused whole-wave staging, and whether an `npm pack` tarball's files equal the published tarball's.
+- 2026-11-20, the user: run U2 and U3 in this session and hold U4 to U7 for the next fleet wave's preparation, to keep lane time for the agent and learn sessions.
 - 2026-11-20, the Orchestrator: the re-pin defect in `swap.ts` (the first `--pin` after `repair` exits 1, and the second exits 0) is its own unit, U9, which opens with a reproduction.
 
 ## Sequence
@@ -47,5 +48,7 @@ Each unit's proof carries a negative control, and each medium unit gets one revi
 ## State
 
 - 2026-11-20: D14 (`launch.ts --detach`) landed in `c4bb16076`, so the publish skill's scripts are free to change.
+- 2026-11-20: U1 landed in `299ec9494`, after one review and a fix round whose closure check closed every finding.
+- 2026-11-20: the contract 0.0.27 wave's campaign files are retired. Its lessons live in ROADMAP 191 to 195 and in this campaign's U2, U5, U8, and U9.
 
-Next action: dispatch U1.
+Next action: dispatch U2, then U3. Hold U4 to U7 until the next fleet wave's preparation.
