@@ -26,6 +26,10 @@ These rules govern the shape of options, managers, emitters, and contracts, and 
 - Never encode grouping through prefixes such as `serverPort` or `databasePath`.
 - Reserve `on` exclusively for initial `EmitterHooks`.
 - Explain short option keys in TSDoc `@remarks`, not through longer names.
+- Give an entity class's constructor one `{Entity}Options` object, after at most one primary input or dependency the entity cannot exist without: `new Template(options)`, `new Agent(provider, options?)`. Never take a second positional value or a positional boolean; put each such setting in the options object.
+- Give a value class built over one input that input alone, as a parsed document takes its source text.
+- Give a `create{Entity}` factory the parameters of the constructor it calls.
+- Give an error class its message first, then one options object carrying its `code` and `context`.
 
 ```ts
 interface ServerOptions {
