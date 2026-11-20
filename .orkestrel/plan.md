@@ -33,8 +33,28 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 
 ## State
 
-- 2026-11-20: L1 published and pushed (round 1). The user ruled the rest of the wave release-ready without publishing overnight: L3 to L7 prove against local tarballs of their unpublished upstream candidates (swap.ts), and the lockfile and the release-mode distribution proof wait for the morning publish.
+- 2026-11-20: L1 published and pushed (round 1). The user ruled the rest of the wave release-ready without publishing overnight.
 - 2026-11-20: agent releases from the clone `agent-release` cut at `fdd0996e`.
-- 2026-11-20: L2 is release-ready on Node 22 (all 15). The first L2 night run resolved `node` from the user registry PATH to Node 24, which failed two router tests; the driver now puts its own Node first on PATH, and every L2 chain reran on Node 22.
+- 2026-11-20: the first L2 night run resolved `node` from the user registry PATH to Node 24, which failed two router tests; the driver now puts its own Node first on PATH, and every chain ran on Node 22.
+- 2026-11-20: L2 to L7 are release-ready and unpublished, each a local `Release <version>` commit on `main`, unpushed:
+  - L2: console 0.0.23, csv 0.0.17, database 0.0.29, form 0.0.21, markdown 0.0.24, msg 0.0.20, pool 0.0.24, process 0.0.23, reason 0.0.21, router 0.0.25, sse 0.0.17, table 0.0.20, template 0.0.17, tool 0.0.26, websocket 0.0.22.
+  - L3: capture 0.0.12, guide 0.0.34, interpret 0.0.26, lsp 0.0.18, qualifier 0.0.25, queue 0.0.26, rater 0.0.25, relation 0.0.27, sea 0.0.26, server 0.0.31, terminal 0.0.29, workspace 0.0.22.
+  - L4: brief 0.0.21, mcp 0.0.46, middleware 0.0.37, program 0.0.24, worker 0.0.26, workflow 0.0.32.
+  - L5: browser 0.0.36, probe 0.0.33, agent 0.0.48 (clone `agent-release`).
+  - L6: ollama 0.0.45, toolbox 0.0.36. L7: study 0.0.29.
+- L2 chains ran whole, distribution included. L3 to L7 chains ran against packed tarballs of their unpublished upstream candidates, staged through npm `overrides` because `swap.ts`'s single-pin proofs refuse a whole-wave staging, with `test-distribution` omitted. Each holds its staged lockfile uncommitted. Ollama also omitted `test-service`: the daemon on 11434 was down, and the user ruled it is not restarted.
+- Repairs the wave needed, each its own commit: server's guide names router for 0.0.31 (server `cceff06`); capture's closure budget sized from a contended run (capture `9d6116e`); mcp's distribution composition moved to the wave's releases (mcp `587b84d`); browser's HAR creator stamped 0.0.36 (browser `0370c43`); toolbox's scripted provider names its model (toolbox `cac49cb`).
+- Declaration-only renames from the server scope's WebWorker library (test, worker, middleware, toolbox) keep every public name; each release commit names its rename.
+- Chromium builds 1254 and 1255 are installed for the browser projects.
 
-Next action: when the night run ends, read its log at `tmp/units/wave2/night.log`. In the morning, publish layer by layer with the user's codes; before each layer after L2, restore its pins, install from the registry, run the release-mode distribution proof, and amend the lockfile into the release commit. Release scaffold last.
+## Publish procedure
+
+For each layer, L2 first:
+
+1. For each package from L3 on, after its upstream layer serves: restore the committed lockfile from `HEAD`, run `npm install --prefer-online` on Node 22, run `npm run test:distribution -- --mode release`, and amend the lockfile into the release commit. For ollama, also run `npm run test:service` with the user's daemon up.
+2. Take the user's one-time code, run `window.ts --publish` for the layer, and confirm each tarball serves.
+3. Push each release commit. For agent, push from `agent-release`, then post "AGENT RELEASED" to the agent session.
+
+After L7, release scaffold: re-pin its runtime ranges, run `scaffold catalog --all`, build, and run its chain. Then close the wave per `wave.md` § Close the wave.
+
+Next action: publish L2 with the user's one-time code.
