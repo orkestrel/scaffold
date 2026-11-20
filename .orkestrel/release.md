@@ -31,6 +31,17 @@ Each row: the package, its layer, the version it published, the bump ruling with
 | template | L2 | 0.0.17 | runtime contract ^0.0.27, emitter ^0.0.19 moved; dist same | 2 |
 | tool | L2 | 0.0.26 | runtime contract ^0.0.27, emitter ^0.0.19 moved; dist same | 2 |
 | websocket | L2 | 0.0.22 | runtime contract ^0.0.27, emitter ^0.0.19 moved; dist same | 2 |
+| guide | L3 | 0.0.34 | runtime contract ^0.0.27, markdown ^0.0.24 moved; dist same | 3 |
+| interpret | L3 | 0.0.26 | runtime contract ^0.0.27, emitter ^0.0.19, reason ^0.0.21, template ^0.0.17 moved; dist same | 3 |
+| lsp | L3 | 0.0.18 | runtime contract ^0.0.27, emitter ^0.0.19, jsonrpc ^0.0.6, process ^0.0.23 moved; dist same | 3 |
+| qualifier | L3 | 0.0.25 | runtime contract ^0.0.27, emitter ^0.0.19, reason ^0.0.21 moved; dist same | 3 |
+| queue | L3 | 0.0.26 | runtime abort ^0.0.20, contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, database ^0.0.29 moved; dist same | 3 |
+| rater | L3 | 0.0.25 | runtime contract ^0.0.27, emitter ^0.0.19, reason ^0.0.21 moved; dist same | 3 |
+| relation | L3 | 0.0.27 | runtime contract ^0.0.27, emitter ^0.0.19, database ^0.0.29 moved; dist same | 3 |
+| sea | L3 | 0.0.26 | runtime contract ^0.0.27, emitter ^0.0.19, process ^0.0.23 moved; dist same | 3 |
+| server | L3 | 0.0.31 | runtime abort ^0.0.20, codec ^0.0.13, contract ^0.0.27, emitter ^0.0.19, timeout ^0.0.20, router ^0.0.25 moved; dist same | 3 |
+| terminal | L3 | 0.0.29 | runtime contract ^0.0.27, emitter ^0.0.19, console ^0.0.23, database ^0.0.29, form ^0.0.21, sse ^0.0.17 moved; dist same | 3 |
+| workspace | L3 | 0.0.22 | runtime contract ^0.0.27, emitter ^0.0.19, database ^0.0.29 moved; dist same | 3 |
 
 ## Standing readings
 
