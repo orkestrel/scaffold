@@ -49,7 +49,7 @@ The host budget counts every lane on the machine: this session's, each peer sess
 | Reviewer     | Independently assess the subject the size gate names.    | None on source; a named probe folder when its tools hold a shell; return the verdict to the Orchestrator. |
 
 - Keep active lanes within the harness limit and § Bound the host. Reserve capacity for the runner; queue work that does not fit.
-- Assign every editable region to one writer. Name shared regions by their declarations or sections. Serialize units that rewrite the same region.
+- Assign every editable region to one writer. Name shared regions by their declarations or sections, never by a position or a line range. Serialize units that rewrite the same region.
 - Choose each lane's channel from its harness page; the page owns start, continuation, wake, and tracking.
 
 ## Prepare the round
@@ -117,7 +117,8 @@ expect: <red or green, named cases, required artifact>
 
 Apply this section when two sessions on one machine share the tests, checks, builds, and captures the host can run at once.
 
-- Run each process-running command through `scripts/lane.ts`, which orders the commands across sessions and picks each command's lane, and send no handover message. Declare no weight; pass `--solo` only for a timing or live-model measurement. On its exit 75 or 70, report its standard error line to the user and start no process-running command. On its exit 69, rerun the command through the lane; its run record queues it heavy.
+- Run each process-running command through `scripts/lane.ts`, which orders the commands across sessions and picks each command's lane. Declare no weight; pass `--solo` only for a timing or live-model measurement. On its exit 75 or 70, report its standard error line to the user and start no process-running command. On its exit 69, rerun the command through the lane; its run record queues it heavy.
+- Keep at most one heavy ticket queued per session, and hold an exit-69 rerun until that ticket starts; `scripts/lane.ts --status` names each queued ticket's lane. Before enqueuing a `--solo` ticket, send its label and expected duration to every peer session. When a peer asks, withdraw an unstarted ticket and queue it again; never stop a running ticket for a peer. Send a peer no other message about the lane.
 - Pass the command to `scripts/lane.ts` directly after `--`, never through `bash -c`: a background child under `bash` can survive the forced kill with a parent that names neither the launcher nor the command, and the next arrival then overlaps it.
 - When a host's sessions run another serializer, keep using it until a scaffold release carries `scripts/lane.ts` and no command runs on the host, then move every caller in one step, because a second queue does not see the first.
 - While another session holds the lane, edit your own files, read, and queue your commands. Set no clock windows and send no per-command acknowledgments.

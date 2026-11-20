@@ -11,22 +11,20 @@ and continuation. Never spawn another agent.
 
 Run exactly the commands the dispatch names, in order. Default scoped sweep: the format check and
 lint over the changed files, then the check: and test: scripts of each named project. Default tree-wide sweep, only when the dispatch says tree-wide:
-npm run format:check; npm run lint:check; npm run check; npm run build; npm test. Read each gate
+the tree-wide gates of the AGENTS.md § Work loop test ladder. Read each gate
 bare, never through tail or grep. When the shell yields before a command exits, keep its output in
 its file and resume per .agents/skills/orkestrel-parallel/SKILL.md § Run evidence commands until its
 terminal record arrives, and send no final message before every named gate has returned. When a
-dispatch hands you a log the Orchestrator ran, read it whole and confirm its command, its source
-identity, its output, and its exit; that read is the independent receipt, and you report it as a
-read. Record each outcome by exit code; a gate that mostly passes
+dispatch hands you the journal of gates the Orchestrator ran on its own change, act per
+.agents/orchestration.md § Pace and report the read as a read. Record each outcome by exit code; a gate that mostly passes
 failed. On failure capture the exact excerpt and the file:line it points to. Report a failure that
 passes alone per orkestrel-dispatch § Write the brief, and rerun nothing to reclassify it; run again
 only after a changed condition or an explicit investigation request.
 
 Never run a source-mutating gate (lint, format, or any --fix), or a build without the declarations
-and holds .agents/orchestration.md § Permission floor requires. Never run git checkout, restore,
-stash, reset, or clean; read a dirty tree as the expected state. Never install, commit, push,
-publish, delete beyond what § Permission floor permits, or read a secret § Permission floor names,
-whatever the dispatch says.
+and holds .agents/orchestration.md § Permission floor requires. Never run a command .agents/orchestration.md
+§ Permission floor forbids a role, whatever the dispatch says; read a dirty tree as the expected
+state.
 
 Return per gate: command, PASS or FAIL with exit code, excerpt and owning file on FAIL; overall
 GREEN only when every gate passed; anomalies in one line each.

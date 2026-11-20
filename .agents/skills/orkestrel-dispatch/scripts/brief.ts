@@ -9,9 +9,11 @@
 // read as a slash), strips a `:line` or
 // `:line-line` suffix, resolves it from the working directory, and prints the ones that do not
 // exist; a bare filename is outside the check. It also names each template section the brief omits:
-// the `## Role and engine` section, and the `## Execution` section with its spawn-nothing sentence.
+// the `## Role and engine` section, and the `## Execution` section with its spawn-nothing sentence;
+// and it names a `## Role and engine` section that does not name exactly one executor value as a
+// whole word: NATIVE_SUBAGENT, CHILD_TASK, BENCH_ENGINE, or BRIDGE_DRIVER.
 // The two forms are two modes; name one. The script reads its flags with `parseArgs` in strict
-// mode. Exit 3 when a path or a section is missing, 64 on usage.
+// mode. Exit 3 when a path, a section, or an executor value is missing, 64 on usage.
 import type { ParseArgsOptionsConfig } from 'node:util'
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -47,6 +49,14 @@ export const REQUIREMENTS: readonly Requirement[] = [
 	{ heading: '## Role and engine', sentence: undefined },
 	{ heading: '## Execution', sentence: 'Perform the assignment yourself and spawn nothing.' },
 ]
+
+/** Lists the executor values a brief's `## Role and engine` section names one of, in template order. */
+export const EXECUTORS: readonly string[] = Object.freeze([
+	'NATIVE_SUBAGENT',
+	'CHILD_TASK',
+	'BENCH_ENGINE',
+	'BRIDGE_DRIVER',
+])
 
 /** Holds the usage line printed when a call names no mode. */
 export const USAGE =
@@ -161,6 +171,28 @@ export function scanOmissions(
 }
 
 /**
+ * Names the executor value a brief's `## Role and engine` section omits, or the values it names past one.
+ *
+ * @param content - The brief text.
+ * @param executors - The executor values the section must name exactly one of.
+ * @returns One description when the section is present and names none of the values, or more than
+ * one, as a whole word; none when it names exactly one, when the values are empty, or when the
+ * section is absent, which `scanOmissions` reports.
+ */
+export function scanExecutor(content: string, executors: readonly string[]): readonly string[] {
+	const body = extractSection(content, '## Role and engine')
+	if (body === undefined || executors.length === 0) return []
+	const words = new Set(body.split(/[^A-Za-z0-9_]+/u))
+	const named = executors.filter((executor) => words.has(executor))
+	if (named.length === 1) return []
+	return [
+		named.length === 0
+			? `an executor under "## Role and engine": one of ${executors.join(', ')}`
+			: `one executor under "## Role and engine", not ${named.join(', ')}`,
+	]
+}
+
+/**
  * Resolves the first brief path for a unit that no file occupies.
  *
  * @param directory - The lane directory.
@@ -215,11 +247,11 @@ export function writeBrief(values: Arguments['values']): number {
 }
 
 /**
- * Checks that every path a brief names exists and that the brief keeps every required section.
+ * Checks that every path a brief names exists and that the brief keeps every required section and an executor value.
  *
  * @param path - The brief file.
- * @returns The exit code: 0 when every path exists and no section is omitted, 3 when a path is
- * missing or a section is omitted, 64 when the brief is not a file.
+ * @returns The exit code: 0 when every path exists and nothing is omitted, 3 when a path is
+ * missing or a section or an executor value is omitted, 64 when the brief is not a file.
  */
 export function checkBrief(path: string): number {
 	if (statSync(path, { throwIfNoEntry: false })?.isFile() !== true) {
@@ -229,7 +261,7 @@ export function checkBrief(path: string): number {
 	const content = readFileSync(path, 'utf8')
 	const paths = extractPaths(content)
 	const missing = paths.filter((candidate) => !existsSync(resolve(candidate)))
-	const omitted = scanOmissions(content, REQUIREMENTS)
+	const omitted = [...scanOmissions(content, REQUIREMENTS), ...scanExecutor(content, EXECUTORS)]
 	console.log(JSON.stringify({ brief: path, checked: paths.length, missing, omitted }))
 	if (omitted.length > 0) console.error(`brief: ${path} omits ${omitted.join('; ')}`)
 	return missing.length === 0 && omitted.length === 0 ? 0 : 3
@@ -239,7 +271,7 @@ export function checkBrief(path: string): number {
  * Runs the script on its arguments.
  *
  * @param argv - The arguments after the script path.
- * @returns The exit code: 0 on success, 3 when a named path or a required section is missing, 64 on
+ * @returns The exit code: 0 on success, 3 when a named path, a required section, or an executor value is missing, 64 on
  * usage.
  */
 export function main(argv: readonly string[]): number {

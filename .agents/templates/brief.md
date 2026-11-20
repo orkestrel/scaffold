@@ -4,7 +4,7 @@ Fill every section. Write `none` in an empty one. Replace each `UPPER_SNAKE_CASE
 
 ## Role and engine
 
-ROLE on ENGINE with MODEL_OPTIONS, reached as TRANSPORT. Executor: NATIVE_SUBAGENT | BENCH_ENGINE | BRIDGE_DRIVER.
+ROLE on ENGINE with MODEL_OPTIONS, reached as TRANSPORT. Executor: NATIVE_SUBAGENT | CHILD_TASK | BENCH_ENGINE | BRIDGE_DRIVER.
 
 **Continuity.** Resume SESSION_ID for RELATED_RESPONSIBILITY, or start fresh because REASON, per `.agents/orchestration.md` § Sessions and consultation. On a resume, name PRIOR_BRIEF_AND_RESULT, CHANGED_FACTS, and SOURCE_IDENTITY.
 
@@ -15,7 +15,7 @@ ONE_OUTCOME.
 ## Context
 
 - **Evidence.** COMMANDS_AND_OUTPUT behind every fact.
-- **Law.** `AGENTS.md`; RULE_FILES; SKILL and the references it names; GUIDE_OR_SPEC.
+- **Law.** `AGENTS.md`; RULE_FILES; SKILL and the references it names; GUIDE_OR_SPEC. Read each named file in full before the first edit or finding, and read no other instruction file up front.
 - **Installed primitives.** ORKESTREL_PACKAGES with the surface each unit reads first. A local helper whose job an installed export does is a defect.
 - **Host.** SHELL, WORKING_PATH, SANDBOX_NETWORK_APPROVAL_LIMITS.
 - **Standing conditions.** DIRTY_FILES, KNOWN_FAILING_COMMANDS, BLOCKED_TOOLS, and who repairs each.

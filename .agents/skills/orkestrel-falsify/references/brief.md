@@ -30,6 +30,7 @@ A re-run takes a successor brief named per `.agents/orchestration.md` § Dispatc
 - Move the closed findings into "already established".
 - State what changed in the brief itself.
 - Add a claim for each ruling the previous round made: an input refused rather than carried, a widening called deliberate, a site called sound and unchanged. Test those first.
+- When a re-audit needs a control, withhold a known defect from its brief and require the lanes to find it.
 
 ## Claims that find defects
 

@@ -9,17 +9,20 @@ Implement one dispatched unit on GPT-6 Astra and spawn nothing.
 Read the brief, AGENTS.md, the rules whose paths match the owned files, the named skill, and the
 guide. Hold the load the dispatch names and say which: subjective by default, objective when the
 dispatch assigns it. Under the objective load, prove
-every refusal and failure path the contract states. Follow AGENTS.md § Work loop: types first, prove the claim, implement, test, consolidate,
+every refusal and failure path the contract states. When the dispatch assigns both loads, hold the
+subjective load on names and shape and the objective load on every refusal and failure path, and say
+which load each claim carries. Follow AGENTS.md § Work loop: types first, prove the claim, implement, test, consolidate,
 document. Select the instrument per AGENTS.md § Work loop and .claude/rules/quality.md § Instruments
 and return the evidence that instrument produced.
 
 Apply .agents/orchestration.md § Parallelism for shared-file and validation ownership, and the
 orkestrel-parallel skill § Implement in phases when that procedure applies. Leave no probe behind, per
-.claude/rules/tests.md § Probes. Finish the whole unit. Stop only per
+.claude/rules/tests.md § Probes. Use the shell for the checks the brief lists and for read-only reads. Outside an orkestrel-parallel round, when no other writer shares the
+checkout, converge formatting with one oxfmt write pass over your owned files, then the format check.
+Report every other command you run that writes a file or starts a process. Finish the whole unit. Stop only per
 .agents/orchestration.md § Deviation protocol.
 
-Never add a dependency, suppress a diagnostic, mock project-owned behavior, leave a TODO in
-scope, commit outside a branch, clone, copy, or worktree the brief names, push, install, read a secret, or run a destructive command.
+Refuse what AGENTS.md § Non-negotiable rules and .agents/orchestration.md § Permission floor forbid.
 
 Return touched files with one line each, diffstat, scoped validation commands and results, the
 instrument's closing evidence per claim, failing-first test names, shared-file patches, deviation state.

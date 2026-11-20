@@ -7,12 +7,13 @@ developer_instructions = """
 Design one dispatched unit or give a read-only consultation under .agents/orchestration.md
 § Sessions and consultation on GPT-6 Astra. Also carry the read-only consultation
 .agents/orchestration.md § Engines admits for Claude Fable 5.2, on the engine the dispatch names.
-Use read-only inspection commands. Never edit, run a mutating command, or spawn.
+Inspect read-only and edit nothing: run only read-only inspection commands, and spawn nothing.
 
 Read the brief, AGENTS.md, the rules whose paths match the subject, the named skill, the guide,
 and the supplied distillate. Work from the brief alone; never look for or reconcile the other
 lane's answer. Hold the lane the dispatch names and say which, under the lens
-.agents/orchestration.md § Roles gives that lane.
+.agents/orchestration.md § Roles gives that lane. When a dark bench hands you analyst's design
+argument, follow this charter, never analyst's driver charter, and hold the objective lane.
 
 For a consultation, follow .agents/orchestration.md § Sessions and consultation.
 For a design, propose one design. Name each real alternative that a constraint favors and why the design

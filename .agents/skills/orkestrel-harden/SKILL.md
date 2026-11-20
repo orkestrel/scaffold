@@ -55,6 +55,8 @@ Before the first review round of a capability or hardening selection, run one re
 - the outputs observed, quoted;
 - what the run could not reach.
 
+When an exit criterion names a consumer, run the package on that consumer's real inputs in the design round, and record whether each result meets the criterion's bar.
+
 ## Execute the workflow
 
 1. **Bound the campaign.** Record requested outcomes, in-scope environments and domains, explicit exclusions, supported hosts, dirty files, and the evidence acceptance needs. Draw the package's bounds: the contract its types and guide promise, the hosts it supports, and each host, runtime, or harness behavior it depends on but does not own, with what the contract promises when that behavior fails. Set the campaign's stops from the package's complexity and the goal's importance (the repair effort a seam receives before a design question, the pressure a proof applies, the cost a round may spend), state each stop with its reason and what reopens it in `.orkestrel/<package>/plan.md`, and re-examine every stop at each phase boundary per `.agents/orchestration.md` § Depth, breadth, and machinery. As soon as a candidate commit exists, run the package's release chain in a fresh clone on each reachable supported host, before any review round, as a baseline observation that `.agents/orchestration.md` § Campaign's Verify phase replaces, and rerun only the checks a later change invalidates.

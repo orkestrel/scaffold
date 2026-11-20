@@ -30,6 +30,7 @@ These rules govern what a test asserts and where it lives, the cross-cutting and
   is outside the mirrored population: a study test names a package-level subject and mirrors no
   module.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
+- When a barrel's `index.test.ts` lists the barrel's exports, update that list in the change that adds or removes an export of the barrel, and name the file as owned in that change's brief.
 - Tests are deterministic: identical inputs produce identical results.
 - When a proof runs a command, assert its exit code.
 - Keep default suites fast: give each timer the shortest real duration that still separates the orderings the test asserts on a loaded host, and make no network calls.

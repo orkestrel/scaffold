@@ -11,7 +11,9 @@
 
 ## Order
 
-- Put the condition, goal, or location before the instruction. A report still opens with its finding.
+- Put the condition, goal, or location before the instruction. A report still opens as the following item states.
+- Open a report to the user by stating whether it asks for a decision. When it asks for a ruling on a measurement with more than one arm, put the arms' pricing table next. Then give the finding. Open any other report with its finding.
+- Write a report to the user in plain language, and define on first use each term, each id, and each abbreviation that § Examples, numbers, abbreviations does not skip.
 - Put the key point in the first sentence of every paragraph and list item.
 - Keep `that`, `then`, `of`, `a`, and `the`. Name the noun after `this`, `these`, or `it` when the referent is unclear.
 - State what the reader can do; no double negatives.

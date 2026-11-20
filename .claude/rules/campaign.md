@@ -30,12 +30,13 @@ A package directory holds:
 | a verdict file          | the verdict of an open seam                                                                                                                                                                       | until the seam closes                                     |
 
 - Write a file about one package under that package's directory, and a file about two or more packages at the top level.
-- Fill a ledger row's role cell with a name from `.agents/orchestration.md` § Roles and the engine that role ran on, `user`, or `Orchestrator`. Write no row for the Orchestrator's own commit.
+- Fill a ledger row's role cell with a name from `.agents/orchestration.md` § Roles and the engine that role ran on, `user`, `Orchestrator`, or the Orchestrator of the package whose session ran the unit, by package name. Write no row for the Orchestrator's own commit.
 
 ## Content
 
 - Track every file under `.orkestrel/`. Cite a tracked file, a commit, or a published URL. Cite no git-ignored path, no agent memory, and no path outside the repository; name a sibling repository by its package name and a path inside it.
-- Name no harness, model, provider, harness tool, operating system, shell, or machine as the host or engine of the work, except the engine in a ledger row's role cell per § Layout. Name a lane by its role. A product statement about a host family follows `.claude/rules/portability.md` § Claims.
+- Keep a command that re-runs an unpromoted probe in the roster (`.agents/orchestration.md` § Sessions and consultation), never in the folder; after the probe is promoted per `.claude/rules/quality.md` § Instruments, cite its test.
+- Name no harness, model, provider, harness tool, operating system, shell, or machine as the host or engine of the work, except the engine in a ledger row's role cell per § Layout and the engine beside each lane in a verdict file. Name a lane by its role. A product statement about a host family follows `.claude/rules/portability.md` § Claims.
 - Write every line as a directive, a fact, or a table cell, per `.claude/rules/writing.md` § Instruction files: absolute dates, one home per fact, a tree location by symbol and file. A decision or a measurement lives in the commit that made it; cite the commit.
 - `plan.md` holds the campaign's claims, its release bar, each seam's stop with what reopens it, and its deferral list, each deferred item with its trigger and its owner.
 - Name in `plan.md` the skill that governs each kind of unit the campaign dispatches, whatever the campaign's own name: `orkestrel-harden` for hardening a package.
@@ -48,7 +49,8 @@ A package directory holds:
 1. Read the package folder's `README.md` when present, then `plan.md` § State, then each skill the plan names as governing the first open chunk of § Sequence, then that chunk.
 2. Run `git status --porcelain -b`, `git log @{upstream}..`, and `node .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report`. Reconcile each difference with `plan.md` § State before you act.
 3. Act only on what the folder, the tree, and git hold. Agent memory from another machine or harness is absent.
-4. When a campaign opens, list each `ROADMAP.md` item whose reopen trigger the campaign meets, and plan it or rule it out in `plan.md`.
+4. When a campaign opens in a repository with no `ROADMAP.md` and the package's owner has stated end goals, write `ROADMAP.md` from those goals and keep it from that campaign on.
+5. When a campaign opens, list each `ROADMAP.md` item whose reopen trigger the campaign meets, and plan it or rule it out in `plan.md`.
 
 ## Hand off and close
 

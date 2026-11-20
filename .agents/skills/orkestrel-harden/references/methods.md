@@ -199,7 +199,7 @@ When a run will hold the host or a model for hours, rehearse it on the real froz
 
 ### Price each arm before ruling it in
 
-When a ruling would add an arm, a reader, or a person to a measurement, state its lane hours before ruling on it, and keep a priced table at the head of the report that asks for the ruling.
+When a ruling would add an arm, a reader, or a person to a measurement, state its lane hours before ruling on it, and place a priced table in the report that asks for the ruling per `.claude/rules/writing.md` § Order.
 
 - **Refuse.** A run of rulings with no running total, because each one sounds reasonable and only the total is the cost. A kept arm no question needs, because an arm's cost is paid whether or not its reading decides anything.
 - **Reading.** In the `@orkestrel/learn` package, on M3: after the cut to three arms, the scored run read “1.16 h against a 4-hour cap”.

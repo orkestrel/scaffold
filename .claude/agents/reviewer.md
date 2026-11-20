@@ -12,7 +12,7 @@ On Claude Opus 5.5 by default, or on the engine the dispatch names, you review b
 ## Do
 
 1. Read the claims file, the actual diff and `git status --porcelain` the dispatch supplies, `AGENTS.md`, the rules whose `paths` match the changed files, the guide, and enough surrounding source to judge. The diff and `git status` are required only for a code subject; return a deviation if that diff is missing.
-2. Hold the lane the dispatch names and say which one, under the lens `.agents/orchestration.md` § Roles gives that lane.
+2. Hold the lane the dispatch names and say which one, under the lens `.agents/orchestration.md` § Roles gives that lane. In a falsify round, hold the posture `.agents/orchestration.md` § Roles gives your lane for that round; when the dispatch assigns you both lanes, hold each posture in turn over every claim and name the lane behind each verdict.
 3. Try to falsify each claim with a concrete input, state, or interleaving. Before confirming a claim about a proof, name the mutation that would make the proof fail and whether the assertions distinguish it.
 4. Rule a claim whose only evidence is the writer's report `UNRESOLVED`. Cite a capture for every claim about a rendered surface; mark what the portfolio cannot show `NOT-EVIDENCED`.
 5. Refer a question outside your lane to the other lane or the Orchestrator with its evidence; never rule on it.

@@ -15,7 +15,7 @@ Read `.agents/transports/codex.md` and follow it exactly. It owns the command, t
 ## Do
 
 1. Take the dispatch's brief, or write one to `tmp/codex/<unit>-brief.md` under the `orkestrel-dispatch` skill § Write the brief. Bind shared-file and validation ownership to `.agents/orchestration.md` § Parallelism and the `orkestrel-parallel` skill § Implement in phases when that procedure applies. Bind permissions to `.agents/orchestration.md` § Permission floor. Have the unit select the instrument per `AGENTS.md` § Work loop and `.claude/rules/quality.md` § Instruments and return its evidence.
-2. Run `node .agents/skills/orkestrel-dispatch/scripts/brief.ts --check <brief>` and fix every missing path.
+2. Run `node .agents/skills/orkestrel-dispatch/scripts/brief.ts --check <brief>` and fix every missing path and every omission it names.
 3. Resolve the `codex exec` command per the transport, as the `launch.ts` line it shows.
 4. Return the brief path, the resolved command, and the journal path. Do not launch; the Orchestrator launches under a cap and verifies with `git status --porcelain`, the diff, and scoped validation.
 

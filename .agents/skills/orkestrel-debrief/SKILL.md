@@ -45,8 +45,9 @@ as a refinement.
 
 1. **Scope and gather.** Name the campaign(s) under debrief. Assemble the record from the
    campaign folder (`.claude/rules/campaign.md` § Layout): `plan.md`, `ledger.md`, `gaps.md`,
-   `ideas.md`, and the verdict files, plus deviations and recoveries, gate history, and any
-   live transcripts. State what evidence exists and what must be
+   `ideas.md`, and the verdict files, plus the roster (`.agents/orchestration.md` § Sessions
+   and consultation), the deviations and recoveries it and the unit reports record, gate
+   history, and any live transcripts. State what evidence exists and what must be
    produced fresh.
 2. **Field evidence.** Drive what was built with real consumers where a consumable
    surface exists. Record every pass verbatim.

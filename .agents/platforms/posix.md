@@ -13,3 +13,4 @@ The commands an agent runs on a Linux or macOS host. `.claude/rules/portability.
 
 - Gate a command on the previous one with `&&`, and read `$?` immediately after the command it reports on.
 - Pass arguments as an array from a TypeScript launcher rather than through shell quoting.
+- When a heredoc's body is a record, quote its delimiter (`<<'EOF'`): an unquoted delimiter expands backticks and `$` in the body. Under Claude Code, write a record per `.agents/skills/orkestrel-parallel/references/claude-code.md` § Quirks instead.

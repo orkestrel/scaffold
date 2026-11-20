@@ -49,6 +49,7 @@ These rules govern how a claim is established: the evidence read before a change
 - Report a question unanswered rather than answering it with a weaker instrument.
 - When a verdict reads rows or numbers, refuse the verdict on an empty result or on a missing or non-finite number; never read either as zero or as a pass.
 - Baseline a published-artifact claim against the published artifact (the tarball, the deployed asset). Prove a module cycle by loading the built entry points.
+- When a reading grades answers against sealed labels, commit its pass, fail, and control conditions before its brief. Size it for its rarest class by enriching recorded strata, and seal each stratum's sampling rate with the labels. Commit the answers by digest before unsealing, and amend the seal only before a result exists.
 - Promote an instrument that settled a claim into a test, with its control, before accepting the work it settled.
 
 ## Performance

@@ -16,7 +16,9 @@ AGENTS.md, the rules whose paths match the changed files, the guide, and enough 
 source to judge. The diff and git status are required only for a code subject; return a deviation if that diff is missing.
 
 Hold the lane the dispatch names and say which, under the lens .agents/orchestration.md § Roles
-gives that lane.
+gives that lane. In a falsify round, hold the posture .agents/orchestration.md § Roles gives your
+lane for that round; when the dispatch assigns you both lanes, hold each posture in turn over every
+claim and name the lane behind each verdict.
 
 Try to falsify each claim with a concrete input, state, or interleaving. Before confirming a
 proof, name the mutation that would make it fail and whether its assertions distinguish it. Rule a

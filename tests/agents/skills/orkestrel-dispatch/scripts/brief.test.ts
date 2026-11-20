@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { createScratch } from '@orkestrel/test/server'
 import { runSkillScript, BRIEF_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
 import {
+	EXECUTORS,
 	OPTIONS,
 	extractPaths,
 	extractSection,
@@ -12,12 +13,13 @@ import {
 	readsAsPath,
 	REQUIREMENTS,
 	resolveBriefPath,
+	scanExecutor,
 	scanOmissions,
 	TEMPLATE,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/brief.ts'
 
 const SECTIONS =
-	'## Role and engine\n\n`opus` on Opus 5.5.\n\n## Execution\n\nPerform the assignment yourself and spawn nothing.\n'
+	'## Role and engine\n\n`opus` on Opus 5.5. Executor: NATIVE_SUBAGENT.\n\n## Execution\n\nPerform the assignment yourself and spawn nothing.\n'
 
 describe('brief.ts', () => {
 	it('refuses an unknown flag with the parseArgs message before it writes or reads anything, and reads the --flag=value form', () => {
@@ -115,7 +117,7 @@ describe('brief.ts', () => {
 			expect(bare.stderr).toContain('omits the "## Role and engine" section')
 			scratch.write(
 				'spawn.md',
-				'## Role and engine\n\n`opus`.\n\n## Execution\n\nDelegate the work.\n\n## Output\n\nPerform the assignment yourself and spawn nothing.\n',
+				'## Role and engine\n\n`opus`. Executor: BENCH_ENGINE.\n\n## Execution\n\nDelegate the work.\n\n## Output\n\nPerform the assignment yourself and spawn nothing.\n',
 			)
 			const spawn = runSkillScript(BRIEF_SCRIPT, ['--check', 'spawn.md'], { cwd: scratch.path })
 			expect(spawn.status).toBe(3)
@@ -133,13 +135,48 @@ describe('brief.ts', () => {
 		}
 	})
 
-	it('accepts a brief written from the template on the sections it requires', () => {
+	it('refuses a brief whose role section names no executor value, and accepts a child task', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-brief-executor-' })
+		try {
+			scratch.write('none.md', SECTIONS.replace(' Executor: NATIVE_SUBAGENT.', ''))
+			const none = runSkillScript(BRIEF_SCRIPT, ['--check', 'none.md'], { cwd: scratch.path })
+			expect(none.status).toBe(3)
+			expect(none.json).toMatchObject({
+				omitted: [
+					'an executor under "## Role and engine": one of NATIVE_SUBAGENT, CHILD_TASK, BENCH_ENGINE, BRIDGE_DRIVER',
+				],
+			})
+			expect(none.stderr).toContain('omits an executor under "## Role and engine"')
+			scratch.write('child.md', SECTIONS.replace('NATIVE_SUBAGENT', 'CHILD_TASK'))
+			const child = runSkillScript(BRIEF_SCRIPT, ['--check', 'child.md'], { cwd: scratch.path })
+			expect(child.status).toBe(0)
+			expect(child.json).toMatchObject({ omitted: [] })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('accepts a brief written from the template on its sections once one executor is chosen', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-brief-template-' })
 		try {
 			expect(
 				runSkillScript(BRIEF_SCRIPT, ['--unit', 'demo', '--lane', 'units'], { cwd: scratch.path })
 					.status,
 			).toBe(0)
+			const unchosen = runSkillScript(BRIEF_SCRIPT, ['--check', 'tmp/units/demo-brief.md'], {
+				cwd: scratch.path,
+			})
+			expect(unchosen.status).toBe(3)
+			expect(unchosen.json).toMatchObject({
+				omitted: [
+					'one executor under "## Role and engine", not NATIVE_SUBAGENT, CHILD_TASK, BENCH_ENGINE, BRIDGE_DRIVER',
+				],
+			})
+			const written = scratch.read('tmp/units/demo-brief.md') ?? ''
+			scratch.write(
+				'tmp/units/demo-brief.md',
+				written.replace(/Executor: [A-Z_ |]+\./u, 'Executor: CHILD_TASK.'),
+			)
 			const check = runSkillScript(BRIEF_SCRIPT, ['--check', 'tmp/units/demo-brief.md'], {
 				cwd: scratch.path,
 			})
@@ -249,6 +286,34 @@ describe('the section reader', () => {
 	it('requires the sections the template carries, with the sentence written as the template writes it', () => {
 		const template = readFileSync(TEMPLATE, 'utf8')
 		expect(scanOmissions(template, REQUIREMENTS)).toEqual([])
+		const role = extractSection(template, '## Role and engine') ?? ''
+		expect(EXECUTORS.filter((executor) => !role.includes(executor))).toEqual([])
+		expect(scanExecutor(template, EXECUTORS)).toEqual([
+			`one executor under "## Role and engine", not ${EXECUTORS.join(', ')}`,
+		])
+	})
+
+	it('reads an executor value as a whole word inside the role section alone', () => {
+		const omission = [
+			'an executor under "## Role and engine": one of NATIVE_SUBAGENT, CHILD_TASK, BENCH_ENGINE, BRIDGE_DRIVER',
+		]
+		for (const executor of EXECUTORS) {
+			expect(scanExecutor(`## Role and engine\n\nExecutor: ${executor}.\n`, EXECUTORS)).toEqual([])
+		}
+		expect(scanExecutor('## Role and engine\n\nExecutor: CHILD_TASKS.\n', EXECUTORS)).toEqual(
+			omission,
+		)
+		expect(scanExecutor('## Role and engine\n\nExecutor: MY_CHILD_TASK.\n', EXECUTORS)).toEqual(
+			omission,
+		)
+		expect(
+			scanExecutor('## Role and engine\n\n`opus`.\n\n## Output\n\nCHILD_TASK\n', EXECUTORS),
+		).toEqual(omission)
+		expect(
+			scanExecutor('## Role and engine\n\nExecutor: CHILD_TASK or BENCH_ENGINE.\n', EXECUTORS),
+		).toEqual(['one executor under "## Role and engine", not CHILD_TASK, BENCH_ENGINE'])
+		expect(scanExecutor('## Execution\n', EXECUTORS)).toEqual([])
+		expect(scanExecutor('## Role and engine\n', [])).toEqual([])
 	})
 })
 
