@@ -46,6 +46,7 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 - Repairs the wave needed, each its own commit: server's guide names router for 0.0.31 (server `cceff06`); capture's closure budget sized from a contended run (capture `9d6116e`); mcp's distribution composition moved to the wave's releases (mcp `587b84d`); browser's HAR creator stamped 0.0.36 (browser `0370c43`); toolbox's scripted provider names its model (toolbox `cac49cb`).
 - Declaration-only renames from the server scope's WebWorker library (test, worker, middleware, toolbox) keep every public name; each release commit names its rename.
 - Chromium builds 1254 and 1255 are installed for the browser projects.
+- 2026-11-20: L2 published, each tarball served, and each release commit pushed (round 2). L3 settles against the registry: each package's lockfile is installed from the registry, its release-mode distribution proof runs, and both are amended into its release commit, whose message names the `npm pack` staging.
 
 ## Publish procedure
 
@@ -57,4 +58,4 @@ For each layer, L2 first:
 
 After L7, release scaffold: re-pin its runtime ranges, run `scaffold catalog --all`, build, and run its chain. Then close the wave per `wave.md` § Close the wave.
 
-Next action: publish L2 with the user's one-time code.
+Next action: publish L3 with the user's one-time code after each L3 package settles.
