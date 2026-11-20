@@ -50,6 +50,8 @@ The catalog table in `.claude/agents/orkestrel.md` fixes the layers (`wave.ts --
 - 2026-11-20: L3 published, each tarball served, and each release commit pushed (round 3), except capture: its development range names guide `^0.0.34`, which served in the same round, so capture settles and publishes with L4. No package from L4 on depends on capture.
 - 2026-11-20: capture and L4 published and each release commit pushed (round 4). mcp's release-mode distribution proof composes agent 0.0.47, which requires a provider model; mcp's release commit carries the fixture repair. capture 0.0.12's tarball answered 404 for about 30 minutes after the registry listed the version, then 200.
 - Same-layer development closures order the rest: agent's closure names probe 0.0.33, so browser and probe publish first, then agent, then ollama and toolbox, which name agent at runtime, then study.
+- 2026-11-20: browser and probe settled. Probe's release-mode distribution proof passed. Browser's failed the five cases its release gate requires a Linux host for, as on 0.0.34 and 0.0.35, and its ordinary mode passed 15 and skipped 9; browser's release commit states the limit.
+- 2026-11-20: ollama's `test:service` passed 83 of 84 against the user's daemon at 11434. The dedicated-daemon case, which refuses 11434, passed 1 of 1 against a provisioned 0.40.16 daemon at 127.0.0.1:11435 that was stopped after the run. Ollama's release commit carries both readings.
 
 ## Publish procedure
 
@@ -63,12 +65,12 @@ After L7, release scaffold: re-pin its runtime ranges, run `scaffold catalog --a
 
 Remaining rounds, one one-time code each:
 
-1. browser and probe: settle, then publish.
+1. browser and probe: settled; publish.
 2. agent: settle `agent-release` after probe serves, publish, push, and post "AGENT RELEASED".
-3. ollama and toolbox: settle after agent serves. Run ollama's `test:service` against `qwen3.5:4b-q4_K_M` before the upload unless its release commit already carries the reading.
+3. ollama and toolbox: settle after agent serves. Ollama's release commit carries its `test:service` readings.
 4. study: tell the study session, then settle and publish.
 5. scaffold: re-pin its runtime ranges, run `scaffold catalog --all`, build, run its chain, and publish. Then close the wave.
 
 Run each batch's settle steps (Publish procedure step 1) under one lane ticket on Node 22, so no other ticket runs between a package's install and its distribution proof.
 
-Next action: settle browser and probe, then publish them with the user's one-time code.
+Next action: publish browser and probe with the user's one-time code.
