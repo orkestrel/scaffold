@@ -1,11 +1,11 @@
 {
-	"@orkestrel/browser": "^0.0.35",
-	"@orkestrel/contract": "^0.0.26",
-	"@orkestrel/guide": "^0.0.33",
-	"@orkestrel/html": "^0.0.18",
-	"@orkestrel/probe": "^0.0.32",
-	"@orkestrel/scaffold": "^0.0.144",
-	"@orkestrel/test": "^0.0.44",
+	"@orkestrel/browser": "^0.0.36",
+	"@orkestrel/contract": "^0.0.27",
+	"@orkestrel/guide": "^0.0.34",
+	"@orkestrel/html": "^0.0.19",
+	"@orkestrel/probe": "^0.0.33",
+	"@orkestrel/scaffold": "^0.0.145",
+	"@orkestrel/test": "^0.0.45",
 	"@types/node": "^24.19.2",
 	"@vitejs/plugin-vue": "^6.0.8",
 	"@vitest/browser-playwright": "^5.1.0",
@@ -14,7 +14,7 @@
 	"playwright": "^1.64.1",
 	"typescript": "^6.0.3",
 	"vite": "^8.3.8",
-	"vitest": "^5.1.0",
+	"vitest": "^5.1.1",
 	"vue": "^3.5.40",
 	"vue-tsc": "^3.3.7"
 }

@@ -3019,7 +3019,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.44",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.45",`,
 					blocking: false,
 				},
 			])
@@ -3098,7 +3098,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.3.8", "vitest": "^5.1.0",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.3.8", "vitest": "^5.1.1",`,
 					blocking: false,
 				},
 			])
@@ -3379,7 +3379,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: @orkestrel/contract. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/contract": "^0.0.26",`,
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: @orkestrel/contract. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/contract": "^0.0.27",`,
 					blocking: false,
 				},
 			])
@@ -7894,11 +7894,11 @@ describe('CLI overwrite', () => {
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.lifts).toStrictEqual([
 				{ name: 'typescript', from: '^6.0.3', to: '^7.0.2' },
-				{ name: 'vitest', from: '^4.1.12', to: '^5.1.0' },
+				{ name: 'vitest', from: '^4.1.12', to: '^5.1.1' },
 			])
 			const written: unknown = JSON.parse(workspace.read('target/package.json') ?? '')
 			expect(written).toMatchObject({
-				devDependencies: { typescript: '^7.0.2', vitest: '^5.1.0', oxlint: '^1.90.0' },
+				devDependencies: { typescript: '^7.0.2', vitest: '^5.1.1', oxlint: '^1.90.0' },
 				peerDependencies: peers,
 			})
 			workspace.write('target/package.json', original)
@@ -7913,7 +7913,7 @@ describe('CLI overwrite', () => {
 				fleet.target,
 			])
 			expect(human.output).toContain(
-				'Lifted "vitest" from "^4.1.12" to "^5.1.0". Run npm install to install it.',
+				'Lifted "vitest" from "^4.1.12" to "^5.1.1". Run npm install to install it.',
 			)
 			workspace.write('target/package.json', original)
 			const online = createSink()
@@ -7931,7 +7931,7 @@ describe('CLI overwrite', () => {
 			const resolved: OverwriteResult = JSON.parse(online.output[0] ?? '')
 			expect(resolved.releases).toContainEqual({
 				name: 'vitest',
-				range: '^5.1.0',
+				range: '^5.1.1',
 				lookup: 'found',
 				latest: '5.1.1',
 				major: 6,
@@ -10157,7 +10157,7 @@ describe('CLI catalog', () => {
 				{
 					name: '@orkestrel/contract',
 					lookup: 'found',
-					version: '0.0.26',
+					version: '0.0.27',
 					dependencies: [],
 					peers: [],
 				},
