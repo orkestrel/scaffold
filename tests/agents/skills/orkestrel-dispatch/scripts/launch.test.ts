@@ -1,11 +1,15 @@
-import { spawn } from 'node:child_process'
-import { closeSync, openSync } from 'node:fs'
-import { join } from 'node:path'
+import type { Socket } from 'node:net'
+import { spawn, spawnSync } from 'node:child_process'
+import { closeSync, existsSync, openSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:net'
+import { delimiter, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isRecord, parseJSON } from '@orkestrel/contract'
-import { createTeardown, waitForCondition, waitForEvent } from '@orkestrel/test'
-import { createScratch } from '@orkestrel/test/server'
+import { createRecorder, createTeardown, waitForCondition, waitForEvent } from '@orkestrel/test'
+import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import {
+	buildEnvironment as buildTestEnvironment,
 	buildSkillRun,
 	createRepository,
 	LAUNCH_SCRIPT,
@@ -15,14 +19,37 @@ import {
 } from '../../../../setupServer.js'
 import {
 	OPTIONS,
+	buildEnvironment,
+	collectVariables,
 	computeCapMilliseconds,
 	endRunning,
 	forceKillTree,
+	HANDOFF_SUFFIX,
+	isHandoff,
+	isVariables,
+	killLauncher,
+	matchesRecord,
+	matchesSameFile,
 	MAX_CAP_SECONDS,
 	parseArguments,
+	parseCreation,
+	parseHandoff,
+	POWERSHELL_MS,
+	quoteArgument,
+	readCommandLine,
+	readConfirmation,
 	readGitStatus,
+	readPid,
+	readRefusal,
+	readRunning,
+	REFUSED_SUFFIX,
+	renderCommandLine,
+	runDetach,
+	runPowerShell,
 	startCommand,
+	waitForConfirmation,
 	waitForExit,
+	writeClosing,
 } from '../../../../../.agents/skills/orkestrel-dispatch/scripts/launch.ts'
 
 describe('launch.ts', () => {
@@ -615,6 +642,854 @@ describe('the git status reader', () => {
 			scratch.destroy()
 		}
 	})
+})
+
+describe('the detach', () => {
+	it('quotes each argument the way CommandLineToArgvW reads it back', () => {
+		expect(quoteArgument('plain')).toBe('"plain"')
+		expect(quoteArgument('')).toBe('""')
+		expect(quoteArgument('with space')).toBe('"with space"')
+		expect(quoteArgument('a"b')).toBe('"a\\"b"')
+		expect(quoteArgument('a\\"b')).toBe('"a\\\\\\"b"')
+		expect(quoteArgument('a\\b')).toBe('"a\\b"')
+		expect(quoteArgument('C:\\dir\\')).toBe('"C:\\dir\\\\"')
+		expect(renderCommandLine(['C:\\node.exe', '--handoff', 'x y'])).toBe(
+			'"C:\\node.exe" "--handoff" "x y"',
+		)
+	})
+
+	it('round-trips quoted arguments with spaces, quotes, and backslashes through a real node child', (context) => {
+		if (process.platform !== 'win32') {
+			context.skip(
+				'windowsVerbatimArguments is a Windows spawn option: any other host passes an argument array and parses no command line',
+			)
+		}
+		const args = [
+			'with space',
+			'a"quote',
+			'trail\\',
+			'C:\\dir with space\\',
+			'back\\\\"slash',
+			'',
+			'plain',
+			'\\\\server\\share',
+		]
+		const result = spawnSync(
+			process.execPath,
+			[
+				quoteArgument('-e'),
+				quoteArgument('process.stdout.write(JSON.stringify(process.argv.slice(1)))'),
+				...args.map(quoteArgument),
+			],
+			{ encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: true },
+		)
+		expect(result.status).toBe(0)
+		expect(parseJSON(result.stdout)).toEqual(args)
+	})
+
+	it('exits 69 on a host whose platform page records no detach procedure, and writes nothing', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-host-' })
+		try {
+			const code = await runDetach(
+				{
+					command: [process.execPath, '-v'],
+					cwd: scratch.path,
+					cap: 5,
+					status: false,
+					journal: join(scratch.path, 'tmp', 'units', 'host.jsonl'),
+					errors: join(scratch.path, 'tmp', 'units', 'host.err'),
+					variables: { PATH: 'lead' },
+				},
+				'linux',
+			)
+			expect(code).toBe(69)
+			expect(scratch.names('')).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it.each([
+		[
+			'--detach with no cap',
+			['--journal', 'j', '--errors', 'e', '--detach', '--', process.execPath, '-v'],
+			'--detach takes --cap above 0',
+		],
+		[
+			'--detach with a cap of 0',
+			['--journal', 'j', '--errors', 'e', '--cap', '0', '--detach', '--', process.execPath, '-v'],
+			'--detach takes --cap above 0',
+		],
+		[
+			'--handoff beside another flag',
+			['--handoff', `j${HANDOFF_SUFFIX}`, '--journal', 'j'],
+			'--handoff takes no other flag and no `--`, not --journal',
+		],
+		[
+			'--handoff beside a bare --',
+			['--handoff', `j${HANDOFF_SUFFIX}`, '--', process.execPath],
+			'--handoff takes no other flag and no `--`, not --',
+		],
+		[
+			'--env without --detach',
+			['--journal', 'j', '--errors', 'e', '--cap', '5', '--env', 'PATH', '--', process.execPath],
+			'--env belongs to --detach',
+		],
+		[
+			'--env naming no variable',
+			[
+				...['--journal', 'j', '--errors', 'e', '--cap', '5', '--detach', '--env', 'A=B'],
+				...['--', process.execPath, '-v'],
+			],
+			'"A=B" is no name',
+		],
+		[
+			'--env naming an unset variable',
+			[
+				...['--journal', 'j', '--errors', 'e', '--cap', '5', '--detach'],
+				...['--env', 'ORKESTREL_DETACH_UNSET_MARKER', '--', process.execPath, '-v'],
+			],
+			'"ORKESTREL_DETACH_UNSET_MARKER" is unset',
+		],
+		[
+			'--detach with one file for the journal and the errors',
+			['--journal', 'j', '--errors', './j', '--cap', '5', '--detach', '--', process.execPath],
+			'--journal and --errors name the same file',
+		],
+	])('exits 64 and writes nothing on %s', (_name, args, text) => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-detach-usage-' })
+		try {
+			const run = runSkillScript(LAUNCH_SCRIPT, args, {
+				cwd: scratch.path,
+				env: { ORKESTREL_LANE: '' },
+			})
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain(text)
+			expect(run.stderr).toContain('usage: launch.ts')
+			expect(run.stdout).toBe('')
+			expect(scratch.names('')).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 64 on --detach inside a lane ticket, naming the ticket, and writes nothing', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-detach-lane-' })
+		try {
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', 'j', '--errors', 'e', '--cap', '5', '--detach', '--', process.execPath, '-v'],
+				{ cwd: scratch.path, env: { ORKESTREL_LANE: 'peer-run' } },
+			)
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('--detach refuses a run inside the lane ticket "peer-run"')
+			expect(run.stderr).toContain('outside lane.ts')
+			expect(scratch.names('')).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 75 while the launcher pid file names a live process, and touches no file', (context) => {
+		if (process.platform !== 'win32') {
+			context.skip(
+				'--detach exits 69 before it reads the launcher pid file on a host whose platform page records no detach procedure',
+			)
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-detach-held-' })
+		try {
+			scratch.write('tmp/units/held.jsonl.launcher.pid', `${process.pid}\n`)
+			scratch.write('tmp/units/held.err', 'earlier\n')
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				[
+					...['--journal', 'tmp/units/held.jsonl', '--errors', 'tmp/units/held.err'],
+					...['--cap', '5', '--detach', '--', process.execPath, '-v'],
+				],
+				{ cwd: scratch.path, env: { ORKESTREL_LANE: '' } },
+			)
+			expect(run.status).toBe(75)
+			expect(run.stderr).toContain(`the launcher ${String(process.pid)}`)
+			expect(run.stderr).toContain('still runs')
+			expect(scratch.names('tmp/units')).toEqual(['held.err', 'held.jsonl.launcher.pid'])
+			expect(scratch.read('tmp/units/held.err')).toBe('earlier\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 75 on a missing handoff record and creates no journal', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-handoff-gone-' })
+		try {
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--handoff', `tmp/units/gone.jsonl${HANDOFF_SUFFIX}`],
+				{
+					cwd: scratch.path,
+				},
+			)
+			expect(run.status).toBe(75)
+			expect(run.stderr).toContain('cannot be read')
+			expect(run.stderr).toContain('nothing ran')
+			expect(scratch.names('')).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 75 on a malformed record or a file that is no handoff record, keeps each, and runs nothing', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-handoff-bad-' })
+		try {
+			scratch.write(
+				`tmp/units/bad.jsonl${HANDOFF_SUFFIX}`,
+				JSON.stringify({ command: [process.execPath, '-v'] }),
+			)
+			const malformed = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--handoff', `tmp/units/bad.jsonl${HANDOFF_SUFFIX}`],
+				{ cwd: scratch.path },
+			)
+			expect(malformed.status).toBe(75)
+			expect(malformed.stderr).toContain('is not a handoff record')
+			expect(scratch.names('tmp/units')).toEqual([
+				`bad.jsonl${HANDOFF_SUFFIX}`,
+				`bad.jsonl${HANDOFF_SUFFIX}${REFUSED_SUFFIX}`,
+			])
+			expect(scratch.read(`tmp/units/bad.jsonl${HANDOFF_SUFFIX}${REFUSED_SUFFIX}`)).toMatch(
+				/is not a handoff record[^\n]*\n$/u,
+			)
+			scratch.write('notes.txt', 'kept\n')
+			const other = runSkillScript(LAUNCH_SCRIPT, ['--handoff', 'notes.txt'], {
+				cwd: scratch.path,
+			})
+			expect(other.status).toBe(75)
+			expect(other.stderr).toContain(`takes the <journal>${HANDOFF_SUFFIX} record`)
+			expect(scratch.read('notes.txt')).toBe('kept\n')
+			expect(scratch.has(`notes.txt${REFUSED_SUFFIX}`)).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('runs a handoff record in its working directory under its variables, deletes the record before the spawn, and writes the summary file', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-handoff-' })
+		try {
+			const work = scratch.ensure('work')
+			const lead = scratch.ensure('lead')
+			const record = join(scratch.path, 'tmp', 'units', `hand.jsonl${HANDOFF_SUFFIX}`)
+			const code = `const fs=require('node:fs');process.stdout.write(JSON.stringify({marker:process.env.LAUNCH_MARKER??null,lead:(process.env.PATH??'').split(${JSON.stringify(delimiter)})[0],cwd:process.cwd(),ppid:process.ppid,record:fs.existsSync(${JSON.stringify(record)})}))`
+			scratch.write(
+				`tmp/units/hand.jsonl${HANDOFF_SUFFIX}`,
+				JSON.stringify({
+					command: [process.execPath, '-e', code],
+					cwd: work,
+					cap: 30,
+					status: true,
+					journal: join(scratch.path, 'tmp', 'units', 'hand.jsonl'),
+					errors: join(scratch.path, 'tmp', 'units', 'hand.err'),
+					variables: {
+						PATH: `${lead}${delimiter}${process.env.PATH ?? ''}`,
+						LAUNCH_MARKER: 'handed',
+					},
+				}),
+			)
+			const run = runSkillScript(LAUNCH_SCRIPT, ['--handoff', record], {
+				cwd: scratch.path,
+				env: { LAUNCH_MARKER: 'inherited' },
+			})
+			expect(run.status).toBe(0)
+			const seen = parseJSON(scratch.read('tmp/units/hand.jsonl') ?? '')
+			const ppid = isRecord(seen) ? seen.ppid : undefined
+			expect(seen).toEqual({ marker: 'handed', lead, cwd: work, ppid, record: false })
+			expect(typeof ppid).toBe('number')
+			expect(scratch.read('tmp/units/hand.jsonl.launcher.pid')).toBe(`${String(ppid)}\n`)
+			expect(scratch.has(`tmp/units/hand.jsonl${HANDOFF_SUFFIX}`)).toBe(false)
+			expect(scratch.read('tmp/units/hand.err')).toMatch(
+				/^\nexit=0 signal=none capped=false duration_ms=\d+\n$/u,
+			)
+			expect(scratch.read('tmp/units/hand.jsonl.pid')).toMatch(/^\d+\n$/u)
+			expect(scratch.has('tmp/units/hand.jsonl.status-before.txt')).toBe(true)
+			expect(scratch.has('tmp/units/hand.jsonl.status-after.txt')).toBe(true)
+			const summary = parseJSON(scratch.read('tmp/units/hand.jsonl.summary.json') ?? '')
+			expect(isRecord(summary) ? summary.exit : undefined).toBe(0)
+			expect(run.json?.exit).toBe(0)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('parses the return value and the process id the detach command prints', () => {
+		expect(parseCreation('0 11432\r\n')).toEqual({ code: 0, pid: 11432 })
+		expect(parseCreation('\r\n9 \r\n')).toEqual({ code: 9, pid: undefined })
+		expect(parseCreation('Access is denied.')).toBeUndefined()
+		expect(parseCreation('')).toBeUndefined()
+	})
+
+	it('reads a confirmation from a complete pid file or the exit line, and waits for one on the directory', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-confirm-' })
+		try {
+			const units = scratch.ensure('units')
+			const journal = join(units, 'wait.jsonl')
+			const errors = join(units, 'wait.err')
+			expect(readConfirmation(journal, errors)).toBeUndefined()
+			writeFileSync(errors, 'warn\n')
+			expect(readConfirmation(journal, errors)).toBeUndefined()
+			writeFileSync(`${journal}.pid`, '12')
+			expect(readPid(`${journal}.pid`)).toBeUndefined()
+			expect(readConfirmation(journal, errors)).toBeUndefined()
+			writeFileSync(errors, 'warn\n\nexit=127 signal=none capped=false duration_ms=3\n')
+			expect(readConfirmation(journal, errors)).toEqual({ pid: undefined, refusal: undefined })
+			writeFileSync(`${journal}.pid`, '4242\n')
+			expect(readConfirmation(journal, errors)).toEqual({ pid: 4242, refusal: undefined })
+			const refused = `${journal}${HANDOFF_SUFFIX}${REFUSED_SUFFIX}`
+			writeFileSync(refused, 'the record is malformed')
+			expect(readRefusal(refused)).toBeUndefined()
+			writeFileSync(refused, 'the record is malformed\n')
+			expect(readConfirmation(journal, errors)).toEqual({
+				pid: undefined,
+				refusal: 'the record is malformed',
+			})
+			expect(
+				await waitForConfirmation(join(units, 'none.jsonl'), join(units, 'none.err'), 200),
+			).toBeUndefined()
+			const later = join(units, 'later.jsonl')
+			const waited = waitForConfirmation(later, join(units, 'later.err'), 30_000)
+			setTimeout(() => writeFileSync(`${later}.pid`, '777\n'), 50)
+			expect(await waited).toEqual({ pid: 777, refusal: undefined })
+			const declined = join(units, 'declined.jsonl')
+			const refusal = waitForConfirmation(declined, join(units, 'declined.err'), 30_000)
+			setTimeout(
+				() => writeFileSync(`${declined}${HANDOFF_SUFFIX}${REFUSED_SUFFIX}`, 'declined\n'),
+				50,
+			)
+			expect(await refusal).toEqual({ pid: undefined, refusal: 'declined' })
+		} finally {
+			await destroyScratch(scratch)
+		}
+	})
+
+	it('guards a handoff record and refuses each member the record does not hold whole', () => {
+		const valid = {
+			command: [process.execPath, '-v'],
+			cwd: WORKSPACE_ROOT,
+			cap: 5,
+			status: false,
+			journal: join(WORKSPACE_ROOT, 'tmp', 'units', 'guard.jsonl'),
+			errors: join(WORKSPACE_ROOT, 'tmp', 'units', 'guard.err'),
+			variables: { PATH: 'lead', LAUNCH_MARKER: 'x' },
+		}
+		expect(isHandoff(valid)).toBe(true)
+		expect(parseHandoff(JSON.stringify(valid))).toEqual(valid)
+		expect(parseHandoff('not json')).toBeUndefined()
+		expect(
+			isHandoff(Object.fromEntries(Object.entries(valid).filter(([key]) => key !== 'variables'))),
+		).toBe(false)
+		for (const refused of [
+			{ ...valid, extra: 1 },
+			{ ...valid, command: [] },
+			{ ...valid, command: [''] },
+			{ ...valid, command: ['node', 3] },
+			{ ...valid, cwd: 'relative' },
+			{ ...valid, cap: 0 },
+			{ ...valid, cap: MAX_CAP_SECONDS + 1 },
+			{ ...valid, cap: Number.NaN },
+			{ ...valid, status: 'yes' },
+			{ ...valid, journal: 'relative.jsonl' },
+			{ ...valid, errors: valid.journal },
+			{ ...valid, variables: { PATH: 3 } },
+			{ ...valid, variables: [] },
+		]) {
+			expect(isHandoff(refused)).toBe(false)
+		}
+		expect(
+			isHandoff({
+				...valid,
+				get variables(): unknown {
+					throw new Error('the read throws')
+				},
+			}),
+		).toBe(false)
+		expect(isHandoff(null)).toBe(false)
+		expect(isHandoff([])).toBe(false)
+		expect(isHandoff('record')).toBe(false)
+		expect(isVariables({ PATH: 'lead' })).toBe(true)
+		expect(isVariables({ '': 'x' })).toBe(false)
+		expect(isVariables({ 'A=B': 'x' })).toBe(false)
+		expect(isVariables(null)).toBe(false)
+	})
+
+	it('collects PATH and each set variable once by case-folded name, and merges by case-folded name', () => {
+		expect(
+			collectVariables(['A', 'a', 'B', 'GONE'], { PATH: 'lead', A: '1', a: '2', B: '3' }),
+		).toEqual({ PATH: 'lead', A: '1', B: '3' })
+		expect(collectVariables(['path'], { PATH: 'lead', path: 'other' })).toEqual({ PATH: 'lead' })
+		expect(
+			buildEnvironment(
+				{ Path: 'old', KEEP: 'kept', orkestrel_lane: 'stale' },
+				{ PATH: 'new', ORKESTREL_LANE: 'run' },
+			),
+		).toEqual({ KEEP: 'kept', PATH: 'new', ORKESTREL_LANE: 'run' })
+	})
+
+	it('writes the summary, then the status after, then the exit trailer last', () => {
+		const recorder = createRecorder<[path: string, text: string, flag: 'w' | 'a']>()
+		writeClosing(
+			{ journal: 'j', errors: 'e', summary: 'S\n', status: 'T', trailer: '\nexit=0\n' },
+			recorder.handler,
+		)
+		expect(recorder.calls).toEqual([
+			['j.summary.json', 'S\n', 'w'],
+			['j.status-after.txt', 'T', 'w'],
+			['e', '\nexit=0\n', 'a'],
+		])
+		recorder.clear()
+		writeClosing(
+			{ journal: 'j', errors: 'e', summary: undefined, status: undefined, trailer: 'x' },
+			recorder.handler,
+		)
+		expect(recorder.calls).toEqual([['e', 'x', 'a']])
+	})
+
+	it('compares the journal and errors paths as resolved paths, case-folded on Windows alone', () => {
+		expect(matchesSameFile('j', './j', 'linux')).toBe(true)
+		expect(matchesSameFile('J', 'j', 'linux')).toBe(false)
+		expect(matchesSameFile('tmp/J.jsonl', 'tmp/j.jsonl', 'win32')).toBe(true)
+		expect(matchesSameFile('tmp/a.jsonl', 'tmp/b.jsonl', 'win32')).toBe(false)
+	})
+
+	it('exits 64 on one file under two spellings in the attached form', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-spelling-' })
+		try {
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', './j', '--errors', 'j', '--cap', '5', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('--journal and --errors name the same file')
+			expect(scratch.names('')).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 64 on one file under two cases with --detach and without it', async (context) => {
+		if (process.platform !== 'win32') {
+			context.skip(
+				'only a Windows file system folds names by case, so tmp/J.jsonl and tmp/j.jsonl name two files elsewhere',
+			)
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-case-' })
+		try {
+			for (const detach of [[], ['--detach']]) {
+				const run = runSkillScript(
+					LAUNCH_SCRIPT,
+					[
+						...['--journal', 'tmp/J.jsonl', '--errors', 'tmp/j.jsonl', '--cap', '5'],
+						...detach,
+						...['--', process.execPath, '-v'],
+					],
+					{ cwd: scratch.path, env: { ORKESTREL_LANE: '' } },
+				)
+				expect(run.status).toBe(64)
+				expect(run.stderr).toContain('--journal and --errors name the same file')
+			}
+			expect(scratch.names('')).toEqual([])
+		} finally {
+			await destroyScratch(scratch)
+		}
+	})
+
+	it('ends a PowerShell call at its bound and reports that the bound ended it', (context) => {
+		if (process.platform !== 'win32') {
+			context.skip('powershell.exe is the Windows detach path, and no other host has it')
+		}
+		const result = runPowerShell('Start-Sleep -Seconds 5', {}, 200)
+		expect(result.timedOut).toBe(true)
+		expect(result.status).toBeNull()
+	})
+
+	it('reads the run record as a whole argument of a command line', () => {
+		const record = 'C:\\runs\\work.jsonl.handoff.json'
+		expect(matchesRecord(`"node.exe" "launch.ts" "--handoff" "${record}"`, record)).toBe(true)
+		expect(matchesRecord(`node.exe launch.ts --handoff ${record}`, record)).toBe(true)
+		expect(matchesRecord(record, record)).toBe(true)
+		expect(matchesRecord(`"node.exe" "--handoff" "${record}.extra.handoff.json"`, record)).toBe(
+			false,
+		)
+		expect(matchesRecord(`"node.exe" "--handoff" "D:${record}"`, record)).toBe(false)
+		expect(
+			matchesRecord('"node.exe" "--handoff" "C:\\runs\\workXjsonl.handoff.json"', record),
+		).toBe(false)
+	})
+
+	it('kills a launcher only when its command line names the run record', async (context) => {
+		if (process.platform !== 'win32') {
+			context.skip('the check reads a command line through WMI, which Windows alone has')
+		}
+		const other = join(WORKSPACE_ROOT, 'tmp', 'units', `other.jsonl${HANDOFF_SUFFIX}`)
+		const mine = join(WORKSPACE_ROOT, 'tmp', 'units', `mine.jsonl${HANDOFF_SUFFIX}`)
+		const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)', other], {
+			stdio: 'ignore',
+			windowsHide: true,
+		})
+		const closed = waitForEvent<[number | null]>(
+			(listener) => {
+				child.on('close', listener)
+			},
+			'the stand-in launcher closes',
+			{ budget: 45_000 },
+		)
+		try {
+			const pid = child.pid ?? 0
+			await waitForCondition(
+				'the stand-in launcher names its record',
+				() => (readCommandLine(pid, POWERSHELL_MS) ?? '').includes(other),
+				{ budget: 15_000 },
+			)
+			expect(killLauncher(pid, mine, POWERSHELL_MS)).toBe(false)
+			expect(readRunning(pid)).toBe(true)
+			expect(killLauncher(process.pid, mine, POWERSHELL_MS)).toBe(false)
+			expect(readRunning(process.pid)).toBe(true)
+			expect(killLauncher(pid, other, POWERSHELL_MS)).toBe(true)
+			await closed
+		} finally {
+			child.kill()
+			await closed.catch(() => undefined)
+		}
+	}, 60_000)
+
+	it('exits 75 with the next step when Win32_Process Create refuses a working directory that does not exist', (context) => {
+		if (process.platform !== 'win32') {
+			context.skip('runDetach exits 69 before it reaches WMI on a host other than Windows')
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-create-' })
+		try {
+			const entry = scratch.write(
+				'detach.mjs',
+				`import { runDetach } from ${JSON.stringify(pathToFileURL(join(WORKSPACE_ROOT, LAUNCH_SCRIPT)).href)}\nprocess.exitCode = await runDetach(JSON.parse(process.argv[2]), process.platform, Number(process.argv[3]))\n`,
+			)
+			const units = join(scratch.path, 'tmp', 'units')
+			const handoff = {
+				command: [process.execPath, '-v'],
+				cwd: join(scratch.path, 'missing'),
+				cap: 5,
+				status: false,
+				journal: join(units, 'create.jsonl'),
+				errors: join(units, 'create.err'),
+				variables: { PATH: process.env.PATH ?? '' },
+			}
+			const run = spawnSync(process.execPath, [entry, JSON.stringify(handoff), '30000'], {
+				cwd: scratch.path,
+				encoding: 'utf8',
+				windowsHide: true,
+			})
+			expect(run.status).toBe(75)
+			expect(run.stderr).toMatch(/ReturnValue \d+|PowerShell could not run/u)
+			expect(run.stderr).toContain(
+				'and rerun, or run the command attached and keep the session in its turn',
+			)
+			expect(scratch.names('tmp/units')).toEqual([])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 75 with the next step when the confirmation wait ends, and kills the launcher it created', async (context) => {
+		if (process.platform !== 'win32') {
+			context.skip('runDetach exits 69 before it reaches WMI on a host other than Windows')
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-late-' })
+		const units = join(scratch.path, 'tmp', 'units')
+		try {
+			const entry = scratch.write(
+				'detach.mjs',
+				`import { runDetach } from ${JSON.stringify(pathToFileURL(join(WORKSPACE_ROOT, LAUNCH_SCRIPT)).href)}\nprocess.exitCode = await runDetach(JSON.parse(process.argv[2]), process.platform, Number(process.argv[3]))\n`,
+			)
+			const handoff = {
+				command: [process.execPath, '-e', 'setTimeout(() => {}, 60000)'],
+				cwd: scratch.path,
+				cap: 60,
+				status: false,
+				journal: join(units, 'late.jsonl'),
+				errors: join(units, 'late.err'),
+				variables: { PATH: process.env.PATH ?? '' },
+			}
+			const run = spawnSync(process.execPath, [entry, JSON.stringify(handoff), '1'], {
+				cwd: scratch.path,
+				encoding: 'utf8',
+				windowsHide: true,
+			})
+			expect(run.status).toBe(75)
+			expect(run.stderr).toContain('within 1 ms; its tree was killed')
+			expect(run.stderr).toContain(`late.jsonl.launcher.pid`)
+			expect(run.stderr).toContain('then rerun')
+			const launcher = Number(/the detached launcher (\d+)/u.exec(run.stderr)?.[1])
+			await waitForCondition('the timed-out launcher ends', () => !readRunning(launcher), {
+				budget: 15_000,
+			})
+			expect(existsSync(join(units, `late.jsonl${HANDOFF_SUFFIX}`))).toBe(false)
+		} finally {
+			for (const name of ['late.jsonl.pid', 'late.jsonl.launcher.pid']) {
+				const pid = readPid(join(units, name))
+				if (pid !== undefined && readRunning(pid)) forceKillTree(pid)
+			}
+			await destroyScratch(scratch)
+		}
+	}, 60_000)
+
+	it('reports the launcher refusal of a malformed record at once and removes the refusal file', async (context) => {
+		if (process.platform !== 'win32') {
+			context.skip('runDetach exits 69 before it reaches WMI on a host other than Windows')
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-refused-' })
+		const units = join(scratch.path, 'tmp', 'units')
+		try {
+			const entry = scratch.write(
+				'detach.mjs',
+				`import { runDetach } from ${JSON.stringify(pathToFileURL(join(WORKSPACE_ROOT, LAUNCH_SCRIPT)).href)}\nprocess.exitCode = await runDetach(JSON.parse(process.argv[2]), process.platform, Number(process.argv[3]))\n`,
+			)
+			const handoff = {
+				command: [process.execPath, '-v'],
+				cwd: scratch.path,
+				cap: 0,
+				status: false,
+				journal: join(units, 'declined.jsonl'),
+				errors: join(units, 'declined.err'),
+				variables: { PATH: process.env.PATH ?? '' },
+			}
+			const run = spawnSync(process.execPath, [entry, JSON.stringify(handoff), '15000'], {
+				cwd: scratch.path,
+				encoding: 'utf8',
+				windowsHide: true,
+			})
+			expect(run.status).toBe(75)
+			expect(run.stderr).toContain('refused the handoff and ran nothing')
+			expect(run.stderr).toContain('is not a handoff record')
+			expect(scratch.names('tmp/units')).toEqual([])
+		} finally {
+			await destroyScratch(scratch)
+		}
+	}, 60_000)
+
+	it('exits 75 and writes its refusal when the record cannot be deleted, and creates no journal', (context) => {
+		if (process.platform !== 'win32') {
+			context.skip('the deny-delete entries this case sets are Windows access-control entries')
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-undeletable-' })
+		const held = scratch.ensure('held')
+		const record = join(held, `x.jsonl${HANDOFF_SUFFIX}`)
+		try {
+			scratch.write(
+				`held/x.jsonl${HANDOFF_SUFFIX}`,
+				JSON.stringify({
+					command: [process.execPath, '-v'],
+					cwd: scratch.path,
+					cap: 5,
+					status: false,
+					journal: join(held, 'x.jsonl'),
+					errors: join(held, 'x.err'),
+					variables: { PATH: 'lead' },
+				}),
+			)
+			expect(
+				spawnSync('icacls', [record, '/deny', '*S-1-1-0:(DE)'], { windowsHide: true }).status,
+			).toBe(0)
+			expect(
+				spawnSync('icacls', [held, '/deny', '*S-1-1-0:(DC)'], { windowsHide: true }).status,
+			).toBe(0)
+			const run = runSkillScript(LAUNCH_SCRIPT, ['--handoff', record], { cwd: scratch.path })
+			expect(run.status).toBe(75)
+			expect(run.stderr).toContain('cannot be deleted')
+			expect(scratch.has('held/x.jsonl')).toBe(false)
+			expect(scratch.has(`held/x.jsonl${HANDOFF_SUFFIX}`)).toBe(true)
+			expect(scratch.read(`held/x.jsonl${HANDOFF_SUFFIX}${REFUSED_SUFFIX}`)).toMatch(
+				/cannot be deleted[^\n]*\n$/u,
+			)
+		} finally {
+			spawnSync('icacls', [held, '/remove:d', '*S-1-1-0'], { windowsHide: true })
+			spawnSync('icacls', [record, '/remove:d', '*S-1-1-0'], { windowsHide: true })
+			scratch.destroy()
+		}
+	})
+
+	it('detaches a run that outlives the caller tree with its cwd, PATH lead, and named variable, and records exit= when stopped through its pid file', async (context) => {
+		if (process.platform !== 'win32') {
+			context.skip(
+				'--detach exits 69 off Windows: WMI Win32_Process Create is the one detach procedure a platform page records',
+			)
+		}
+		const scratch = createScratch({ prefix: 'orkestrel-launch-detach-' })
+		const teardown = createTeardown()
+		teardown.add(() => destroyScratch(scratch))
+		const sockets: Socket[] = []
+		const observations: string[] = []
+		const server = createServer((socket) => {
+			sockets.push(socket)
+			socket.setEncoding('utf8')
+			socket.on('data', (chunk: string) => {
+				observations.push(chunk)
+			})
+			socket.on('error', () => undefined)
+		})
+		teardown.add(
+			() =>
+				new Promise<void>((resolve) => {
+					for (const socket of sockets) socket.destroy()
+					server.close(() => resolve())
+				}),
+		)
+		const work = scratch.ensure('work')
+		const lead = scratch.ensure('lead')
+		const units = join(work, 'tmp', 'units')
+		teardown.add(async () => {
+			for (const name of ['first', 'second']) {
+				const launcher = readPid(join(units, `${name}.jsonl.launcher.pid`))
+				if (launcher === undefined) continue
+				if (readRunning(launcher)) forceKillTree(launcher)
+				await waitForCondition(`the ${name} launcher ends`, () => !readRunning(launcher), {
+					budget: 15_000,
+				})
+			}
+		})
+		try {
+			await new Promise<void>((resolve) => {
+				server.listen(0, '127.0.0.1', () => resolve())
+			})
+			const address = server.address()
+			const port = typeof address === 'object' && address !== null ? address.port : 0
+			const fixture = `const s=require('node:net').connect(${String(port)},'127.0.0.1',()=>s.write(JSON.stringify({marker:process.env.LAUNCH_MARKER??null,lead:(process.env.PATH??'').split(';')[0],cwd:process.cwd()})+'\\n'));s.on('data',()=>process.exit(0));s.on('error',()=>process.exit(3))`
+			const parent = spawn(
+				process.execPath,
+				[
+					'-e',
+					"const c=require('node:child_process').spawn(process.execPath,process.argv.slice(1),{stdio:['ignore','inherit','inherit'],windowsHide:true});process.stdout.write(JSON.stringify({caller:c.pid})+'\\n')",
+					join(WORKSPACE_ROOT, LAUNCH_SCRIPT),
+					...['--journal', 'tmp/units/first.jsonl', '--errors', 'tmp/units/first.err'],
+					...['--cap', '60', '--detach', '--env', 'LAUNCH_MARKER'],
+					...['--', process.execPath, '-e', fixture],
+				],
+				{
+					cwd: work,
+					env: buildTestEnvironment({
+						ORKESTREL_LANE: '',
+						LAUNCH_MARKER: 'seen',
+						PATH: `${lead};${process.env.PATH ?? ''}`,
+					}),
+					stdio: ['ignore', 'pipe', 'pipe'],
+					windowsHide: true,
+				},
+			)
+			const output: string[] = []
+			for (const stream of [parent.stdout, parent.stderr]) {
+				stream.setEncoding('utf8')
+				stream.on('data', (chunk: string) => {
+					output.push(chunk)
+				})
+			}
+			const closed = waitForEvent<[number | null]>(
+				(listener) => {
+					parent.on('close', listener)
+				},
+				'the parent of the caller closes',
+				{ budget: 60_000 },
+			)
+			await waitForCondition(
+				'the caller prints its spawn line',
+				() => output.join('').includes('"launcher"'),
+				{ budget: 45_000 },
+			)
+			forceKillTree(parent.pid ?? 0)
+			await closed
+			const lines = output
+				.join('')
+				.split(/\r\n|\n/u)
+				.filter((line) => line.startsWith('{'))
+				.map((line) => parseJSON(line))
+			const callerLine = lines.find((line) => isRecord(line) && 'caller' in line)
+			const spawned = lines.find((line) => isRecord(line) && 'launcher' in line)
+			const caller = isRecord(callerLine) ? callerLine.caller : undefined
+			const launcher = isRecord(spawned) ? spawned.launcher : undefined
+			const command = isRecord(spawned) ? spawned.pid : undefined
+			expect(typeof caller).toBe('number')
+			expect(typeof launcher).toBe('number')
+			expect(typeof command).toBe('number')
+			if (typeof launcher !== 'number') return
+			expect(spawned).toEqual({
+				launcher,
+				pid: command,
+				journal: join(units, 'first.jsonl'),
+				errors: join(units, 'first.err'),
+			})
+			expect(readPid(join(units, 'first.jsonl.launcher.pid'))).toBe(launcher)
+			expect(readRunning(launcher)).toBe(true)
+			const query = spawnSync(
+				'powershell.exe',
+				[
+					'-NoProfile',
+					'-NonInteractive',
+					'-Command',
+					`(Get-CimInstance Win32_Process -Filter 'ProcessId=${String(launcher)}').ParentProcessId`,
+				],
+				{ encoding: 'utf8', windowsHide: true },
+			)
+			expect(query.status).toBe(0)
+			const launcherParent = Number(query.stdout.trim())
+			expect(launcherParent).toBeGreaterThan(0)
+			expect(launcherParent).not.toBe(caller)
+			expect(launcherParent).not.toBe(parent.pid)
+			await waitForCondition(
+				'the detached command reports what it sees',
+				() => observations.join('').includes('\n'),
+				{ budget: 30_000 },
+			)
+			expect(parseJSON(observations.join('').trim())).toEqual({ marker: 'seen', lead, cwd: work })
+			for (const socket of sockets) socket.write('go')
+			await waitForCondition(
+				'the detached launcher records exit=0',
+				() =>
+					/\nexit=0 signal=none capped=false duration_ms=\d+\n$/u.test(
+						scratch.read('work/tmp/units/first.err') ?? '',
+					),
+				{ budget: 30_000 },
+			)
+			expect(existsSync(join(units, `first.jsonl${HANDOFF_SUFFIX}`))).toBe(false)
+			const summary = parseJSON(scratch.read('work/tmp/units/first.jsonl.summary.json') ?? '')
+			expect(isRecord(summary) ? summary.exit : undefined).toBe(0)
+			const second = runSkillScript(
+				LAUNCH_SCRIPT,
+				[
+					...['--journal', 'tmp/units/second.jsonl', '--errors', 'tmp/units/second.err'],
+					...[
+						'--cap',
+						'60',
+						'--detach',
+						'--',
+						process.execPath,
+						'-e',
+						'setTimeout(() => {}, 60000)',
+					],
+				],
+				{ cwd: work, env: { ORKESTREL_LANE: '' } },
+			)
+			expect(second.status).toBe(0)
+			const stopped = readPid(join(units, 'second.jsonl.pid'))
+			expect(typeof stopped).toBe('number')
+			if (stopped === undefined) return
+			expect(second.json?.pid).toBe(stopped)
+			forceKillTree(stopped)
+			await waitForCondition(
+				'the second launcher records exit=',
+				() =>
+					/\nexit=\S+ signal=\S+ capped=false duration_ms=\d+\n$/u.test(
+						scratch.read('work/tmp/units/second.err') ?? '',
+					),
+				{ budget: 30_000 },
+			)
+		} finally {
+			await teardown.destroy()
+		}
+	}, 120_000)
 })
 
 describe('the parseArgs refusals', () => {

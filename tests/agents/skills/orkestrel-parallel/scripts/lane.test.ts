@@ -26,6 +26,7 @@ import {
 	parseArguments,
 	BREACH_CODE,
 	BURST_MS,
+	buildEnvironment,
 	buildOutcome,
 	buildTicket,
 	Census,
@@ -48,6 +49,7 @@ import {
 	KILL_BUDGET,
 	KILL_PAUSE_MS,
 	killMembers,
+	LANE_VARIABLE,
 	killTree,
 	linkStage,
 	MAX_CAP_SECONDS,
@@ -3666,6 +3668,28 @@ describe('lane.ts', () => {
 			expect(await one.exit()).toBe(0)
 			expect(bench.scratch.has(join('root', renderName(1, TICKET_SUFFIX)))).toBe(false)
 		})
+	})
+})
+
+describe('the lane marker', () => {
+	it('gives the command a run starts the run label in ORKESTREL_LANE', async () => {
+		const bench = await startLaneBench()
+		onTestFinished(() => bench.destroy())
+		const run = bench.spawn([
+			...renderLaneFlags(bench.root, bench.journals, 'marked'),
+			'--',
+			process.execPath,
+			'-e',
+			`process.stdout.write(String(process.env.${LANE_VARIABLE}))`,
+		])
+		expect(await run.exit()).toBe(0)
+		expect(readFileSync(join(bench.journals, 'marked.jsonl'), 'utf8')).toBe('marked')
+	})
+
+	it('drops an inherited variable whose name differs from an added one only by case', () => {
+		expect(
+			buildEnvironment({ orkestrel_lane: 'stale', Path: 'lead' }, { [LANE_VARIABLE]: 'marked' }),
+		).toEqual({ Path: 'lead', ORKESTREL_LANE: 'marked' })
 	})
 })
 

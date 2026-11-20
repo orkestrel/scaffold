@@ -4,7 +4,11 @@
 //   node .agents/skills/orkestrel-parallel/scripts/lane.ts --status [--root DIR] [--json]
 // A run takes a ticket, waits for its turn, runs the command through the dispatch skill's `launch`
 // script, reads the process tree, and releases. The launcher owns the cap, the journal, and the
-// errors file; its stdout lines pass through verbatim, and the cap must be above 0. The script reads
+// errors file; its stdout lines pass through verbatim, and the cap must be above 0. The launcher and
+// the command read `ORKESTREL_LANE` set to the run's label, so the launcher's `--detach` refuses a
+// run inside a ticket; a detached run takes no ticket, and
+// `.agents/skills/orkestrel-dispatch/references/launch.md` § Launch ownership states which runs to
+// detach. The script reads
 // its flags before the first bare `--` with `parseArgs` in strict mode, and passes every argument
 // after it to the command. The two forms are two operation modes, so `--status` with a run's flag
 // (`--solo` included) or a bare `--` is refused, and `--json` belongs to `--status` alone. A run
@@ -215,6 +219,9 @@ import { parseArgs } from 'node:util'
 
 /** Holds the protocol version a ticket carries, so a process refuses a ticket it cannot read. */
 export const PROTOCOL = 1
+
+/** Holds the variable the launcher's environment carries the run's label in, which the launcher's `--detach` refuses. */
+export const LANE_VARIABLE = 'ORKESTREL_LANE'
 
 /** Lists the flags only a run reads, which `--status` refuses, by the name `parseArgs` reads them under. */
 export const RUN_OPTIONS: readonly string[] = ['label', 'journal', 'errors', 'cap', 'solo']
@@ -2882,11 +2889,36 @@ export function watchSignals(handler: () => void): () => void {
 }
 
 /**
- * Starts the sibling launcher.
+ * Builds a child environment from a base environment and the variables a run adds.
+ *
+ * @remarks
+ * A Windows environment block folds names by case, so an inherited variable whose lower-cased name an
+ * added variable claims is dropped before the added one is laid over the rest.
+ *
+ * @param base - The environment the child would inherit.
+ * @param added - The variables the run adds.
+ * @returns The merged environment.
+ */
+export function buildEnvironment(
+	base: Readonly<Record<string, string | undefined>>,
+	added: Readonly<Record<string, string>>,
+): Record<string, string | undefined> {
+	const claimed = new Set(Object.keys(added).map((name) => name.toLowerCase()))
+	return {
+		...Object.fromEntries(
+			Object.entries(base).filter(([name]) => !claimed.has(name.toLowerCase())),
+		),
+		...added,
+	}
+}
+
+/**
+ * Starts the sibling launcher with {@link LANE_VARIABLE} set to the run's label.
  *
  * @remarks
  * A host other than Windows starts it as a group leader, so the launcher's id is the group a
- * handover reads.
+ * handover reads. The launcher and the command inherit the marker, which the launcher's `--detach`
+ * refuses.
  *
  * @param launcher - The launcher's path.
  * @param options - The run.
@@ -2910,6 +2942,7 @@ export function startLauncher(launcher: string, options: LaneOptions): ChildProc
 			stdio: ['ignore', 'pipe', 'inherit'],
 			windowsHide: true,
 			detached: process.platform !== 'win32',
+			env: buildEnvironment(process.env, { [LANE_VARIABLE]: options.label }),
 		},
 	)
 }

@@ -4,7 +4,7 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 
 ## Launch
 
-- Launch as a harness-tracked background command through `scripts/launch.ts` under a hard cap, per § Launch ownership.
+- Launch as a harness-tracked background command through `scripts/launch.ts` under a hard cap; a run that outlives the harness's background cap starts with `--detach` instead, per § Launch ownership.
 - Spawn a package manager through its JavaScript entry; `.agents/platforms/<platform>.md` names the entry and the shell quirks of each host.
 - When a chain's scripts must run on a selected Node, launch the chain under a `PATH` that leads with that Node's directory: npm resolves a script's `node` from `PATH` and adds no directory of the Node running it.
 - Write a multi-step chain as a TypeScript file run by `node`, with an opening comment naming its log and its cap. Never edit a script while it runs: copy, edit the copy, launch the copy.
@@ -15,13 +15,16 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 ## Launch ownership
 
 - Give every run one owner whose lifetime exceeds the run: the owner holds the journal, the pid file, and the cap. A dispatched agent never detaches a run; its turn can end before the run does.
-- When the expected duration exceeds the harness's background cap or idle-session window, which its page under `.agents/skills/orkestrel-parallel/references/` states, the Orchestrator starts the run outside the session's process tree by the detach procedure of `.agents/platforms/<platform>.md`. Record the journal and pid-file paths in the unit's records before the launch, and read liveness from the journal. No other session kills that pid.
-- On a host whose platform page records no proven detach procedure, keep the session in its turn for the run's whole duration.
+- When the expected duration exceeds the harness's background cap or idle-session window, which its page under `.agents/skills/orkestrel-parallel/references/` states, the Orchestrator starts the run outside the session's process tree with `scripts/launch.ts --detach` and a cap above 0, which runs the detach procedure of `.agents/platforms/<platform>.md`. Name with `--env` each variable the run needs beside `PATH`, and never a variable that holds a secret: the handoff record is a plain file. Record the journal and pid-file paths in the unit's records before the launch, and read liveness from the journal. No other session kills that pid.
+- Detach only a driver whose every process-running step runs through `.agents/skills/orkestrel-parallel/scripts/lane.ts` with the journal's stem in the step's label: a detached run takes no lane ticket, and `--detach` exits 64 inside one.
+- Stop a detached run by killing the tree of the id in `<journal>.pid`, never the id in `<journal>.launcher.pid`, so the launcher records `exit=`. A stop can land while a step holds its lane ticket; only the driver avoids that, by stopping between steps.
+- On a host whose platform page records no proven detach procedure, `--detach` exits 69; keep the session in its turn for the run's whole duration.
 
 ## Watch
 
 - Watch each long exec through one harness-native watcher, the one its page under `.agents/skills/orkestrel-parallel/references/` names, filtered to milestones and terminal states and exiting on the terminal event; on a harness with none, wait for its completion notice. Never stream the raw journal.
 - Read a harness fan-out run's liveness and recover it per its page under `.agents/skills/orkestrel-parallel/references/`.
+- Read a detached run's end from the `exit=` line its errors file ends with and its summary from `<journal>.summary.json`. A harness watcher stops at the harness's background cap, which a detached run can outlive; read the files again rather than the watcher's stop.
 - Judge a unit by the tree it changes: owned-file mtimes, suite counts, its report file. Check before killing anything; a unit killed on a false signal loses unwritten work.
 
 ## Kill and relaunch
