@@ -74,4 +74,16 @@ Remaining rounds, one one-time code each:
 
 Run each batch's settle steps (Publish procedure step 1) under one lane ticket on Node 22, so no other ticket runs between a package's install and its distribution proof.
 
-Next action: run the close round in layer order, then take a registry sweep and close ROADMAP 43 when it lists no trailing range.
+- 2026-11-20: the close round closed and pushed contract and every L1 package, then csv and console, each ruled dist same and ranges same. Agent's close visit is the agent session's (9b0c36dc). Learn and train adopted 0.0.145 (learn 9e2522d, train dd301bd). The round resumes behind the agent session's two solo qualification windows, under the protocol the three sessions agreed on 2026-11-20: one queued heavy ticket per session, a solo ticket announced first, and a queued ticket that yields to higher-priority work on request.
+
+Findings for the debrief:
+
+- The layer plan ignores development edges inside a layer: capture names guide and agent names probe, each in its own layer, so each published one round late.
+- capture 0.0.12's tarball answered 404 for about 30 minutes after the registry listed the version.
+- Browser's release-mode distribution gate fails five cases on Windows for want of a `/proc` table and a FIFO, as on 0.0.34 and 0.0.35.
+- Ollama's dedicated-daemon service case needs a second daemon at 127.0.0.1:11435 (ROADMAP 114).
+- After `repair` moves the ranges, the first `swap --pin` exits 1 because every package changed during the install, and a second run exits 0 (train, 2026-11-20).
+- `lane.ts` cannot start `npm` or `npm.cmd` on Windows; spawn `npm-cli.js` through Node.
+- A visit's pin step re-pinned scaffold's own `vitest` and left `@vitest/browser-playwright` at `^5.1.0`.
+
+Next action: finish the close round, then take a registry sweep and close ROADMAP 43 when it lists no trailing range.
