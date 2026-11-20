@@ -76,6 +76,9 @@ Run each batch's settle steps (Publish procedure step 1) under one lane ticket o
 
 - 2026-11-20: the close round closed and pushed contract and every L1 package, then csv and console, each ruled dist same and ranges same. Agent's close visit is the agent session's (9b0c36dc). Learn and train adopted 0.0.145 (learn 9e2522d, train dd301bd). The round resumes behind the agent session's two solo qualification windows, under the protocol the three sessions agreed on 2026-11-20: one queued heavy ticket per session, a solo ticket announced first, and a queued ticket that yields to higher-priority work on request.
 
+- 2026-11-20: scaffold landed, unreleased, the vendored config proof's isolation fix (`f7dfe17d4`) and learn's debrief refinements (`ecd6412a8`), with the root items the user approved after a Fable 5.2 consultation. Learn pins a tarball of `ecd6412a8` until the next scaffold release, which carries both.
+- 2026-11-20: the close round held capture on two timing-bound `src:server` cases that timed out under suite load; its gates rerun from the visit's commits.
+
 Findings for the debrief:
 
 - The layer plan ignores development edges inside a layer: capture names guide and agent names probe, each in its own layer, so each published one round late.
