@@ -30,13 +30,11 @@ The next fleet wave runs its layer preparation, release commits, and fleet sweep
 ## Sequence
 
 One writer at a time, in this order:
-1. **U1** (`builder`): `steps.ts` leads `PATH` with the running Node, folding the name's case, and writes `DIR/result.json` with `{ exit, node, npm, binary, cli }`.
-2. **U2** (`opus`, objective): `window.ts --confirm` waits until each tarball answers 200 and adds a `tarball` member.
-3. **U3** (`builder`): `pins.ts --catalog` classes a hit as `mirror` or `own`, and exits 0 when only mirror hits remain.
-4. **U4** (`opus`, objective): `wave.ts` gains the `pull` step, the `PATH` lead, and a ruling split into own and mirror hits.
-5. **U5** (`opus`): `wave.ts --sweep` and `--plan --root`, with `--checkout`.
-6. **U6** (`opus`): `release.ts --prepare` and `--commit`.
-7. **U7** (`opus`): the skill's instruction lines and ROADMAP 69.
+1. **U3** (`builder`): `pins.ts --catalog` classes a hit as `mirror` or `own`, and exits 0 when only mirror hits remain.
+2. **U4** (`opus`, objective): `wave.ts` gains the `pull` step, the `PATH` lead, and a ruling split into own and mirror hits. `readVerdict` and `failed` in `wave.ts` read a step whose child ends with no exit status, killed by a signal or by `ENOBUFS` past `maxBuffer`, as failed, never as a dry-run row; a dry-run row stays the only row with no exit.
+3. **U5** (`opus`): `wave.ts --sweep` and `--plan --root`, with `--checkout`.
+4. **U6** (`opus`): `release.ts --prepare` and `--commit`.
+5. **U7** (`opus`): the skill's instruction lines and ROADMAP 69.
 
 Each unit's proof carries a negative control, and each medium unit gets one review by a reviewer who did not write it.
 
@@ -50,5 +48,6 @@ Each unit's proof carries a negative control, and each medium unit gets one revi
 - 2026-11-20: D14 (`launch.ts --detach`) landed in `c4bb16076`, so the publish skill's scripts are free to change.
 - 2026-11-20: U1 landed in `299ec9494`, after one review and a fix round whose closure check closed every finding.
 - 2026-11-20: the contract 0.0.27 wave's campaign files are retired. Its lessons live in ROADMAP 191 to 195 and in this campaign's U2, U5, U8, and U9.
+- 2026-11-20: U2 landed in `24c25ad88`, after one review, two fix rounds, and two closure checks that closed every finding.
 
-Next action: dispatch U2, then U3. Hold U4 to U7 until the next fleet wave's preparation.
+Next action: hold U4 to U7 until the next fleet wave's preparation, then dispatch U4.

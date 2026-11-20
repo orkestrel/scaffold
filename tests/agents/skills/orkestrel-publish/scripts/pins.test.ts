@@ -4,6 +4,10 @@ import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import {
 	OPTIONS,
+	classifyHit,
+	parseCatalog,
+	readCatalog,
+	readOwnShort,
 	parseArguments,
 	BINARY,
 	buildRangeLiteral,
@@ -15,7 +19,12 @@ import {
 	normalizeSlashes,
 	sweepFile,
 } from '../../../../../.agents/skills/orkestrel-publish/scripts/pins.ts'
-import { runSkillScript, PINS_SCRIPT, runFlagRefusals } from '../../../../setupServer.js'
+import {
+	runSkillScript,
+	PINS_SCRIPT,
+	runFlagRefusals,
+	CATALOG_TEXT,
+} from '../../../../setupServer.js'
 
 describe('pins.ts', () => {
 	it('bounds a version literal and a single-comparator range version by digits and dots', () => {
@@ -69,6 +78,7 @@ describe('pins.ts', () => {
 					line: 2,
 					literal: '0.0.30',
 					text: 'const creator = { version: "0.0.30" }',
+					class: 'own',
 				},
 			])
 			const scoped = runSkillScript(PINS_SCRIPT, ['--version', '0.0.30', '--paths', 'src,tests'], {
@@ -232,7 +242,9 @@ describe('pins.ts', () => {
 			expect(run.json?.literals).toEqual(['8.3.0', '^8.3.0'])
 			const hits = run.json?.hits
 			if (!isArray(hits)) throw new Error('The summary carries no hits')
-			expect(hits).toEqual([{ path: 'src/a.ts', line: 1, literal: '8.3.0', text: '"^8.3.0"' }])
+			expect(hits).toEqual([
+				{ path: 'src/a.ts', line: 1, literal: '8.3.0', text: '"^8.3.0"', class: 'own' },
+			])
 			const text = runSkillScript(PINS_SCRIPT, ['--version', '8.3.0', '--range', '^8.3.0'], {
 				cwd: scratch.path,
 			})
@@ -244,6 +256,159 @@ describe('pins.ts', () => {
 		} finally {
 			scratch.destroy()
 		}
+	})
+})
+
+describe('the hit classes', () => {
+	it('marks only a catalog mirror guide as mirror, and exits 3 while any other hit remains', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-pins-class-' })
+		try {
+			scratch.write('package.json', JSON.stringify({ name: '@orkestrel/alpha' }))
+			scratch.write('.claude/agents/orkestrel.md', CATALOG_TEXT)
+			scratch.write('guides/alpha.md', 'pin 0.0.9\n')
+			scratch.write('guides/beta.md', 'pin 0.0.9\n')
+			scratch.write('guides/notes.md', 'pin 0.0.9\n')
+			scratch.write('src/a.ts', '"0.0.9"\n')
+			const run = runSkillScript(PINS_SCRIPT, ['--version', '0.0.9', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(3)
+			const hits = run.json?.hits
+			if (!isArray(hits)) throw new Error('The summary carries no hits')
+			expect(hits.map((hit) => (isRecord(hit) ? [hit.path, hit.class] : undefined)).sort()).toEqual(
+				[
+					['guides/alpha.md', 'own'],
+					['guides/beta.md', 'mirror'],
+					['guides/notes.md', 'own'],
+					['src/a.ts', 'own'],
+				],
+			)
+			const text = runSkillScript(PINS_SCRIPT, ['--version', '0.0.9'], { cwd: scratch.path })
+			expect(text.status).toBe(3)
+			expect(text.stdout).toContain('guides/beta.md:1: pin 0.0.9 (mirror)')
+			expect(text.stdout).toContain('guides/notes.md:1: pin 0.0.9\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('exits 0 and still prints each hit when only catalog mirrors remain', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-pins-mirror-' })
+		try {
+			scratch.write('package.json', JSON.stringify({ name: '@orkestrel/alpha' }))
+			scratch.write('catalog.md', CATALOG_TEXT)
+			scratch.write('guides/beta.md', 'pin 0.0.9\n')
+			scratch.write('src/a.ts', '// nothing\n')
+			const run = runSkillScript(PINS_SCRIPT, ['--version', '0.0.9', '--catalog', 'catalog.md'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			expect(run.stdout).toContain('guides/beta.md:1: pin 0.0.9 (mirror)')
+			expect(run.stdout).toContain('pins: 1 hit(s) for 0.0.9')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a catalog it cannot read, naming the path, and reads an absent default as empty', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-pins-refuse-' })
+		try {
+			scratch.write('guides/beta.md', 'pin 0.0.9\n')
+			scratch.write('plain.md', 'no table\n')
+			const absent = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '0.0.9', '--catalog', 'missing.md'],
+				{
+					cwd: scratch.path,
+				},
+			)
+			expect(absent.status).toBe(64)
+			expect(absent.stderr).toContain('missing.md')
+			expect(absent.stdout).toBe('')
+			const unmarked = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '0.0.9', '--catalog', 'plain.md'],
+				{
+					cwd: scratch.path,
+				},
+			)
+			expect(unmarked.status).toBe(64)
+			expect(unmarked.stderr).toContain('plain.md')
+			const fallback = runSkillScript(PINS_SCRIPT, ['--version', '0.0.9'], { cwd: scratch.path })
+			expect(fallback.status).toBe(3)
+			expect(fallback.stdout).not.toContain('(mirror)')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('classes every hit own when the manifest name cannot be read', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-pins-nomanifest-' })
+		try {
+			scratch.write('catalog.md', CATALOG_TEXT)
+			scratch.write('guides/alpha.md', 'pin 0.0.9\n')
+			const run = runSkillScript(PINS_SCRIPT, ['--version', '0.0.9', '--catalog', 'catalog.md'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(3)
+			expect(run.stdout).not.toContain('(mirror)')
+			scratch.write('package.json', '{ not json')
+			const malformed = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '0.0.9', '--catalog', 'catalog.md'],
+				{ cwd: scratch.path },
+			)
+			expect(malformed.status).toBe(3)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a catalog path that names a directory, and reads a nested guides path as own', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-pins-directory-' })
+		try {
+			scratch.write('package.json', JSON.stringify({ name: '@orkestrel/alpha' }))
+			scratch.write('catalog.md', CATALOG_TEXT)
+			scratch.write('catalogs/keep.md', 'x\n')
+			scratch.write('src/guides/beta.md', 'pin 0.0.9\n')
+			const directory = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '0.0.9', '--catalog', 'catalogs'],
+				{ cwd: scratch.path },
+			)
+			expect(directory.status).toBe(64)
+			expect(directory.stderr).toContain('catalogs')
+			expect(directory.stderr).toContain('unreadable')
+			const nested = runSkillScript(
+				PINS_SCRIPT,
+				['--version', '0.0.9', '--catalog', 'catalog.md'],
+				{
+					cwd: scratch.path,
+				},
+			)
+			expect(nested.status).toBe(3)
+			expect(nested.stdout).toContain('src/guides/beta.md:1: pin 0.0.9')
+			expect(nested.stdout).not.toContain('(mirror)')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads the catalog rows and the manifest name, and classifies a hit by its path', () => {
+		expect(parseCatalog(CATALOG_TEXT)).toEqual(new Set(['alpha', 'beta']))
+		expect(parseCatalog('| `@orkestrel/alpha` |')).toBeUndefined()
+		expect(readCatalog('absent.md', false)).toEqual({ success: true, value: new Set() })
+		expect(readCatalog('absent.md', true).success).toBe(false)
+		expect(readOwnShort('absent.json')).toBeUndefined()
+		const hit = { path: 'guides/beta.md', line: 1, literal: '1', text: 'x' }
+		const catalog = new Set(['alpha', 'beta'])
+		expect(classifyHit(hit, catalog, 'alpha').class).toBe('mirror')
+		expect(classifyHit(hit, catalog, 'beta').class).toBe('own')
+		expect(classifyHit({ ...hit, path: 'guides\\beta.md' }, catalog, 'gamma').class).toBe('mirror')
+		expect(classifyHit(hit, catalog, undefined).class).toBe('own')
+		expect(classifyHit({ ...hit, path: 'guides/sub/beta.md' }, catalog, undefined).class).toBe(
+			'own',
+		)
 	})
 })
 

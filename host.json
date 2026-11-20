@@ -28,7 +28,7 @@
 			"storage": "agents/platforms/windows.md",
 			"destination": ".agents/platforms/windows.md",
 			"executable": false,
-			"digest": "6096e08df90b4043dbe41f4e2c2673a3b316175824c889ff23bd859455301002"
+			"digest": "7e44ef6f1787e07e21c1261c3874ed3d1a6521240aec18ba428beb8a3134ae56"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -466,7 +466,7 @@
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
 			"destination": ".agents/skills/orkestrel-publish/SKILL.md",
 			"executable": false,
-			"digest": "16cd432dc186a7c8f9fd4798071f81a4320ad11d6d6af5b5a5ae491ec501fd2b"
+			"digest": "876511b7360266a19868e5122deaf82bcb75b6ae401a6e8959de1b7395ddeebf"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/agents/openai.yaml",
@@ -490,7 +490,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "6218fd3bac4b97479774cfe39f1da9d0f0f7ae51fca993155a99e011b0ad5698"
+			"digest": "25976ecd6e97714d6f2c301de3a00045d03c4225b33e069161b6248e60bf9730"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -508,7 +508,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/pins.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/pins.ts",
 			"executable": false,
-			"digest": "2a5ea147c1b927cbdad55a3303a9f995772c026fdddb82c69590a02bfa5b94fe"
+			"digest": "ef80c6c768f37b67a83894b834f8c54ef2c9bbb1a33d3da2f7b3c719aae856e5"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/steps.ts",
@@ -526,7 +526,7 @@
 			"storage": "agents/skills/orkestrel-publish/scripts/wave.ts",
 			"destination": ".agents/skills/orkestrel-publish/scripts/wave.ts",
 			"executable": false,
-			"digest": "257759ce9b18b21e08aea1e15e859d77b13e5a36691ac6ff264f0b12eb41d8f0"
+			"digest": "4048843155004269ce2126ad73c3e4d05e10c948f03f78475a515c503daf2c89"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/scripts/window.ts",
@@ -1417,5 +1417,5 @@
 		"scripts"
 	],
 	"surface": [],
-	"digest": "f36b60fdbef573253e6959e1db70a1afbdf17d9a0548d94cdf66134168eaf2ba"
+	"digest": "525aea47e8acfaa4a49639c07a2abb2a609d2877f2b1f835478fd7e3adfd69ff"
 }

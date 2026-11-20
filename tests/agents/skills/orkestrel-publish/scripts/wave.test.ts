@@ -1811,6 +1811,41 @@ describe('the prior ranges', () => {
 	})
 })
 
+describe('the refused sweep', () => {
+	it('fails the visit and reports no hit count when the sweep exits other than 0 or 3', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-refused-' })
+		try {
+			scratch.write('node_modules/@orkestrel/scaffold/dist/bin/main.js', '')
+			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			scratch.write('.claude/agents/orkestrel.md', 'no table\n')
+			scratch.write('src/a.ts', '"1.0.0"\n')
+			const run = runSkillScript(
+				WAVE_SCRIPT,
+				['--visit', '--from', 'pins', '--to', 'pins', '--json'],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(1)
+			expect(run.json?.steps).toEqual([expect.objectContaining({ step: 'pins', exit: 64 })])
+			expect(run.json?.ruling).not.toHaveProperty('hits')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads a pins exit of 3 as a reading and any other nonzero exit as a failure', () => {
+		for (const [exit, expected] of [
+			[0, false],
+			[3, false],
+			[64, true],
+		] as const) {
+			const rows: readonly StepResult[] = [
+				{ step: 'pins', command: 'pins', exit, durationMs: 0, note: undefined },
+			]
+			expect([exit, failed(rows)]).toStrictEqual([exit, expected])
+		}
+	})
+})
+
 describe('the failure predicate', () => {
 	it('reads a nonzero exit as a failure unless it is superseded, a dry run, or a pins or compare reading', () => {
 		for (const [label, rows, expected] of WAVE_FAILURE_ROWS) {

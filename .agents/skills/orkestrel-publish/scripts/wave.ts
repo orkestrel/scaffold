@@ -884,11 +884,12 @@ export function appendStep(
  *
  * @remarks
  * The one predicate the visit's steps and the script's exit code share. A superseded row, a row with
- * no exit (a dry run), and a pins or compare row are readings, not failures.
+ * no exit (a dry run), a compare row, and a pins row that exited 0 or 3 are readings, not failures; a
+ * pins row that exited otherwise (a refused sweep) is a failure.
  *
  * @param steps - The rows logged so far.
- * @returns True if a row exited nonzero, was not superseded, and is not a pins or compare row; false
- * otherwise.
+ * @returns True if a row exited nonzero, was not superseded, and is not a compare row or a pins row
+ * that exited 3; false otherwise.
  */
 export function failed(steps: readonly StepResult[]): boolean {
 	return steps.some(
@@ -896,8 +897,8 @@ export function failed(steps: readonly StepResult[]): boolean {
 			entry.superseded !== true &&
 			entry.exit !== undefined &&
 			entry.exit !== 0 &&
-			entry.step !== 'pins' &&
-			entry.step !== 'compare',
+			entry.step !== 'compare' &&
+			!(entry.step === 'pins' && entry.exit === 3),
 	)
 }
 
@@ -2257,7 +2258,7 @@ export function collectPriorRanges(
  * @param runner - The visit's state.
  * @param before - The ranges the manifest declared before the visit.
  * @param version - The version to sweep for, or undefined when none is known.
- * @returns The number of hit lines, or undefined when the sweep did not run.
+ * @returns The number of hit lines, or undefined when the sweep did not run or exited other than 0 or 3.
  */
 export function runPins(
 	runner: Runner,
@@ -2289,7 +2290,7 @@ export function runPins(
 			}
 		},
 	)
-	return swept === undefined
+	return swept === undefined || (swept.status !== 0 && swept.status !== 3)
 		? undefined
 		: swept.stdout.split(/\r\n|\n/).filter((line) => /^\S+:\d+: /u.test(line)).length
 }

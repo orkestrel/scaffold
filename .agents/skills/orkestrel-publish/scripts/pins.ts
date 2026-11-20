@@ -1,6 +1,6 @@
 // Sweep source, tests, and guides for a prior version or range literal after a bump or a re-pin.
 // Run from the publishing package's root:
-//   node .agents/skills/orkestrel-publish/scripts/pins.ts --version 0.0.76 [--range ^0.0.16 ...] [--paths src,tests,guides] [--json]
+//   node .agents/skills/orkestrel-publish/scripts/pins.ts --version 0.0.76 [--range ^0.0.16 ...] [--paths src,tests,guides] [--catalog PATH] [--json]
 // `--range` repeats. A version hit is the literal bounded by characters other than digits and dots,
 // so `~0.0.76` and `"0.0.76"` both hit and `0.0.760` does not. A range that is one comparator over
 // one version (`^8.3.0`, `~8.3.0`, `>=8.3.0`, `v8.3.0`) hits its bare version in any form, bounded the
@@ -8,10 +8,18 @@
 // range (`>=1.2.0 <2.0.0`, `8.x`) hits its literal bounded the same way and not preceded by another
 // range operator. Each matching line prints once as path:line: text, naming the first requested
 // literal that matched in the order --version then each --range, so the operator rules on it.
-// Exit 0 with no hits, 3 with hits, 64 on usage. The script reads its flags with `parseArgs` in
-// strict mode.
+// Each hit has a class. A hit in `guides/<short>.md` is `mirror` when `@orkestrel/<short>` is a row of
+// the catalog table and is not the manifest's own `name`: that guide is a vendored copy of another
+// package's guide. Every other hit is `own`, and every hit is `own` when the manifest is absent,
+// unreadable, or names no `@orkestrel` package. Text output appends ` (mirror)` to a mirror hit, and
+// `--json` gives each hit a `class` member. `--catalog` names the catalog table (default
+// `.claude/agents/orkestrel.md` under the working directory, where a target holds it too). An absent
+// default catalog reads as an empty one, so every hit is `own`; an absent catalog named by
+// `--catalog`, and an unreadable or unmarked catalog, are refused naming the path.
+// Exit 0 with no hits or only mirror hits, 3 with any own hit, 64 on usage or a refused catalog. The
+// script reads its flags with `parseArgs` in strict mode.
 import type { ParseArgsOptionsConfig } from 'node:util'
-import { readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
@@ -34,13 +42,29 @@ export const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set([
 
 /** Holds the usage line the script prints on a usage refusal. */
 export const USAGE =
-	'usage: pins.ts --version PRIOR [--range PRIOR_RANGE ...] [--paths src,tests,guides] [--json]'
+	'usage: pins.ts --version PRIOR [--range PRIOR_RANGE ...] [--paths src,tests,guides] [--catalog PATH] [--json]'
+
+/** Holds the catalog table path used when `--catalog` is absent. */
+export const CATALOG_PATH = '.claude/agents/orkestrel.md'
+
+/** Marks the start of the catalog table. */
+export const CATALOG_START = '<!-- orkestrel:catalog -->'
+
+/** Marks the end of the catalog table. */
+export const CATALOG_END = '<!-- /orkestrel:catalog -->'
+
+/** Matches a catalog row and captures the short name of its package. */
+export const CATALOG_ROW = /^\|\s*`@orkestrel\/([a-z0-9-]+)`\s*\|/u
+
+/** Matches a guide path and captures the short name its file stem carries. */
+export const MIRROR_GUIDE = /^guides\/([^/]+)\.md$/u
 
 /** Declares every flag the script reads, for `parseArgs`. */
 export const OPTIONS: ParseArgsOptionsConfig = Object.freeze({
 	version: Object.freeze({ type: 'string' }),
 	range: Object.freeze({ type: 'string', multiple: true }),
 	paths: Object.freeze({ type: 'string' }),
+	catalog: Object.freeze({ type: 'string' }),
 	json: Object.freeze({ type: 'boolean' }),
 })
 
@@ -89,6 +113,14 @@ export interface Hit {
 	readonly line: number
 	readonly literal: string
 	readonly text: string
+}
+
+/** Names the class of a hit: a vendored copy of another package's guide, or any other hit. */
+export type HitClass = 'mirror' | 'own'
+
+/** Describes a hit with the class the catalog gives it. */
+export interface ClassedHit extends Hit {
+	readonly class: HitClass
 }
 
 /** Describes one file a tree walk found, with the modification time the walk read. */
@@ -220,10 +252,114 @@ export function collectStrings(value: unknown): readonly string[] {
 }
 
 /**
+ * Reads the short package names of a catalog table.
+ *
+ * @param text - The catalog file's text.
+ * @returns The short name of each `@orkestrel/<short>` row between the catalog markers, or undefined
+ * when the text carries no marker-bounded table.
+ */
+export function parseCatalog(text: string): ReadonlySet<string> | undefined {
+	const start = text.indexOf(CATALOG_START)
+	const end = text.indexOf(CATALOG_END)
+	if (start === -1 || end === -1 || end < start) return undefined
+	return new Set(
+		text
+			.slice(start, end)
+			.split(/\r\n|\n/)
+			.flatMap((line) => {
+				const short = CATALOG_ROW.exec(line)?.[1]
+				return short === undefined ? [] : [short]
+			}),
+	)
+}
+
+/**
+ * Reads the catalog a sweep classifies against.
+ *
+ * @param path - The catalog file.
+ * @param required - If `true`, an absent file is refused; if `false`, it reads as an empty catalog.
+ * @returns The catalog's short names, or the message that refuses the catalog and names its path.
+ */
+export function readCatalog(
+	path: string,
+	required: boolean,
+):
+	| { readonly success: true; readonly value: ReadonlySet<string> }
+	| {
+			readonly success: false
+			readonly error: string
+	  } {
+	if (!existsSync(path)) {
+		return required
+			? { success: false, error: `catalog ${JSON.stringify(path)} does not exist` }
+			: { success: true, value: new Set() }
+	}
+	try {
+		const shorts = parseCatalog(readFileSync(path, 'utf8'))
+		return shorts === undefined
+			? {
+					success: false,
+					error: `catalog ${JSON.stringify(path)} carries no ${CATALOG_START} table`,
+				}
+			: { success: true, value: shorts }
+	} catch (error) {
+		return {
+			success: false,
+			error: `catalog ${JSON.stringify(path)} is unreadable: ${error instanceof Error ? error.message : String(error)}`,
+		}
+	}
+}
+
+/**
+ * Reads the short name of the manifest's package.
+ *
+ * @param path - The manifest file.
+ * @returns The `name` with its `@orkestrel/` scope removed, or undefined when the manifest is absent,
+ * unreadable, or names no `@orkestrel` package.
+ */
+export function readOwnShort(path: string): string | undefined {
+	try {
+		const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'))
+		const name =
+			typeof parsed === 'object' && parsed !== null && 'name' in parsed ? parsed.name : undefined
+		return typeof name === 'string' && name.startsWith('@orkestrel/')
+			? name.slice('@orkestrel/'.length)
+			: undefined
+	} catch {
+		return undefined
+	}
+}
+
+/**
+ * Gives a hit its class.
+ *
+ * @param hit - The hit.
+ * @param catalog - The short names of the catalog's packages.
+ * @param own - The short name of the manifest's own package, or undefined when it cannot be read.
+ * @returns The hit with `mirror` when the manifest's name is known and the hit sits in
+ * `guides/<short>.md` of another catalog package, and `own` otherwise.
+ */
+export function classifyHit(
+	hit: Hit,
+	catalog: ReadonlySet<string>,
+	own: string | undefined,
+): ClassedHit {
+	const short = MIRROR_GUIDE.exec(normalizeSlashes(hit.path))?.[1]
+	return {
+		...hit,
+		class:
+			own !== undefined && short !== undefined && short !== own && catalog.has(short)
+				? 'mirror'
+				: 'own',
+	}
+}
+
+/**
  * Runs the sweep and prints its hits.
  *
  * @param argv - The arguments after the script path.
- * @returns The exit code: 0 with no hits, 3 with hits, 64 on usage.
+ * @returns The exit code: 0 with no hits or only mirror hits, 3 with any own hit, 64 on usage or a
+ * refused catalog.
  */
 export function main(argv: readonly string[]): number {
 	const parsed = parseArguments(argv)
@@ -239,6 +375,13 @@ export function main(argv: readonly string[]): number {
 		console.error(USAGE)
 		return 64
 	}
+	const catalogPath = typeof values.catalog === 'string' ? values.catalog : CATALOG_PATH
+	const catalog = readCatalog(catalogPath, typeof values.catalog === 'string')
+	if (!catalog.success) {
+		console.error(`pins: ${catalog.error}`)
+		return 64
+	}
+	const own = readOwnShort('package.json')
 	const literals = [
 		...(version === undefined ? [] : [buildVersionLiteral(version)]),
 		...ranges.map(buildRangeLiteral),
@@ -256,14 +399,19 @@ export function main(argv: readonly string[]): number {
 		.flatMap((directory) => listFiles(directory).map((file) => file.path))
 		.filter((file) => !BINARY.test(file))
 		.flatMap((file) => sweepFile(file, literals))
+		.map((hit) => classifyHit(hit, catalog.value, own))
 	const names = literals.map((entry) => entry.literal)
 	if (values.json === true) {
 		console.log(JSON.stringify({ literals: names, paths: present, skipped, hits }))
 	} else {
-		for (const hit of hits) console.log(`${hit.path}:${hit.line}: ${hit.text}`)
+		for (const hit of hits) {
+			console.log(
+				`${hit.path}:${hit.line}: ${hit.text}${hit.class === 'mirror' ? ' (mirror)' : ''}`,
+			)
+		}
 		console.log(`pins: ${hits.length} hit(s) for ${names.join(', ')} under ${present.join(', ')}`)
 	}
-	return hits.length === 0 ? 0 : 3
+	return hits.some((hit) => hit.class === 'own') ? 3 : 0
 }
 
 if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === import.meta.filename) {

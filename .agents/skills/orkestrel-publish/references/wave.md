@@ -254,8 +254,8 @@ its own version, and any re-pin, a development one included, falsifies it. Run t
 re-pin install, not after the manifest edit.
 
 - Run `node .agents/skills/orkestrel-publish/scripts/pins.ts --version <prior> --range <prior range> ...`
-  with the prior version and the prior range of every re-pinned dependency, rule on every hit, and
-  move every generated-manifest snapshot hit with its re-pin. The visit's `pins` step passes every
+  with the prior version and the prior range of every re-pinned dependency, rule on every hit
+  `pins.ts` classes `own`, per its row in the skill's `SKILL.md` § Scripts, and move every generated-manifest snapshot hit with its re-pin. The visit's `pins` step passes every
   range that moved since the prior version's `Release <version>` commit beside the ranges the visit
   moved, and `pins.ts` sweeps `src`, `tests`, and `guides` by default; on a run by hand, pass the
   same ranges with `--range`.

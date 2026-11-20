@@ -3061,6 +3061,22 @@ export const CATALOG_AGENT_ROWS_TEXT = [
 	'',
 ].join('\n')
 
+/**
+ * Holds a catalog table of two packages, `alpha` and `beta`, and a package row outside the markers.
+ *
+ * @remarks
+ * The `pins` script proof reads it to class a guide hit as a mirror or its own.
+ */
+export const CATALOG_TEXT = [
+	'# Catalog',
+	CATALOG_START_MARKER,
+	'| Package | Version | Layer |',
+	'| `@orkestrel/alpha` | `0.0.1` | L1 |',
+	'| `@orkestrel/beta` | `0.0.2` | L1 |',
+	CATALOG_END_MARKER,
+	'| `@orkestrel/outside` | `0.0.3` | L1 |',
+].join('\n')
+
 /** Lists the development dependencies planned for the fixture's published core environment. */
 export const TARGET_DEV_DEPENDENCIES = blueprintToDevDependencies(
 	createBlueprint('sample', { src: ['core'] }),
