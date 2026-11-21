@@ -146,9 +146,11 @@ When the install in step 1 or step 5 fails with `ERESOLVE`, read its conflict an
 An exact-peer cluster, such as `vitest` with `@vitest/browser-playwright`, can prevent npm from
 moving the lockfile in place. Without the flag, the step deletes nothing.
 
-- Pass `--regenerate` only when the user's instruction for the visit names it: the regeneration is a
-  destructive command under `.agents/orchestration.md` § Permission floor. A unit whose brief does
-  not name it, or whose sandbox refused a deletion, stops at the refusal and reports it.
+- Pass `--regenerate` on every visit of a release wave, so an install that fails `ERESOLVE`
+  regenerates in the same run. In any other visit, pass it only after the install fails `ERESOLVE`.
+  The regeneration is a destructive command under `.agents/orchestration.md` § Permission floor: a
+  unit whose brief does not name it, or whose sandbox refused a deletion, stops at the refusal and
+  reports it.
 - With the flag, refuse before moving anything when `node_modules` is a link, the lockfile is
   untracked or carries uncommitted changes, the manifest names a local dependency spec or declares
   `workspaces`, `tmp/` is not git-ignored, or the target is not the root of its work tree.
