@@ -2,7 +2,7 @@
 
 ## Goal
 
-The next fleet wave runs its layer preparation, release commits, and fleet sweep through proven `orkestrel-publish` scripts, with no throwaway driver under `tmp/`.
+The next fleet wave runs its layer preparation, release commits, and fleet sweep through proven `orkestrel-publish` scripts alone, with no throwaway driver.
 
 **Exit criterion:** each unit U1 to U7 is accepted, the skill's instruction lines match what shipped, ROADMAP 69 is narrowed to the census, and `verifier`'s tree-wide gates pass.
 
